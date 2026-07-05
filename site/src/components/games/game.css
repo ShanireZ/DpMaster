@@ -51,6 +51,7 @@
 .gitem__v { font-family: var(--font-display); font-size: 24px; font-weight: 700; color: var(--text-1); }
 .gitem__vlab { font-size: 10px; color: var(--text-3); }
 .gitem__w { margin-top: 6px; font-family: var(--font-mono); font-size: 12px; color: var(--text-2); }
+.gitem__ratio { margin-top: 2px; font-family: var(--font-mono); font-size: 10px; color: var(--text-3); }
 .gitem__star { position: absolute; top: -8px; right: -8px; color: var(--viz-chosen); filter: drop-shadow(0 1px 3px rgba(0,0,0,.5)); }
 
 .game__panel { display: flex; flex-direction: column; gap: var(--sp-4); }
@@ -79,3 +80,32 @@
 .gbtn:hover { border-color: var(--accent-2); }
 .gbtn--primary { background: var(--grad-accent); color: var(--text-on-accent); border-color: transparent; }
 .gbtn--primary:hover { transform: translateY(-1px); box-shadow: var(--glow-accent); }
+
+/* 三方对照：贪心 · 你 · DP 最优 */
+.game__compare {
+  padding: 10px 12px; border-radius: var(--r-2);
+  background: var(--surface-2); border: 1px solid var(--border);
+}
+.game__compare-row {
+  display: flex; flex-wrap: wrap; align-items: baseline; gap: 6px var(--sp-4);
+  font-size: 13px; color: var(--text-2);
+}
+.game__cmp { display: inline-flex; align-items: baseline; gap: 4px; }
+.game__cmp b { font-family: var(--font-mono); font-size: 15px; font-weight: 700; }
+.game__cmp-note { color: var(--text-3); font-size: 11px; }
+.game__cmp--greedy { color: var(--text-3); }
+.game__cmp--greedy b { color: var(--text-3); }
+.game__cmp--you { color: var(--text-2); }
+.game__cmp--you b { color: var(--text-1); }
+.game__cmp--dp { color: var(--text-2); }
+.game__cmp--dp b { color: var(--viz-chosen); }
+.game__compare-tip {
+  margin-top: 8px; padding-top: 8px; font-size: 12px; color: var(--text-2);
+  border-top: 1px solid var(--border);
+}
+
+/* 战绩 */
+.game__stats {
+  text-align: center; font-size: 12px; color: var(--text-3);
+  font-family: var(--font-mono); letter-spacing: 0.02em;
+}
