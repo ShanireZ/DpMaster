@@ -186,3 +186,76 @@ export function CompleteSetupFigure() {
     </svg>
   )
 }
+
+// 完全背包的核心优化图解：01 的「取」来源在上一行(每件一次)，完全的「取」来源在本行(同种可再取)。
+export function CompleteOptFigure() {
+  const CW = 76
+  const CH = 40
+  const gx = (c: number) => 48 + c * 88
+  const gy = (r: number) => 28 + r * 58
+  const cxp = (c: number) => gx(c) + CW / 2
+  const cyp = (r: number) => gy(r) + CH / 2
+
+  const panel = (dx: number, title: string, variant: '01' | 'complete') => {
+    const takeSrc = variant === '01' ? { c: 0, r: 0 } : { c: 0, r: 1 }
+    const cells = [
+      { c: 0, r: 0, t: 'f[i−1][j−w]' },
+      { c: 1, r: 0, t: 'f[i−1][j]' },
+      { c: 0, r: 1, t: variant === '01' ? '·' : 'f[i][j−w]' },
+      { c: 1, r: 1, t: 'f[i][j]' },
+    ]
+    return (
+      <g key={variant} transform={`translate(${dx},0)`}>
+        <text x={cxp(0)} y="16" textAnchor="start" fontSize="12.5" fontWeight="600" fill="var(--accent-1)">
+          {title}
+        </text>
+        <text x={gx(0) - 14} y={cyp(0) + 4} textAnchor="middle" fontSize="10.5" className="mono" fill="var(--text-3)">i−1</text>
+        <text x={gx(0) - 14} y={cyp(1) + 4} textAnchor="middle" fontSize="10.5" className="mono" fill="var(--text-3)">i</text>
+        <text x={cxp(0)} y={gy(1) + CH + 16} textAnchor="middle" fontSize="10.5" className="mono" fill="var(--text-3)">j−w</text>
+        <text x={cxp(1)} y={gy(1) + CH + 16} textAnchor="middle" fontSize="10.5" className="mono" fill="var(--text-3)">j</text>
+        {cells.map((cell, i) => {
+          const src = cell.c === takeSrc.c && cell.r === takeSrc.r
+          const cur = cell.c === 1 && cell.r === 1
+          const blank = cell.t === '·'
+          return (
+            <g key={i} transform={`translate(${gx(cell.c)},${gy(cell.r)})`}>
+              <rect
+                width={CW}
+                height={CH}
+                rx="8"
+                fill={cur ? 'color-mix(in srgb, var(--viz-current) 16%, var(--surface-3))' : src ? 'color-mix(in srgb, var(--viz-chosen) 15%, var(--surface-3))' : 'var(--surface-3)'}
+                stroke={cur ? 'var(--viz-current)' : src ? 'var(--viz-chosen)' : 'var(--border-strong)'}
+                strokeWidth="1.5"
+                opacity={blank ? 0.5 : 1}
+              />
+              <text x={CW / 2} y="24" textAnchor="middle" fontSize="11" className="mono" fill={blank ? 'var(--text-3)' : 'var(--text-1)'}>
+                {cell.t}
+              </text>
+            </g>
+          )
+        })}
+        <line x1={cxp(1)} y1={gy(0) + CH} x2={cxp(1)} y2={gy(1)} stroke="var(--viz-source)" strokeWidth="2" markerEnd="url(#co-src)" />
+        {variant === '01' ? (
+          <line x1={gx(0) + CW} y1={gy(0) + CH} x2={gx(1)} y2={gy(1)} stroke="var(--viz-chosen)" strokeWidth="2.5" markerEnd="url(#co-cho)" />
+        ) : (
+          <line x1={gx(0) + CW} y1={cyp(1)} x2={gx(1)} y2={cyp(1)} stroke="var(--viz-chosen)" strokeWidth="2.5" markerEnd="url(#co-cho)" />
+        )}
+      </g>
+    )
+  }
+
+  return (
+    <svg viewBox="0 0 530 200" role="img" aria-label="01 背包与完全背包转移来源的对比">
+      <defs>
+        <marker id="co-src" markerWidth="7" markerHeight="7" refX="5.5" refY="3" orient="auto">
+          <path d="M0,0 L6,3 L0,6 Z" fill="var(--viz-source)" />
+        </marker>
+        <marker id="co-cho" markerWidth="7" markerHeight="7" refX="5.5" refY="3" orient="auto">
+          <path d="M0,0 L6,3 L0,6 Z" fill="var(--viz-chosen)" />
+        </marker>
+      </defs>
+      {panel(6, '01 · 取来自上一行', '01')}
+      {panel(280, '完全 · 取来自本行', 'complete')}
+    </svg>
+  )
+}
