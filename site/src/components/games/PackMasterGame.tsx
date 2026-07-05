@@ -46,6 +46,22 @@ function solveOpt(items: GItem[], cap: number): { value: number; pick: boolean[]
   return { value: f[n][cap], pick }
 }
 
+// 贪心基线：按性价比 v/w 降序依次尝试装入（装得下就装）
+function solveGreedy(items: GItem[], cap: number): { value: number; pick: boolean[] } {
+  const order = items.map((_, i) => i).sort((a, b) => items[b].v / items[b].w - items[a].v / items[a].w)
+  const pick = Array<boolean>(items.length).fill(false)
+  let load = 0
+  let value = 0
+  for (const i of order) {
+    if (load + items[i].w <= cap) {
+      pick[i] = true
+      load += items[i].w
+      value += items[i].v
+    }
+  }
+  return { value, pick }
+}
+
 function makeGame(difficulty: Difficulty): { items: GItem[]; cap: number } {
   const d = DIFFS[difficulty]
   const items = Array.from({ length: d.count }, () => ({
@@ -83,12 +99,18 @@ export default function PackMasterGame() {
   const [sel, setSel] = useState<boolean[]>(() => game.items.map(() => false))
   const [revealed, setRevealed] = useState(false)
   const [muted, setMuted] = useState(false)
+  const [played, setPlayed] = useState(0)
+  const [matched, setMatched] = useState(0)
+  // 本局是否已计入战绩（同一局重复点「看 DP 最优」不重复计数）
+  const [countedThisRound, setCountedThisRound] = useState(false)
 
   const opt = useMemo(() => solveOpt(game.items, game.cap), [game])
+  const greedy = useMemo(() => solveGreedy(game.items, game.cap), [game])
   const curW = game.items.reduce((s, it, i) => s + (sel[i] ? it.w : 0), 0)
   const curV = game.items.reduce((s, it, i) => s + (sel[i] ? it.v : 0), 0)
   const over = curW > game.cap
   const win = !over && revealed && curV === opt.value
+  const greedyBeaten = greedy.value < opt.value
 
   const toggle = (i: number) => {
     if (!muted) blip(440 + i * 55)
@@ -98,6 +120,12 @@ export default function PackMasterGame() {
   const reveal = () => {
     setRevealed(true)
     const w = !over && curV === opt.value
+    // 每局仅在首次揭示时计入战绩
+    if (!countedThisRound) {
+      setCountedThisRound(true)
+      setPlayed((n) => n + 1)
+      if (w) setMatched((n) => n + 1)
+    }
     if (!muted) {
       if (w) {
         blip(523, 0.12)
@@ -110,6 +138,7 @@ export default function PackMasterGame() {
     setGame(g)
     setSel(g.items.map(() => false))
     setRevealed(false)
+    setCountedThisRound(false)
     if (!muted) blip(360, 0.06)
   }
   const pickDiff = (d: Difficulty) => {
@@ -119,6 +148,7 @@ export default function PackMasterGame() {
     setGame(g)
     setSel(g.items.map(() => false))
     setRevealed(false)
+    setCountedThisRound(false)
     if (!muted) blip(420, 0.06)
   }
 
@@ -176,6 +206,7 @@ export default function PackMasterGame() {
                 <div className="gitem__v">{it.v}</div>
                 <div className="gitem__vlab">价值</div>
                 <div className="gitem__w">重 {it.w}</div>
+                <div className="gitem__ratio">性价比 {(it.v / it.w).toFixed(1)}</div>
               </button>
             ))}
           </div>
@@ -200,6 +231,25 @@ export default function PackMasterGame() {
             <span>当前总价值</span>
           </div>
           <div className={`game__feedback ${fbClass}`}>{feedback}</div>
+          {revealed && (
+            <div className="game__compare">
+              <div className="game__compare-row">
+                <span className="game__cmp game__cmp--greedy">
+                  贪心<span className="game__cmp-note">（按性价比）</span>
+                  <b>{greedy.value}</b>
+                </span>
+                <span className="game__cmp game__cmp--you">
+                  你 <b>{curV}</b>
+                </span>
+                <span className="game__cmp game__cmp--dp">
+                  DP 最优 <b>{opt.value}</b>
+                </span>
+              </div>
+              {greedyBeaten && (
+                <div className="game__compare-tip">贪心不是最优——这正是要用 DP 的原因。</div>
+              )}
+            </div>
+          )}
           <div className="game__actions">
             <button className="gbtn" onClick={shuffle}>
               <Shuffle size={16} /> 换一批
@@ -207,6 +257,9 @@ export default function PackMasterGame() {
             <button className="gbtn gbtn--primary" onClick={reveal}>
               <Trophy size={16} /> 看 DP 最优
             </button>
+          </div>
+          <div className="game__stats">
+            已玩 {played} 局 · 追平 DP {matched} 次
           </div>
         </div>
       </div>
