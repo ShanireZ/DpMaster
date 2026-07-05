@@ -4,8 +4,9 @@ import { M, MB } from '../../components/ui/Math'
 import InfoBox from '../../components/ui/InfoBox'
 import CodeBlock from '../../components/ui/CodeBlock'
 import KnapsackDemo from '../../components/demos/knapsack/KnapsackDemo'
+import CompleteContrastDemo from '../../components/demos/knapsack/CompleteContrastDemo'
 import { ExampleCard, Field, Exercise } from '../../components/ui/ProblemBits'
-import { CompleteSetupFigure } from './KnapsackArt'
+import { CompleteSetupFigure, CompleteOptFigure } from './KnapsackArt'
 
 const CODE_P1616 = `
 #include <iostream>
@@ -137,6 +138,31 @@ export default function KnapsackComplete() {
       </section>
 
       <section className="lesson">
+        <h2 className="section-title">为什么还是 O(nm)：从枚举件数到一次转移</h2>
+        <div className="prose">
+          <p>
+            「无限件」听起来更复杂，最朴素的想法是<strong>枚举第 <M>{'i'}</M> 种取几件</strong>：取 <M>{'0,1,2,\\dots'}</M> 件各算一遍再取最大——
+          </p>
+          <MB>{'f[i][j]=\\max_{k\\ge 0}\\ \\big(f[i-1][j-k\\,w_i]+k\\,v_i\\big)'}</MB>
+          <p>
+            这比 01 多了一层「枚举件数」，复杂度升到 <M>{'O\\!\\big(nm\\cdot m/w\\big)'}</M>。但盯住 <M>{'f[i][j-w_i]'}</M> 看：它本身已经是「前 <M>{'i'}</M> 种、容量 <M>{'j-w_i'}</M>」把所有件数都枚举过的最优——<strong>已经包含了「再多取一件第 <M>{'i'}</M> 种」的全部可能</strong>。于是那一整层枚举可以折叠成<strong>一步</strong>：
+          </p>
+          <MB>{'f[i][j]=\\max\\big(f[i-1][j],\\ f[i][j-w_i]+v_i\\big)'}</MB>
+        </div>
+        <figure className="figure">
+          <CompleteOptFigure />
+          <figcaption className="figure__cap">
+            唯一的差别在「取」这条转移的来源：01 背包指向<strong>上一行</strong> f[i−1][j−w]（这一种只能用一次）；完全背包指向<strong>本行</strong> f[i][j−w]（这一种刚刚可能已经取过，于是能再取）。正是「同一行回看」把复杂度压回 O(nm)。
+          </figcaption>
+        </figure>
+        <div className="prose">
+          <p>
+            降到一维后，<M>{'f[i][\\cdot]'}</M> 与 <M>{'f[i-1][\\cdot]'}</M> 共用同一个数组，「本行的 <M>{'f[j-w_i]'}</M>」正是<strong>正推</strong>时那个已被本种更新过的值——上一节循环方向的由来，到这里就完全说通了。
+          </p>
+        </div>
+      </section>
+
+      <section className="lesson">
         <h2 className="section-title">跟着算一遍：看它把一件反复拿</h2>
         <div className="prose">
           <p>拿一件物品 <M>{'(w,v)=(2,3)'}</M>、容量 6，把正推 <M>{'j:2\\to 4\\to 6'}</M> 走一遍：</p>
@@ -184,6 +210,21 @@ export default function KnapsackComplete() {
         <div className="demo">
           <div className="demo__body">
             <KnapsackDemo variant="complete" />
+          </div>
+        </div>
+      </section>
+
+      <section className="lesson">
+        <h2 className="section-title">01 还是完全？并排看差别</h2>
+        <div className="prose">
+          <p>
+            同一组物品、同一容量，左边按 01（每种至多 1 件）、右边按完全（每种无限件）各算一遍——改改 <M>{'w,v'}</M> 和容量，
+            看完全背包如何靠<strong>反复取用同一种</strong>，拿到不低于 01 的价值。
+          </p>
+        </div>
+        <div className="demo">
+          <div className="demo__body">
+            <CompleteContrastDemo />
           </div>
         </div>
       </section>

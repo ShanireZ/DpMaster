@@ -77,7 +77,9 @@
 .fbug__readout b { font-family: var(--font-mono); font-weight: 700; }
 .fbug__readout .ok { color: var(--viz-chosen); }
 .fbug__readout .bad { color: var(--viz-invalid); }
+.fbug__readout .you { color: var(--text-1); }
 .fbug__pair { display: flex; flex-direction: column; gap: var(--sp-6); }
 .fbug__side-label { display: flex; align-items: center; gap: 7px; font-weight: 600; font-size: 14px; margin-bottom: var(--sp-3); }
 .fbug__side-label.ok { color: var(--viz-chosen); }
 .fbug__side-label.bad { color: var(--viz-invalid); }
+.fbug__side-label.you { color: var(--text-2); }
