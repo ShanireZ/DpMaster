@@ -58,3 +58,26 @@
 .kd__mode:hover { color: var(--text-1); }
 .kd__mode.on { color: var(--text-on-accent); background: var(--grad-accent); border-color: transparent; }
 .kd__mode.danger.on { background: linear-gradient(120deg, #fb7185, #f43f5e); }
+
+/* 逆推 vs 正推 单件对照 */
+.fbug__toolbar {
+  display: flex; flex-wrap: wrap; align-items: flex-end; gap: var(--sp-4) var(--sp-6);
+  margin-bottom: var(--sp-4);
+  padding: var(--sp-4);
+  border-radius: var(--r-2);
+  background: var(--surface-2);
+  border: 1px solid var(--border);
+}
+.fbug__steppers { display: flex; gap: var(--sp-4); }
+.fbug__readout {
+  font-size: 14.5px; color: var(--text-2); margin-bottom: var(--sp-5);
+  padding: var(--sp-3) var(--sp-4); border-radius: var(--r-2);
+  background: var(--surface-2); border: 1px solid var(--border);
+}
+.fbug__readout b { font-family: var(--font-mono); font-weight: 700; }
+.fbug__readout .ok { color: var(--viz-chosen); }
+.fbug__readout .bad { color: var(--viz-invalid); }
+.fbug__pair { display: flex; flex-direction: column; gap: var(--sp-6); }
+.fbug__side-label { display: flex; align-items: center; gap: 7px; font-weight: 600; font-size: 14px; margin-bottom: var(--sp-3); }
+.fbug__side-label.ok { color: var(--viz-chosen); }
+.fbug__side-label.bad { color: var(--viz-invalid); }
