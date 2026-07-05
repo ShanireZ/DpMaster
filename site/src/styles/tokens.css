@@ -1,0 +1,122 @@
+/* ============================================================
+   Design Tokens · Warm Ink
+   暖中性近黑底 · 蜜金主色 · 精选低饱和宝石色 · 发丝描边 · 弥散软阴影
+   深色为默认，[data-theme="light"] 为暖奶油阅读模式
+   ============================================================ */
+
+:root {
+  /* ---------- 基底与表面（暖墨） ---------- */
+  --canvas: #0b0a09;
+  --surface-1: #121010;
+  --surface-2: #1a1614;
+  --surface-3: #221d19;
+  --surface-glass: rgba(18, 16, 15, 0.7);
+  --border: rgba(240, 234, 225, 0.09);
+  --border-strong: rgba(240, 234, 225, 0.16);
+
+  --text-1: #ece7de;
+  --text-2: #a7a097;
+  --text-3: #6e685f;
+  --text-on-accent: #221708;
+
+  /* ---------- 品牌主色：蜜金（默认强调 / 首页 / 全局） ---------- */
+  --grad-brand: linear-gradient(115deg, #f0cd83, #e0a24c);
+  --grad-brand-soft: linear-gradient(115deg, rgba(240, 205, 131, 0.2), rgba(224, 162, 76, 0.12));
+
+  /* ---------- 七部分：精选低饱和宝石色（同一套、和谐，非彩虹） ---------- */
+  --grad-a: linear-gradient(120deg, #6fb3ae, #4b86a4);
+  --grad-b: linear-gradient(120deg, #e3ac5f, #cd8145);
+  --grad-c: linear-gradient(120deg, #d488a0, #bf6a84);
+  --grad-d: linear-gradient(120deg, #86b97f, #5d9d85);
+  --grad-e: linear-gradient(120deg, #8194cf, #6d77bd);
+  --grad-f: linear-gradient(120deg, #b0bf6c, #86a85d);
+  --grad-g: linear-gradient(120deg, #a987c4, #8f68b7);
+
+  --a-1: #6fb3ae; --a-2: #4b86a4;
+  --b-1: #e3ac5f; --b-2: #cd8145;
+  --c-1: #d488a0; --c-2: #bf6a84;
+  --d-1: #86b97f; --d-2: #5d9d85;
+  --e-1: #8194cf; --e-2: #6d77bd;
+  --f-1: #b0bf6c; --f-2: #86a85d;
+  --g-1: #a987c4; --g-2: #8f68b7;
+
+  /* 当前活跃强调（默认蜜金；<body data-part> 覆盖为该部分宝石色） */
+  --accent-1: #e6b45c;
+  --accent-2: #d5983f;
+  --grad-accent: var(--grad-brand);
+
+  /* ---------- 语义可视化色（DP 演示专用，克制、可辨、跨部分一致） ---------- */
+  --viz-current: #ef9f5e;   /* 当前计算 · 暖珊瑚 */
+  --viz-source: #6fb6c6;    /* 依赖来源 · 青 */
+  --viz-chosen: #93c06b;    /* 被选/最优 · 绿 */
+  --viz-settled: #57524b;   /* 已确定 */
+  --viz-invalid: #e07e7e;   /* 非法/越界 · 陶红 */
+  --viz-cell: #171310;
+  --viz-cell-2: #201b17;
+
+  /* ---------- 字体 ---------- */
+  --font-display: 'Space Grotesk', 'Noto Sans SC', ui-sans-serif, system-ui, sans-serif;
+  --font-body: 'Noto Sans SC', 'Microsoft YaHei', ui-sans-serif, system-ui, sans-serif;
+  --font-mono: 'JetBrains Mono', ui-monospace, 'Cascadia Code', 'Consolas', monospace;
+
+  /* ---------- 间距刻度 ---------- */
+  --sp-1: 4px;  --sp-2: 8px;  --sp-3: 12px; --sp-4: 16px;
+  --sp-5: 24px; --sp-6: 32px; --sp-7: 48px; --sp-8: 64px; --sp-9: 96px; --sp-10: 128px;
+
+  /* ---------- 圆角（更大的 squircle） ---------- */
+  --r-1: 6px; --r-2: 11px; --r-3: 16px; --r-4: 22px; --r-5: 28px; --r-full: 999px;
+
+  /* ---------- 阴影 / 辉光（柔和、弥散、暖调） ---------- */
+  --shadow-1: 0 1px 2px rgba(0, 0, 0, 0.28);
+  --shadow-2: 0 18px 44px -22px rgba(0, 0, 0, 0.55);
+  --shadow-3: 0 36px 90px -30px rgba(0, 0, 0, 0.62);
+  --inset-hi: inset 0 1px 0 rgba(255, 250, 240, 0.05);
+  --glow-accent: 0 0 0 1px color-mix(in srgb, var(--accent-1) 26%, transparent),
+                 0 16px 44px -16px color-mix(in srgb, var(--accent-1) 40%, transparent);
+
+  /* ---------- 布局 ---------- */
+  --sidebar-w: 268px;
+  --topbar-h: 62px;
+  --measure: 66ch;
+  --content-max: 1240px;
+
+  /* ---------- 过渡（自定义缓动，无 linear/ease-in-out） ---------- */
+  --ease: cubic-bezier(0.22, 0.61, 0.36, 1);
+  --ease-spring: cubic-bezier(0.34, 1.4, 0.5, 1);
+  --ease-out: cubic-bezier(0.16, 1, 0.3, 1);
+  --t-fast: 0.18s; --t-med: 0.32s; --t-slow: 0.6s;
+
+  --z-nav: 40; --z-overlay: 60; --z-modal: 80;
+}
+
+/* ================= 浅色阅读模式（暖奶油） ================= */
+[data-theme='light'] {
+  --canvas: #f4f1ea;
+  --surface-1: #fffdf8;
+  --surface-2: #fffdf8;
+  --surface-3: #f0ece2;
+  --surface-glass: rgba(255, 253, 248, 0.78);
+  --border: rgba(40, 30, 18, 0.1);
+  --border-strong: rgba(40, 30, 18, 0.18);
+
+  --text-1: #1d1812;
+  --text-2: #5a5347;
+  --text-3: #8a8276;
+
+  --viz-cell: #efeae0;
+  --viz-cell-2: #e7e0d3;
+  --viz-settled: #a79e90;
+
+  --shadow-2: 0 18px 44px -24px rgba(70, 52, 22, 0.16);
+  --shadow-3: 0 36px 90px -30px rgba(70, 52, 22, 0.18);
+  --inset-hi: inset 0 1px 0 rgba(255, 255, 255, 0.6);
+}
+
+/* 各部分作用域：<body data-part="b"> 切换活跃强调色与渐变 */
+[data-part='a'] { --accent-1: var(--a-1); --accent-2: var(--a-2); --grad-accent: var(--grad-a); }
+[data-part='b'] { --accent-1: var(--b-1); --accent-2: var(--b-2); --grad-accent: var(--grad-b); }
+[data-part='c'] { --accent-1: var(--c-1); --accent-2: var(--c-2); --grad-accent: var(--grad-c); }
+[data-part='d'] { --accent-1: var(--d-1); --accent-2: var(--d-2); --grad-accent: var(--grad-d); }
+[data-part='e'] { --accent-1: var(--e-1); --accent-2: var(--e-2); --grad-accent: var(--grad-e); }
+[data-part='f'] { --accent-1: var(--f-1); --accent-2: var(--f-2); --grad-accent: var(--grad-f); }
+[data-part='g'] { --accent-1: var(--g-1); --accent-2: var(--g-2); --grad-accent: var(--grad-g); }

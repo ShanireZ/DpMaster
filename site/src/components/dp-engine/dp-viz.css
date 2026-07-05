@@ -1,0 +1,89 @@
+.dpviz { display: flex; flex-direction: column; gap: var(--sp-4); }
+
+.dpviz__scroll { overflow-x: auto; overflow-y: hidden; padding: 4px 2px 8px; }
+.dpviz__grid { position: relative; display: grid; width: max-content; }
+
+.dp-corner, .dp-colh, .dp-rowh {
+  display: grid; place-items: center;
+  font-family: var(--font-mono); font-size: 12px; color: var(--text-3);
+  user-select: none;
+}
+.dp-colh { border-bottom: 1px solid var(--border); }
+.dp-rowh { border-right: 1px solid var(--border); padding-right: 2px; }
+.dp-colh.axis, .dp-rowh.axis { color: var(--accent-2); font-weight: 600; }
+
+.dp-cell {
+  display: grid; place-items: center;
+  margin: 3px;
+  border-radius: 8px;
+  background: var(--viz-cell);
+  border: 1.5px solid transparent;
+  font-family: var(--font-mono); font-size: 15px; font-weight: 600;
+  color: var(--text-2);
+  transition: background var(--t-fast), border-color var(--t-fast), color var(--t-fast), transform var(--t-fast);
+}
+.dp-cell.blank { color: var(--text-3); font-weight: 400; opacity: 0.5; }
+.dp-cell.is-settled { color: var(--text-1); background: var(--viz-cell-2); }
+.dp-cell.is-source {
+  border-color: var(--viz-source);
+  color: #fff;
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--viz-source) 22%, transparent);
+}
+.dp-cell.is-chosen {
+  border-color: var(--viz-chosen);
+  background: color-mix(in srgb, var(--viz-chosen) 18%, var(--viz-cell));
+  color: #fff;
+}
+.dp-cell.is-current {
+  border-color: var(--viz-current);
+  background: color-mix(in srgb, var(--viz-current) 20%, var(--viz-cell));
+  color: #fff;
+  transform: scale(1.06);
+  box-shadow: 0 0 0 4px color-mix(in srgb, var(--viz-current) 26%, transparent);
+  animation: cellpulse 1.1s var(--ease) infinite;
+}
+.dp-cell.is-invalid { color: var(--viz-invalid); border-color: color-mix(in srgb, var(--viz-invalid) 40%, transparent); }
+
+@keyframes cellpulse {
+  0%, 100% { box-shadow: 0 0 0 4px color-mix(in srgb, var(--viz-current) 26%, transparent); }
+  50% { box-shadow: 0 0 0 7px color-mix(in srgb, var(--viz-current) 8%, transparent); }
+}
+
+.dpviz__arrows { position: absolute; pointer-events: none; overflow: visible; }
+
+/* 解说面板 */
+.dpviz__panel {
+  min-height: 74px;
+  padding: var(--sp-4);
+  border-radius: var(--r-2);
+  background: var(--surface-2);
+  border: 1px solid var(--border);
+  display: flex; flex-direction: column; gap: 8px;
+}
+.dpviz__formula { color: var(--text-1); overflow-x: auto; }
+.dpviz__caption { color: var(--text-2); font-size: 14px; }
+.dpviz__caption b { color: var(--text-1); }
+
+/* 图例 */
+.dpviz__legend { display: flex; flex-wrap: wrap; gap: var(--sp-4); font-size: 12px; color: var(--text-3); }
+.dpviz__legend span { display: inline-flex; align-items: center; gap: 6px; }
+.dpviz__legend i { width: 12px; height: 12px; border-radius: 4px; border: 1.5px solid; }
+
+/* 控制条 */
+.dpctl { display: flex; align-items: center; gap: var(--sp-3); flex-wrap: wrap; }
+.dpctl__btns { display: flex; gap: 6px; }
+.dpctl button {
+  width: 40px; height: 40px; border-radius: var(--r-2);
+  display: grid; place-items: center; color: var(--text-1);
+  border: 1px solid var(--border); background: var(--surface-2);
+  transition: all var(--t-fast);
+}
+.dpctl button:hover:not(:disabled) { border-color: var(--accent-2); background: var(--surface-3); }
+.dpctl button:disabled { opacity: 0.4; cursor: not-allowed; }
+.dpctl button.primary { background: var(--grad-accent); color: var(--text-on-accent); border-color: transparent; width: 48px; }
+.dpctl__scrub { flex: 1; min-width: 120px; display: flex; align-items: center; gap: 10px; }
+.dpctl__scrub input[type='range'] { flex: 1; accent-color: var(--accent-2); }
+.dpctl__count { font-family: var(--font-mono); font-size: 13px; color: var(--text-3); white-space: nowrap; }
+.dpctl__speed { display: flex; gap: 4px; }
+.dpctl__speed button { width: auto; height: 32px; padding: 0 10px; font-size: 12px; font-family: var(--font-mono); }
+.dpctl__speed button.on { color: var(--text-on-accent); background: var(--grad-accent); border-color: transparent; }

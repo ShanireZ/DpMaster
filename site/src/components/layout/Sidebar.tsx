@@ -1,0 +1,66 @@
+import { Link, NavLink, useMatch } from 'react-router-dom'
+import type { CSSProperties } from 'react'
+import { Sparkles } from 'lucide-react'
+import { PARTS } from '../../data/parts'
+
+export default function Sidebar({ onNavigate }: { onNavigate?: () => void }) {
+  const match = useMatch('/part/:pid/*')
+  const activePid = match?.params.pid
+
+  return (
+    <nav className="sidebar-inner" aria-label="主导航">
+      <Link to="/" className="brand" onClick={onNavigate}>
+        <span className="brand__mark">
+          <Sparkles size={18} color="var(--text-on-accent)" strokeWidth={2.2} />
+        </span>
+        <span>
+          <span className="brand__name grad-text-brand">DP 图谱</span>
+          <span className="brand__sub" style={{ display: 'block' }}>DP ATLAS</span>
+        </span>
+      </Link>
+
+      {PARTS.map((p) => {
+        const open = p.id === activePid
+        return (
+          <div className="nav-group" key={p.id}>
+            <Link
+              to={`/part/${p.id}`}
+              className={`nav-part${open ? ' active open' : ''}`}
+              onClick={onNavigate}
+            >
+              <span
+                className="nav-part__badge"
+                style={{ ['--pg']: `var(--grad-${p.id})` } as CSSProperties}
+              >
+                {p.code}
+              </span>
+              <span className="nav-part__title">{p.title}</span>
+            </Link>
+
+            {open && (
+              <div className="nav-types">
+                {p.types.map((t) =>
+                  t.status === 'ready' ? (
+                    <NavLink
+                      key={t.slug}
+                      to={`/part/${p.id}/${t.slug}`}
+                      className={({ isActive }) => `nav-type${isActive ? ' active' : ''}`}
+                      onClick={onNavigate}
+                    >
+                      {t.title}
+                    </NavLink>
+                  ) : (
+                    <span key={t.slug} className="nav-type planned">
+                      {t.title}
+                      <span className="nav-type__tag">待建</span>
+                    </span>
+                  ),
+                )}
+              </div>
+            )}
+          </div>
+        )
+      })}
+    </nav>
+  )
+}
