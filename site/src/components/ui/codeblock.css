@@ -1,0 +1,46 @@
+.codeblock {
+  border: 1px solid var(--border);
+  border-radius: var(--r-2);
+  overflow: hidden;
+  margin: var(--sp-4) 0;
+  background: var(--surface-3);
+}
+.codeblock__bar {
+  display: flex; align-items: center; gap: var(--sp-3);
+  padding: 8px 12px;
+  border-bottom: 1px solid var(--border);
+  background: var(--surface-2);
+}
+.codeblock__title { font-family: var(--font-mono); font-size: 12px; color: var(--text-3); }
+.codeblock__actions { margin-left: auto; display: flex; gap: 8px; }
+.cb-btn {
+  display: inline-flex; align-items: center; gap: 6px;
+  font-size: 12px; color: var(--text-2);
+  padding: 5px 10px; border-radius: 7px; border: 1px solid var(--border);
+  transition: all var(--t-fast);
+}
+.cb-btn:hover { color: var(--text-1); border-color: var(--accent-2); }
+
+.codeblock__code { margin: 0; overflow-x: auto; }
+.codeblock__code .shiki,
+.codeblock__code.codeblock__fallback {
+  margin: 0;
+  padding: var(--sp-4) var(--sp-4);
+  font-family: var(--font-mono);
+  font-size: 13.5px;
+  line-height: 1.7;
+  background: transparent !important;
+  tab-size: 4;
+}
+.codeblock__fallback code { color: var(--text-2); white-space: pre; }
+
+/* Shiki 双主题：跟随 [data-theme] 切换 */
+.codeblock__code .shiki,
+.codeblock__code .shiki span {
+  color: var(--shiki-dark);
+  background-color: transparent;
+}
+[data-theme='light'] .codeblock__code .shiki,
+[data-theme='light'] .codeblock__code .shiki span {
+  color: var(--shiki-light);
+}

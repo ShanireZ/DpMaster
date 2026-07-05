@@ -1,0 +1,47 @@
+.partcover {
+  position: relative;
+  overflow: hidden;
+  margin: calc(var(--sp-7) * -1) calc(var(--content-px) * -1) var(--sp-7);
+  padding: var(--sp-8) var(--content-px) var(--sp-7);
+}
+.partcover__row { display: flex; align-items: center; gap: var(--sp-5); flex-wrap: wrap; }
+.partcover__code {
+  font-family: var(--font-display); font-weight: 700; font-size: 40px; color: var(--text-on-accent);
+  width: 84px; height: 84px; border-radius: var(--r-3);
+  display: grid; place-items: center; background: var(--grad-accent);
+  box-shadow: var(--glow-accent);
+  flex: none;
+}
+.partcover h1 { font-size: clamp(34px, 5vw, 56px); letter-spacing: -0.03em; }
+.partcover__tag { color: var(--text-2); font-size: clamp(15px, 1.6vw, 19px); max-width: 60ch; margin-top: var(--sp-4); }
+.partcover__glyph { margin-left: auto; color: var(--accent-2); opacity: 0.7; }
+
+.typelist { max-width: 860px; display: flex; flex-direction: column; }
+.typelist__label {
+  font-size: 12px; letter-spacing: 0.18em; text-transform: uppercase; color: var(--text-3);
+  margin-bottom: var(--sp-3);
+}
+.typerow {
+  display: grid;
+  grid-template-columns: 46px 1fr auto;
+  align-items: center;
+  gap: var(--sp-4);
+  padding: var(--sp-4) var(--sp-3);
+  border-top: 1px solid var(--border);
+  transition: background var(--t-fast);
+}
+.typerow:last-child { border-bottom: 1px solid var(--border); }
+a.typerow:hover { background: var(--surface-2); }
+.typerow__num { font-family: var(--font-display); font-size: 18px; color: var(--accent-2); font-weight: 600; }
+.typerow__title { font-size: 17px; font-weight: 600; color: var(--text-1); }
+.typerow__blurb { font-size: 13.5px; color: var(--text-2); margin-top: 2px; }
+.typerow.planned { opacity: 0.55; }
+.typerow.planned .typerow__num { color: var(--text-3); }
+.badge-status {
+  font-size: 12px; padding: 4px 10px; border-radius: var(--r-full);
+  display: inline-flex; align-items: center; gap: 6px;
+}
+.badge-status.ready { color: var(--viz-chosen); border: 1px solid color-mix(in srgb, var(--viz-chosen) 40%, transparent); }
+.badge-status.planned { color: var(--text-3); border: 1px solid var(--border); }
+.typerow__arrow { color: var(--text-3); }
+a.typerow:hover .typerow__arrow { color: var(--text-1); }

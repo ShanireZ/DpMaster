@@ -1,0 +1,75 @@
+.backdrop {
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+  z-index: -1;
+  pointer-events: none;
+  background: var(--canvas);
+}
+
+.backdrop__blob {
+  position: absolute;
+  border-radius: 50%;
+  filter: blur(90px);
+  opacity: 0.4;
+  will-change: transform;
+  mix-blend-mode: screen;
+}
+[data-theme='light'] .backdrop__blob { mix-blend-mode: multiply; opacity: 0.22; }
+
+/* 单色调：三团都取当前强调色（<body data-part> 决定），暖而克制，不再彩虹 */
+.backdrop__blob.b1 {
+  width: 44vw; height: 44vw;
+  left: -6vw; top: -10vw;
+  background: radial-gradient(circle at 45% 45%, var(--accent-2), transparent 64%);
+  animation: drift1 30s var(--ease) infinite alternate;
+}
+.backdrop__blob.b2 {
+  width: 38vw; height: 38vw;
+  right: -4vw; top: -6vw;
+  background: radial-gradient(circle at 50% 50%, var(--accent-1), transparent 64%);
+  animation: drift2 36s var(--ease) infinite alternate;
+}
+.backdrop__blob.b3 {
+  width: 50vw; height: 50vw;
+  left: 26vw; bottom: -30vw;
+  background: radial-gradient(circle at 50% 50%, var(--accent-1), transparent 68%);
+  opacity: 0.2;
+  animation: drift3 42s var(--ease) infinite alternate;
+}
+
+/* 细网格：呼应 DP 表格，极淡 */
+.backdrop__grid {
+  position: absolute; inset: 0;
+  background-image:
+    linear-gradient(var(--border) 1px, transparent 1px),
+    linear-gradient(90deg, var(--border) 1px, transparent 1px);
+  background-size: 52px 52px;
+  opacity: 0.6;
+  mask-image: radial-gradient(ellipse 88% 66% at 50% 26%, #000 18%, transparent 76%);
+}
+
+/* 颗粒噪声：防渐变断层，物理胶片感 */
+.backdrop__grain {
+  position: absolute; inset: 0;
+  opacity: 0.04;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='140' height='140'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+}
+
+.backdrop--hero .backdrop__blob { opacity: 0.5; }
+.backdrop--hero .backdrop__blob.b3 { opacity: 0.28; }
+.backdrop--section .backdrop__blob { opacity: 0.2; filter: blur(100px); }
+.backdrop--section .backdrop__blob.b3 { opacity: 0.12; }
+
+@keyframes drift1 {
+  from { transform: translate3d(0,0,0) scale(1); }
+  to   { transform: translate3d(5vw, 4vh, 0) scale(1.14); }
+}
+@keyframes drift2 {
+  from { transform: translate3d(0,0,0) scale(1.05); }
+  to   { transform: translate3d(-4vw, 6vh, 0) scale(0.92); }
+}
+@keyframes drift3 {
+  from { transform: translate3d(0,0,0) scale(1); }
+  to   { transform: translate3d(-6vw, -3vh, 0) scale(1.1); }
+}
