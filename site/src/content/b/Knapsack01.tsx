@@ -4,8 +4,9 @@ import { M, MB } from '../../components/ui/Math'
 import InfoBox from '../../components/ui/InfoBox'
 import CodeBlock from '../../components/ui/CodeBlock'
 import KnapsackDemo from '../../components/demos/knapsack/KnapsackDemo'
+import ForwardBugDemo from '../../components/demos/knapsack/ForwardBugDemo'
 import { ExampleCard, Field, Exercise } from '../../components/ui/ProblemBits'
-import { SetupFigure, DecisionFigure } from './KnapsackArt'
+import { SetupFigure, DecisionFigure, ForwardBugFigure } from './KnapsackArt'
 
 const CODE_P1048 = `
 #include <iostream>
@@ -192,12 +193,54 @@ export default function Knapsack01() {
           </p>
           <MB>{'f[j]=\\max\\big(f[j],\\ f[j-w_i]+v_i\\big)'}</MB>
           <p>
-            但方向<strong>必须逆推</strong>（<M>{'j'}</M> 从 <M>{'m'}</M> 到 <M>{'w_i'}</M>）：算 <M>{'f[j]'}</M> 要用「上一件」留下的 <M>{'f[j-w_i]'}</M>，逆推时它还没被本件动过，是干净的旧值。
+            但方向<strong>必须逆推</strong>（<M>{'j'}</M> 从 <M>{'m'}</M> 到 <M>{'w_i'}</M>）：算 <M>{'f[j]'}</M> 要用「上一件」留下的 <M>{'f[j-w_i]'}</M>，逆推时它还没被本件动过，是<strong>干净的旧值</strong>。方向反过来会怎样？这不是小瑕疵，而是会让答案<strong>彻底跑偏</strong>——下一节把它摊开看。
           </p>
         </div>
-        <InfoBox kind="warn" title="常见陷阱 · 顺推会让物品被重复取">
-          若 <M>{'j'}</M> 从小到大顺推，<M>{'f[j-w_i]'}</M> 可能已被<strong>本件</strong>更新过，于是第 <M>{'i'}</M> 件被取了第二次、第三次——01 背包悄悄退化成「可无限取」。在上面的演示切到「一维 · 顺推 ✗」，把某件设成 <M>{'w=2,v=3'}</M>，就能看到红色标出的重复计入。<strong>记死：01 逆推、完全顺推。</strong>
+      </section>
+
+      <section className="lesson">
+        <h2 className="section-title">为什么不能正推：一件物品被反复装入</h2>
+        <div className="prose">
+          <p>
+            把内层循环从逆推改成<strong>正推</strong>（<M>{'j'}</M> 从 <M>{'w_i'}</M> 到 <M>{'m'}</M>），代码只差一个方向，结果却会错得离谱。病根就一句话：<strong>正推时，你用来更新 <M>{'f[j]'}</M> 的 <M>{'f[j-w_i]'}</M>，可能在本轮已经被同一件物品改过了。</strong>
+          </p>
+          <p>
+            用最干净的例子看——只有<strong>一件</strong>物品 <M>{'(w,v)=(2,3)'}</M>，容量 6：
+          </p>
+        </div>
+        <figure className="figure">
+          <ForwardBugFigure />
+          <figcaption className="figure__cap">
+            同一件物品：逆推每格都取「装它之前」的旧值，恒为 3（只装 1 件）；正推却让 f[0]→f[2]→f[4]→f[6] 链式 +3，一路滚到 9——同一件被装了 3 次。
+          </figcaption>
+        </figure>
+        <div className="steps">
+          <div className="step">
+            <span className="step__n">✓</span>
+            <div className="step__b">
+              <b>逆推</b>（<M>{'j:6\\to 4\\to 2'}</M>）：算 <M>{'f[6]'}</M> 用 <M>{'f[4]'}</M> 的<b>旧值 0</b> → 3；算 <M>{'f[4]'}</M> 用 <M>{'f[2]'}</M> 旧值 0 → 3；算 <M>{'f[2]'}</M> 用 <M>{'f[0]=0'}</M> → 3。每格都落在「这件还没进过」的旧值上，只加一次 → <b>f[6]=3，装 1 件</b>。
+            </div>
+          </div>
+          <div className="step">
+            <span className="step__n">✗</span>
+            <div className="step__b">
+              <b>正推</b>（<M>{'j:2\\to 4\\to 6'}</M>）：<M>{'f[2]=f[0]+3=3'}</M>；到 <M>{'f[4]'}</M> 时 <M>{'f[2]'}</M> <b>已经含这件了</b>，<M>{'f[4]=f[2]+3=6'}</M>（2 件）；<M>{'f[6]=f[4]+3=9'}</M>（<b>3 件</b>）。一件 <M>{'w=2'}</M> 的物品被当成「无限件」反复塞了进去。
+            </div>
+          </div>
+        </div>
+        <InfoBox kind="warn" title="记死：01 逆推、完全顺推">
+          01 背包每件至多取一次，必须<strong>逆推</strong>，让 <M>{'f[j-w_i]'}</M> 保持「上一件」留下的干净旧值；而这个「正推会重复取」的 bug，到 <Link to="/part/b/complete" style={{ color: 'var(--accent-2)' }}>完全背包</Link> 里恰好翻身成<strong>想要的特性</strong>（每种无限件）。同一段转移，循环方向决定物种。
         </InfoBox>
+        <div className="prose">
+          <p>
+            下面把两个方向<strong>并排跑给你看</strong>——改物品的 <M>{'w,v'}</M> 或容量：左边逆推恒等于一件的价值，右边正推随容量成倍上涨。
+          </p>
+        </div>
+        <div className="demo">
+          <div className="demo__body">
+            <ForwardBugDemo />
+          </div>
+        </div>
         <div className="pointer-cue">
           <Gamepad2 size={18} />
           想更直观？到 <Link to="/part/b" style={{ color: 'var(--accent-1)', fontWeight: 600 }}>B 部分页的「装包大师」</Link>亲手挑物品，再点「看 DP 最优」，体验一次贪心为何会输给 DP。
