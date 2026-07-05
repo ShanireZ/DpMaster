@@ -13,6 +13,27 @@
 }
 .game__title { font-weight: 700; font-size: 16px; display: flex; align-items: center; gap: 8px; }
 .game__sub { font-size: 13px; color: var(--text-2); }
+
+/* 难度分段选择器（简单 / 中等 / 困难） */
+.game__diff {
+  margin-left: auto;
+  display: inline-flex; gap: 4px;
+  padding: 3px; border-radius: var(--r-full);
+  background: var(--surface-3); border: 1px solid var(--border);
+}
+.game__diff-pill {
+  padding: 6px 14px; border-radius: var(--r-full);
+  font-size: 13px; font-weight: 600; line-height: 1;
+  color: var(--text-2); background: transparent; border: 1px solid transparent;
+  cursor: pointer;
+  transition: color var(--t-fast), background var(--t-fast), border-color var(--t-fast);
+}
+.game__diff-pill:hover { color: var(--text-1); }
+.game__diff-pill.on {
+  color: var(--text-on-accent); background: var(--grad-accent);
+  border-color: transparent; box-shadow: var(--shadow-1);
+}
+.game__diff-pill.on:hover { color: var(--text-on-accent); }
 .game__body { padding: var(--sp-5); display: grid; grid-template-columns: 1fr 300px; gap: var(--sp-5); }
 @media (max-width: 860px) { .game__body { grid-template-columns: 1fr; } }
 

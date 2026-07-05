@@ -7,6 +7,26 @@ interface GItem {
   v: number
 }
 
+type Difficulty = 'easy' | 'medium' | 'hard'
+
+interface DiffSpec {
+  label: string
+  count: number
+  wMin: number
+  wRange: number // 重量随机上限（不含），实际重量 = wMin + floor(random * wRange)
+  vMin: number
+  vRange: number
+  capRatio: number
+}
+
+const DIFFS: Record<Difficulty, DiffSpec> = {
+  easy: { label: '简单', count: 4, wMin: 2, wRange: 4, vMin: 3, vRange: 7, capRatio: 0.5 },
+  medium: { label: '中等', count: 5, wMin: 2, wRange: 6, vMin: 3, vRange: 10, capRatio: 0.5 },
+  hard: { label: '困难', count: 6, wMin: 3, wRange: 7, vMin: 4, vRange: 15, capRatio: 0.45 },
+}
+
+const DIFF_ORDER: Difficulty[] = ['easy', 'medium', 'hard']
+
 function solveOpt(items: GItem[], cap: number): { value: number; pick: boolean[] } {
   const n = items.length
   const f = Array.from({ length: n + 1 }, () => Array<number>(cap + 1).fill(0))
@@ -26,13 +46,14 @@ function solveOpt(items: GItem[], cap: number): { value: number; pick: boolean[]
   return { value: f[n][cap], pick }
 }
 
-function makeGame(): { items: GItem[]; cap: number } {
-  const items = Array.from({ length: 5 }, () => ({
-    w: 2 + Math.floor(Math.random() * 5),
-    v: 3 + Math.floor(Math.random() * 10),
+function makeGame(difficulty: Difficulty): { items: GItem[]; cap: number } {
+  const d = DIFFS[difficulty]
+  const items = Array.from({ length: d.count }, () => ({
+    w: d.wMin + Math.floor(Math.random() * d.wRange),
+    v: d.vMin + Math.floor(Math.random() * d.vRange),
   }))
   const totalW = items.reduce((s, it) => s + it.w, 0)
-  const cap = Math.max(6, Math.round(totalW * 0.5))
+  const cap = Math.max(6, Math.round(totalW * d.capRatio))
   return { items, cap }
 }
 
@@ -57,7 +78,8 @@ function blip(freq: number, dur = 0.09, type: OscillatorType = 'triangle') {
 }
 
 export default function PackMasterGame() {
-  const [game, setGame] = useState(makeGame)
+  const [difficulty, setDifficulty] = useState<Difficulty>('medium')
+  const [game, setGame] = useState(() => makeGame('medium'))
   const [sel, setSel] = useState<boolean[]>(() => game.items.map(() => false))
   const [revealed, setRevealed] = useState(false)
   const [muted, setMuted] = useState(false)
@@ -84,11 +106,20 @@ export default function PackMasterGame() {
     }
   }
   const shuffle = () => {
-    const g = makeGame()
+    const g = makeGame(difficulty)
     setGame(g)
     setSel(g.items.map(() => false))
     setRevealed(false)
     if (!muted) blip(360, 0.06)
+  }
+  const pickDiff = (d: Difficulty) => {
+    if (d === difficulty) return
+    setDifficulty(d)
+    const g = makeGame(d)
+    setGame(g)
+    setSel(g.items.map(() => false))
+    setRevealed(false)
+    if (!muted) blip(420, 0.06)
   }
 
   let feedback = '点物品放进背包，凑出你认为最大的总价值，再点「看 DP 最优」对照。'
@@ -110,9 +141,21 @@ export default function PackMasterGame() {
           <Package size={18} /> 装包大师
         </span>
         <span className="game__sub">容量 {game.cap}——凭直觉挑，能追平 DP 吗？</span>
+        <div className="game__diff" role="group" aria-label="难度">
+          {DIFF_ORDER.map((d) => (
+            <button
+              key={d}
+              className={`game__diff-pill${d === difficulty ? ' on' : ''}`}
+              onClick={() => pickDiff(d)}
+              aria-pressed={d === difficulty}
+            >
+              {DIFFS[d].label}
+            </button>
+          ))}
+        </div>
         <button
           className="icon-btn"
-          style={{ marginLeft: 'auto', width: 34, height: 34 }}
+          style={{ width: 34, height: 34 }}
           onClick={() => setMuted((m) => !m)}
           aria-label="静音"
         >
