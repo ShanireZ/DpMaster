@@ -7,7 +7,7 @@ import { useEffect, useRef } from 'react'
  * 指针经过会激起青色涟漪（重新计算的转移）。配色全部取自 tokens 的 --viz-* 语义色。
  * prefers-reduced-motion 只渲一帧静止残局；离屏暂停。replayKey 变化即重挂载重播。
  */
-export default function GridSolver({ replayKey }: { replayKey: number }) {
+export default function GridSolver() {
   const ref = useRef<HTMLCanvasElement>(null)
 
   useEffect(() => {
@@ -101,11 +101,17 @@ export default function GridSolver({ replayKey }: { replayKey: number }) {
       ctx.globalAlpha = 1
     }
 
-    const CYCLE = 6.4, BREAK = 3.7
+    // 往返（yoyo）：正放填表 FORWARD → 断裂停顿 HOLD → 倒放收回 BACK，来回而非硬重置
+    const FORWARD = 3.6, HOLD = 0.9, BACK = 3.0
+    const PERIOD = FORWARD + HOLD + BACK
     let start = performance.now(), last = start, raf = 0, running = true
-    let lastCycle = 0, burst = false
+    let lastPhase = 0, burst = false
 
     const render = (now: number) => {
+      // 每帧内联自愈：显示尺寸与当前缓冲不符就重建（不依赖 RO/resize 事件时序）
+      const rect = canvas.getBoundingClientRect()
+      const rw = Math.round(rect.width), rh = Math.round(rect.height)
+      if (rw >= 2 && rh >= 2 && (Math.abs(rw - W) > 1 || Math.abs(rh - H) > 1)) build()
       if (W < 2 || path.length < 2) {
         raf = requestAnimationFrame(render)
         return
@@ -113,13 +119,16 @@ export default function GridSolver({ replayKey }: { replayKey: number }) {
       const dt = Math.min(0.05, (now - last) / 1000)
       last = now
       const elapsed = (now - start) / 1000
-      const cycle = reduce ? BREAK + 0.4 : elapsed % CYCLE
-      if (cycle < lastCycle) {
+      const phase = reduce ? FORWARD : elapsed % PERIOD
+      if (phase < lastPhase) {
         burst = false
         parts = []
       }
-      lastCycle = cycle
-      const prog = Math.min(cycle, BREAK) / BREAK
+      lastPhase = phase
+      let prog: number
+      if (phase < FORWARD) prog = phase / FORWARD
+      else if (phase < FORWARD + HOLD) prog = 1
+      else prog = 1 - (phase - FORWARD - HOLD) / BACK
       const front = prog * (cols + vTop + 2)
       const pathLen = path.length
       const s = cell - 3
@@ -266,7 +275,7 @@ export default function GridSolver({ replayKey }: { replayKey: number }) {
       document.removeEventListener('visibilitychange', onVis)
       ro.disconnect()
     }
-  }, [replayKey])
+  }, [])
 
   return <canvas ref={ref} className="nf__grid" aria-hidden="true" />
 }
