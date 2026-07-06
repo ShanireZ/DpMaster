@@ -204,6 +204,12 @@ export default function TreeKnapsack() {
             只是要记得——选 <M>{'m'}</M> 门真课，等价于在含虚根的树里<strong>选 <M>{'m+1'}</M> 个点</strong>（虚根白占一个名额），最后读 <M>{'f[0][m+1]'}</M>。
           </p>
         </div>
+        <figure className="figure">
+          <VirtualRootFigure />
+          <figcaption className="figure__cap">
+            三棵依赖树各自的根，用<strong>虚根 0</strong> 的虚线边挂起来——森林化为一棵树，树上背包直接套用。
+          </figcaption>
+        </figure>
         <InfoBox kind="warn" title="常见陷阱：虚根的「+1」不能漏">
           接虚根后，容量要留给虚根那一门。转移时 <M>{'j'}</M> 上界写 <M>{'m+1'}</M>、每个点的 <M>{'f[u][1]'}</M> 先塞自己（占 1 门），答案读 <M>{'f[0][m+1]'}</M>。漏掉这个 +1，会把真课数当成点数，答案系统性偏小一门。
         </InfoBox>
