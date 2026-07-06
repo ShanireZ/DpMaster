@@ -1,0 +1,568 @@
+/* 矩阵快速幂 · 两个自建轻量演示的样式（MatrixPowerDemo=mpw__，MatrixBuildDemo=mbd__）。
+   不引用 knapsack-demo.css / dp-viz.css；工具条沿用 stepper__ 视觉，配色只用设计令牌。 */
+
+/* ---------- 共用步进器（与 knapsack 样板同构，独立于 DPViz） ---------- */
+.stepper__lab {
+  font-size: 11px;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--text-3);
+  margin-bottom: 6px;
+}
+.stepper__row {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+.stepper__row button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 26px;
+  height: 26px;
+  border-radius: var(--r-1);
+  border: 1px solid var(--border-strong);
+  background: var(--surface-3);
+  color: var(--text-1);
+  cursor: pointer;
+  transition: background var(--t-fast), border-color var(--t-fast);
+}
+.stepper__row button:hover:not(:disabled) {
+  border-color: var(--accent-2);
+  background: color-mix(in srgb, var(--accent-1) 12%, var(--surface-3));
+}
+.stepper__row button:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+.stepper__val {
+  min-width: 30px;
+  text-align: center;
+  font-family: var(--font-mono);
+  font-size: 17px;
+  font-weight: 700;
+  color: var(--text-1);
+}
+
+/* ===================================================================== */
+/*  MatrixPowerDemo · 斐波那契矩阵快速幂                                   */
+/* ===================================================================== */
+.mpw__toolbar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  gap: var(--sp-4) var(--sp-6);
+  margin-bottom: var(--sp-5);
+  padding: var(--sp-4);
+  border-radius: var(--r-2);
+  background: var(--surface-2);
+  border: 1px solid var(--border);
+}
+.mpw__group-label {
+  font-size: 11px;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--text-3);
+  margin-bottom: 8px;
+}
+.mpw__bin-row {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  flex-wrap: wrap;
+}
+.mpw__bit {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 26px;
+  height: 30px;
+  border-radius: var(--r-1);
+  font-family: var(--font-mono);
+  font-size: 15px;
+  font-weight: 700;
+  color: var(--text-3);
+  background: var(--surface-3);
+  border: 1px dashed var(--border-strong);
+}
+.mpw__bit.on {
+  color: var(--text-on-accent);
+  background: color-mix(in srgb, var(--accent-1) 70%, var(--surface-1));
+  border: 1px solid var(--accent-2);
+}
+.mpw__bin-eq {
+  font-family: var(--font-mono);
+  font-size: 13px;
+  color: var(--text-3);
+  margin-left: 4px;
+}
+
+/* 小矩阵网格 */
+.mpw__mat {
+  display: inline-flex;
+  flex-direction: column;
+  gap: 5px;
+}
+.mpw__mat-cap {
+  font-size: 10.5px;
+  color: var(--text-3);
+  font-family: var(--font-mono);
+  white-space: nowrap;
+}
+.mpw__grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 3px;
+  padding: 5px;
+  border-radius: var(--r-1);
+  border: 1.5px solid var(--border-strong);
+  background: var(--surface-3);
+}
+.mpw__mat--pow .mpw__grid {
+  border-color: color-mix(in srgb, var(--viz-source) 55%, var(--border-strong));
+  background: color-mix(in srgb, var(--viz-source) 12%, var(--surface-3));
+}
+.mpw__mat--acc .mpw__grid {
+  border-color: var(--accent-2);
+  background: color-mix(in srgb, var(--accent-1) 12%, var(--surface-3));
+}
+.mpw__num {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 42px;
+  height: 34px;
+  padding: 0 4px;
+  font-family: var(--font-mono);
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--text-1);
+  background: var(--viz-cell);
+  border-radius: 4px;
+}
+
+/* 倍增 + 累乘轨迹 */
+.mpw__trace {
+  margin-bottom: var(--sp-5);
+}
+.mpw__trace-head {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: var(--sp-4);
+  font-size: 13px;
+  color: var(--text-2);
+  margin-bottom: 12px;
+}
+.mpw__trace-head .mono {
+  font-family: var(--font-mono);
+  color: var(--text-3);
+}
+.mpw__acc-start {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-4);
+  margin-bottom: 10px;
+  padding-bottom: 12px;
+  border-bottom: 1px dashed var(--border-strong);
+}
+.mpw__acc-note {
+  font-size: 12.5px;
+  color: var(--text-3);
+}
+.mpw__step {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-3);
+  flex-wrap: wrap;
+  padding: 10px var(--sp-3);
+  border-radius: var(--r-2);
+  margin-bottom: 8px;
+  background: var(--surface-2);
+  border: 1px solid var(--border);
+}
+.mpw__step.used {
+  border-color: var(--accent-2);
+  background: color-mix(in srgb, var(--accent-1) 7%, var(--surface-2));
+}
+.mpw__step-bit {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+  min-width: 62px;
+}
+.mpw__step-power {
+  font-family: var(--font-mono);
+  font-size: 15px;
+  font-weight: 700;
+  color: var(--viz-source);
+}
+.mpw__step-flag {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-family: var(--font-mono);
+  font-size: 11.5px;
+  padding: 2px 6px;
+  border-radius: var(--r-full);
+  color: var(--text-3);
+  background: var(--surface-3);
+  border: 1px solid var(--border-strong);
+}
+.mpw__step-flag.on {
+  color: var(--text-on-accent);
+  background: color-mix(in srgb, var(--accent-1) 60%, var(--surface-1));
+  border-color: var(--accent-2);
+}
+.mpw__op {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 12.5px;
+  font-weight: 600;
+  color: var(--accent-1);
+  min-width: 56px;
+}
+.mpw__op-skip {
+  color: var(--text-3);
+  font-weight: 400;
+}
+
+/* 结果条 */
+.mpw__result {
+  margin-bottom: var(--sp-5);
+  padding: var(--sp-4);
+  border-radius: var(--r-2);
+  background: color-mix(in srgb, var(--accent-1) 6%, var(--surface-2));
+  border: 1px solid var(--accent-2);
+}
+.mpw__result-mat {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-5);
+  flex-wrap: wrap;
+}
+.mpw__result-read {
+  flex: 1;
+  min-width: 200px;
+}
+.mpw__result-line {
+  font-size: 16px;
+  color: var(--text-1);
+}
+.mpw__result-line b {
+  color: var(--accent-1);
+}
+.mpw__result-sub {
+  margin-top: 6px;
+  font-size: 12.5px;
+  color: var(--text-3);
+  line-height: 1.5;
+}
+
+/* 读数卡（暴力 vs 快速幂） */
+.mpw__compare {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: var(--sp-4);
+}
+@media (max-width: 40rem) {
+  .mpw__compare {
+    grid-template-columns: 1fr;
+  }
+}
+.mpw__card {
+  padding: var(--sp-4);
+  border-radius: var(--r-2);
+  background: var(--surface-2);
+  border: 1px solid var(--border);
+}
+.mpw__card.win {
+  border-color: var(--accent-2);
+  background: color-mix(in srgb, var(--accent-1) 8%, var(--surface-2));
+}
+.mpw__card-head {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text-2);
+  margin-bottom: 6px;
+}
+.mpw__card.win .mpw__card-head {
+  color: var(--accent-1);
+}
+.mpw__card-val {
+  font-family: var(--font-mono);
+  font-size: 30px;
+  font-weight: 700;
+  line-height: 1.1;
+  color: var(--text-1);
+}
+.mpw__card.win .mpw__card-val {
+  color: var(--accent-1);
+}
+.mpw__card-val small {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--text-3);
+  margin-left: 4px;
+}
+.mpw__card-sub {
+  margin-top: 6px;
+  font-size: 12px;
+  color: var(--text-3);
+}
+.mpw__delta {
+  margin-top: var(--sp-4);
+  font-size: 14px;
+  line-height: 1.55;
+  color: var(--text-2);
+  padding: var(--sp-3) var(--sp-4);
+  border-radius: var(--r-2);
+  background: var(--surface-2);
+  border: 1px solid var(--border);
+}
+.mpw__delta b {
+  font-family: var(--font-mono);
+  font-weight: 700;
+  color: var(--accent-1);
+}
+.mpw__delta .mono,
+.mpw__result-line .mono,
+.mpw__result-sub .mono {
+  font-family: var(--font-mono);
+}
+
+/* ===================================================================== */
+/*  MatrixBuildDemo · 递推 → 构造转移矩阵                                  */
+/* ===================================================================== */
+.mbd__toolbar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: var(--sp-4) var(--sp-6);
+  margin-bottom: var(--sp-5);
+  padding: var(--sp-4);
+  border-radius: var(--r-2);
+  background: var(--surface-2);
+  border: 1px solid var(--border);
+}
+.mbd__preset-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--sp-3);
+}
+.mbd__preset {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 3px;
+  padding: 9px var(--sp-4);
+  border-radius: var(--r-2);
+  background: var(--surface-3);
+  border: 1px solid var(--border-strong);
+  cursor: pointer;
+  transition: border-color var(--t-fast), background var(--t-fast);
+}
+.mbd__preset:hover {
+  border-color: var(--accent-2);
+}
+.mbd__preset.on {
+  border-color: var(--accent-2);
+  background: color-mix(in srgb, var(--accent-1) 12%, var(--surface-3));
+}
+.mbd__preset .mono {
+  font-family: var(--font-mono);
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--text-1);
+}
+.mbd__preset-ord {
+  font-size: 11px;
+  color: var(--text-3);
+}
+.mbd__preset.on .mbd__preset-ord {
+  color: var(--accent-1);
+}
+.mbd__hint {
+  align-self: center;
+  max-width: 34ch;
+  font-size: 12.5px;
+  line-height: 1.5;
+  color: var(--text-3);
+}
+.mbd__hint b {
+  color: var(--text-2);
+  font-family: var(--font-mono);
+  font-weight: 700;
+}
+
+/* 向量 × 矩阵 = 向量 */
+.mbd__equation {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--sp-3);
+  flex-wrap: wrap;
+  padding: var(--sp-5) var(--sp-4);
+  margin-bottom: var(--sp-4);
+  border-radius: var(--r-2);
+  background: var(--surface-1);
+  border: 1px solid var(--border);
+}
+.mbd__vec-cap {
+  font-size: 11px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--text-3);
+  text-align: center;
+  margin-bottom: 6px;
+}
+.mbd__vec-body {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding: 5px;
+  border-radius: var(--r-1);
+  border: 1.5px solid var(--border-strong);
+  background: var(--surface-3);
+}
+.mbd__vcell {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 64px;
+  height: 34px;
+  padding: 0 8px;
+  font-family: var(--font-mono);
+  font-size: 13px;
+  color: var(--text-2);
+  background: var(--viz-cell);
+  border-radius: 4px;
+  transition: background var(--t-fast), color var(--t-fast);
+}
+.mbd__vcell.hot {
+  color: var(--text-on-accent);
+  background: color-mix(in srgb, var(--viz-source) 70%, var(--surface-1));
+}
+.mbd__vcell.out.hot {
+  background: color-mix(in srgb, var(--accent-1) 72%, var(--surface-1));
+}
+.mbd__times,
+.mbd__eq {
+  font-family: var(--font-mono);
+  font-size: 20px;
+  color: var(--text-3);
+  padding-top: 20px;
+}
+.mbd__mat-grid {
+  display: grid;
+  gap: 4px;
+  padding: 5px;
+  border-radius: var(--r-1);
+  border: 1.5px solid var(--border-strong);
+  background: var(--surface-3);
+}
+.mbd__mcell {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  height: 34px;
+  font-family: var(--font-mono);
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--text-1);
+  background: var(--viz-cell);
+  border: 1px solid transparent;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: background var(--t-fast), border-color var(--t-fast), color var(--t-fast);
+}
+.mbd__mcell:hover {
+  border-color: var(--accent-2);
+}
+.mbd__mcell.zero {
+  color: var(--text-3);
+}
+.mbd__mcell.row {
+  background: color-mix(in srgb, var(--accent-1) 14%, var(--viz-cell));
+}
+.mbd__mcell.src {
+  color: var(--text-on-accent);
+  background: color-mix(in srgb, var(--accent-1) 72%, var(--surface-1));
+  border-color: var(--accent-2);
+}
+
+/* 当前行解释 */
+.mbd__explain {
+  padding: var(--sp-3) var(--sp-4);
+  border-radius: var(--r-2);
+  margin-bottom: var(--sp-4);
+  background: var(--surface-2);
+  border: 1px solid var(--border);
+}
+.mbd__explain-head {
+  display: flex;
+  align-items: baseline;
+  gap: var(--sp-3);
+  flex-wrap: wrap;
+  margin-bottom: 6px;
+}
+.mbd__explain-head .mono {
+  font-family: var(--font-mono);
+  font-size: 13.5px;
+  color: var(--text-1);
+}
+.mbd__explain-tag {
+  font-size: 11.5px;
+  padding: 2px 8px;
+  border-radius: var(--r-full);
+  color: var(--text-on-accent);
+  background: color-mix(in srgb, var(--accent-1) 60%, var(--surface-1));
+}
+.mbd__explain p {
+  font-size: 13.5px;
+  line-height: 1.6;
+  color: var(--text-2);
+  margin: 0;
+}
+
+/* 图例 */
+.mbd__legend {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: var(--sp-3) var(--sp-4);
+  font-size: 12.5px;
+  color: var(--text-3);
+}
+.mbd__legend span {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+.mbd__legend .mono {
+  font-family: var(--font-mono);
+  color: var(--text-2);
+}
+.mbd__legend-arrow {
+  color: var(--text-3);
+}
+.mbd__sw {
+  display: inline-block;
+  width: 13px;
+  height: 13px;
+  border-radius: 3px;
+  border: 1px solid var(--border-strong);
+}
+.mbd__sw.src {
+  background: color-mix(in srgb, var(--accent-1) 72%, var(--surface-1));
+  border-color: var(--accent-2);
+}
+.mbd__sw.shift {
+  background: color-mix(in srgb, var(--accent-1) 14%, var(--viz-cell));
+}

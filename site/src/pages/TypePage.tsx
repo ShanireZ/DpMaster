@@ -1,3 +1,4 @@
+import { Suspense } from 'react'
 import { useParams } from 'react-router-dom'
 import { getPart } from '../data/parts'
 import { CONTENT } from '../content/registry'
@@ -23,7 +24,13 @@ export default function TypePage() {
         <p className="typehead__blurb">{type.blurb}</p>
       </header>
 
-      {Body ? <Body /> : <Placeholder title={type.title} />}
+      {Body ? (
+        <Suspense fallback={<div style={{ minHeight: '50vh' }} aria-busy="true" />}>
+          <Body />
+        </Suspense>
+      ) : (
+        <Placeholder title={type.title} />
+      )}
     </article>
   )
 }

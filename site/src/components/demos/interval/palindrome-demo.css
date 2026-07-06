@@ -1,0 +1,280 @@
+/* 回文区间 DP 两个演示（最长回文子序列三角表 / 最少插入构回文）的自建样式。
+   前缀 pal__，配色只用设计令牌；控制条 ll__ctl 在此自带一份，无需外部依赖。
+   ★不做 opacity:0 起步动画——内容默认可见（无头/后台标签页不会卡隐藏态）。 */
+
+/* ---------- 工具条 / 输入 ---------- */
+.pal__toolbar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  gap: var(--sp-4) var(--sp-5);
+  margin-bottom: var(--sp-5);
+  padding: var(--sp-4);
+  border-radius: var(--r-2);
+  background: var(--surface-2);
+  border: 1px solid var(--border);
+}
+.pal__inrow {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-3);
+  flex-wrap: wrap;
+}
+.pal__input {
+  width: 220px;
+  max-width: 100%;
+  padding: 9px 13px;
+  border-radius: var(--r-2);
+  font-family: var(--font-mono);
+  font-size: 17px;
+  font-weight: 600;
+  letter-spacing: 0.16em;
+  color: var(--text-1);
+  background: var(--surface-3);
+  border: 1.5px solid var(--border-strong);
+  transition: border-color var(--t-fast, 0.18s);
+}
+.pal__input:focus {
+  outline: none;
+  border-color: var(--accent-2);
+}
+.pal__reset {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 13px;
+  border-radius: var(--r-2);
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text-2);
+  border: 1px dashed var(--border-strong);
+  background: transparent;
+}
+.pal__reset:hover {
+  color: var(--text-1);
+  border-color: var(--accent-2);
+}
+.pal__presets {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-top: 10px;
+}
+.pal__chip {
+  padding: 5px 11px;
+  border-radius: 999px;
+  font-family: var(--font-mono);
+  font-size: 12.5px;
+  font-weight: 600;
+  color: var(--text-2);
+  border: 1px solid var(--border);
+  background: var(--surface-2);
+  transition: color var(--t-fast, 0.18s), border-color var(--t-fast, 0.18s);
+}
+.pal__chip:hover {
+  color: var(--text-1);
+  border-color: var(--accent-2);
+}
+.pal__chip.on {
+  color: var(--text-on-accent);
+  background: var(--grad-accent);
+  border-color: transparent;
+}
+
+/* ---------- 舞台（原串行 / 外壳） ---------- */
+.pal__stage {
+  padding: var(--sp-5) var(--sp-4);
+  border-radius: var(--r-2);
+  background: var(--surface-2);
+  border: 1px solid var(--border);
+  margin-bottom: var(--sp-4);
+}
+.pal__stage-head {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: var(--sp-4);
+  font-size: 13px;
+  color: var(--text-2);
+  margin-bottom: 16px;
+}
+.pal__stage-head .mono {
+  font-family: var(--font-mono);
+  color: var(--text-3);
+}
+.pal__ptr-i {
+  color: var(--accent-1);
+}
+.pal__ptr-j {
+  color: var(--accent-2);
+}
+.pal__mid {
+  font-family: var(--font-mono);
+  color: var(--text-3);
+}
+
+/* 原串一行字符 */
+.pal__strip {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  align-items: flex-start;
+}
+.pal__ch {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 5px;
+  padding-top: 18px; /* 给指针标签留位 */
+}
+.pal__ch-idx {
+  font-family: var(--font-mono);
+  font-size: 10.5px;
+  color: var(--text-3);
+}
+.pal__ch-c {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 44px;
+  height: 44px;
+  border-radius: var(--r-1);
+  font-family: var(--font-mono);
+  font-size: 20px;
+  font-weight: 700;
+  color: var(--text-1);
+  background: var(--surface-3);
+  border: 1.5px solid var(--border-strong);
+  transition: background var(--t-fast, 0.18s), border-color var(--t-fast, 0.18s),
+    color var(--t-fast, 0.18s), transform var(--t-fast, 0.18s);
+}
+.pal__ch.is-matched .pal__ch-c {
+  border-color: var(--viz-chosen);
+  background: color-mix(in srgb, var(--viz-chosen) 22%, var(--surface-1));
+  color: #fff;
+}
+.pal__ch.is-insrc .pal__ch-c {
+  border-color: var(--viz-source);
+  background: color-mix(in srgb, var(--viz-source) 18%, var(--surface-1));
+  color: #fff;
+}
+.pal__ch.is-active .pal__ch-c {
+  border-color: var(--viz-current);
+  background: color-mix(in srgb, var(--viz-current) 22%, var(--surface-1));
+  color: #fff;
+  transform: translateY(-2px) scale(1.05);
+  box-shadow: 0 0 0 4px color-mix(in srgb, var(--viz-current) 22%, transparent);
+}
+.pal__ch.is-center .pal__ch-c {
+  border-color: var(--accent-2);
+  background: color-mix(in srgb, var(--accent-1) 18%, var(--surface-1));
+  color: var(--text-on-accent);
+}
+.pal__ptr {
+  position: absolute;
+  top: 0;
+  font-family: var(--font-mono);
+  font-size: 12px;
+  font-weight: 700;
+  padding: 1px 6px;
+  border-radius: 5px;
+  color: var(--text-on-accent);
+}
+.pal__ptr.pal__ptr-i {
+  left: 2px;
+  background: var(--accent-1);
+}
+.pal__ptr.pal__ptr-j {
+  right: 2px;
+  background: var(--accent-2);
+}
+
+/* 正在生长的回文外壳 */
+.pal__shell {
+  display: flex;
+  align-items: center;
+  min-height: 52px;
+  padding: 10px 16px;
+  border-radius: var(--r-2);
+  background: var(--surface-3);
+  border: 1px solid var(--border);
+}
+.pal__shell-txt,
+.pal__shell-final {
+  font-family: var(--font-mono);
+  font-size: 22px;
+  font-weight: 700;
+  letter-spacing: 0.14em;
+  word-break: break-all;
+}
+.pal__shell-txt {
+  color: var(--text-2);
+}
+.pal__shell-final {
+  color: var(--viz-chosen);
+}
+
+/* ---------- 读数条 ---------- */
+.pal__readout {
+  font-size: 14.5px;
+  line-height: 1.6;
+  color: var(--text-2);
+  padding: var(--sp-3) var(--sp-4);
+  border-radius: var(--r-2);
+  background: var(--surface-2);
+  border: 1px solid var(--border);
+  margin-bottom: var(--sp-4);
+}
+.pal__readout b {
+  font-family: var(--font-mono);
+  font-weight: 700;
+}
+.pal__readout .ok {
+  color: var(--viz-chosen);
+}
+.pal__readout .cur {
+  color: var(--accent-1);
+}
+
+/* ---------- 步进控制（自带一份，仿 dpctl / ll__ctl） ---------- */
+.ll__ctl {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-4);
+  flex-wrap: wrap;
+}
+.ll__ctl-btns {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.ll__ctl-btns button {
+  display: grid;
+  place-items: center;
+  width: 38px;
+  height: 38px;
+  border-radius: var(--r-2);
+  color: var(--text-1);
+  border: 1px solid var(--border);
+  background: var(--surface-2);
+  transition: border-color var(--t-fast, 0.18s), background var(--t-fast, 0.18s);
+}
+.ll__ctl-btns button:hover:not(:disabled) {
+  border-color: var(--accent-2);
+}
+.ll__ctl-btns button:disabled {
+  opacity: 0.35;
+}
+.ll__ctl-btns button.primary {
+  background: var(--grad-accent);
+  color: var(--text-on-accent);
+  border-color: transparent;
+  width: 44px;
+  height: 44px;
+}
+.ll__ctl-count {
+  font-family: var(--font-mono);
+  font-size: 13px;
+  color: var(--text-3);
+}

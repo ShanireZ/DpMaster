@@ -1,0 +1,53 @@
+/* 加分二叉树「建树 / 区间即子树」演示的局部样式 */
+.stb__hint {
+  font-size: 14px;
+  color: var(--text-2);
+  margin-bottom: var(--sp-4);
+  padding: var(--sp-3) var(--sp-4);
+  border-radius: var(--r-2);
+  background: var(--surface-2);
+  border: 1px solid var(--border);
+}
+.stb__hint b {
+  font-family: var(--font-mono);
+  font-weight: 700;
+}
+.stb__ans {
+  color: var(--viz-chosen);
+}
+.stb__pre {
+  color: var(--accent-1);
+}
+
+.stb__stage {
+  padding: var(--sp-4) var(--sp-3);
+  border-radius: var(--r-2);
+  background: var(--surface-1);
+  border: 1px solid var(--border);
+  overflow-x: auto;
+}
+.stb__stage svg {
+  display: block;
+  width: 100%;
+  min-width: 420px;
+  height: auto;
+}
+.stb__stage g[style*='cursor'] circle {
+  transition:
+    fill var(--t-fast),
+    stroke var(--t-fast);
+}
+
+.stb__readout {
+  margin-top: var(--sp-4);
+  font-size: 14px;
+  color: var(--text-2);
+  padding: var(--sp-3) var(--sp-4);
+  border-radius: var(--r-2);
+  background: var(--surface-2);
+  border: 1px solid var(--border);
+}
+.stb__readout b {
+  font-family: var(--font-mono);
+  font-weight: 700;
+}
