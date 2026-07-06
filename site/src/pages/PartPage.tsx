@@ -1,16 +1,23 @@
+import { lazy, Suspense } from 'react'
 import { Link, useParams } from 'react-router-dom'
 import { ArrowRight } from 'lucide-react'
 import GeometryBackdrop from '../components/GeometryBackdrop'
 import PartGlyph from '../components/PartGlyph'
 import { getPart } from '../data/parts'
 import { GAMES } from '../components/games/registry'
-import Placeholder from './Placeholder'
 import './part.css'
+
+const NotFound = lazy(() => import('./NotFound'))
 
 export default function PartPage() {
   const { pid } = useParams()
   const part = pid ? getPart(pid) : undefined
-  if (!part) return <Placeholder title="部分不存在" />
+  if (!part)
+    return (
+      <Suspense fallback={null}>
+        <NotFound />
+      </Suspense>
+    )
 
   const Game = GAMES[part.id]?.comp
 

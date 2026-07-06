@@ -1,17 +1,25 @@
-import { Suspense } from 'react'
+import { lazy, Suspense } from 'react'
 import { useParams } from 'react-router-dom'
 import { getPart } from '../data/parts'
 import { CONTENT } from '../content/registry'
-import Placeholder from './Placeholder'
 import './typepage.css'
+
+const NotFound = lazy(() => import('./NotFound'))
 
 export default function TypePage() {
   const { pid, slug } = useParams()
   const part = pid ? getPart(pid) : undefined
   const type = part?.types.find((t) => t.slug === slug)
-  if (!part || !type) return <Placeholder title="类型不存在" />
+  const Body = type ? CONTENT[`${pid}/${slug}`] : undefined
 
-  const Body = CONTENT[`${pid}/${slug}`]
+  // 无效部分 / 无效类型 / 尚未上线（无内容）的类型 —— 一律视为不存在，跳 404
+  if (!part || !type || !Body) {
+    return (
+      <Suspense fallback={null}>
+        <NotFound />
+      </Suspense>
+    )
+  }
 
   return (
     <article className="typepage">
@@ -24,13 +32,9 @@ export default function TypePage() {
         <p className="typehead__blurb">{type.blurb}</p>
       </header>
 
-      {Body ? (
-        <Suspense fallback={<div style={{ minHeight: '50vh' }} aria-busy="true" />}>
-          <Body />
-        </Suspense>
-      ) : (
-        <Placeholder title={type.title} />
-      )}
+      <Suspense fallback={<div style={{ minHeight: '50vh' }} aria-busy="true" />}>
+        <Body />
+      </Suspense>
     </article>
   )
 }
