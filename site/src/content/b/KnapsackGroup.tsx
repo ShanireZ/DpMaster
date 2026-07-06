@@ -4,6 +4,7 @@ import { M, MB } from '../../components/ui/Math'
 import InfoBox from '../../components/ui/InfoBox'
 import CodeBlock from '../../components/ui/CodeBlock'
 import KnapsackGroupDemo from '../../components/demos/knapsack/KnapsackGroupDemo'
+import GroupOrderContrastDemo from '../../components/demos/knapsack/GroupOrderContrastDemo'
 import { ExampleCard, Field, Exercise } from '../../components/ui/ProblemBits'
 import { GroupSetupFigure, GroupTransitionFigure, GroupLoopOrderFigure } from './KnapsackGroupArt'
 
@@ -229,6 +230,23 @@ export default function KnapsackGroup() {
           三重循环的正序是 <strong>组 → 容量(倒序) → 组内件</strong>。容量循环<strong>既不能</strong>提到最外（那样组与组之间会串味），<strong>也不能</strong>沉到最里（那样组内会多选）。它必须<strong>正好夹在中间</strong>。这和 01 背包
           <Link to="/part/b/01" style={{ color: 'var(--accent-2)' }}>「必须倒序」</Link>是同一个「用干净旧值」的道理，只是把粒度从「每件一次」升到了「每组一次」。
         </InfoBox>
+      </section>
+
+      <section className="lesson">
+        <h2 className="section-title">并排看：一层循环放错，答案就涨了</h2>
+        <div className="prose">
+          <p>
+            道理讲完，不如让两种顺序<strong>同跑一遍并排对照</strong>。默认就是本节手算的那组：单独一组 <M>{'(2,3),(3,4)'}</M>、容量 5。
+            左边把<strong>容量倒序放在组内件之外</strong>，组内两件都基于「本组未动过」的旧值竞争，只有一件胜出——<M>{'f[5]=4'}</M>；
+            右边把<strong>容量倒序沉进组内件里层</strong>，第二件在「第一件已装进去」的结果上继续叠，两件被同时计入——<M>{'f[5]=7'}</M>。
+            单步走到右侧 <M>{'j=5'}</M> 那一格，会看到来源列被标红：那正是「同组两件叠在一起」的瞬间。改改 w / v 或再加一组，看这 <M>{'4'}</M> 与 <M>{'7'}</M> 的差随之变化。
+          </p>
+        </div>
+        <div className="demo">
+          <div className="demo__body">
+            <GroupOrderContrastDemo />
+          </div>
+        </div>
       </section>
 
       <section className="lesson">

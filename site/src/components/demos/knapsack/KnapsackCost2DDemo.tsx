@@ -2,8 +2,13 @@ import { useMemo, useState } from 'react'
 import { Minus, Plus, X } from 'lucide-react'
 import DPViz from '../../dp-engine/DPViz'
 import { cost2D } from './cost2dSolver'
-import type { C2Item } from './cost2dSolver'
+import type { C2Item, C2Mode } from './cost2dSolver'
 import './knapsack-demo.css'
+
+const MODES: { id: C2Mode; label: string }[] = [
+  { id: 'value', label: '求价值 v' },
+  { id: 'count', label: '价值恒 1 · 数个数' },
+]
 
 function Stepper({
   label,
@@ -42,9 +47,11 @@ export default function KnapsackCost2DDemo() {
   ])
   const [capA, setCapA] = useState(4)
   const [capB, setCapB] = useState(4)
+  const [mode, setMode] = useState<C2Mode>('value')
+  const count = mode === 'count'
 
-  const model = useMemo(() => cost2D(items, capA, capB), [items, capA, capB])
-  const modelKey = `c2-${capA}-${capB}-${items.map((it) => `${it.a}.${it.b}.${it.v}`).join('|')}`
+  const model = useMemo(() => cost2D(items, capA, capB, mode), [items, capA, capB, mode])
+  const modelKey = `c2-${mode}-${capA}-${capB}-${items.map((it) => `${it.a}.${it.b}.${it.v}`).join('|')}`
 
   const setItem = (idx: number, patch: Partial<C2Item>) =>
     setItems((arr) => arr.map((it, i) => (i === idx ? { ...it, ...patch } : it)))
@@ -55,7 +62,11 @@ export default function KnapsackCost2DDemo() {
     <div>
       <div className="kd__toolbar">
         <div>
-          <div className="kd__group-label">物品（每件两种费用 a / b 与价值 v · 可改可增删）</div>
+          <div className="kd__group-label">
+            {count
+              ? '物品（每件两种费用 a / b · 价值恒 1 只数个数 · 可改可增删）'
+              : '物品（每件两种费用 a / b 与价值 v · 可改可增删）'}
+          </div>
           <div className="kd__items">
             {items.map((it, idx) => (
               <div className="kd__item" key={idx}>
@@ -67,7 +78,16 @@ export default function KnapsackCost2DDemo() {
                 )}
                 <Stepper label="费用1 a" value={it.a} min={1} max={capA} onChange={(a) => setItem(idx, { a })} />
                 <Stepper label="费用2 b" value={it.b} min={1} max={capB} onChange={(b) => setItem(idx, { b })} />
-                <Stepper label="价值 v" value={it.v} min={1} max={30} onChange={(v) => setItem(idx, { v })} />
+                {count ? (
+                  <div>
+                    <div className="stepper__lab">价值</div>
+                    <div className="stepper__row" style={{ justifyContent: 'center' }}>
+                      <span className="stepper__val" title="数个数模式下每件价值恒为 1">恒 1</span>
+                    </div>
+                  </div>
+                ) : (
+                  <Stepper label="价值 v" value={it.v} min={1} max={30} onChange={(v) => setItem(idx, { v })} />
+                )}
               </div>
             ))}
             {items.length < 3 && (
@@ -85,6 +105,18 @@ export default function KnapsackCost2DDemo() {
           <div className="kd__group-label">费用2 上限 B</div>
           <Stepper label="B" value={capB} min={2} max={6} onChange={setCapB} />
         </div>
+      </div>
+
+      <div className="kd__modes">
+        {MODES.map((m) => (
+          <button
+            key={m.id}
+            className={`kd__mode${mode === m.id ? ' on' : ''}`}
+            onClick={() => setMode(m.id)}
+          >
+            {m.label}
+          </button>
+        ))}
       </div>
 
       <DPViz key={modelKey} model={model} />

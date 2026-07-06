@@ -128,3 +128,97 @@ export function GreedyFillFigure() {
     </svg>
   )
 }
+
+// 图三：交换论证 —— 若某一格容量给了低 v/w 的物品、而高 v/w 的还没装满，
+// 把这一格换成高 v/w 的，总价值只增不减（换前 vs 换后两条背包条 + 「交换 ⇒ 更优」箭头）。
+export function ExchangeFigure() {
+  // 两条容量条各 6 格。低 v/w=1.0（每格价值 1），高 v/w=2.0（每格价值 2）。
+  const C = 6
+  const x0 = 150
+  const barH = 40
+  const barW = 396 // 6 格 → 每格 66px
+  const u = barW / C
+  const yBefore = 40
+  const yAfter = 118
+  // 换前：前 4 格高 v/w（已装但未满），第 5 格错给了低 v/w，第 6 格空
+  const before = [
+    { from: 0, len: 4, kind: 'hi' as const },
+    { from: 4, len: 1, kind: 'lo' as const },
+  ]
+  // 换后：把那 1 格也换成高 v/w，高 v/w 装满到 5 格
+  const after = [{ from: 0, len: 5, kind: 'hi' as const }]
+  const fillFor = (k: 'hi' | 'lo') =>
+    k === 'hi'
+      ? 'color-mix(in srgb, var(--accent-1) 46%, var(--surface-1))'
+      : 'color-mix(in srgb, var(--surface-3) 70%, var(--accent-2))'
+  const seg = (
+    row: { from: number; len: number; kind: 'hi' | 'lo' },
+    y: number,
+    key: string,
+  ) => (
+    <g key={key}>
+      <rect
+        x={x0 + row.from * u + 2}
+        y={y + 3}
+        width={row.len * u - 4}
+        height={barH - 6}
+        rx="6"
+        fill={fillFor(row.kind)}
+        stroke="var(--accent-2)"
+        strokeWidth="1.3"
+        strokeDasharray={row.kind === 'lo' ? '4 3' : undefined}
+      />
+      <text
+        x={x0 + row.from * u + (row.len * u) / 2}
+        y={y + barH / 2 + 5}
+        textAnchor="middle"
+        fontSize="11.5"
+        className="mono"
+        fill={row.kind === 'hi' ? 'var(--text-on-accent)' : 'var(--accent-1)'}
+      >
+        {row.kind === 'hi' ? 'v/w=2' : 'v/w=1'}
+      </text>
+    </g>
+  )
+  return (
+    <svg viewBox="0 0 590 196" role="img" aria-label="交换论证：把低性价比那一格换成高性价比，总价值只增不减">
+      <defs>
+        <marker id="kf-ex-ar" markerWidth="9" markerHeight="9" refX="6.5" refY="3" orient="auto">
+          <path d="M0,0 L6,3 L0,6 Z" fill="var(--accent-2)" />
+        </marker>
+      </defs>
+
+      {/* 换前 */}
+      <text x="20" y={yBefore + barH / 2 - 6} fontSize="12.5" fontWeight="600" fill="var(--text-2)">
+        换前
+      </text>
+      <text x="20" y={yBefore + barH / 2 + 12} fontSize="11" fill="var(--text-3)">
+        价值 9
+      </text>
+      <rect x={x0} y={yBefore} width={barW} height={barH} rx="8" fill="var(--surface-2)" stroke="var(--border-strong)" strokeWidth="1.5" />
+      {before.map((r, i) => seg(r, yBefore, `b${i}`))}
+      <text x={x0 + 5.5 * u} y={yBefore + barH / 2 + 5} textAnchor="middle" fontSize="11" fill="var(--text-3)">
+        空
+      </text>
+
+      {/* 交换箭头 + 说明 */}
+      <path d={`M ${x0 + barW / 2} ${yBefore + barH + 4} V ${yAfter - 4}`} stroke="var(--accent-2)" strokeWidth="2" markerEnd="url(#kf-ex-ar)" fill="none" />
+      <text x={x0 + barW / 2 + 12} y={(yBefore + barH + yAfter) / 2 + 4} fontSize="12" fill="var(--accent-1)" fontWeight="600">
+        这一格换成 v/w=2 ⇒ 更优
+      </text>
+
+      {/* 换后 */}
+      <text x="20" y={yAfter + barH / 2 - 6} fontSize="12.5" fontWeight="600" fill="var(--text-2)">
+        换后
+      </text>
+      <text x="20" y={yAfter + barH / 2 + 12} fontSize="11" fill="var(--accent-1)">
+        价值 10
+      </text>
+      <rect x={x0} y={yAfter} width={barW} height={barH} rx="8" fill="var(--surface-2)" stroke="var(--border-strong)" strokeWidth="1.5" />
+      {after.map((r, i) => seg(r, yAfter, `a${i}`))}
+      <text x={x0 + 5.5 * u} y={yAfter + barH / 2 + 5} textAnchor="middle" fontSize="11" fill="var(--text-3)">
+        空
+      </text>
+    </svg>
+  )
+}

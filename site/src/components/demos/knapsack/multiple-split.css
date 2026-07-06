@@ -1,0 +1,209 @@
+/* 多重背包 · 二进制拆包可视化的自建轻量样式。
+   不引用 knapsack-demo.css / fractional-demo.css；工具条沿用 kd__/stepper__ 视觉
+   但独立命名前缀 msp__，配色只用设计令牌。 */
+
+.msp__toolbar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  gap: var(--sp-4) var(--sp-6);
+  margin-bottom: var(--sp-5);
+  padding: var(--sp-4);
+  border-radius: var(--r-2);
+  background: var(--surface-2);
+  border: 1px solid var(--border);
+}
+.msp__group-label {
+  font-size: 11px;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--text-3);
+  margin-bottom: 8px;
+}
+.msp__hint {
+  align-self: center;
+  max-width: 30ch;
+  font-size: 12.5px;
+  line-height: 1.5;
+  color: var(--text-3);
+}
+.msp__hint b {
+  color: var(--text-2);
+  font-family: var(--font-mono);
+  font-weight: 700;
+}
+
+/* ---------- ① 打包件条：各包画成宽度 ∝ 件数的色段 ---------- */
+.msp__stage {
+  margin-bottom: var(--sp-5);
+}
+.msp__stage-label {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: var(--sp-4);
+  font-size: 13px;
+  color: var(--text-2);
+  margin-bottom: 10px;
+}
+.msp__stage-label .mono {
+  font-family: var(--font-mono);
+  color: var(--text-3);
+}
+.msp__packbar {
+  display: flex;
+  gap: 4px;
+  min-height: 62px;
+}
+.msp__pack {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 3px;
+  min-width: 34px;
+  padding: 8px 4px;
+  border-radius: var(--r-1);
+  border: 1px solid var(--border-strong);
+  /* 2 的幂包用蜜金强调；余数包用青色，视觉上把「补位的那一包」分出来 */
+  background: color-mix(in srgb, var(--accent-1) 34%, var(--surface-1));
+  transition: flex-grow var(--t-med, 0.3s) var(--ease, ease), background var(--t-fast, 0.18s);
+}
+.msp__pack.rem {
+  background: color-mix(in srgb, var(--viz-source) 32%, var(--surface-1));
+  border-color: color-mix(in srgb, var(--viz-source) 55%, var(--border-strong));
+}
+.msp__pack-lab {
+  font-family: var(--font-mono);
+  font-size: 13.5px;
+  font-weight: 700;
+  line-height: 1;
+  color: var(--text-on-accent);
+}
+.msp__pack.rem .msp__pack-lab {
+  color: var(--text-1);
+}
+.msp__pack-sub {
+  font-family: var(--font-mono);
+  font-size: 10.5px;
+  line-height: 1.2;
+  text-align: center;
+  color: color-mix(in srgb, var(--text-on-accent) 82%, transparent);
+  white-space: nowrap;
+}
+.msp__pack.rem .msp__pack-sub {
+  color: var(--text-2);
+}
+
+/* ---------- ② 覆盖带：0…m 一行小格，示意子集和恰好覆盖每一件数 ---------- */
+.msp__cover-label {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: var(--sp-4);
+  font-size: 13px;
+  color: var(--text-2);
+  margin-bottom: 10px;
+}
+.msp__cover-label .mono {
+  font-family: var(--font-mono);
+  color: var(--text-3);
+}
+.msp__cover {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 5px;
+}
+.msp__cell {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 30px;
+  height: 30px;
+  padding: 0 5px;
+  border-radius: var(--r-1);
+  font-family: var(--font-mono);
+  font-size: 12.5px;
+  font-weight: 600;
+  /* 全部件数都可凑出 → 全部点亮为绿（chosen） */
+  color: var(--text-on-accent);
+  background: color-mix(in srgb, var(--viz-chosen) 74%, var(--surface-1));
+  border: 1px solid color-mix(in srgb, var(--viz-chosen) 60%, transparent);
+}
+.msp__cell.zero {
+  /* 0 件 = 一个都不取，恒可达，弱化显示 */
+  color: var(--text-3);
+  background: var(--surface-2);
+  border: 1px dashed var(--border-strong);
+}
+
+/* ---------- ③ 读数：朴素 m 个 vs 二进制 log 个 ---------- */
+.msp__compare {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: var(--sp-4);
+}
+@media (max-width: 40rem) {
+  .msp__compare {
+    grid-template-columns: 1fr;
+  }
+}
+.msp__card {
+  padding: var(--sp-4);
+  border-radius: var(--r-2);
+  background: var(--surface-2);
+  border: 1px solid var(--border);
+}
+.msp__card.win {
+  border-color: var(--accent-2);
+  background: color-mix(in srgb, var(--accent-1) 8%, var(--surface-2));
+}
+.msp__card-head {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text-2);
+  margin-bottom: 6px;
+}
+.msp__card.win .msp__card-head {
+  color: var(--accent-1);
+}
+.msp__card-val {
+  font-family: var(--font-mono);
+  font-size: 30px;
+  font-weight: 700;
+  line-height: 1.1;
+  color: var(--text-1);
+}
+.msp__card.win .msp__card-val {
+  color: var(--accent-1);
+}
+.msp__card-val small {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--text-3);
+  margin-left: 4px;
+}
+.msp__card-sub {
+  margin-top: 6px;
+  font-size: 12px;
+  color: var(--text-3);
+}
+.msp__delta {
+  margin-top: var(--sp-4);
+  font-size: 14px;
+  line-height: 1.55;
+  color: var(--text-2);
+  padding: var(--sp-3) var(--sp-4);
+  border-radius: var(--r-2);
+  background: var(--surface-2);
+  border: 1px solid var(--border);
+}
+.msp__delta b {
+  font-family: var(--font-mono);
+  font-weight: 700;
+  color: var(--accent-1);
+}
