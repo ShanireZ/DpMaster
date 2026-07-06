@@ -22,7 +22,7 @@ const EDGES: Edge[] = [
 export default function RerootEccDemo() {
   const [sel, setSel] = useState(2)
 
-  const { tree, nodes, maxDepth, ecc } = useMemo(() => {
+  const { nodes, maxDepth, ecc } = useMemo(() => {
     const tree = buildTree(N, EDGES, 0)
     const { nodes, maxDepth } = layoutTree(tree)
     const ecc = eccentricity(tree)
@@ -62,7 +62,6 @@ export default function RerootEccDemo() {
 
       <div className="rr__stage">
         <TreeCanvas
-          tree={tree}
           nodes={nodes}
           maxDepth={maxDepth}
           nodeStyle={nodeStyle}

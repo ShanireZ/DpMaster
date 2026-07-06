@@ -86,7 +86,6 @@ export default function RerootInOutDemo() {
 
       <div className="rr__stage">
         <TreeCanvas
-          tree={tree}
           nodes={nodes}
           maxDepth={maxDepth}
           nodeStyle={nodeStyle}
