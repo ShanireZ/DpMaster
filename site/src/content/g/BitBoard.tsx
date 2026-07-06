@@ -200,9 +200,9 @@ export default function BitBoard() {
           <p>
             有了判定，状态与转移就顺理成章。设 <M>{'f[r][j][x]'}</M> 表示：前 <M>{'r'}</M> 行、一共放了 <M>{'j'}</M> 个王、且<strong>第 <M>{'r'}</M> 行摆法为 <M>{'x'}</M></strong> 时的方案数。转移枚举上一行摆法 <M>{'y'}</M>：
           </p>
-          <MB>{'f[r][j][x]=\\sum_{y\\,\\text{兼容}\\,x} f[r-1][\\,j-\\mathrm{popcount}(x)\\,][y]'}</MB>
+          <MB>{'f[r][j][x]=\\sum_{y\\,\\sim\\,x} f[r-1][\\,j-\\mathrm{popcount}(x)\\,][y]'}</MB>
           <p>
-            其中 <M>{'y'}</M> 要满足行内合法、且与 <M>{'x'}</M> 行间合法。边界：第 1 行 <M>{'f[1][\\mathrm{popcount}(x)][x]=1'}</M>。答案：<M>{'\\sum_x f[n][K][x]'}</M>。
+            其中记号 <M>{'y\\sim x'}</M> 表示上一行摆法 <M>{'y'}</M> 与本行 <M>{'x'}</M> <strong>兼容</strong>——<M>{'y'}</M> 行内合法、且与 <M>{'x'}</M> 行间不冲突。边界：第 1 行 <M>{'f[1][\\mathrm{popcount}(x)][x]=1'}</M>。答案：<M>{'\\sum_x f[n][K][x]'}</M>。
           </p>
         </div>
         <InfoBox kind="key" title="本质">
