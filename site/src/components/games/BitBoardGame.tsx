@@ -147,18 +147,6 @@ export default function BitBoardGame() {
     }
   }
 
-  // 玩家刚好达成时给一次奖励音 + 计数（用一个受控标记避免重复）
-  const [celebrated, setCelebrated] = useState(false)
-  if (win && !celebrated) {
-    setCelebrated(true)
-    setSolved((n) => n + 1)
-    if (!muted) {
-      blip(659, 0.1)
-      setTimeout(() => blip(988, 0.16), 90)
-    }
-  }
-  if (!win && celebrated) setCelebrated(false)
-
   let feedback = `在 ${N}×${N} 棋盘上放 ${K} 个王，两两不能相邻（含斜角）。点格子放 / 取。`
   let fbClass = ''
   if (hasConflict) {
