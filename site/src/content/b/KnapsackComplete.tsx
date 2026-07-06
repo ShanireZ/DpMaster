@@ -1,5 +1,5 @@
 import { Link } from 'react-router-dom'
-import { ArrowLeft, MousePointerClick, Gamepad2 } from 'lucide-react'
+import { ArrowLeft, ArrowRight, MousePointerClick, Gamepad2 } from 'lucide-react'
 import { M, MB } from '../../components/ui/Math'
 import InfoBox from '../../components/ui/InfoBox'
 import CodeBlock from '../../components/ui/CodeBlock'
@@ -291,7 +291,12 @@ export default function KnapsackComplete() {
             <ArrowLeft size={15} style={{ verticalAlign: '-2px' }} /> 01 背包
           </span>
         </Link>
-        <span />
+        <Link to="/part/b/multiple" className="next">
+          <span className="dir">下一类型 →</span>
+          <span className="nm">
+            多重背包 <ArrowRight size={15} style={{ verticalAlign: '-2px' }} />
+          </span>
+        </Link>
       </nav>
     </>
   )
