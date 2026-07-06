@@ -209,7 +209,7 @@ export default function RerootCenter() {
           <div className="step">
             <span className="step__n">2</span>
             <div className="step__b">
-              <b>换根往下传 up。</b><M>{'\\mathrm{up}[2]=\\max(\\mathrm{up}[1],\\,\\text{1避开2的向下})+1=\\max(0,0)+1=1'}</M>；
+              <b>换根往下传 up。</b><M>{'\\mathrm{up}[2]=\\max(\\mathrm{up}[1],\\,0)+1=\\max(0,0)+1=1'}</M>（式中第二项 <M>{'0'}</M> = 节点 1 避开 2 那支的向下最长链）；
               <M>{'\\mathrm{up}[3]=\\max(\\mathrm{up}[2],0)+1=2'}</M>；<M>{'\\mathrm{ecc}[3]=\\max(\\mathrm{down1}[3],\\mathrm{up}[3])=\\max(2,2)=2'}</M>。
             </div>
           </div>
