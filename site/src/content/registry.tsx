@@ -1,37 +1,34 @@
-import type { ComponentType } from 'react'
-import LinearPath from './a/LinearPath'
-import MaxSubarray from './a/MaxSubarray'
-import LIS from './a/LIS'
-import LCS from './a/LCS'
-import EditDistance from './a/EditDistance'
-import StateMachine from './a/StateMachine'
-import LinearCount from './a/LinearCount'
-import Knapsack01 from './b/Knapsack01'
-import KnapsackComplete from './b/KnapsackComplete'
-import KnapsackMultiple from './b/KnapsackMultiple'
-import KnapsackGroup from './b/KnapsackGroup'
-import KnapsackMixed from './b/KnapsackMixed'
-import KnapsackCost2D from './b/KnapsackCost2D'
-import KnapsackDependency from './b/KnapsackDependency'
-import KnapsackVariant from './b/KnapsackVariant'
-import KnapsackFractional from './b/KnapsackFractional'
+import { lazy, type ComponentType, type LazyExoticComponent } from 'react'
 
-/** 类型页正文内容注册表，键为 `${pid}/${slug}`。B 背包 9 类型全就绪。 */
-export const CONTENT: Record<string, ComponentType> = {
-  'a/path': LinearPath,
-  'a/maxseg': MaxSubarray,
-  'a/lis': LIS,
-  'a/lcs': LCS,
-  'a/edit': EditDistance,
-  'a/fsm': StateMachine,
-  'a/count': LinearCount,
-  'b/01': Knapsack01,
-  'b/complete': KnapsackComplete,
-  'b/multiple': KnapsackMultiple,
-  'b/group': KnapsackGroup,
-  'b/mixed': KnapsackMixed,
-  'b/cost2d': KnapsackCost2D,
-  'b/dep': KnapsackDependency,
-  'b/variant': KnapsackVariant,
-  'b/fractional': KnapsackFractional,
+/**
+ * 类型页正文内容注册表，键为 `${pid}/${slug}`。
+ *
+ * 每个内容组件用 React.lazy 动态 import——按类型独立分包，避免把全部内容
+ * （连同其 KaTeX 预渲染、代码块、演示组件）静态打进 TypePage 主 chunk。
+ * 打开某个类型页时才拉取该类型这一个 chunk。TypePage 内已用 Suspense 兜底。
+ */
+export const CONTENT: Record<string, LazyExoticComponent<ComponentType>> = {
+  'a/01': lazy(() => import('./a/Knapsack01')),
+  'a/complete': lazy(() => import('./a/KnapsackComplete')),
+  'a/multiple': lazy(() => import('./a/KnapsackMultiple')),
+  'a/group': lazy(() => import('./a/KnapsackGroup')),
+  'a/mixed': lazy(() => import('./a/KnapsackMixed')),
+  'a/cost2d': lazy(() => import('./a/KnapsackCost2D')),
+  'a/dep': lazy(() => import('./a/KnapsackDependency')),
+  'a/variant': lazy(() => import('./a/KnapsackVariant')),
+  'a/fractional': lazy(() => import('./a/KnapsackFractional')),
+  'b/path': lazy(() => import('./b/LinearPath')),
+  'b/maxseg': lazy(() => import('./b/MaxSubarray')),
+  'b/lis': lazy(() => import('./b/LIS')),
+  'b/lcs': lazy(() => import('./b/LCS')),
+  'b/edit': lazy(() => import('./b/EditDistance')),
+  'b/fsm': lazy(() => import('./b/StateMachine')),
+  'b/count': lazy(() => import('./b/LinearCount')),
+  'c/stone': lazy(() => import('./c/StoneMerge')),
+  'c/ring': lazy(() => import('./c/RingInterval')),
+  'c/palindrome': lazy(() => import('./c/Palindrome')),
+  'c/tree': lazy(() => import('./c/ScoreTree')),
+  'c/merge': lazy(() => import('./c/MergeInterval')),
+  'd/grid': lazy(() => import('./d/GridDP')),
+  'd/matpow': lazy(() => import('./d/MatrixPower')),
 }

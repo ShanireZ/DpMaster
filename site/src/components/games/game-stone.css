@@ -1,0 +1,113 @@
+/* 合并石子专属样式——复用 game.css 的外壳（game / game__head / game__panel /
+   game__value / game__feedback / game__compare / gbtn / game__stats 等），此处只补
+   石子卡片、原始条、选中/相邻高亮的自建视觉。配色只用设计令牌（C 区间在 <body data-part="c">
+   下 --accent-* 为陶红宝石色）；★不做 opacity:0 起步动画。前缀 gsm__，绝不改动 game.css。 */
+
+.gsm__body {
+  /* 石子较少但堆卡片略宽，左列比 LIS 宽松：面板 280 与 LIS 一致 */
+  grid-template-columns: 1fr 280px;
+}
+@media (max-width: 860px) {
+  .gsm__body {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* ---------- 石子一行：横排堆卡片 ---------- */
+.gsm__row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: stretch;
+  gap: var(--sp-3);
+}
+.gsm__stone {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-width: 66px;
+  padding: 14px 10px 10px;
+  border-radius: var(--r-2);
+  background: var(--surface-3);
+  border: 1.5px solid var(--border);
+  cursor: pointer;
+  transition:
+    transform var(--t-fast),
+    border-color var(--t-fast),
+    background var(--t-fast),
+    box-shadow var(--t-fast);
+}
+.gsm__stone:hover:not(:disabled) {
+  transform: translateY(-2px);
+  border-color: var(--border-strong);
+}
+.gsm__stone:disabled {
+  cursor: default;
+}
+/* 已由多颗合并而来的堆——蜜金/强调轻底，暗示「攒起来的代价」 */
+.gsm__stone.merged {
+  border-color: var(--accent-2);
+  background: color-mix(in srgb, var(--accent-1) 12%, var(--surface-3));
+}
+/* 选中的第一堆——强调描边 + 轻辉光，等待选相邻堆 */
+.gsm__stone.sel {
+  border-color: var(--accent-1);
+  background: color-mix(in srgb, var(--accent-1) 18%, var(--surface-3));
+  box-shadow: 0 2px 12px color-mix(in srgb, var(--accent-1) 30%, transparent);
+}
+/* 可与选中堆合并的相邻堆——绿色（可行/被选语义）虚框提示 */
+.gsm__stone.adj {
+  border-color: var(--viz-chosen);
+  border-style: dashed;
+  background: color-mix(in srgb, var(--viz-chosen) 12%, var(--surface-3));
+}
+
+.gsm__val {
+  font-family: var(--font-display);
+  font-size: 26px;
+  font-weight: 700;
+  line-height: 1;
+  color: var(--text-1);
+}
+.gsm__src {
+  margin-top: 6px;
+  font-family: var(--font-mono);
+  font-size: 10px;
+  color: var(--text-3);
+}
+
+/* ---------- 「原始」条：始终展示本局初始石子序列，方便对照 ---------- */
+.gsm__origin {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 4px 6px;
+  margin-top: var(--sp-4);
+  padding: 10px 12px;
+  border-radius: var(--r-2);
+  background: var(--surface-2);
+  border: 1px solid var(--border);
+}
+.gsm__origin-label {
+  margin-right: 6px;
+  font-size: 11px;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--text-3);
+}
+.gsm__origin-chip {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 26px;
+  height: 24px;
+  padding: 0 6px;
+  border-radius: var(--r-1);
+  font-family: var(--font-mono);
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--text-2);
+  background: var(--surface-3);
+  border: 1px solid var(--border);
+}

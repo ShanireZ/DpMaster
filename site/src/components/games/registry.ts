@@ -1,9 +1,13 @@
 import type { ComponentType } from 'react'
 import PackMasterGame from './PackMasterGame'
 import LISChainGame from './LISChainGame'
+import StoneMergeGame from './StoneMergeGame'
+import PowerAccelGame from './PowerAccelGame'
 
-/** 每部分一个互动小游戏，键为 part id。A 线性=LIS 接龙、B 背包=装包大师。 */
+/** 每部分一个互动小游戏，键为 part id。A 背包=装包大师、B 线性=LIS 接龙、C 区间=合并石子、D 矩阵=幂次加速器。 */
 export const GAMES: Record<string, { title: string; comp: ComponentType }> = {
-  a: { title: 'LIS 接龙', comp: LISChainGame },
-  b: { title: '装包大师', comp: PackMasterGame },
+  a: { title: '装包大师', comp: PackMasterGame },
+  b: { title: 'LIS 接龙', comp: LISChainGame },
+  c: { title: '合并石子', comp: StoneMergeGame },
+  d: { title: '幂次加速器', comp: PowerAccelGame },
 }

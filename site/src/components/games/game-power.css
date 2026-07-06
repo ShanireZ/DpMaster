@@ -1,0 +1,146 @@
+/* 幂次加速器专用样式（前缀 gpw__）——只补 game.css 未覆盖的部分，复用其余通用类 */
+
+/* 目标幂次卡 */
+.gpw__target-card {
+  padding: var(--sp-4) var(--sp-5);
+  border-radius: var(--r-3);
+  background: color-mix(in srgb, var(--accent-1) 10%, var(--surface-2));
+  border: 1px solid color-mix(in srgb, var(--accent-1) 30%, var(--border));
+  margin-bottom: var(--sp-5);
+  text-align: center;
+}
+.gpw__target-lab {
+  font-size: 12px;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--text-3);
+}
+.gpw__target-n {
+  font-family: var(--font-display);
+  font-size: 44px;
+  font-weight: 700;
+  line-height: 1.1;
+  color: var(--text-1);
+  margin: 2px 0 4px;
+}
+.gpw__target-n sup {
+  font-size: 0.5em;
+  margin-left: 1px;
+}
+.gpw__target-hint {
+  font-size: 12px;
+  color: var(--text-2);
+}
+
+/* 已得指数芯片 */
+.gpw__chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--sp-3);
+}
+.gpw__chip {
+  position: relative;
+  min-width: 58px;
+  padding: 10px 14px;
+  border-radius: var(--r-2);
+  background: var(--surface-3);
+  border: 1.5px solid var(--border);
+  color: var(--text-1);
+  cursor: pointer;
+  font-family: var(--font-display);
+  font-size: 20px;
+  line-height: 1;
+  display: inline-flex;
+  align-items: baseline;
+  justify-content: center;
+  transition: transform var(--t-fast), border-color var(--t-fast), background var(--t-fast);
+}
+.gpw__chip:hover:not(:disabled) {
+  transform: translateY(-2px);
+  border-color: var(--border-strong);
+}
+.gpw__chip.on {
+  border-color: var(--accent-2);
+  background: color-mix(in srgb, var(--accent-2) 18%, var(--surface-3));
+  box-shadow: var(--shadow-1);
+}
+.gpw__chip.target {
+  border-color: color-mix(in srgb, var(--viz-chosen) 55%, transparent);
+  background: color-mix(in srgb, var(--viz-chosen) 14%, var(--surface-3));
+}
+.gpw__chip:disabled {
+  cursor: default;
+  opacity: 0.85;
+}
+.gpw__chip-x {
+  font-size: 20px;
+}
+.gpw__chip sup {
+  font-size: 0.6em;
+  margin-left: 1px;
+}
+.gpw__chip-star {
+  position: absolute;
+  top: -8px;
+  right: -8px;
+  color: var(--viz-chosen);
+  filter: drop-shadow(0 1px 3px rgba(0, 0, 0, 0.5));
+}
+
+/* 合成过程日志 */
+.gpw__log-label {
+  margin-top: var(--sp-5);
+}
+.gpw__log {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+.gpw__log-row {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-3);
+  padding: 6px 10px;
+  border-radius: var(--r-1);
+  background: var(--surface-2);
+  border: 1px solid var(--border);
+  font-size: 13px;
+  color: var(--text-2);
+}
+.gpw__log-row sup {
+  font-size: 0.7em;
+}
+.gpw__log-idx {
+  flex: none;
+  width: 20px;
+  height: 20px;
+  border-radius: var(--r-full);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-family: var(--font-mono);
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--text-on-accent);
+  background: var(--grad-accent);
+}
+
+/* 操作按钮组（翻倍 / 相乘）与管理按钮组（撤销 / 重来） */
+.gpw__ops,
+.gpw__manage {
+  display: flex;
+  gap: var(--sp-3);
+}
+.gpw__ops .gbtn.on {
+  border-color: var(--accent-2);
+}
+.gpw__picks {
+  font-size: 12px;
+  color: var(--text-3);
+  font-family: var(--font-mono);
+  text-align: center;
+  min-height: 16px;
+}

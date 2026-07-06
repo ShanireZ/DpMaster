@@ -25,7 +25,7 @@ export default function Home() {
           在你眼前一格一格地长出来。例题全部取自洛谷原生题库。
         </p>
         <div className="hero__cta">
-          <Link to="/part/b/01" className="btn btn--primary">
+          <Link to="/part/a/01" className="btn btn--primary">
             从 01 背包开始 <ArrowRight size={18} />
           </Link>
           <Link to="/method" className="btn btn--ghost">

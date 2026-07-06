@@ -23,18 +23,18 @@
   --grad-brand: linear-gradient(115deg, #f0cd83, #e0a24c);
   --grad-brand-soft: linear-gradient(115deg, rgba(240, 205, 131, 0.2), rgba(224, 162, 76, 0.12));
 
-  /* ---------- 七部分：暖矿·低饱和宝石（暖为重心，整体压低饱和；A 灰青 / E 灰紫作分隔，
-     七部分可辨却是矿物/颜料感而非糖果彩虹——不再横跨色轮） ---------- */
-  --grad-a: linear-gradient(120deg, #82ab9f, #5f8b7e);
-  --grad-b: linear-gradient(120deg, #e0a24c, #c8863a);
+  /* ---------- 七部分：暖矿·低饱和宝石（暖为重心，整体压低饱和；B 灰青 / E 灰紫作分隔，
+     七部分可辨却是矿物/颜料感而非糖果彩虹——不再横跨色轮）·A 背包=蜜金、B 线性=灰青 ---------- */
+  --grad-a: linear-gradient(120deg, #e0a24c, #c8863a);
+  --grad-b: linear-gradient(120deg, #82ab9f, #5f8b7e);
   --grad-c: linear-gradient(120deg, #d2896a, #b56a4b);
   --grad-d: linear-gradient(120deg, #97a06a, #79824e);
   --grad-e: linear-gradient(120deg, #a693c0, #8672a4);
   --grad-f: linear-gradient(120deg, #c9a659, #ab8841);
   --grad-g: linear-gradient(120deg, #c0899a, #a26b7d);
 
-  --a-1: #82ab9f; --a-2: #5f8b7e;
-  --b-1: #e0a24c; --b-2: #c8863a;
+  --a-1: #e0a24c; --a-2: #c8863a;
+  --b-1: #82ab9f; --b-2: #5f8b7e;
   --c-1: #d2896a; --c-2: #b56a4b;
   --d-1: #97a06a; --d-2: #79824e;
   --e-1: #a693c0; --e-2: #8672a4;
@@ -123,16 +123,16 @@
   --text-on-accent: #fbf7ef;
 
   /* 浅色下暖矿七色整体加深，保证暖奶油底上文字/描边对比（≥4.5:1），身份与深色同族 */
-  --grad-a: linear-gradient(120deg, #37796a, #2b6153);
-  --grad-b: linear-gradient(120deg, #9a6716, #785110);
+  --grad-a: linear-gradient(120deg, #9a6716, #785110);
+  --grad-b: linear-gradient(120deg, #37796a, #2b6153);
   --grad-c: linear-gradient(120deg, #b25a3c, #934428);
   --grad-d: linear-gradient(120deg, #5f6f34, #4a5828);
   --grad-e: linear-gradient(120deg, #6f579a, #574278);
   --grad-f: linear-gradient(120deg, #8a6a1f, #6c5216);
   --grad-g: linear-gradient(120deg, #9c5069, #7d3e54);
 
-  --a-1: #37796a; --a-2: #2b6153;
-  --b-1: #9a6716; --b-2: #785110;
+  --a-1: #9a6716; --a-2: #785110;
+  --b-1: #37796a; --b-2: #2b6153;
   --c-1: #b25a3c; --c-2: #934428;
   --d-1: #5f6f34; --d-2: #4a5828;
   --e-1: #6f579a; --e-2: #574278;

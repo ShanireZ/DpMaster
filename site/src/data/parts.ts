@@ -19,21 +19,7 @@ export interface Part {
 
 export const PARTS: Part[] = [
   {
-    id: 'a', code: 'A', title: '线性 DP',
-    motif: '沿一条链推进的刻度序列',
-    tagline: '把问题排成一条推进的序列，dp[i] 只依赖更早的状态。',
-    types: [
-      { slug: 'path', title: '路径型 / 递推入门', blurb: '数字三角形·过河卒·方格取数', status: 'ready' },
-      { slug: 'maxseg', title: '最大子段和', blurb: 'Kadane·环形·两段不相交', status: 'ready' },
-      { slug: 'lis', title: '最长上升子序列 LIS', blurb: 'O(n²) 与 O(n log n)·导弹拦截', status: 'ready' },
-      { slug: 'lcs', title: '最长公共子序列 LCS', blurb: '排列 LCS→LIS·计数', status: 'ready' },
-      { slug: 'edit', title: '编辑距离', blurb: '删/插/改三向转移', status: 'ready' },
-      { slug: 'fsm', title: '线性状态机 DP', blurb: '受限选取·股票买卖', status: 'ready' },
-      { slug: 'count', title: '计数 / 划分型', blurb: '方案数·高精度·整数划分', status: 'ready' },
-    ],
-  },
-  {
-    id: 'b', code: 'B', title: '背包 DP',
+    id: 'a', code: 'A', title: '背包 DP',
     motif: '逐格填充的容器 / 方格堆',
     tagline: '容量受限下的取舍：物品件数属性决定了背包的谱系。',
     types: [
@@ -49,15 +35,29 @@ export const PARTS: Part[] = [
     ],
   },
   {
+    id: 'b', code: 'B', title: '线性 DP',
+    motif: '沿一条链推进的刻度序列',
+    tagline: '把问题排成一条推进的序列，dp[i] 只依赖更早的状态。',
+    types: [
+      { slug: 'path', title: '路径型 / 递推入门', blurb: '数字三角形·过河卒·方格取数', status: 'ready' },
+      { slug: 'maxseg', title: '最大子段和', blurb: 'Kadane·环形·两段不相交', status: 'ready' },
+      { slug: 'lis', title: '最长上升子序列 LIS', blurb: 'O(n²) 与 O(n log n)·导弹拦截', status: 'ready' },
+      { slug: 'lcs', title: '最长公共子序列 LCS', blurb: '排列 LCS→LIS·计数', status: 'ready' },
+      { slug: 'edit', title: '编辑距离', blurb: '删/插/改三向转移', status: 'ready' },
+      { slug: 'fsm', title: '线性状态机 DP', blurb: '受限选取·股票买卖', status: 'ready' },
+      { slug: 'count', title: '计数 / 划分型', blurb: '方案数·高精度·整数划分', status: 'ready' },
+    ],
+  },
+  {
     id: 'c', code: 'C', title: '区间 DP',
     motif: '嵌套的括号弧 / 区间桥',
     tagline: 'dp[l][r] 表示区间最优，枚举分割/合并点，按长度递推。',
     types: [
-      { slug: 'stone', title: '石子合并（链形）', blurb: '区间合并基础模型', status: 'planned' },
-      { slug: 'ring', title: '环形区间 DP', blurb: '断环为链·能量项链', status: 'planned' },
-      { slug: 'palindrome', title: '回文 / 括号', blurb: '收缩扩展·端点匹配', status: 'planned' },
-      { slug: 'tree', title: '加分二叉树型', blurb: '枚举根·区间即子树', status: 'planned' },
-      { slug: 'merge', title: '合并 / 删除类', blurb: '2048·区间删除代价', status: 'planned' },
+      { slug: 'stone', title: '石子合并（链形）', blurb: '区间合并基础模型', status: 'ready' },
+      { slug: 'ring', title: '环形区间 DP', blurb: '断环为链·能量项链', status: 'ready' },
+      { slug: 'palindrome', title: '回文 / 括号', blurb: '收缩扩展·端点匹配', status: 'ready' },
+      { slug: 'tree', title: '加分二叉树型', blurb: '枚举根·区间即子树', status: 'ready' },
+      { slug: 'merge', title: '合并 / 删除类', blurb: '2048·区间删除代价', status: 'ready' },
     ],
   },
   {
@@ -65,8 +65,8 @@ export const PARTS: Part[] = [
     motif: '方阵网格 / 矩阵块',
     tagline: '两条主线：网格坐标上的 DP，与矩阵快速幂加速的递推。',
     types: [
-      { slug: 'grid', title: '网格 / 矩阵上的 DP', blurb: '路径·最大正方形·双线程', status: 'planned' },
-      { slug: 'matpow', title: '矩阵快速幂加速', blurb: '递推→矩阵幂·O(k³log n)', status: 'planned' },
+      { slug: 'grid', title: '网格 / 矩阵上的 DP', blurb: '路径·最大正方形·双线程', status: 'ready' },
+      { slug: 'matpow', title: '矩阵快速幂加速', blurb: '递推→矩阵幂·O(k³log n)', status: 'ready' },
     ],
   },
   {
