@@ -219,7 +219,17 @@ export default function TreeDiameter() {
             <strong>换个视角看直径。</strong>本页从「固定根、一遍 DFS」求出直径与过点最长链；若要对<strong>每个点</strong>都问「以它为端点的最远距离（偏心距）」，则需要<strong>换根 DP</strong> 把父方向的信息也回推——那条路线见{' '}
             <Link to="/part/e/center" style={{ color: 'var(--accent-2)' }}>E 部分 · 中心 / 偏心距</Link>。两条路互补：这里主讲直径本身的推导，换根篇主讲逐点偏心距。
           </p>
+          <p>
+            <strong>顺带说重心。</strong>树的<strong>重心</strong>是这样一个点：以它为根时，<strong>最大的那棵子树节点数最小</strong>。
+            一遍 DFS 求出每点的子树大小 <M>{'sz[u]'}</M>，判据是——u 的<strong>各个方向</strong>（每个孩子子树，以及「上方」<M>{'n-sz[u]'}</M>）都 <M>{'\\le n/2'}</M> 时，u 即重心。它和直径同属「一遍 DFS 抓全局结构」的固定根树形 DP。
+          </p>
         </div>
+        <figure className="figure">
+          <CentroidFigure />
+          <figcaption className="figure__cap">
+            重心：删去它后剩下的最大连通块最小——各方向最均衡。用子树大小 <M>{'sz[u]'}</M> 一遍判定。
+          </figcaption>
+        </figure>
       </section>
 
       <section className="lesson">
