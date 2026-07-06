@@ -96,42 +96,45 @@ int main()
 }
 // TAG: 矩阵DP 双线程 传纸条 按步压维`
 
-const CODE_P1002 = `
+const CODE_P1719 = `
 #include <iostream>
+#include <algorithm>
+#include <cstring>
 using namespace std;
 
-typedef long long ll;
-ll f[25][25];                    // ★路径数会爆 int，必须 long long
-bool block[25][25];              // 马的控制点（障碍）
-int dx[9] = {0, 1, 1, 2, 2, -1, -1, -2, -2};
-int dy[9] = {0, 2, -2, 1, -1, 2, -2, 1, -1};
+int n;
+int s[130][130];                 // s[i][j]：前 i 行、第 j 列的列前缀和（按行累积）
 
 int main()
 {
-    int bx, by, hx, hy;
-    cin >> bx >> by >> hx >> hy;
-    bx++, by++, hx++, hy++;                          // 坐标从 0 起，整体平移成 1-based
-
-    for (int k = 0; k < 9; k++)                      // 马本身 + 8 个控制点设为障碍
-    {
-        int x = hx + dx[k], y = hy + dy[k];
-        if (x >= 1 && y >= 1)
-            block[x][y] = true;
-    }
-
-    f[1][1] = 1;                                     // 起点：1 条路（未走）
-    for (int i = 1; i <= bx; i++)
-        for (int j = 1; j <= by; j++)
+    cin >> n;
+    for (int i = 1; i <= n; i++)
+        for (int j = 1; j <= n; j++)
         {
-            if (block[i][j]) { f[i][j] = 0; continue; } // ★障碍格钉成 0，不再向外传数
-            if (i == 1 && j == 1) continue;
-            f[i][j] = f[i - 1][j] + f[i][j - 1];     // 上方来 + 左方来
+            int x;
+            cin >> x;
+            s[i][j] = s[i - 1][j] + x;              // ★只压「列方向」的前缀和
         }
 
-    cout << f[bx][by] << endl;
+    int ans = -0x3f3f3f3f;
+    for (int top = 1; top <= n; top++)              // 枚举子矩形的上边界行
+        for (int bot = top; bot <= n; bot++)        // 枚举下边界行
+        {
+            // 把 top..bot 这几行压成一维：第 j 列的和 = s[bot][j] - s[top-1][j]
+            // 对这个一维数组跑一次最大子段和（Kadane），即得跨这段行的最优子矩形
+            int cur = 0;
+            for (int j = 1; j <= n; j++)
+            {
+                int col = s[bot][j] - s[top - 1][j];
+                cur = max(col, cur + col);          // Kadane：要么另起，要么接上一段
+                ans = max(ans, cur);
+            }
+        }
+
+    cout << ans << endl;
     return 0;
 }
-// TAG: 矩阵DP 网格路径 计数 障碍`
+// TAG: 矩阵DP 二维子矩阵 前缀和 最大子段和升维`
 
 export default function GridDP() {
   return (
@@ -142,6 +145,10 @@ export default function GridDP() {
           <p>
             <Link to="/part/b/path" style={{ color: 'var(--accent-2)' }}>B 部分的路径型入门</Link> 已经让我们在网格上走过一次——数字三角形、过河卒，都是「从一格走到相邻一格」。
             这一节把镜头正式对准<strong>二维坐标上的 DP</strong>：状态不再是一条链上的 <M>{'f[i]'}</M>，而是一整张表 <M>{'dp[i][j]'}</M>，下标 <M>{'(i,j)'}</M> 就是<strong>第 <M>{'i'}</M> 行第 <M>{'j'}</M> 列</strong>那个格子。
+          </p>
+          <p>
+            <strong>先划清和 B 路径型的边界：</strong>「在网格上数路径条数」这一路（过河卒 <M>{'f[i][j]=f[i-1][j]+f[i][j-1]'}</M>、障碍清零）本质仍是<strong>路径计数</strong>，入门与例题都放在 <Link to="/part/b/path" style={{ color: 'var(--accent-2)' }}>B 路径型的过河卒 P1002</Link>；
+            本页不再重复计数那一面，而是专注二维状态本身的<strong>「形态」</strong>——一格的答案由它<strong>左 / 上 / 左上邻格</strong>的答案「长」出来（最大正方形），以及一张网格上<strong>两条路径联合决策</strong>（传纸条）。
           </p>
           <p>
             网格 DP 的通用套路只有一句话：<strong>算一格，只回看它的几个「邻居来源」</strong>。因为每步只能往固定方向走，任何一格 <M>{'(i,j)'}</M> 的最后一步，
@@ -342,18 +349,21 @@ answer = dp[最后一层][R-1][R-1]     # 两条路都到右下角`}
           </Field>
         </ExampleCard>
 
-        <ExampleCard pid="P1002" name="[NOIP2002 普及组] 过河卒" src="NOIP2002 普及组" diff="普及-">
+        <ExampleCard pid="P1719" name="最大加权矩形" src="洛谷原生" diff="普及+/提高">
           <Field k="题意">
-            卒从 <M>{'(0,0)'}</M> 只走右 / 下到达 <M>{'(n,m)'}</M>，棋盘上一匹马的<strong>所在点与 8 个可跳到的点</strong>都不能经过，求不同路径条数。
+            给定 <M>{'n\\times n'}</M> 的整数权值矩阵（权值可正可负），求一个子矩形，使其中所有元素之<strong>和最大</strong>，输出这个最大和。
           </Field>
-          <Field k="换个视角（网格 DP 的计数面）">
-            同样是「每格只回看上、左两个来源」的网格 DP，只是把<strong>取最优换成求方案数</strong>：<M>{'f[i][j]=f[i-1][j]+f[i][j-1]'}</M>。障碍格<strong>钉成 0</strong>，它就不再把任何路径数向外传——「非法状态清零」。
+          <Field k="对应关系（二维子矩阵，非路径计数）">
+            这是网格 DP 的<strong>另一副招牌形态</strong>：不再是「走路径」，而是「圈一块二维区域求最优」。做法是把<strong>一维最大子段和（Kadane）升到二维</strong>——枚举子矩形的<strong>上、下两行边界</strong>，把这两行之间<strong>每一列的和</strong>压成一个一维数组，对它跑一次最大子段和，即得跨这段行的最优子矩形。
+          </Field>
+          <Field k="转移 · 复杂度">
+            列前缀和 <M>{'s[i][j]'}</M> 把「取 <M>{'top..bot'}</M> 行、第 <M>{'j'}</M> 列的和」压成 <M>{'s[bot][j]-s[top-1][j]'}</M>；对该一维数组 Kadane：<M>{'cur=\\max(col,\\ cur+col)'}</M>。枚举 <M>{'O(n^2)'}</M> 对行边界，每次 <M>{'O(n)'}</M> 扫列，合计 <M>{'O(n^3)'}</M>。
           </Field>
           <Field k="为什么选它">
-            补齐网格 DP 的<strong>计数视角</strong>（与本页「求最优」互为一体两面），并示范<strong>障碍即非法状态清零</strong>。有个必踩的坑：最坏路径数超过 <M>{'2^{31}'}</M>，<strong>必须开 <M>{'\\texttt{long long}'}</M></strong>。此题在 <Link to="/part/b/path" style={{ color: 'var(--accent-2)' }}>B 路径型</Link> 亦有讲解，可对照。
+            补齐 D 的<strong>二维<u>区域</u>视角</strong>（与「最大正方形」的二维<u>状态</u>递推互补），并把「一维经典算法升到二维」这个网格 DP 的常用手法讲透——<strong>与 B 路径型完全无重叠</strong>：那边是网格上「走路径」，这边是网格上「圈矩形」。
           </Field>
-          <Field k="参考代码（long long + 障碍清零）">
-            <CodeBlock code={CODE_P1002} luogu="P1002" />
+          <Field k="参考代码（列前缀和 + Kadane 升维）">
+            <CodeBlock code={CODE_P1719} luogu="P1719" />
           </Field>
         </ExampleCard>
       </section>
@@ -361,20 +371,26 @@ answer = dp[最后一层][R-1][R-1]     # 两条路都到右下角`}
       <section className="lesson exercises">
         <h2 className="section-title">练习</h2>
         <Exercise
-          pid="P1004"
-          name="[NOIP2000 提高组] 方格取数"
-          hint="双线程同族：两条路同时从左上取数到右下，同一格数字只算一次。可写四维 f[x1][y1][x2][y2]，或与传纸条一样按步压成 f[k][x1][x2]。转移从两条路各自「上/左」的 4 种组合取 max。"
+          pid="P1736"
+          name="创意吃鱼法"
+          hint="最大正方形的变体（对角线版）：在 01 矩阵里找一个正方形，其某条对角线全是 1、其余格全是 0，求最长对角线。设 f[i][j] 为以 (i,j) 为右下角的合法正方形边长，转移 f[i][j]=min(f[i-1][j-1], 左侧连续 0 长, 上方连续 0 长)+1；两条对角线方向各扫一遍。仍是「左/上/左上邻格接力」的二维状态，与最大正方形同族。"
         />
         <Exercise
-          pid="P1719"
-          name="最大加权矩形"
-          hint="二维前缀和 + 最大子段和（Kadane 升维）：枚举上下两行边界，把这两行之间每列的和压成一维数组，对它跑一次最大子段和，即得跨这段行的最大子矩阵。O(n³)。"
+          pid="P2701"
+          name="[USACO5.3] 巨大的牛棚 Big Barn"
+          hint="最大正方形的裸应用：N×N 农场里有若干棵树，求不含任何树的最大正方形边长。把「有树」当 0、「空地」当 1，转移就是 f[i][j]=min(f[i-1][j], f[i][j-1], f[i-1][j-1])+1，答案取全表最大——与本页 P1387 同一副模具，换了层皮。"
         />
-        <Exercise
-          pid="P1508"
-          name="Likecloud-吃、吃、吃"
-          hint="网格路径最大权、三方向：从底行中央下方出发向上走，每步可去正前 / 左前 / 右前，格中能量可正可负，求到顶行的最大能量和。f[i][j] 从下方三格取 max 再加自己，是数字三角形的三向网格版。"
-        />
+        <p
+          className="prose"
+          style={{
+            maxWidth: 'none',
+            fontSize: '13.5px',
+            color: 'var(--text-3)',
+            marginTop: 'var(--sp-4)',
+          }}
+        >
+          说明：<strong>纯二维网格状态</strong>（非路径计数）的洛谷原生题池并不宽——「网格上数路径」那一类已归到 <Link to="/part/b/path" style={{ color: 'var(--accent-2)' }}>B 路径型</Link>，此处只收本页招牌的「二维状态形态」题。上面两道都是最大正方形的直系变体；若想再练二维<u>区域</u>那一路，例题 <strong>P1719 最大加权矩形</strong> 可不看参考代码回炉默写（枚举行边界 + 每列压一维跑 Kadane）。
+        </p>
       </section>
 
       <nav className="type-nav">
