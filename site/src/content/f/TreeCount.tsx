@@ -5,7 +5,7 @@ import InfoBox from '../../components/ui/InfoBox'
 import CodeBlock from '../../components/ui/CodeBlock'
 import JointWeightDemo from '../../components/demos/treedp/JointWeightDemo'
 import { ExampleCard, Field, Exercise } from '../../components/ui/ProblemBits'
-import { JointWeightFigure, PostorderFigure } from './TreeArt'
+import { JointWeightFigure, PostorderFigure, BracketTreeFigure } from './TreeArt'
 
 const CODE_P1351 = `
 #include <iostream>
@@ -238,6 +238,12 @@ export default function TreeCount() {
             用一个<strong>栈</strong>沿 DFS 维护未匹配的 <M>{'('}</M>，进入子树时压栈 / 匹配，<strong>回溯时撤销</strong>。答案 = <M>{'\\sum_u f[u]'}</M>。
           </p>
         </div>
+        <figure className="figure">
+          <BracketTreeFigure />
+          <figcaption className="figure__cap">
+            根链「(())」：每位的 <M>{'f'}</M> 由父亲 <M>{'O(1)'}</M> 递推，末位结尾有 2 个合法子串（<M>{'()'}</M> 与 <M>{'(())'}</M>）。
+          </figcaption>
+        </figure>
         <InfoBox kind="warn" title="常见陷阱：DFS 上的栈必须回溯撤销">
           括号树是在<strong>树</strong>上而非一条链上递推——从一个子树退回父亲、再进入<strong>另一个</strong>子树时，前一支压入栈的 <M>{'('}</M> 必须<strong>弹出还原</strong>，否则会串味。标准写法是「进入时记下本层对栈的修改，<strong>递归返回后原样撤销</strong>」（可回滚栈）。另外 <M>{'f[u]'}</M> 与答案都可能超 int，用 <M>{'\\texttt{long long}'}</M>。
         </InfoBox>
