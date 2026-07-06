@@ -23,22 +23,23 @@
   --grad-brand: linear-gradient(115deg, #f0cd83, #e0a24c);
   --grad-brand-soft: linear-gradient(115deg, rgba(240, 205, 131, 0.2), rgba(224, 162, 76, 0.12));
 
-  /* ---------- 七部分：与蜜金同族的暖调宝石色（统一饱和/明度、暖色偏置，非彩虹） ---------- */
-  --grad-a: linear-gradient(120deg, #6bb0a0, #45917f);
-  --grad-b: linear-gradient(120deg, #e3ac5f, #cc8746);
-  --grad-c: linear-gradient(120deg, #db8b74, #c5694f);
-  --grad-d: linear-gradient(120deg, #93b56e, #6f9b52);
-  --grad-e: linear-gradient(120deg, #a58ac8, #8367b2);
-  --grad-f: linear-gradient(120deg, #c4b062, #a5904a);
-  --grad-g: linear-gradient(120deg, #c187b0, #a4638d);
+  /* ---------- 七部分：暖矿·低饱和宝石（暖为重心，整体压低饱和；A 灰青 / E 灰紫作分隔，
+     七部分可辨却是矿物/颜料感而非糖果彩虹——不再横跨色轮） ---------- */
+  --grad-a: linear-gradient(120deg, #82ab9f, #5f8b7e);
+  --grad-b: linear-gradient(120deg, #e0a24c, #c8863a);
+  --grad-c: linear-gradient(120deg, #d2896a, #b56a4b);
+  --grad-d: linear-gradient(120deg, #97a06a, #79824e);
+  --grad-e: linear-gradient(120deg, #a693c0, #8672a4);
+  --grad-f: linear-gradient(120deg, #c9a659, #ab8841);
+  --grad-g: linear-gradient(120deg, #c0899a, #a26b7d);
 
-  --a-1: #6bb0a0; --a-2: #45917f;
-  --b-1: #e3ac5f; --b-2: #cc8746;
-  --c-1: #db8b74; --c-2: #c5694f;
-  --d-1: #93b56e; --d-2: #6f9b52;
-  --e-1: #a58ac8; --e-2: #8367b2;
-  --f-1: #c4b062; --f-2: #a5904a;
-  --g-1: #c187b0; --g-2: #a4638d;
+  --a-1: #82ab9f; --a-2: #5f8b7e;
+  --b-1: #e0a24c; --b-2: #c8863a;
+  --c-1: #d2896a; --c-2: #b56a4b;
+  --d-1: #97a06a; --d-2: #79824e;
+  --e-1: #a693c0; --e-2: #8672a4;
+  --f-1: #c9a659; --f-2: #ab8841;
+  --g-1: #c0899a; --g-2: #a26b7d;
 
   /* 当前活跃强调（默认蜜金；<html data-part> 覆盖为该部分宝石色） */
   --accent-1: #e6b45c;
@@ -77,7 +78,9 @@
   /* ---------- 布局 ---------- */
   --sidebar-w: 268px;
   --topbar-h: 62px;
-  --measure: 66ch;
+  /* 正文阅读行宽：★用 em/rem 而非 ch——ch 按拉丁 "0" 字宽(≈0.55em)标定，
+     66ch 在中文正文里只有 ~36 汉字/行，偏窄；46rem≈45 汉字/行，舒展且守易读上限。 */
+  --measure: 46rem;
   --content-max: 1240px;
 
   /* ---------- 过渡（自定义缓动，无 linear/ease-in-out） ---------- */
@@ -119,21 +122,22 @@
   /* 浅色下强调色已加深→其上文字改暖近白（暗色下仍是暖黑） */
   --text-on-accent: #fbf7ef;
 
-  --grad-a: linear-gradient(120deg, #2f7d6b, #256456);
-  --grad-b: linear-gradient(120deg, #8f6015, #6f4a10);
-  --grad-c: linear-gradient(120deg, #b64e37, #983f28);
-  --grad-d: linear-gradient(120deg, #47762f, #396026);
-  --grad-e: linear-gradient(120deg, #6b4f9e, #55427c);
-  --grad-f: linear-gradient(120deg, #7a6a26, #605219);
-  --grad-g: linear-gradient(120deg, #94487f, #79376a);
+  /* 浅色下暖矿七色整体加深，保证暖奶油底上文字/描边对比（≥4.5:1），身份与深色同族 */
+  --grad-a: linear-gradient(120deg, #37796a, #2b6153);
+  --grad-b: linear-gradient(120deg, #9a6716, #785110);
+  --grad-c: linear-gradient(120deg, #b25a3c, #934428);
+  --grad-d: linear-gradient(120deg, #5f6f34, #4a5828);
+  --grad-e: linear-gradient(120deg, #6f579a, #574278);
+  --grad-f: linear-gradient(120deg, #8a6a1f, #6c5216);
+  --grad-g: linear-gradient(120deg, #9c5069, #7d3e54);
 
-  --a-1: #2f7d6b; --a-2: #256456;
-  --b-1: #8f6015; --b-2: #6f4a10;
-  --c-1: #b64e37; --c-2: #983f28;
-  --d-1: #47762f; --d-2: #396026;
-  --e-1: #6b4f9e; --e-2: #55427c;
-  --f-1: #7a6a26; --f-2: #605219;
-  --g-1: #94487f; --g-2: #79376a;
+  --a-1: #37796a; --a-2: #2b6153;
+  --b-1: #9a6716; --b-2: #785110;
+  --c-1: #b25a3c; --c-2: #934428;
+  --d-1: #5f6f34; --d-2: #4a5828;
+  --e-1: #6f579a; --e-2: #574278;
+  --f-1: #8a6a1f; --f-2: #6c5216;
+  --g-1: #9c5069; --g-2: #7d3e54;
 }
 
 /* 各部分作用域：<body data-part="b"> 切换活跃强调色与渐变 */
