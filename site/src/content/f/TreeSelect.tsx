@@ -1,5 +1,5 @@
 import { Link } from 'react-router-dom'
-import { ArrowLeft, ArrowRight, MousePointerClick, Gamepad2 } from 'lucide-react'
+import { ArrowLeft, ArrowRight, MousePointerClick } from 'lucide-react'
 import { M, MB } from '../../components/ui/Math'
 import InfoBox from '../../components/ui/InfoBox'
 import CodeBlock from '../../components/ui/CodeBlock'
