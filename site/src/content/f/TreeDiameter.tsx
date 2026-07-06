@@ -5,7 +5,7 @@ import InfoBox from '../../components/ui/InfoBox'
 import CodeBlock from '../../components/ui/CodeBlock'
 import DiameterDemo from '../../components/demos/treedp/DiameterDemo'
 import { ExampleCard, Field, Exercise } from '../../components/ui/ProblemBits'
-import { DiameterFigure, PostorderFigure } from './TreeArt'
+import { DiameterFigure, PostorderFigure, CentroidFigure } from './TreeArt'
 
 const CODE_DIAM = `
 #include <iostream>
