@@ -8,6 +8,9 @@ export interface C2Item {
   v: number
 }
 
+// 求解目标：'value' 用每件的 v 求最大价值；'count' 价值恒 1，dp 变成「最多件数」。
+export type C2Mode = 'value' | 'count'
+
 function settled(vals: (number | null)[][]): Record<string, CellState> {
   const s: Record<string, CellState> = {}
   for (let r = 0; r < vals.length; r++)
@@ -23,10 +26,17 @@ function settled(vals: (number | null)[][]): Record<string, CellState> {
  *   for x = A downto a:  for y = B downto b:  dp[x][y] = max(dp[x][y], dp[x-a][y-b]+v)
  * 倒序保证 dp[x-a][y-b] 用的是「本件尚未装入」的旧值，故每件至多取一次。
  *
+ * mode='value'：转移补 +v，dp 是「最大价值」。
+ * mode='count'：价值恒 1，转移补 +1，dp 变成「两费用受限下最多能装几件」——这正是
+ *   「价值恒 1 = 数个数」这一变形（如 P1855 求最多愿望数）。
+ *
  * 可视化：DPViz 网格的「行 r = 费用2 y（0..B）」「列 c = 费用1 x（0..A）」。
  * 逐件更新整张表，每处理完一件推一帧（整表快照 + 本件改写的格高亮）。
  */
-export function cost2D(items: C2Item[], A: number, B: number): VizModel {
+export function cost2D(items: C2Item[], A: number, B: number, mode: C2Mode = 'value'): VizModel {
+  // count 模式：价值恒 1，每装一件 +1；value 模式：补该件的 v。
+  const count = mode === 'count'
+  const gain = (v: number) => (count ? 1 : v)
   // dp[y][x]：行是费用2 y，列是费用1 x，与 DPViz 的 (r=y, c=x) 对齐。
   const dp: number[][] = Array.from({ length: B + 1 }, () => Array<number>(A + 1).fill(0))
   const snap = (): (number | null)[][] => dp.map((row) => row.slice())
@@ -35,8 +45,9 @@ export function cost2D(items: C2Item[], A: number, B: number): VizModel {
   frames.push({
     values: snap(),
     states: settled(dp),
-    caption:
-      '<b>初始表</b>：一件都不装时，任何 (费用1 x, 费用2 y) 下最大价值都是 <b>0</b>。行是费用2 y、列是费用1 x。',
+    caption: count
+      ? '<b>初始表</b>：一件都不装时，任何 (费用1 x, 费用2 y) 下件数都是 <b>0</b>。行是费用2 y、列是费用1 x。'
+      : '<b>初始表</b>：一件都不装时，任何 (费用1 x, 费用2 y) 下最大价值都是 <b>0</b>。行是费用2 y、列是费用1 x。',
     formula: 'dp[x][y] = 0',
   })
 
@@ -45,9 +56,10 @@ export function cost2D(items: C2Item[], A: number, B: number): VizModel {
     // 记录本件真正改写的格，并挑一个「代表格」画来源箭头（取改写后值最大者，平局取 x+y 最大）。
     const changed: { x: number; y: number; from: number; to: number }[] = []
     // 两种费用维都倒序：dp[x-a][y-b] 保持本件装入前的旧值。
+    const add = gain(v)
     for (let x = A; x >= a; x--) {
       for (let y = B; y >= b; y--) {
-        const cand = dp[y - b][x - a] + v
+        const cand = dp[y - b][x - a] + add
         if (cand > dp[y][x]) {
           changed.push({ x, y, from: dp[y][x], to: cand })
           dp[y][x] = cand
@@ -70,14 +82,18 @@ export function cost2D(items: C2Item[], A: number, B: number): VizModel {
       states[key(rep.y - b, rep.x - a)] = 'source'
       arrows.push({ from: { r: rep.y - b, c: rep.x - a }, to: { r: rep.y, c: rep.x }, kind: 'chosen' })
 
+      // count 模式补 +1（价值恒 1），value 模式补 +v。
+      const addLabel = count ? '1' : String(v)
+      const itemDesc = count ? `a=${a}, b=${b}` : `a=${a}, b=${b}, v=${v}`
       caption =
-        `装入 <b>物品 ${i + 1}</b>（a=${a}, b=${b}, v=${v}）：凡是费用1 ≥ ${a} 且费用2 ≥ ${b} 的格，都拿 ` +
-        `dp[x−${a}][y−${b}]+${v} 与原值比较、取较大者。共 <b>${changed.length}</b> 个格被抬升。` +
-        `以格 <b>(x=${rep.x}, y=${rep.y})</b> 为例：由 dp[${rep.x - a}][${rep.y - b}]+${v} = <b>${rep.to}</b> 胜过原值 <b>${rep.from}</b>。`
-      formula = `dp[${rep.x}][${rep.y}]=\\max(${rep.from},\\ ${rep.to - v}+${v})=${rep.to}`
+        `装入 <b>物品 ${i + 1}</b>（${itemDesc}）：凡是费用1 ≥ ${a} 且费用2 ≥ ${b} 的格，都拿 ` +
+        `dp[x−${a}][y−${b}]+${addLabel} 与原值比较、取较大者。共 <b>${changed.length}</b> 个格被抬升。` +
+        `以格 <b>(x=${rep.x}, y=${rep.y})</b> 为例：由 dp[${rep.x - a}][${rep.y - b}]+${addLabel} = <b>${rep.to}</b> 胜过原值 <b>${rep.from}</b>。`
+      formula = `dp[${rep.x}][${rep.y}]=\\max(${rep.from},\\ ${rep.to - add}+${addLabel})=${rep.to}`
     } else {
+      const itemDesc = count ? `a=${a}, b=${b}` : `a=${a}, b=${b}, v=${v}`
       caption =
-        `装入 <b>物品 ${i + 1}</b>（a=${a}, b=${b}, v=${v}）：没有格能因它变大（要么装不下、要么不划算），整表不变。`
+        `装入 <b>物品 ${i + 1}</b>（${itemDesc}）：没有格能因它变大（要么装不下、要么不划算），整表不变。`
       formula = `dp[x][y]\\ \\text{unchanged}`
     }
 
@@ -89,7 +105,9 @@ export function cost2D(items: C2Item[], A: number, B: number): VizModel {
   frames.push({
     values: snap(),
     states: fin,
-    caption: `答案在右下角 <b>dp[${A}][${B}] = ${dp[B][A]}</b>——两种费用分别不超过 A=${A}、B=${B} 时能取得的最大价值。`,
+    caption: count
+      ? `答案在右下角 <b>dp[${A}][${B}] = ${dp[B][A]}</b>——两种费用分别不超过 A=${A}、B=${B} 时最多能装 <b>${dp[B][A]}</b> 件（价值恒 1，故最大价值就是最多件数）。`
+      : `答案在右下角 <b>dp[${A}][${B}] = ${dp[B][A]}</b>——两种费用分别不超过 A=${A}、B=${B} 时能取得的最大价值。`,
     formula: `dp[${A}][${B}]=${dp[B][A]}`,
   })
 

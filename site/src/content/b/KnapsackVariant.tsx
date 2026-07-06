@@ -4,6 +4,7 @@ import { M, MB } from '../../components/ui/Math'
 import InfoBox from '../../components/ui/InfoBox'
 import CodeBlock from '../../components/ui/CodeBlock'
 import KnapsackVariantDemo from '../../components/demos/knapsack/KnapsackVariantDemo'
+import VariantUndoDemo from '../../components/demos/knapsack/VariantUndoDemo'
 import { ExampleCard, Field, Exercise } from '../../components/ui/ProblemBits'
 import { OperatorSwapFigure, CountBuildFigure, UndoFigure } from './KnapsackVariantArt'
 
@@ -206,6 +207,21 @@ export default function KnapsackVariant() {
           撤销时 <M>{'g[j]'}</M> 依赖<strong>已经退干净</strong>的 <M>{'g[j-w]'}</M>，故小下标必须先处理。此外别在原数组上直接减（会污染下一件的撤销），
           每次<strong>从全集 <M>{'f'}</M> 拷一份 <M>{'g'}</M> 再退</strong>；带模数时减法记得 <M>{'+\\text{MOD}'}</M> 再取模，避免出现负数。
         </InfoBox>
+      </section>
+
+      <section className="lesson">
+        <h2 className="section-title">看它把一件「退」出去</h2>
+        <div className="pointer-cue">
+          <MousePointerClick size={18} />
+          先看<strong>第一幕</strong>把全部物品倒序累加成全集 <M>{'f[j]'}</M>；再挑「让第几件消失」，<strong>第二幕</strong>会拷一份 <M>{'g\\gets f'}</M>，
+          对那件<strong>正序</strong>逐格做 <M>{'g[j]\\mathrel{-}=g[j-w_k]'}</M>——注意方向和加时（倒序）相反。末帧上下两行并排：全集 <M>{'f[j]'}</M> vs 缺那件的 <M>{'g[j]'}</M>。
+          留意默认这组：<M>{'w=(2,3,5)'}</M>、<M>{'W=5'}</M> 时全集 <M>{'f[5]=2'}</M>，让 <M>{'w=5'}</M> 那件消失后 <M>{'g[5]'}</M> 退成 <strong>1</strong>（只剩 <M>{'\\{2,3\\}'}</M>）——方案数从 2 降到 1，退掉的正是用到它的那条。
+        </div>
+        <div className="demo">
+          <div className="demo__body">
+            <VariantUndoDemo />
+          </div>
+        </div>
       </section>
 
       <section className="lesson">

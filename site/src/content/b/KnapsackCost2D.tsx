@@ -183,6 +183,10 @@ export default function KnapsackCost2D() {
             这正是一维滚动写法的样子——只保留「当前这张二维表」，逐件在它上面就地更新。
           </p>
         </div>
+        <div className="pointer-cue">
+          <MousePointerClick size={18} />
+          用演示下方的按钮切到 <strong>「价值恒 1 · 数个数」</strong>模式：每件价值统一当 1，转移的 <M>{'+v_i'}</M> 变成 <M>{'+1'}</M>，<M>{'dp[x][y]'}</M> 就从「最大价值」变成「<strong>最多件数</strong>」——同一台机器，答案 <M>{'dp[4][4]'}</M> 从 7（价值）变成 2（装得下两件）。这正是下面「变形一」讲的 P1855 那一路。
+        </div>
       </section>
 
       <section className="lesson">

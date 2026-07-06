@@ -5,7 +5,7 @@ import InfoBox from '../../components/ui/InfoBox'
 import CodeBlock from '../../components/ui/CodeBlock'
 import KnapsackFractionalDemo from '../../components/demos/knapsack/KnapsackFractionalDemo'
 import { ExampleCard, Field, Exercise } from '../../components/ui/ProblemBits'
-import { DivisibleFigure, GreedyFillFigure } from './KnapsackFractionalArt'
+import { DivisibleFigure, GreedyFillFigure, ExchangeFigure } from './KnapsackFractionalArt'
 
 const CODE_P1208 = `
 #include <iostream>
@@ -76,8 +76,16 @@ export default function KnapsackFractional() {
           </p>
           <p>
             为什么这样一定最优？关键在「可切分」赋予的<strong>自由</strong>：背包最终一定会被<strong>恰好填满</strong>（除非所有物品都装进去还有空）。既然容量必被占满，那把每一单位容量都留给<strong>单位价值最高</strong>的物品，总价值自然最大。
-            假如某个方案里，一单位空间给了 <M>{'v/w'}</M> 较低的物品，而更高性价比的物品还没装满——把这一单位换成高性价比的那种，总价值只增不减。反复这样交换，最终必然收敛到「按 <M>{'v/w'}</M> 降序填满」——这正是贪心的选择。
+            严格一点说，用<strong>交换论证</strong>：取任一「最优」方案，若其中某一单位空间给了 <M>{'v/w'}</M> 较低的物品，而更高性价比的物品还没装满——那就把这一单位<strong>切下来</strong>，换成高性价比那种同样一单位。空间占用不变（可切分保证换得进），而<strong>总价值只增不减</strong>（换进来的每单位价值更高）。既然任何「低 <M>{'v/w'}</M> 抢占了本可给高 <M>{'v/w'}</M> 的空间」的方案都能这样被改良，最优方案里就<strong>不可能</strong>存在这种错配：必被填满的每一单位，都归当前<strong>剩余里 <M>{'v/w'}</M> 最高</strong>的物品——这恰好就是「按 <M>{'v/w'}</M> 降序填」的贪心。
           </p>
+        </div>
+        <figure className="figure">
+          <ExchangeFigure />
+          <figcaption className="figure__cap">
+            交换论证：换前那条容量条有一格错给了低性价比物品（v/w=1，虚线格），而高性价比物品（v/w=2）尚未填满；把这一格切换成高性价比的，占用不变、总价值从 9 升到 10。任何这样的错配都可被改良，故最优方案里不存在错配。
+          </figcaption>
+        </figure>
+        <div className="prose">
           <p>用 01 背包开头的同一组数据体会一遍：物品 <M>{'(w,v)=(2,3),(3,4),(4,5)'}</M>，容量 <M>{'C=8'}</M>。</p>
         </div>
         <figure className="figure">
@@ -96,6 +104,45 @@ export default function KnapsackFractional() {
         <InfoBox kind="key" title="本质 · 为什么这里贪心够用、轮不到 DP">
           分数背包的最优子结构被「可切分」<strong>抹平</strong>了：容量必被填满，每一单位空间独立地归给单位价值最高者即可，<strong>当前最优不再牵扯后面还剩多少整数空间</strong>。于是一次排序 + 一趟扫描（<M>{'O(n\\log n)'}</M>）就得最优，<strong>不需要背包 DP 那张表</strong>。DP 是用来对付「整件取舍」那种牵一发动全身的耦合的——这里没有那种耦合。
         </InfoBox>
+      </section>
+
+      <section className="lesson">
+        <h2 className="section-title">跟着装一遍</h2>
+        <div className="prose">
+          <p>
+            把贪心用那组数据（物品 <M>{'(w,v)=(2,3),(3,4),(4,5)'}</M>，容量 <M>{'C=8'}</M>）从头装一遍，每一步只做一个动作：
+          </p>
+        </div>
+        <div className="steps">
+          <div className="step">
+            <span className="step__n">0</span>
+            <div className="step__b">
+              <b>排序（按 <M>{'v/w'}</M> 降序）。</b> 三件的单位价值是 <M>{'3/2=1.5'}</M>、<M>{'4/3\\approx1.33'}</M>、<M>{'5/4=1.25'}</M>，已是降序，装填顺序就定为 <M>{'(2,3)\\to(3,4)\\to(4,5)'}</M>。背包空、累计价值 0、剩 8 格。
+            </div>
+          </div>
+          <div className="step">
+            <span className="step__n">1</span>
+            <div className="step__b">
+              <b>整件装 <M>{'(2,3)'}</M>。</b> 剩 8 格 <M>{'\\ge'}</M> 它的 2 格，整件放入：占 <b>2</b> 格，累计价值 <M>{'0+3=3'}</M>，还剩 <M>{'8-2=6'}</M> 格。
+            </div>
+          </div>
+          <div className="step">
+            <span className="step__n">2</span>
+            <div className="step__b">
+              <b>整件装 <M>{'(3,4)'}</M>。</b> 剩 6 格 <M>{'\\ge'}</M> 它的 3 格，整件放入：再占 <b>3</b> 格，累计价值 <M>{'3+4=7'}</M>，还剩 <M>{'6-3=3'}</M> 格。
+            </div>
+          </div>
+          <div className="step">
+            <span className="step__n">3</span>
+            <div className="step__b">
+              <b>切最后一件 <M>{'(4,5)'}</M>。</b> 只剩 3 格 <M>{'<'}</M> 它的 4 格，装不下整件——按剩余比例切下 <M>{'3/4'}</M>，取得价值 <M>{'5\\times\\frac{3}{4}=3.75'}</M>。背包被<strong>恰好填满</strong>，总价值 <M>{'7+3.75=10.75'}</M>。
+            </div>
+          </div>
+        </div>
+        <div className="pointer-cue">
+          <MousePointerClick size={18} />
+          下面的对照演示会把这套「排序 → 整件装 → 切尾段」实时跑给你看，并和「若整取」的 01-DP 最优并排比较。
+        </div>
       </section>
 
       <section className="lesson">

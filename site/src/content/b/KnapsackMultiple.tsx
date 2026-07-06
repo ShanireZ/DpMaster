@@ -4,6 +4,7 @@ import { M, MB } from '../../components/ui/Math'
 import InfoBox from '../../components/ui/InfoBox'
 import CodeBlock from '../../components/ui/CodeBlock'
 import KnapsackMultipleDemo from '../../components/demos/knapsack/KnapsackMultipleDemo'
+import MultipleSplitDemo from '../../components/demos/knapsack/MultipleSplitDemo'
 import { ExampleCard, Field, Exercise } from '../../components/ui/ProblemBits'
 import { MultipleSetupFigure, BinarySplitFigure, NaiveVsBinaryFigure } from './KnapsackMultipleArt'
 
@@ -145,6 +146,15 @@ export default function KnapsackMultiple() {
           <BinarySplitFigure />
           <figcaption className="figure__cap">m=13 拆成 1、2、4、余6 四个打包件——用约 ⌈log⌉ 个包，就表达出「取 0…13 件」的每一种可能。</figcaption>
         </figure>
+        <div className="pointer-cue">
+          <MousePointerClick size={18} />
+          把上面的静态图变可玩：拖动<strong>件数上限 <M>{'m'}</M></strong>，实时看它拆成哪几个打包件（段宽 ∝ 该包件数），下方 <M>{'0\\dots m'}</M> 覆盖带示意「任选若干包相加恰好凑出每一个件数」，读数条对比<strong>朴素 <M>{'m'}</M> 个 vs 二进制 ⌈log⌉ 个</strong>。试试 <M>{'m=7'}</M>（3 包）、<M>{'m=13'}</M>（4 包）。
+        </div>
+        <div className="demo">
+          <div className="demo__body">
+            <MultipleSplitDemo />
+          </div>
+        </div>
         <div className="prose">
           <p>
             <strong>为什么这几个包能凑出 0…<M>{'m_i'}</M> 的任意件数？</strong>先只看 <M>{'1,2,4,\\dots,2^{k-1}'}</M> 这几个 2 的幂——这正是<strong>二进制</strong>：
