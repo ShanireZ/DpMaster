@@ -1,0 +1,218 @@
+/* 排列 LCS → LIS 转化的自建轻量可视化样式。
+   工具条沿用 lp__ 视觉基调，独立前缀 ll__，配色只用设计令牌。
+   ★不做 opacity:0 起步动画——内容默认可见。 */
+
+.ll__toolbar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--sp-3) var(--sp-5);
+  margin-bottom: var(--sp-5);
+  padding: var(--sp-4);
+  border-radius: var(--r-2);
+  background: var(--surface-2);
+  border: 1px solid var(--border);
+}
+.ll__modes {
+  display: flex;
+  gap: 6px;
+  flex-wrap: wrap;
+}
+.ll__mode {
+  padding: 7px 13px;
+  border-radius: var(--r-2);
+  font-size: 13px;
+  font-weight: 600;
+  border: 1px solid var(--border);
+  color: var(--text-2);
+  background: var(--surface-2);
+  transition: color var(--t-fast, 0.18s), border-color var(--t-fast, 0.18s);
+}
+.ll__mode:hover {
+  color: var(--text-1);
+  border-color: var(--accent-2);
+}
+.ll__mode.on {
+  color: var(--text-on-accent);
+  background: var(--grad-accent);
+  border-color: transparent;
+}
+
+/* ---------- 段落容器 ---------- */
+.ll__block {
+  padding: var(--sp-5) var(--sp-4);
+  border-radius: var(--r-2);
+  background: var(--surface-2);
+  border: 1px solid var(--border);
+  margin-bottom: var(--sp-4);
+}
+.ll__block-head {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: var(--sp-4);
+  font-size: 13px;
+  color: var(--text-2);
+  margin-bottom: 14px;
+}
+.ll__block-head .mono {
+  font-family: var(--font-mono);
+  color: var(--text-3);
+}
+
+/* ---------- 排列一行小格 ---------- */
+.ll__row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  align-items: flex-end;
+}
+.ll__cell {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+}
+.ll__cell-idx {
+  font-family: var(--font-mono);
+  font-size: 10.5px;
+  color: var(--text-3);
+}
+.ll__box {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 46px;
+  height: 46px;
+  border-radius: var(--r-1);
+  font-family: var(--font-mono);
+  font-size: 18px;
+  font-weight: 700;
+  color: var(--text-1);
+  background: var(--surface-3);
+  border: 1.5px solid var(--border-strong);
+  transition: background var(--t-fast, 0.18s), border-color var(--t-fast, 0.18s);
+}
+/* 正在被映射 / 高亮的当前列 */
+.ll__cell.cur .ll__box {
+  border-color: var(--viz-current);
+  background: color-mix(in srgb, var(--viz-current) 22%, var(--surface-1));
+}
+/* 属于选中 LIS 的格——绿色 */
+.ll__cell.pick .ll__box {
+  border-color: var(--viz-chosen);
+  background: color-mix(in srgb, var(--viz-chosen) 24%, var(--surface-1));
+}
+
+/* ---------- 映射表 ---------- */
+.ll__maptable {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+.ll__mapcol {
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  min-width: 52px;
+  border-radius: var(--r-1);
+  overflow: hidden;
+  border: 1px solid var(--border-strong);
+}
+.ll__mapcol.cur {
+  border-color: var(--viz-current);
+  box-shadow: 0 2px 10px color-mix(in srgb, var(--viz-current) 30%, transparent);
+}
+.ll__map-k {
+  font-family: var(--font-mono);
+  font-size: 15px;
+  font-weight: 700;
+  text-align: center;
+  padding: 5px 8px;
+  color: var(--text-on-accent);
+  background: var(--grad-accent);
+}
+.ll__map-v {
+  font-family: var(--font-mono);
+  font-size: 15px;
+  text-align: center;
+  padding: 5px 8px;
+  color: var(--text-1);
+  background: var(--surface-3);
+}
+.ll__map-cap {
+  font-size: 12px;
+  color: var(--text-3);
+  margin-top: 8px;
+}
+
+/* ---------- 读数条 ---------- */
+.ll__readout {
+  font-size: 14.5px;
+  line-height: 1.6;
+  color: var(--text-2);
+  padding: var(--sp-3) var(--sp-4);
+  border-radius: var(--r-2);
+  background: var(--surface-2);
+  border: 1px solid var(--border);
+  margin-bottom: var(--sp-4);
+}
+.ll__readout b {
+  font-family: var(--font-mono);
+  font-weight: 700;
+}
+.ll__readout .ok {
+  color: var(--viz-chosen);
+}
+.ll__readout .cur {
+  color: var(--accent-1);
+}
+
+/* ---------- 步进控制（仿 lp__ctl） ---------- */
+.ll__ctl {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-4);
+  flex-wrap: wrap;
+}
+.ll__ctl-btns {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.ll__ctl-btns button {
+  display: grid;
+  place-items: center;
+  width: 38px;
+  height: 38px;
+  border-radius: var(--r-2);
+  color: var(--text-1);
+  border: 1px solid var(--border);
+  background: var(--surface-2);
+  transition: border-color var(--t-fast, 0.18s), background var(--t-fast, 0.18s);
+}
+.ll__ctl-btns button:hover:not(:disabled) {
+  border-color: var(--accent-2);
+}
+.ll__ctl-btns button:disabled {
+  opacity: 0.35;
+}
+.ll__ctl-btns button.primary {
+  background: var(--grad-accent);
+  color: var(--text-on-accent);
+  border-color: transparent;
+  width: 44px;
+  height: 44px;
+}
+.ll__ctl-count {
+  font-family: var(--font-mono);
+  font-size: 13px;
+  color: var(--text-3);
+}
+
+/* 链接到 LIS 页的提示 */
+.ll__link {
+  color: var(--accent-2);
+  font-weight: 600;
+}

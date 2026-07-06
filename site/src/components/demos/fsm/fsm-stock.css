@@ -1,0 +1,311 @@
+/* 股票买卖状态机 · 逐日转移的自建轻量可视化样式。
+   不引用 DPViz / knapsack-demo.css；独立命名前缀 stk__，配色只用设计令牌。
+   ★不做 opacity:0 起步动画——内容一律从可见态开始，仅用颜色/边框区分状态。 */
+
+.stk__toolbar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  gap: var(--sp-4) var(--sp-6);
+  margin-bottom: var(--sp-5);
+  padding: var(--sp-4);
+  border-radius: var(--r-2);
+  background: var(--surface-2);
+  border: 1px solid var(--border);
+}
+.stk__group-label {
+  font-size: 11px;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--text-3);
+  margin-bottom: 8px;
+}
+.stk__prices {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+.stk__price-item {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  padding: 6px 4px 5px;
+  border-radius: var(--r-1);
+  background: var(--surface-3);
+  border: 1px solid var(--border-strong);
+}
+.stk__price-item .stepper__lab {
+  font-size: 10px;
+}
+.stk__cd {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  align-self: center;
+  font-size: 13px;
+  color: var(--text-2);
+  cursor: pointer;
+  user-select: none;
+}
+.stk__cd input {
+  accent-color: var(--accent-1);
+  width: 15px;
+  height: 15px;
+}
+
+/* ---------- 逐日时间轴：价格柱 + 当日动作徽标 ---------- */
+.stk__timeline-label {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: var(--sp-4);
+  font-size: 13px;
+  color: var(--text-2);
+  margin-bottom: 10px;
+}
+.stk__timeline-label .mono {
+  font-family: var(--font-mono);
+  color: var(--text-3);
+}
+.stk__track {
+  display: flex;
+  align-items: flex-end;
+  gap: 6px;
+  min-height: 132px;
+  padding: var(--sp-3);
+  border-radius: var(--r-2);
+  background: var(--surface-2);
+  border: 1px solid var(--border);
+  overflow-x: auto;
+}
+.stk__day {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 5px;
+  min-width: 52px;
+  flex: 1 0 52px;
+  cursor: pointer;
+  border-radius: var(--r-1);
+  padding: 4px 2px;
+  border: 1px solid transparent;
+  transition: border-color var(--t-fast, 0.18s), background var(--t-fast, 0.18s);
+}
+.stk__day:hover {
+  background: var(--surface-3);
+}
+.stk__day.active {
+  border-color: var(--accent-2);
+  background: color-mix(in srgb, var(--accent-1) 10%, var(--surface-2));
+}
+.stk__day.past {
+  opacity: 0.96; /* 已走过的日子，正常显示（不从 0 起步） */
+}
+.stk__day.future {
+  opacity: 0.5; /* 未到的日子弱化，但仍可见 */
+}
+.stk__bar-wrap {
+  display: flex;
+  align-items: flex-end;
+  height: 66px;
+}
+.stk__bar {
+  width: 22px;
+  border-radius: 5px 5px 0 0;
+  background: color-mix(in srgb, var(--accent-1) 30%, var(--surface-3));
+  border: 1px solid var(--border-strong);
+}
+.stk__day.active .stk__bar {
+  background: var(--grad-accent);
+  border-color: var(--accent-2);
+}
+.stk__price-num {
+  font-family: var(--font-mono);
+  font-size: 12.5px;
+  font-weight: 700;
+  color: var(--text-1);
+}
+.stk__day-idx {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  color: var(--text-3);
+}
+/* 当日动作徽标：买 / 卖 / 持 / 空 / 冷 */
+.stk__act {
+  font-size: 10.5px;
+  font-weight: 700;
+  line-height: 1;
+  padding: 3px 6px;
+  border-radius: 999px;
+  white-space: nowrap;
+}
+.stk__act.buy {
+  color: var(--text-on-accent);
+  background: color-mix(in srgb, var(--viz-chosen) 78%, var(--surface-1));
+}
+.stk__act.sell {
+  color: var(--text-on-accent);
+  background: color-mix(in srgb, var(--viz-current) 82%, var(--surface-1));
+}
+.stk__act.hold,
+.stk__act.cash {
+  color: var(--text-3);
+  background: var(--surface-3);
+  border: 1px solid var(--border-strong);
+}
+.stk__act.froze {
+  color: var(--text-2);
+  background: color-mix(in srgb, var(--viz-source) 26%, var(--surface-2));
+  border: 1px solid color-mix(in srgb, var(--viz-source) 50%, transparent);
+}
+
+/* ---------- 两状态节点图：持有 / 空仓，及当日转移边 ---------- */
+.stk__machine {
+  margin-top: var(--sp-5);
+}
+.stk__machine-label {
+  font-size: 13px;
+  color: var(--text-2);
+  margin-bottom: 10px;
+}
+.stk__nodes {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: var(--sp-4);
+}
+@media (max-width: 34rem) {
+  .stk__nodes {
+    grid-template-columns: 1fr;
+  }
+}
+.stk__node {
+  position: relative;
+  padding: var(--sp-4);
+  border-radius: var(--r-2);
+  background: var(--surface-2);
+  border: 1.5px solid var(--border-strong);
+  transition: border-color var(--t-fast, 0.18s), background var(--t-fast, 0.18s);
+}
+.stk__node.on {
+  border-color: var(--accent-2);
+  background: color-mix(in srgb, var(--accent-1) 9%, var(--surface-2));
+}
+.stk__node-head {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 13.5px;
+  font-weight: 600;
+  color: var(--text-1);
+  margin-bottom: 4px;
+}
+.stk__node-dot {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background: var(--accent-1);
+}
+.stk__node.cash .stk__node-dot {
+  background: var(--viz-source);
+}
+.stk__node-val {
+  font-family: var(--font-mono);
+  font-size: 26px;
+  font-weight: 700;
+  line-height: 1.1;
+  color: var(--text-1);
+}
+.stk__node-val.neg {
+  color: var(--text-3);
+}
+.stk__node-sub {
+  margin-top: 6px;
+  font-size: 12px;
+  line-height: 1.5;
+  color: var(--text-3);
+}
+.stk__node-sub b {
+  font-family: var(--font-mono);
+  color: var(--text-2);
+  font-weight: 700;
+}
+/* 转移来源标记：本日该状态由哪条边转来 */
+.stk__edge {
+  display: inline-block;
+  margin-top: 8px;
+  font-size: 11.5px;
+  font-weight: 600;
+  padding: 3px 8px;
+  border-radius: var(--r-1);
+  color: var(--text-on-accent);
+}
+.stk__edge.buy {
+  background: color-mix(in srgb, var(--viz-chosen) 78%, var(--surface-1));
+}
+.stk__edge.sell {
+  background: color-mix(in srgb, var(--viz-current) 82%, var(--surface-1));
+}
+.stk__edge.keep {
+  color: var(--text-2);
+  background: var(--surface-3);
+  border: 1px solid var(--border-strong);
+}
+
+/* ---------- 底部读数 + 步进控制 ---------- */
+.stk__readout {
+  margin-top: var(--sp-4);
+  font-size: 14px;
+  line-height: 1.55;
+  color: var(--text-2);
+  padding: var(--sp-3) var(--sp-4);
+  border-radius: var(--r-2);
+  background: var(--surface-2);
+  border: 1px solid var(--border);
+}
+.stk__readout b {
+  font-family: var(--font-mono);
+  font-weight: 700;
+  color: var(--accent-1);
+}
+.stk__ctl {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-4);
+  margin-top: var(--sp-4);
+}
+.stk__ctl-btns {
+  display: flex;
+  gap: 6px;
+}
+.stk__ctl button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 38px;
+  height: 38px;
+  border-radius: var(--r-1);
+  border: 1px solid var(--border-strong);
+  background: var(--surface-2);
+  color: var(--text-1);
+  cursor: pointer;
+  transition: background var(--t-fast, 0.18s);
+}
+.stk__ctl button:hover:not(:disabled) {
+  background: var(--surface-3);
+}
+.stk__ctl button:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+.stk__ctl button.primary {
+  background: var(--grad-accent);
+  border-color: var(--accent-2);
+  color: var(--text-on-accent);
+}
+.stk__ctl-count {
+  font-family: var(--font-mono);
+  font-size: 13px;
+  color: var(--text-3);
+}
