@@ -40,7 +40,7 @@ int main()
         }
     }
 
-    cout << dp[1][len] << endl;              // 整串补成回文的最少插入 = len − 最长回文子序列
+    cout << dp[1][len] << endl;              // dp[1][len] 即整串补成回文的最少插入次数
     return 0;
 }
 // TAG: 区间DP 回文 最少插入`
@@ -191,7 +191,7 @@ export default function Palindrome() {
       </section>
 
       <section className="lesson">
-        <h2 className="section-title">看三角表一层一层长出来</h2>
+        <h2 className="section-title">看三角表一层一层长出来 · 相等收缩、不等取大</h2>
         <div className="demo">
           <div className="demo__body">
             <PalindromeDemo />

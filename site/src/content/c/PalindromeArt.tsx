@@ -2,20 +2,20 @@
 
 // 一个串里的「最长回文子序列」：对称的字符两两配对，弧线勾出（不必相邻，只需镜像对称）。
 export function PalindromeSetupFigure() {
-  const s = ['c', 'h', 'a', 'r', 'a', 'c', 't']
+  const s = ['c', 'h', 'a', 'r', 'a', 'c', 't', 'e', 'r']
   // 最长回文子序列 "carac"（下标 0,2,3,4,5）——两端向内成对：0↔5(c)、2↔4(a)、中心 3(r)。
   const pairs = [
     { a: 0, b: 5 },
     { a: 2, b: 4 },
   ]
   const center = 3
-  const x0 = 44
-  const dx = 68
-  const bw = 48
+  const x0 = 30
+  const dx = 54
+  const bw = 44
   const cx = (i: number) => x0 + i * dx + bw / 2
   const picked = new Set([0, 2, 3, 4, 5])
   return (
-    <svg viewBox="0 0 520 176" role="img" aria-label="串中最长回文子序列的对称配对">
+    <svg viewBox="0 0 540 176" role="img" aria-label="串中最长回文子序列的对称配对">
       {pairs.map((p, i) => {
         const xa = cx(p.a)
         const xb = cx(p.b)
@@ -177,7 +177,7 @@ export function InsertFigure() {
             strokeWidth={o.ins ? 2.2 : 1.5}
             strokeDasharray={o.ins ? '4 3' : undefined}
           />
-          <text x={bw / 2} y="28" textAnchor="middle" fontSize="19" className="mono" fill={o.ins ? '#fff' : 'var(--accent-1)'}>
+          <text x={bw / 2} y="28" textAnchor="middle" fontSize="19" className="mono" fill={o.ins ? 'var(--text-on-accent)' : 'var(--accent-1)'}>
             {o.c}
           </text>
         </g>

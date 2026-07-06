@@ -219,7 +219,7 @@ export default function MergeInterval() {
       </section>
 
       <section className="lesson">
-        <h2 className="section-title">看三角表一层一层长出来</h2>
+        <h2 className="section-title">看三角表一层一层长出来 · 枚举分界、两段合并</h2>
         <div className="demo">
           <div className="demo__body">
             <MergeIntervalDemo />
@@ -290,7 +290,7 @@ export default function MergeInterval() {
           </Field>
         </ExampleCard>
 
-        <ExampleCard pid="P1436" name="棋盘分割" src="洛谷原生" diff="提高+/省选-">
+        <ExampleCard pid="P1436" name="棋盘分割" src="NOI1999" diff="提高+/省选-">
           <Field k="题意">
             <M>{'8\\times8'}</M> 棋盘，每格有分值。沿<strong>横线或竖线</strong>把棋盘切开、留一块、对另一块继续切，共切 <M>{'n-1'}</M> 刀得 <M>{'n'}</M> 块矩形。设各块总分为 <M>{'x_i'}</M>、均值 <M>{'\\bar x'}</M>，求最小的<strong>方差</strong> <M>{'\\sigma^2=\\tfrac1n\\sum(x_i-\\bar x)^2'}</M>。
           </Field>

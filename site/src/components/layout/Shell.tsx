@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react'
 import { Outlet, useLocation, useMatch } from 'react-router-dom'
 import Sidebar from './Sidebar'
 import TopBar from './TopBar'
+import FeedbackWidget from '../feedback/FeedbackWidget'
 import './shell.css'
 
 export default function Shell() {
@@ -37,6 +38,7 @@ export default function Shell() {
           <Outlet />
         </main>
       </div>
+      <FeedbackWidget />
     </div>
   )
 }

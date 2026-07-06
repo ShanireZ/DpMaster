@@ -243,7 +243,7 @@ export default function Knapsack01() {
         </div>
         <div className="pointer-cue">
           <Gamepad2 size={18} />
-          想更直观？到 <Link to="/part/a" style={{ color: 'var(--accent-1)', fontWeight: 600 }}>B 部分页的「装包大师」</Link>亲手挑物品，再点「看 DP 最优」，体验一次贪心为何会输给 DP。
+          想更直观？到 <Link to="/part/a" style={{ color: 'var(--accent-1)', fontWeight: 600 }}>A 部分页的「装包大师」</Link>亲手挑物品，再点「看 DP 最优」，体验一次贪心为何会输给 DP。
         </div>
       </section>
 

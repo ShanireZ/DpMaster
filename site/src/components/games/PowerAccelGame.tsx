@@ -105,7 +105,9 @@ export default function PowerAccelGame() {
   const brute = bruteSteps(target)
   const used = steps.length
   const done = reachedSet.has(target)
-  const atOrBeatFast = done && used <= fast
+  const atOrBeatFast = done && used <= fast // 过关：追平或超越快速幂都算
+  const beatFast = done && used < fast // 严格少于基线 = 超越
+  const tieFast = done && used === fast // 恰好等于基线 = 追平
 
   // 选中一个指数（用于合成）；已选满 2 个则忽略；点已选的取消
   const pick = (e: number) => {
@@ -199,8 +201,11 @@ export default function PowerAccelGame() {
   let feedback = `从指数 1 出发，把已有指数「翻倍」或「相乘（相加）」，用最少步数拼出 x^${target}。`
   let fbClass = ''
   if (done) {
-    if (atOrBeatFast) {
-      feedback = `🎉 追平快速幂！你用 ${used} 步得到 x^${target}（快速幂基线 ${fast} 步）。`
+    if (used < fast) {
+      feedback = `🎉 超越快速幂！你只用 ${used} 步得到 x^${target}，比快速幂基线（${fast} 步）还少。`
+      fbClass = 'win'
+    } else if (used === fast) {
+      feedback = `🎉 追平快速幂！你用 ${used} 步得到 x^${target}（正好等于快速幂基线 ${fast} 步）。`
       fbClass = 'win'
     } else {
       feedback = `到达 x^${target}，用了 ${used} 步。快速幂只要 ${fast} 步——试试更少的路线（可撤销）。`
@@ -349,7 +354,8 @@ export default function PowerAccelGame() {
               <div className="game__compare-tip">
                 快速幂（二进制）是易得的高效基线：约 ⌊log₂n⌋+popcount(n)−1 步。
                 {youMore ? '你比它多几步，还能再压。' : ''}
-                {atOrBeatFast ? '你已追平这条基线——漂亮！' : ''}
+                {beatFast ? '你比这条基线还少——漂亮！' : ''}
+                {tieFast ? '你已追平这条基线——漂亮！' : ''}
                 {' '}真正的最少乘法（最短加法链）是难题，用快速幂当可达上界即可。
               </div>
             </div>
@@ -374,7 +380,7 @@ export default function PowerAccelGame() {
           </div>
 
           <div className="game__stats">
-            已玩 {played} 局 · 追平快速幂 {matched} 次
+            已玩 {played} 局 · 达到 / 超越快速幂 {matched} 次
           </div>
         </div>
       </div>

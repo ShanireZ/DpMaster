@@ -118,7 +118,7 @@ export interface StockDay {
   cash: number // 当天结束时「空仓」状态的最优现金
   holdFrom: 'hold' | 'buy' // 今日 hold 由何而来：继续持有 / 今日买入
   cashFrom: 'cash' | 'sell' // 今日 cash 由何而来：继续空仓 / 今日卖出
-  froze: boolean // 今日是否处于冷却（无法买入）
+  froze: boolean // 今日是否处于冷却（昨日刚卖出）——仅供 UI 显示「冷」标签，不参与 buy 计算
 }
 
 const NEG = -1e9
@@ -130,6 +130,8 @@ const NEG = -1e9
  *   cash[i] = max(cash[i-1], hold[i-1] + price[i])              // 保持空仓 / 今日卖出
  *   hold[i] = max(hold[i-1], (冷却 ? cash[i-2] : cash[i-1]) - price[i])
  *             // 继续持有 / 今日买入（买入的现金基准：冷却时取前天空仓，否则昨日空仓）
+ * ★冷却约束完全由「买入基准取 cash[i-2]」表达——前天空仓意味着昨天没买卖，
+ *   隔了一天，自然满足「卖出次日不能买」，无需再额外禁掉 buy。
  * 无冷却时把 cash[i-2] 换成 cash[i-1] 即可。
  */
 export function stockStates(prices: number[], cooldown: boolean): StockDay[] {
@@ -150,7 +152,7 @@ export function stockStates(prices: number[], cooldown: boolean): StockDay[] {
     const keep = prevHold
     const buyBase = cooldown ? prevPrevCash : prevCash
     const froze = cooldown && i >= 1 && days[i - 1].cashFrom === 'sell'
-    const buy = froze ? NEG : buyBase - price
+    const buy = buyBase - price // 冷却已由 buyBase=cash[i-2] 表达，无需再用 froze 封死买入
     const hold = Math.max(keep, buy)
     const holdFrom: 'hold' | 'buy' = buy > keep ? 'buy' : 'hold'
 

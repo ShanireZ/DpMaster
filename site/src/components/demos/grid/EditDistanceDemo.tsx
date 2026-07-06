@@ -15,7 +15,7 @@ function sanitize(s: string): string {
 
 const PRESETS: Array<[string, string]> = [
   ['horse', 'ros'], // 距离 3
-  ['kitten', 'sitten'], // 距离 1（sitting↔kitten 的核心一步：k→s）
+  ['kitten', 'sitten'], // kitten→sitten 距离 1（仅首字母 k→s）
   ['abc', 'abc'], // 距离 0，全走对角线
   ['flaw', 'lawn'], // 距离 2
 ]

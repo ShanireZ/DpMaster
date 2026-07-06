@@ -1,0 +1,297 @@
+/* ============ 反馈悬浮按钮 + 表单弹窗 ============ */
+
+.fbw__fab {
+  position: fixed;
+  right: 22px;
+  bottom: 22px;
+  z-index: 45;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  height: 44px;
+  padding: 0 16px 0 14px;
+  border-radius: var(--r-full);
+  background: var(--grad-accent);
+  color: var(--text-on-accent);
+  font-weight: 700;
+  font-size: 14px;
+  box-shadow: var(--shadow-2), var(--inset-hi);
+  transition: transform var(--t-fast) var(--ease), box-shadow var(--t-fast);
+}
+.fbw__fab:hover {
+  transform: translateY(-2px);
+  box-shadow: var(--glow-accent);
+}
+.fbw__fab:active {
+  transform: translateY(-1px) scale(0.98);
+}
+.fbw__fab-label {
+  font-family: var(--font-body);
+}
+
+/* 遮罩 + 弹窗 */
+.fbw__overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 90;
+  background: rgba(6, 5, 4, 0.62);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+  animation: fbw-fade 0.16s var(--ease-out);
+}
+@keyframes fbw-fade {
+  from {
+    background: rgba(6, 5, 4, 0);
+  }
+}
+
+.fbw__dialog {
+  width: 100%;
+  max-width: 480px;
+  max-height: min(88vh, 720px);
+  overflow-y: auto;
+  background: var(--surface-1);
+  border: 1px solid var(--border-strong);
+  border-radius: var(--r-4);
+  box-shadow: var(--shadow-3);
+  animation: fbw-pop 0.2s var(--ease-out);
+}
+@keyframes fbw-pop {
+  from {
+    transform: translateY(12px) scale(0.985);
+  }
+}
+
+.fbw__head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: var(--sp-5) var(--sp-5) var(--sp-3);
+}
+.fbw__title {
+  font-family: var(--font-display);
+  font-size: 19px;
+  font-weight: 700;
+}
+.fbw__close {
+  width: 32px;
+  height: 32px;
+  border-radius: var(--r-2);
+  color: var(--text-3);
+  display: grid;
+  place-items: center;
+  transition: color var(--t-fast), background var(--t-fast);
+}
+.fbw__close:hover {
+  color: var(--text-1);
+  background: var(--surface-3);
+}
+
+.fbw__body {
+  padding: 0 var(--sp-5) var(--sp-5);
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-4);
+}
+.fbw__field {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.fbw__label {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text-2);
+}
+.fbw__hint {
+  font-weight: 400;
+  color: var(--text-3);
+}
+.fbw__req {
+  color: var(--viz-invalid);
+}
+
+.fbw__kinds {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+.fbw__kind {
+  padding: 7px 13px;
+  border-radius: var(--r-full);
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text-2);
+  border: 1px solid var(--border);
+  background: var(--surface-2);
+  transition: all var(--t-fast);
+}
+.fbw__kind:hover {
+  color: var(--text-1);
+  border-color: var(--border-strong);
+}
+.fbw__kind.on {
+  color: var(--text-on-accent);
+  background: var(--grad-accent);
+  border-color: transparent;
+}
+
+.fbw__page {
+  font-size: 13.5px;
+  color: var(--text-1);
+  padding: 9px 12px;
+  border-radius: var(--r-2);
+  background: var(--surface-3);
+  border: 1px solid var(--border);
+}
+
+.fbw__textarea,
+.fbw__input {
+  width: 100%;
+  padding: 10px 12px;
+  border-radius: var(--r-2);
+  background: var(--surface-2);
+  border: 1px solid var(--border-strong);
+  color: var(--text-1);
+  font-size: 14px;
+  line-height: 1.6;
+  resize: vertical;
+  transition: border-color var(--t-fast), box-shadow var(--t-fast);
+}
+.fbw__textarea::placeholder,
+.fbw__input::placeholder {
+  color: var(--text-3);
+}
+.fbw__textarea:focus,
+.fbw__input:focus {
+  outline: none;
+  border-color: var(--accent-2);
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--accent-1) 22%, transparent);
+}
+
+.fbw__error {
+  font-size: 13px;
+  color: var(--text-2);
+  padding: 10px 12px;
+  border-radius: var(--r-2);
+  background: color-mix(in srgb, var(--viz-invalid) 9%, var(--surface-2));
+  border: 1px solid color-mix(in srgb, var(--viz-invalid) 40%, transparent);
+}
+.fbw__link {
+  color: var(--accent-1);
+  font-weight: 700;
+  padding: 0 4px;
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+
+.fbw__actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: var(--sp-3);
+  margin-top: var(--sp-2);
+}
+.fbw__btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  height: 40px;
+  padding: 0 18px;
+  border-radius: var(--r-2);
+  font-weight: 700;
+  font-size: 14px;
+  color: var(--text-1);
+  border: 1px solid var(--border-strong);
+  transition: all var(--t-fast);
+}
+.fbw__btn:hover {
+  background: var(--surface-3);
+}
+.fbw__btn--primary {
+  color: var(--text-on-accent);
+  background: var(--grad-accent);
+  border-color: transparent;
+  box-shadow: var(--shadow-1);
+}
+.fbw__btn--primary:hover {
+  transform: translateY(-1px);
+  box-shadow: var(--shadow-2);
+  background: var(--grad-accent);
+}
+.fbw__btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+  transform: none;
+}
+
+.fbw__spin {
+  animation: fbw-spin 0.9s linear infinite;
+}
+@keyframes fbw-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+/* 成功态 */
+.fbw__done {
+  padding: var(--sp-6) var(--sp-5) var(--sp-7);
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--sp-3);
+}
+.fbw__done-icon {
+  width: 56px;
+  height: 56px;
+  border-radius: 50%;
+  display: grid;
+  place-items: center;
+  color: var(--viz-chosen);
+  background: color-mix(in srgb, var(--viz-chosen) 14%, var(--surface-2));
+  border: 1px solid color-mix(in srgb, var(--viz-chosen) 40%, transparent);
+}
+.fbw__done-title {
+  font-family: var(--font-display);
+  font-size: 18px;
+  font-weight: 700;
+}
+.fbw__done-sub {
+  font-size: 13.5px;
+  color: var(--text-2);
+  max-width: 32ch;
+}
+.fbw__done .fbw__btn {
+  margin-top: var(--sp-3);
+}
+
+/* 移动端：按钮收成圆形图标、弹窗更贴边 */
+@media (max-width: 560px) {
+  .fbw__fab {
+    right: 16px;
+    bottom: 16px;
+    padding: 0;
+    width: 46px;
+    justify-content: center;
+  }
+  .fbw__fab-label {
+    display: none;
+  }
+  .fbw__overlay {
+    padding: 12px;
+    align-items: flex-end;
+  }
+  .fbw__dialog {
+    max-width: none;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .fbw__overlay,
+  .fbw__dialog {
+    animation: none;
+  }
+}

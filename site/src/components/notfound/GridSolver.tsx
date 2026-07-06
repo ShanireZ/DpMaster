@@ -33,8 +33,11 @@ export default function GridSolver({ replayKey }: { replayKey: number }) {
     let W = 0, H = 0, cell = 46, cols = 0, rows = 0, vTop = 0, vBot = 0
     let path: { x: number; y: number }[] = []
     const build = () => {
-      W = canvas.clientWidth
-      H = canvas.clientHeight
+      const r = canvas.getBoundingClientRect()
+      const nw = Math.round(r.width), nh = Math.round(r.height)
+      if (nw < 2 || nh < 2) return
+      W = nw
+      H = nh
       canvas.width = Math.floor(W * dpr)
       canvas.height = Math.floor(H * dpr)
       ctx.setTransform(dpr, 0, 0, dpr, 0, 0)
@@ -53,8 +56,10 @@ export default function GridSolver({ replayKey }: { replayKey: number }) {
       }
     }
     build()
+    requestAnimationFrame(build)
     const ro = new ResizeObserver(build)
     ro.observe(canvas)
+    window.addEventListener('resize', build)
 
     const isVoid = (j: number) => j >= vTop && j < vBot
 
@@ -101,6 +106,10 @@ export default function GridSolver({ replayKey }: { replayKey: number }) {
     let lastCycle = 0, burst = false
 
     const render = (now: number) => {
+      if (W < 2 || path.length < 2) {
+        raf = requestAnimationFrame(render)
+        return
+      }
       const dt = Math.min(0.05, (now - last) / 1000)
       last = now
       const elapsed = (now - start) / 1000
@@ -253,6 +262,7 @@ export default function GridSolver({ replayKey }: { replayKey: number }) {
       running = false
       cancelAnimationFrame(raf)
       window.removeEventListener('pointermove', onMove)
+      window.removeEventListener('resize', build)
       document.removeEventListener('visibilitychange', onVis)
       ro.disconnect()
     }

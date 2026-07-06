@@ -297,7 +297,7 @@ export default function KnapsackMixed() {
       <section className="lesson">
         <h2 className="section-title">例题</h2>
 
-        <ExampleCard pid="P1833" name="樱花" src="洛谷原生" diff="提高+/省选-">
+        <ExampleCard pid="P1833" name="樱花" src="洛谷原生" diff="普及/提高-">
           <Field k="题意">
             给定赏花起止时刻（得总时长 <M>{'T'}</M> 作容量），<M>{'n'}</M> 种樱花各有观赏耗时 <M>{'w_i'}</M>、美观度 <M>{'v_i'}</M> 和株数 <M>{'P_i'}</M>。求 <M>{'T'}</M> 时间内最大美观度。
           </Field>
@@ -354,7 +354,7 @@ export default function KnapsackMixed() {
 
       <div className="pointer-cue">
         <Gamepad2 size={18} />
-        想找手感？到 <Link to="/part/a" style={{ color: 'var(--accent-1)', fontWeight: 600 }}>B 部分页的「装包大师」</Link>再挑一挑——它虽按 01 规则，但「在约束下凑最大价值」的直觉，与混合背包里逐件分派的思路完全相通。
+        回 <Link to="/part/a" style={{ color: 'var(--accent-1)', fontWeight: 600 }}>A 部分页的「装包大师」</Link>时，试着给每件宝物先贴个标签：这件只有一件、那件成箱、另一件管够——混合背包做的就是这道「逐件分派」的分诊，再把三条支路各自转移。
       </div>
 
       <nav className="type-nav">

@@ -1,5 +1,18 @@
 # 部署指南 · DpMaster
 
+> ## ⚡ 快速开始（记住这三条就够了）
+>
+> ```bash
+> # ① 一次性：各跑一次，浏览器点授权（EdgeOne 选 China，用腾讯云账号）
+> npx wrangler login
+> npx edgeone login
+>
+> # ② 之后每次发布：构建一次 → 依次发 Cloudflare 和 EdgeOne
+> npm run deploy
+> ```
+>
+> 授权都在你自己浏览器完成，**不需要把任何 token 交给别人**。换机 / CI 才需要 Token，见下方「首次一次性设置 · 方式 B」。
+
 本站是纯静态 SPA（Vite + React + react-router，`BrowserRouter` history 模式），
 同时部署到两处，互为主备、各扬所长：
 
@@ -68,18 +81,28 @@ Pages 项目（与脚本 `-n dpmaster` 一致）——若控制台还没有，de
 
 ## 两边 SPA 深链回退（一处重要差异）
 
-本站用 history 路由，`/part/a/knapsack-01` 这类深链**直接访问或刷新**时，服务器上
-没有对应文件，需要托管把未命中路径回退到 SPA 入口：
+本站用 history 路由，`/part/a/knapsack-01` 这类深链**直接访问或刷新**时，服务器上没有
+对应文件，需要托管把未命中路径回退到 SPA 入口。每次 `npm run build` 由
+`scripts/postbuild.mjs` 自动生成对应产物，无需手动维护：
 
-- **Cloudflare** — `wrangler.jsonc` 里 `assets.not_found_handling = "single-page-application"`，
-  未命中即返回 `index.html` + **HTTP 200**（干净、SEO 友好）。
-- **EdgeOne** — 平台**不支持** `edgeone.json` 的 rewrites 做 SPA 回退，改由构建时生成的
-  `dist/404.html`（复制自 `index.html`）兜底：内容是 SPA 入口，浏览器加载后 react-router
-  接管、页面正常，但 **HTTP 状态码是 404**。功能无碍；若日后特别在意大陆侧的状态码/SEO，
-  可再加一个 EdgeOne Function 做 200 兜底（可选，需要时再加）。
+- **Cloudflare** — `wrangler.jsonc` 的 `assets.not_found_handling = "single-page-application"`，
+  未命中即返回 `index.html` + **HTTP 200**。干净、SEO 友好，开箱即用。
+- **EdgeOne** — 平台**不支持** `edgeone.json` 的 rewrites 做 SPA 回退，因此用两层兜底：
+  1. `dist/edge-functions/[[default]].js` —— catch-all Edge Function，未命中路径返回 SPA 入口
+     + **HTTP 200**（内联了 index.html，随每次构建刷新）。EdgeOne 规则「静态资源优先于函数」，
+     故 `/assets/*` 等真实文件不会被误拦。
+  2. `dist/404.html` —— 安全网：万一 Function 未生效，EdgeOne 至少返回它（状态码 404，
+     但页面仍正常显示）。
 
-`dist/404.html` 由 `scripts/postbuild.mjs` 在每次 `npm run build` 后自动生成，对
-Cloudflare 无副作用（CF 优先走 `not_found_handling`）。
+  ⚠️ **EdgeOne 官方未记载 Function 做 SPA 200 的用法，请部署后实测一次**：
+  ```bash
+  curl -I https://dpmaster.edgeone.app/state-not-reachable
+  ```
+  返回 `HTTP/2 200` 即 Function 生效；若是 `404` 则说明回落到了 `404.html`（功能不受影响，
+  仅状态码差异，此时可来找我把方案改成 deploy 不带目录、让 EdgeOne 按项目约定处理 functions）。
+
+真正的「页面不存在」由前端 react-router 的 `path="*"` 渲染为站内 404 页面（DP 主题的
+「越界的状态」，见 `src/pages/NotFound.tsx`）——两种回退都是把请求送进 SPA，由它接管。
 
 ---
 

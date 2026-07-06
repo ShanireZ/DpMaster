@@ -99,26 +99,14 @@ export default function MatrixBuildDemo() {
         </div>
       </div>
 
-      {/* 向量 × 矩阵 = 向量 的可视化 */}
+      <div className="mbd__convention">
+        此处按<b>列向量左乘</b> <span className="mono">M · 旧状态 = 新状态</span> 摆放（矩阵在左、状态是列），
+        矩阵<b>第 r 行</b>正好算出新状态的第 r 个分量——与正文的<b>行向量右乘</b>{' '}
+        <span className="mono">[…]·M</span> 只是转置写法，结果等价。
+      </div>
+
+      {/* M × 旧状态(列) = 新状态(列) 的可视化：矩阵在左、列向量，字面顺序与 M·old 一致 */}
       <div className="mbd__equation">
-        {/* 旧状态向量（列向量） */}
-        <div className="mbd__vec">
-          <div className="mbd__vec-cap">旧状态</div>
-          <div className="mbd__vec-body">
-            {pl.map((lab, i) => (
-              <span
-                key={i}
-                className={`mbd__vcell${i === (row === 0 ? -1 : row - 1) ? ' hot' : ''}`}
-                title={lab}
-              >
-                {lab}
-              </span>
-            ))}
-          </div>
-        </div>
-
-        <span className="mbd__times">×</span>
-
         {/* 转移矩阵 */}
         <div className="mbd__mat">
           <div className="mbd__vec-cap">转移矩阵 M</div>
@@ -144,6 +132,24 @@ export default function MatrixBuildDemo() {
                 )
               })
             )}
+          </div>
+        </div>
+
+        <span className="mbd__times">×</span>
+
+        {/* 旧状态向量（列向量） */}
+        <div className="mbd__vec">
+          <div className="mbd__vec-cap">旧状态</div>
+          <div className="mbd__vec-body">
+            {pl.map((lab, i) => (
+              <span
+                key={i}
+                className={`mbd__vcell${i === (row === 0 ? -1 : row - 1) ? ' hot' : ''}`}
+                title={lab}
+              >
+                {lab}
+              </span>
+            ))}
           </div>
         </div>
 

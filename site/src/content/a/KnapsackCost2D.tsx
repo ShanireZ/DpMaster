@@ -278,12 +278,12 @@ export default function KnapsackCost2D() {
       <section className="lesson exercises">
         <h2 className="section-title">练习</h2>
         <p className="prose" style={{ maxWidth: 'none', fontSize: '13.5px', color: 'var(--text-3)', marginBottom: 'var(--sp-4)' }}>
-          说明：纯二维费用的洛谷原生题目池并不宽。下面以 P1509 为主练一道「双费用 + 次关键字」的综合题；若想再练裸模板，上面的 <strong>P1855 / P1507</strong> 都可回炉自测（不看参考代码默写两维倒序的三层循环）。
+          说明：纯二维费用的洛谷原生题目池并不宽。下面以 P1509 为主练一道「双费用 + 时间最少」的综合题；若想再练裸模板，上面的 <strong>P1855 / P1507</strong> 都可回炉自测（不看参考代码默写两维倒序的三层循环）。
         </p>
         <Exercise
           pid="P1509"
           name="找啊找啊找 GF"
-          hint="钱 + 人品双约束的二维费用背包：dp[j][k] 记「花钱 ≤ j、花人品 ≤ k」时的最大幸福。难点在双关键字——先比幸福最大，幸福相同再比花钱最少，转移时对这两个关键字依次取优。"
+          hint="钱 + 人品双约束的二维费用背包：dp[j][k] 记「花钱 ≤ j、花人品 ≤ k」时能追到的最多女友数。难点在双关键字——先比女友数量最大，数量相同再比所花时间最少，转移时对这两个关键字依次取优。"
         />
         <Exercise
           pid="P1855"

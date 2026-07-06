@@ -249,6 +249,10 @@ export default function GridDP() {
         <h2 className="section-title">深化 · 双线程：两条路一起走</h2>
         <div className="prose">
           <p>
+            <strong>先说和 B 路径型的分工：</strong>双线程的<strong>四维朴素写法</strong>（<M>{'dp[x_1][y_1][x_2][y_2]'}</M>）已在 <Link to="/part/b/path" style={{ color: 'var(--accent-2)' }}>B 路径型</Link> 里随方格取数带出——那边侧重<strong>路径 DP 入门</strong>、顺手把四维摆出来；
+            本页不再重复四维怎么来，而是专注<strong>把它压成三维 <M>{'dp[k][x_1][x_2]'}</M></strong>，这正是「网格二维状态 + 压维」这一专章的重心。
+          </p>
+          <p>
             网格 DP 的第二条主线，是<strong>同一张网格上有两条路径要一起规划</strong>——经典模型「<strong>传纸条</strong>」：两位同学分别从<strong>左上角</strong>出发、只能<strong>向右或向下</strong>，各自走到<strong>右下角</strong>，
             每格有一个好感度权值，问两条路径<strong>合计能收集的最大权值和</strong>（同一格被两条路都经过时，权值<strong>只算一次</strong>）。
           </p>

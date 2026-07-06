@@ -212,7 +212,7 @@ for i = 1 to n:
         <InfoBox kind="key" title="本质 · 算子决定问题，骨架不动">
           计数 DP 和最优 DP 共用同一副<strong>状态与转移骨架</strong>——「最后一步从哪来」这套拆分毫不改变；变的只是<strong>如何聚合各来源</strong>：
           最优用 <M>{'\\max'}</M> 挑一个，计数用 <M>{'+'}</M> 全加起来。两处硬改动记死：<strong><M>{'\\max\\to +'}</M></strong>、<strong>地基 <M>{'f[0]=1'}</M></strong>（空方案是唯一的起点火种）。
-          这与 B 部分的 <Link to="/part/a/variant" style={{ color: 'var(--accent-2)' }}>背包综合变形</Link>是同一个道理——那里也是把背包转移的 <M>{'\\max'}</M> 换成 <M>{'+'}</M>、<M>{'f[0]=1'}</M>，就从「最大价值」变「凑数的方案数」。
+          这与 A 部分的 <Link to="/part/a/variant" style={{ color: 'var(--accent-2)' }}>背包综合变形</Link>是同一个道理——那里也是把背包转移的 <M>{'\\max'}</M> 换成 <M>{'+'}</M>、<M>{'f[0]=1'}</M>，就从「最大价值」变「凑数的方案数」。
         </InfoBox>
       </section>
 

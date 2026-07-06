@@ -168,7 +168,7 @@ export default function StoneMerge() {
       </section>
 
       <section className="lesson">
-        <h2 className="section-title">看三角表一层一层长出来</h2>
+        <h2 className="section-title">看三角表一层一层长出来 · 枚举分割点、区间和相加</h2>
         <div className="demo">
           <div className="demo__body">
             <StoneMergeDemo />
@@ -281,8 +281,8 @@ export default function StoneMerge() {
         />
         <Exercise
           pid="P1043"
-          name="[NOIP2003 提高组] 数字游戏"
-          hint="环形 + 区间 DP：数字排成环，分成 m 段求乘积和的最大/最小。断环为链（复制一倍）后，dp[l][r][k] 记「区间 [l,r] 分成 k 段」的最优，转移枚举最后一段的分割点；乘积可能为负，最小值转移别漏负负得正。"
+          name="[NOIP2003 普及组] 数字游戏"
+          hint="环形 + 区间 DP：环上分 m 段，各段和对 10 取模后相乘，求最大/最小。断环为链（复制一倍）后，dp[l][r][k] 记「区间 [l,r] 分成 k 段」的最优，转移枚举最后一段的分割点；取模后可能为负，最小值转移别漏负负得正。"
         />
       </section>
 
