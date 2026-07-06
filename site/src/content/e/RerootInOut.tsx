@@ -106,7 +106,9 @@ export default function RerootInOut() {
             对 <M>{'v'}</M> 来说那属于「子树内」，会重复计算。
           </p>
           <p>核心操作就一句话：</p>
-          <MB>{'\\text{父方向给 } v \\text{ 的贡献} = (\\text{父 } u \\text{ 的完整信息}) - (\\text{朝 } v \\text{ 子树的那一份})'}</MB>
+          <p style={{ textAlign: 'center', fontWeight: 600, margin: 'var(--sp-3) 0', color: 'var(--text-1)' }}>
+            父方向给 <M>{'v'}</M> 的贡献 = （父 <M>{'u'}</M> 的完整信息） − （朝 <M>{'v'}</M> 子树的那一份）
+          </p>
           <p>
             以「距离分层点权和」<M>{'dp[u][j]'}</M>（子树内距 <M>{'u'}</M> 恰为 <M>{'j'}</M> 的点权和）为例，换根 <M>{'u\\to v'}</M> 分三步：
           </p>
@@ -155,7 +157,7 @@ export default function RerootInOut() {
             <span className="step__n">2</span>
             <div className="step__b">
               <b>换根 1→2，补 up[2]。</b>父 1 的「除去 2 子树」= 只剩点 1 自己。它距 2 为 1，且这条边外还有 <M>{'\\mathrm{sz}[1]-\\mathrm{sz}[2]=1'}</M> 个点。
-              于是 <M>{'\\mathrm{up}[2]=(\\mathrm{up}[1]+\\text{扣掉2子树后的量})=2'}</M>，<M>{'\\mathrm{dist}[2]=\\mathrm{down}[2]+\\mathrm{up}[2]=1+2=3'}</M>。
+              于是 <M>{'\\mathrm{up}[2]=\\mathrm{up}[1]+2=0+2=2'}</M>（式中 <M>{'+2'}</M> 即扣掉节点 2 子树后剩下的量），<M>{'\\mathrm{dist}[2]=\\mathrm{down}[2]+\\mathrm{up}[2]=1+2=3'}</M>。
             </div>
           </div>
           <div className="step">
