@@ -5,7 +5,7 @@ import InfoBox from '../../components/ui/InfoBox'
 import CodeBlock from '../../components/ui/CodeBlock'
 import TreeKnapsackDemo from '../../components/demos/treedp/TreeKnapsackDemo'
 import { ExampleCard, Field, Exercise } from '../../components/ui/ProblemBits'
-import { TreeKnapDepFigure, PostorderFigure } from './TreeArt'
+import { TreeKnapDepFigure, PostorderFigure, VirtualRootFigure } from './TreeArt'
 
 const CODE_P2015 = `
 #include <iostream>
