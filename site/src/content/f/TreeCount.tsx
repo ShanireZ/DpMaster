@@ -278,7 +278,7 @@ export default function TreeCount() {
             「父到子 <M>{'O(1)'}</M> 递推方案计数」的<strong>漂亮范例</strong>，CSP 真题热度高。<M>{'f[u]=f[p]+1'}</M> 的递推 + DFS 上可回滚栈，把 <M>{'O(n^2)'}</M> 降到 <M>{'O(n)'}</M>。
           </Field>
           <Field k="转移 · 复杂度">
-            <M>{'f[u]=f[\\text{匹配 ( 的前驱}]+1'}</M>（u 为 <M>{')'}</M> 且成功匹配时），累加得答案；<M>{'O(n)'}</M>。
+            <M>{'f[u]=f[p]+1'}</M>（u 为 <M>{')'}</M> 且成功匹配时，<M>{'p'}</M> 是与之配对的 <M>{'('}</M> 的前驱），累加得答案；<M>{'O(n)'}</M>。
           </Field>
           <Field k="参考代码（DFS + 可回滚栈，主干示意）">
             <CodeBlock code={CODE_P5658} luogu="P5658" />

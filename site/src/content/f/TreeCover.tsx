@@ -288,7 +288,7 @@ export default function TreeCover() {
             父子 + 兄弟<strong>双约束</strong>的按色 DP，且<strong>同时求 max/min</strong>——一题覆盖「颜色枚举」与「极值双跑」两个要点，是覆盖类里计数/极值方向的代表。
           </Field>
           <Field k="转移 · 复杂度">
-            <M>{'f[u][col]=[col=\\text{绿}]+\\text{opt}_{a\\ne col,b\\ne col,a\\ne b}(f[l][a]+f[r][b])'}</M>；<M>{'O(n)'}</M>。
+            <M>{'f[u][col]=[col=\\text{green}]+\\text{opt}_{a\\ne col,b\\ne col,a\\ne b}(f[l][a]+f[r][b])'}</M>（<M>{'\\text{opt}'}</M> 为 max 或 min）；<M>{'O(n)'}</M>。
           </Field>
           <Field k="参考代码（括号串建树 + 按色 DP）">
             <CodeBlock code={CODE_P2585} luogu="P2585" />
