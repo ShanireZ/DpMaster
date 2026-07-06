@@ -1,6 +1,6 @@
 import type { CSSProperties } from 'react'
 import { Link } from 'react-router-dom'
-import { ArrowLeft, MousePointerClick } from 'lucide-react'
+import { ArrowLeft, ArrowRight, MousePointerClick } from 'lucide-react'
 import { M, MB } from '../../components/ui/Math'
 import InfoBox from '../../components/ui/InfoBox'
 import CodeBlock from '../../components/ui/CodeBlock'
@@ -449,7 +449,12 @@ return res                    # 循环 ⌊log₂ n⌋+1 次，每次一到两回
             <ArrowLeft size={15} style={{ verticalAlign: '-2px' }} /> 网格 / 矩阵上的 DP
           </span>
         </Link>
-        <span />
+        <Link to="/part/e/basic" className="next">
+          <span className="dir">下一部分 →</span>
+          <span className="nm">
+            换根基础模型 <ArrowRight size={15} style={{ verticalAlign: '-2px' }} />
+          </span>
+        </Link>
       </nav>
     </>
   )

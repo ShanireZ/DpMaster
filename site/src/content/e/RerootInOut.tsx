@@ -1,6 +1,6 @@
 import { Link } from 'react-router-dom'
 import { ArrowRight, ArrowLeft, MousePointerClick } from 'lucide-react'
-import { M, MB } from '../../components/ui/Math'
+import { M } from '../../components/ui/Math'
 import InfoBox from '../../components/ui/InfoBox'
 import CodeBlock from '../../components/ui/CodeBlock'
 import RerootInOutDemo from '../../components/demos/reroot/RerootInOutDemo'
