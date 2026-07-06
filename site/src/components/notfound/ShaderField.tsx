@@ -108,6 +108,10 @@ export default function ShaderField() {
     let running = true
     let start = performance.now()
     const frame = () => {
+      // 每帧内联自愈：显示尺寸与当前缓冲不符就重建（不依赖 RO/resize 事件时序）
+      const rect = canvas.getBoundingClientRect()
+      const rw = Math.round(rect.width * dpr), rh = Math.round(rect.height * dpr)
+      if (rw >= 2 && (Math.abs(rw - canvas.width) > 1 || Math.abs(rh - canvas.height) > 1)) resize()
       if (canvas.width >= 2) {
         const t = (performance.now() - start) / 1000
         gl.uniform2f(uRes, canvas.width, canvas.height)
