@@ -83,24 +83,46 @@ export default function BitBoardGame() {
 
   // DP 方案总数（点击才算，避免困难档每次渲染都跑）
   const [totalShown, setTotalShown] = useState<number | null>(null)
+  // 上一次是否处于达成态——用于「刚达成」的一次性庆祝音，避免在渲染期改 state
+  const [wasWin, setWasWin] = useState(false)
 
   const resetBoard = (spec: DiffSpec) => {
     setRows(Array<number>(spec.N).fill(0))
     setRevealed(false)
     setTotalShown(null)
+    setWasWin(false)
+  }
+
+  // 计算「若在 (r,c) 落子后」是否恰好达成，用于即时反馈音与计数。
+  const wouldWinAfter = (nextRows: number[]): boolean => {
+    const list: { r: number; c: number }[] = []
+    for (let r = 0; r < nextRows.length; r++)
+      for (let c = 0; c < N; c++) if ((nextRows[r] >> c) & 1) list.push({ r, c })
+    if (list.length !== K) return false
+    for (let i = 0; i < list.length; i++)
+      for (let j = i + 1; j < list.length; j++)
+        if (adjacent(list[i].r, list[i].c, list[j].r, list[j].c)) return false
+    return true
   }
 
   const toggle = (r: number, c: number) => {
-    setRows((prev) => {
-      const nx = prev.slice()
-      nx[r] = nx[r] ^ (1 << c)
-      return nx
-    })
+    const placing = ((rows[r] >> c) & 1) === 0
+    const nx = rows.slice()
+    nx[r] = nx[r] ^ (1 << c)
+    setRows(nx)
     setRevealed(false)
-    if (!muted) {
-      const placing = ((rows[r] >> c) & 1) === 0
+
+    const nowWin = wouldWinAfter(nx)
+    if (nowWin && !wasWin) {
+      setSolved((n) => n + 1)
+      if (!muted) {
+        blip(659, 0.1)
+        setTimeout(() => blip(988, 0.16), 90)
+      }
+    } else if (!muted) {
       blip(placing ? 480 + r * 40 : 300, 0.07)
     }
+    setWasWin(nowWin)
   }
 
   const pickDiff = (d: Difficulty) => {
