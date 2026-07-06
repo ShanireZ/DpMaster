@@ -1,0 +1,300 @@
+/* 换根 DP 演示专属样式（E 换根在 <html data-part="e"> 下 --accent-* 为灰紫宝石色）。
+   自定义 SVG 画树：节点=圆、边=线；配色只用设计令牌；★不做 opacity:0 起步动画
+   （逐帧动画由 useStepPlayer 的 index 驱动重渲染，不靠 CSS opacity 过渡）。前缀 rr__。 */
+
+.rr__toolbar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--sp-3) var(--sp-5);
+  margin-bottom: var(--sp-4);
+  padding: var(--sp-4);
+  border-radius: var(--r-2);
+  background: var(--surface-2);
+  border: 1px solid var(--border);
+}
+.rr__toolbar-label {
+  font-size: 11px;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--text-3);
+}
+.rr__tree-picker {
+  display: inline-flex;
+  gap: 4px;
+  padding: 3px;
+  border-radius: var(--r-full);
+  background: var(--surface-3);
+  border: 1px solid var(--border);
+}
+.rr__tree-pill {
+  padding: 6px 14px;
+  border-radius: var(--r-full);
+  font-size: 13px;
+  font-weight: 600;
+  line-height: 1;
+  color: var(--text-2);
+  background: transparent;
+  border: 1px solid transparent;
+  cursor: pointer;
+  transition:
+    color var(--t-fast),
+    background var(--t-fast);
+}
+.rr__tree-pill:hover {
+  color: var(--text-1);
+}
+.rr__tree-pill.on {
+  color: var(--text-on-accent);
+  background: var(--grad-accent);
+  border-color: transparent;
+}
+.rr__tree-pill.on:hover {
+  color: var(--text-on-accent);
+}
+
+/* ---------- 播放控制条 ---------- */
+.rr__transport {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-3);
+  flex-wrap: wrap;
+  margin-bottom: var(--sp-4);
+  padding: var(--sp-3) var(--sp-4);
+  border-radius: var(--r-2);
+  background: var(--surface-2);
+  border: 1px solid var(--border);
+}
+.rr__btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  height: 34px;
+  padding: 0 12px;
+  border-radius: var(--r-2);
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text-1);
+  background: var(--surface-3);
+  border: 1px solid var(--border);
+  transition: all var(--t-fast);
+}
+.rr__btn:hover:not(:disabled) {
+  border-color: var(--accent-2);
+}
+.rr__btn:disabled {
+  opacity: 0.4;
+}
+.rr__btn--primary {
+  background: var(--grad-accent);
+  color: var(--text-on-accent);
+  border-color: transparent;
+}
+.rr__btn--icon {
+  width: 34px;
+  padding: 0;
+}
+.rr__progress {
+  font-family: var(--font-mono);
+  font-size: 12px;
+  color: var(--text-3);
+  margin-left: auto;
+}
+.rr__phase {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 3px 10px;
+  border-radius: var(--r-full);
+  font-size: 12px;
+  font-weight: 600;
+  border: 1px solid var(--border);
+  color: var(--text-2);
+  background: var(--surface-3);
+}
+.rr__phase.p1 {
+  color: var(--viz-source);
+  border-color: color-mix(in srgb, var(--viz-source) 45%, transparent);
+}
+.rr__phase.p2 {
+  color: var(--accent-1);
+  border-color: color-mix(in srgb, var(--accent-1) 45%, transparent);
+}
+
+/* ---------- 树画布 ---------- */
+.rr__stage {
+  padding: var(--sp-4) var(--sp-3);
+  border-radius: var(--r-2);
+  background: var(--surface-1);
+  border: 1px solid var(--border);
+  overflow-x: auto;
+}
+.rr__stage svg {
+  display: block;
+  width: 100%;
+  min-width: 460px;
+  height: auto;
+}
+/* 节点圆过渡（换输入/换帧时的柔和变化，仅 fill/stroke，非 opacity 起步） */
+.rr__stage circle,
+.rr__stage line {
+  transition:
+    fill var(--t-fast),
+    stroke var(--t-fast),
+    stroke-width var(--t-fast);
+}
+.rr__node-hit {
+  cursor: pointer;
+}
+
+/* ---------- 解说 / 读数 ---------- */
+.rr__caption {
+  margin-top: var(--sp-4);
+  font-size: 14px;
+  line-height: 1.7;
+  color: var(--text-2);
+  padding: var(--sp-3) var(--sp-4);
+  border-radius: var(--r-2);
+  background: var(--surface-2);
+  border: 1px solid var(--border);
+  min-height: 3.2em;
+}
+.rr__caption b {
+  color: var(--text-1);
+  font-weight: 700;
+}
+.rr__formula {
+  margin-top: var(--sp-3);
+  padding: var(--sp-3) var(--sp-4);
+  border-radius: var(--r-2);
+  background: var(--surface-1);
+  border: 1px solid var(--border);
+  overflow-x: auto;
+}
+
+/* ---------- 对照读数（O(n²) vs O(n)） ---------- */
+.rr__cmp {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--sp-3);
+  margin-top: var(--sp-4);
+}
+.rr__cmp-card {
+  flex: 1;
+  min-width: 160px;
+  padding: var(--sp-3) var(--sp-4);
+  border-radius: var(--r-2);
+  background: var(--surface-2);
+  border: 1px solid var(--border);
+}
+.rr__cmp-card .k {
+  font-size: 11px;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--text-3);
+}
+.rr__cmp-card .v {
+  font-family: var(--font-mono);
+  font-size: 20px;
+  font-weight: 700;
+  margin-top: 4px;
+  color: var(--text-1);
+}
+.rr__cmp-card.brute .v {
+  color: var(--viz-invalid);
+}
+.rr__cmp-card.reroot .v {
+  color: var(--viz-chosen);
+}
+
+/* ---------- 距离和读数条（distsum 演示：点节点看它作根的距离和） ---------- */
+.rr__dist-legend {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--sp-3) var(--sp-5);
+  margin-top: var(--sp-4);
+  font-size: 13px;
+  color: var(--text-2);
+}
+.rr__dist-legend .sw {
+  display: inline-block;
+  width: 12px;
+  height: 12px;
+  border-radius: 3px;
+  margin-right: 6px;
+  vertical-align: -1px;
+}
+.rr__hint {
+  font-size: 14px;
+  color: var(--text-2);
+  margin-bottom: var(--sp-3);
+  padding: var(--sp-3) var(--sp-4);
+  border-radius: var(--r-2);
+  background: var(--surface-2);
+  border: 1px solid var(--border);
+}
+.rr__hint b {
+  font-family: var(--font-mono);
+  font-weight: 700;
+  color: var(--accent-1);
+}
+
+/* inout：距离分层小表 */
+.rr__layer-tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--sp-2);
+  margin-top: var(--sp-3);
+}
+.rr__layer-tag {
+  font-family: var(--font-mono);
+  font-size: 12px;
+  padding: 4px 10px;
+  border-radius: var(--r-1);
+  background: var(--surface-3);
+  border: 1px solid var(--border);
+  color: var(--text-2);
+}
+.rr__split {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--sp-3);
+  margin-top: var(--sp-4);
+}
+.rr__split-card {
+  flex: 1;
+  min-width: 150px;
+  padding: var(--sp-3) var(--sp-4);
+  border-radius: var(--r-2);
+  border: 1px solid var(--border);
+  background: var(--surface-2);
+}
+.rr__split-card .k {
+  font-size: 12px;
+  color: var(--text-3);
+}
+.rr__split-card .v {
+  font-family: var(--font-mono);
+  font-size: 18px;
+  font-weight: 700;
+  margin-top: 3px;
+}
+.rr__split-card.down {
+  border-color: color-mix(in srgb, var(--viz-source) 40%, transparent);
+}
+.rr__split-card.down .v {
+  color: var(--viz-source);
+}
+.rr__split-card.up {
+  border-color: color-mix(in srgb, var(--accent-1) 40%, transparent);
+}
+.rr__split-card.up .v {
+  color: var(--accent-1);
+}
+.rr__split-card.tot {
+  border-color: color-mix(in srgb, var(--viz-chosen) 40%, transparent);
+}
+.rr__split-card.tot .v {
+  color: var(--viz-chosen);
+}

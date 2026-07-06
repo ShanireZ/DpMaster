@@ -1,0 +1,34 @@
+/* 换根巡礼专属样式——复用 game.css 外壳（game / game__head / game__panel /
+   game__value / game__feedback / game__compare / gbtn / game__stats 等），此处只补
+   树画布。配色只用设计令牌（E 换根在 <html data-part="e"> 下 --accent-* 为灰紫宝石色）；
+   ★不做 opacity:0 起步动画（节点高亮靠 fill/stroke 切换）。前缀 grr__，绝不改动 game.css。 */
+
+.grr__body {
+  /* 左列树画布，右列面板 280（与其它游戏一致） */
+  grid-template-columns: 1fr 280px;
+}
+@media (max-width: 860px) {
+  .grr__body {
+    grid-template-columns: 1fr;
+  }
+}
+
+.grr__stage {
+  padding: var(--sp-3);
+  border-radius: var(--r-2);
+  background: var(--surface-1);
+  border: 1px solid var(--border);
+  overflow-x: auto;
+}
+.grr__stage svg {
+  display: block;
+  width: 100%;
+  min-width: 420px;
+  height: auto;
+}
+.grr__stage circle {
+  transition:
+    fill var(--t-fast),
+    stroke var(--t-fast),
+    r var(--t-fast);
+}

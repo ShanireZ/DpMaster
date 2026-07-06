@@ -1,0 +1,273 @@
+/* 树形 DP 系列演示的局部样式（自绘 SVG 有根树 + 后序逐帧动画） */
+
+/* —— 工具条：编辑树的点权 / 结构（复用 knapsack-demo.css 的 .kd__* 骨架，这里补树专属） */
+.td__toolbar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  gap: var(--sp-4) var(--sp-5);
+  margin-bottom: var(--sp-4);
+  padding: var(--sp-4);
+  border-radius: var(--r-2);
+  background: var(--surface-2);
+  border: 1px solid var(--border);
+}
+.td__group-label {
+  font-size: 11px;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--text-3);
+  margin-bottom: 8px;
+}
+.td__nodes {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--sp-3);
+}
+.td__node-chip {
+  position: relative;
+  padding: 8px 10px 8px 20px;
+  border-radius: var(--r-2);
+  background: var(--surface-3);
+  border: 1px solid var(--border);
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.td__node-dot {
+  position: absolute;
+  left: -9px;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  background: var(--grad-accent);
+  color: var(--text-on-accent);
+  display: grid;
+  place-items: center;
+  font-size: 11px;
+  font-weight: 700;
+  font-family: var(--font-display);
+}
+.td__hint {
+  font-size: 14px;
+  color: var(--text-2);
+  margin-bottom: var(--sp-4);
+  padding: var(--sp-3) var(--sp-4);
+  border-radius: var(--r-2);
+  background: var(--surface-2);
+  border: 1px solid var(--border);
+}
+.td__hint b {
+  font-family: var(--font-mono);
+  font-weight: 700;
+}
+.td__hint .ans {
+  color: var(--viz-chosen);
+}
+
+/* —— 舞台：SVG 树 —— */
+.td__stage {
+  padding: var(--sp-4) var(--sp-3);
+  border-radius: var(--r-2);
+  background: var(--surface-1);
+  border: 1px solid var(--border);
+  overflow-x: auto;
+}
+.td__stage svg {
+  display: block;
+  width: 100%;
+  min-width: 460px;
+  height: auto;
+}
+.td__stage g.node circle {
+  transition:
+    fill var(--t-fast),
+    stroke var(--t-fast);
+}
+
+/* —— 播放控制条（仿 dpctl，逐帧后序） —— */
+.td__ctl {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-4);
+  flex-wrap: wrap;
+  margin-top: var(--sp-4);
+  padding: var(--sp-3) var(--sp-4);
+  border-radius: var(--r-2);
+  background: var(--surface-2);
+  border: 1px solid var(--border);
+}
+.td__ctl-btns {
+  display: flex;
+  gap: 6px;
+}
+.td__ctl-btns button {
+  width: 38px;
+  height: 38px;
+  border-radius: var(--r-2);
+  border: 1px solid var(--border);
+  background: var(--surface-1);
+  color: var(--text-1);
+  display: grid;
+  place-items: center;
+}
+.td__ctl-btns button:hover:not(:disabled) {
+  border-color: var(--accent-2);
+}
+.td__ctl-btns button:disabled {
+  opacity: 0.35;
+}
+.td__ctl-btns button.primary {
+  background: var(--grad-accent);
+  color: var(--text-on-accent);
+  border-color: transparent;
+}
+.td__ctl-scrub {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-3);
+  flex: 1;
+  min-width: 160px;
+}
+.td__ctl-scrub input[type='range'] {
+  flex: 1;
+  accent-color: var(--accent-2);
+}
+.td__ctl-count {
+  font-family: var(--font-mono);
+  font-size: 13px;
+  color: var(--text-2);
+  min-width: 44px;
+  text-align: right;
+}
+.td__ctl-speed {
+  display: flex;
+  gap: 4px;
+}
+.td__ctl-speed button {
+  padding: 6px 10px;
+  border-radius: var(--r-1);
+  font-size: 12px;
+  font-family: var(--font-mono);
+  border: 1px solid var(--border);
+  background: var(--surface-1);
+  color: var(--text-2);
+}
+.td__ctl-speed button.on {
+  color: var(--text-on-accent);
+  background: var(--grad-accent);
+  border-color: transparent;
+}
+
+/* —— 逐帧解说面板 —— */
+.td__panel {
+  margin-top: var(--sp-4);
+  font-size: 14px;
+  color: var(--text-2);
+  padding: var(--sp-4);
+  border-radius: var(--r-2);
+  background: var(--surface-2);
+  border: 1px solid var(--border);
+  line-height: 1.7;
+  min-height: 40px;
+}
+.td__panel b {
+  color: var(--text-1);
+}
+.td__panel .mono {
+  font-family: var(--font-mono);
+}
+
+/* —— 图例 —— */
+.td__legend {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--sp-4);
+  margin-top: var(--sp-3);
+  font-size: 12.5px;
+  color: var(--text-3);
+}
+.td__legend span {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+.td__legend i {
+  width: 14px;
+  height: 14px;
+  border-radius: 5px;
+  border: 2px solid var(--border-strong);
+  display: inline-block;
+}
+
+/* —— 节点上/旁的 dp 值标签盒（HTML 覆盖在 SVG 外时用；此处主要在 SVG 内画） —— */
+.td__readout {
+  margin-top: var(--sp-4);
+  font-size: 14px;
+  color: var(--text-2);
+  padding: var(--sp-3) var(--sp-4);
+  border-radius: var(--r-2);
+  background: var(--surface-2);
+  border: 1px solid var(--border);
+}
+.td__readout b {
+  font-family: var(--font-mono);
+  font-weight: 700;
+  color: var(--text-1);
+}
+.td__readout .ans {
+  color: var(--viz-chosen);
+}
+
+/* 树上背包：每节点旁的小 dp 表 */
+.tk__tables {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--sp-4);
+  margin-top: var(--sp-4);
+}
+.tk__table {
+  border: 1px solid var(--border);
+  border-radius: var(--r-2);
+  background: var(--surface-2);
+  padding: var(--sp-3);
+  font-family: var(--font-mono);
+  font-size: 12px;
+}
+.tk__table.active {
+  border-color: var(--accent-2);
+  box-shadow: var(--glow-accent);
+}
+.tk__table-cap {
+  font-size: 11px;
+  color: var(--text-3);
+  margin-bottom: 6px;
+  letter-spacing: 0.05em;
+}
+.tk__row {
+  display: flex;
+  gap: 3px;
+}
+.tk__cell {
+  width: 30px;
+  height: 26px;
+  display: grid;
+  place-items: center;
+  border-radius: 5px;
+  background: var(--surface-3);
+  color: var(--text-2);
+  border: 1px solid var(--border);
+}
+.tk__cell.head {
+  background: transparent;
+  border-color: transparent;
+  color: var(--text-3);
+  font-size: 10px;
+}
+.tk__cell.best {
+  background: color-mix(in srgb, var(--viz-chosen) 20%, var(--surface-3));
+  color: var(--text-1);
+  border-color: var(--viz-chosen);
+}
