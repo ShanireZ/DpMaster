@@ -290,3 +290,139 @@ export function JointWeightFigure() {
     </svg>
   )
 }
+
+// ⑧ 森林接虚根：多棵依赖树挂到虚根 0 下，化森林为树
+export function VirtualRootFigure() {
+  const trees: [number, number][][] = [
+    // 每棵树的节点坐标（相对）
+    [
+      [110, 130],
+      [70, 210],
+      [150, 210],
+    ],
+    [[290, 130]],
+    [
+      [430, 130],
+      [430, 210],
+    ],
+  ]
+  return (
+    <svg viewBox="0 0 560 250" role="img" aria-label="森林接一个虚根 0 合成一棵树">
+      {/* 虚根 */}
+      <g transform="translate(280,44)">
+        <circle r="22" fill="var(--grad-accent)" stroke="var(--accent-2)" strokeWidth="2.2" strokeDasharray="4 3" />
+        <text textAnchor="middle" y="5" fontSize="15" fontWeight="700" fill="var(--text-on-accent)">
+          0
+        </text>
+      </g>
+      {/* 虚根到每棵树根的虚线边 */}
+      {trees.map((t, i) => (
+        <line
+          key={`ve${i}`}
+          x1="280"
+          y1="66"
+          x2={t[0][0]}
+          y2={t[0][1] - 20}
+          stroke="var(--accent-2)"
+          strokeWidth="1.8"
+          strokeDasharray="4 3"
+        />
+      ))}
+      {/* 各树内部边 */}
+      {trees.map((t, ti) =>
+        t.slice(1).map(([x, y], k) => (
+          <line key={`te${ti}-${k}`} x1={t[0][0]} y1={t[0][1] + 20} x2={x} y2={y - 20} stroke="var(--border-strong)" strokeWidth="1.6" />
+        )),
+      )}
+      {trees.flat().map(([x, y], i) => (
+        <g key={i} transform={`translate(${x},${y})`}>
+          <circle r="19" fill="var(--surface-3)" stroke="var(--border-strong)" strokeWidth="1.5" />
+        </g>
+      ))}
+      <text x="280" y="240" textAnchor="middle" fontSize="12" fill="var(--text-2)">
+        虚线 = 虚根 0 补出的边：三棵依赖树瞬间变成一棵以 0 为根的树，选 m 门真课 = 含虚根选 m+1 个点。
+      </text>
+    </svg>
+  )
+}
+
+// ⑨ 重心：删去它后最大子树最小
+export function CentroidFigure() {
+  const P: Record<string, [number, number]> = {
+    c: [280, 130],
+    a: [160, 60],
+    b: [400, 60],
+    d: [180, 210],
+    e: [380, 210],
+  }
+  const edges: [string, string][] = [
+    ['c', 'a'],
+    ['c', 'b'],
+    ['c', 'd'],
+    ['c', 'e'],
+  ]
+  return (
+    <svg viewBox="0 0 560 250" role="img" aria-label="树的重心：删去后最大子树最小">
+      {edges.map(([a, b], i) => (
+        <line key={i} x1={P[a][0]} y1={P[a][1]} x2={P[b][0]} y2={P[b][1]} stroke="var(--border-strong)" strokeWidth="1.6" />
+      ))}
+      {Object.entries(P).map(([k, [x, y]]) => {
+        const isC = k === 'c'
+        return (
+          <g key={k} transform={`translate(${x},${y})`}>
+            <circle
+              r="20"
+              fill={isC ? 'var(--grad-accent)' : 'var(--surface-3)'}
+              stroke={isC ? 'var(--accent-2)' : 'var(--border-strong)'}
+              strokeWidth={isC ? 2.6 : 1.5}
+            />
+            <text textAnchor="middle" y="5" fontSize="13" fontWeight="700" fill={isC ? 'var(--text-on-accent)' : 'var(--text-1)'}>
+              {k === 'c' ? '重心' : ''}
+            </text>
+          </g>
+        )
+      })}
+      <text x="280" y="240" textAnchor="middle" fontSize="12" fill="var(--text-2)">
+        重心：以它为根时，最大的那棵子树的节点数<strong>最小</strong>（各方向最均衡）。用子树大小 sz[u] 判定。
+      </text>
+    </svg>
+  )
+}
+
+// ⑩ 括号树：沿根链把 f 从父递推到子
+export function BracketTreeFigure() {
+  const seq = ['(', '(', ')', ')']
+  const xs = [130, 230, 330, 430]
+  return (
+    <svg viewBox="0 0 560 200" role="img" aria-label="括号树沿根链 O(1) 递推 f">
+      {xs.slice(0, -1).map((x, i) => (
+        <line key={i} x1={x + 22} y1="70" x2={xs[i + 1] - 22} y2="70" stroke="var(--border-strong)" strokeWidth="1.6" />
+      ))}
+      {seq.map((ch, i) => {
+        const matched = i >= 2 // 后两个 ) 配对成功
+        return (
+          <g key={i} transform={`translate(${xs[i]},70)`}>
+            <circle
+              r="22"
+              fill={matched ? 'color-mix(in srgb, var(--viz-chosen) 20%, var(--surface-3))' : 'var(--surface-3)'}
+              stroke={matched ? 'var(--viz-chosen)' : 'var(--border-strong)'}
+              strokeWidth={matched ? 2.2 : 1.5}
+            />
+            <text textAnchor="middle" y="6" fontSize="18" fontWeight="700" className="mono" fill="var(--text-1)">
+              {ch}
+            </text>
+            <text textAnchor="middle" y="42" fontSize="11" className="mono" fill="var(--accent-1)">
+              f={[0, 0, 1, 2][i]}
+            </text>
+          </g>
+        )
+      })}
+      <text x="280" y="130" textAnchor="middle" fontSize="12.5" fill="var(--text-2)">
+        沿根到点的链：每个 ) 若配对成功，f[u] = f[配对(的前驱] + 1
+      </text>
+      <text x="280" y="172" textAnchor="middle" fontSize="11.5" fill="var(--text-3)">
+        「(())」在最后一位结尾有 2 个合法子串：() 与 (())——f 逐位 O(1) 累进，无需重扫
+      </text>
+    </svg>
+  )
+}
