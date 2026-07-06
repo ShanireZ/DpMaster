@@ -74,10 +74,10 @@ export const PARTS: Part[] = [
     motif: '以不同节点为心的放射树',
     tagline: '二次扫描：固定根一遍 DFS，再一遍换根 O(1) 推每个点。',
     types: [
-      { slug: 'basic', title: '换根基础模型', blurb: '二次扫描骨架', status: 'planned' },
-      { slug: 'distsum', title: '距离和换根', blurb: '深度和·带权距离和', status: 'planned' },
-      { slug: 'inout', title: '子树内外合并', blurb: '距离≤k 点权和', status: 'planned' },
-      { slug: 'center', title: '中心 / 偏心距', blurb: '树的直径·核', status: 'planned' },
+      { slug: 'basic', title: '换根基础模型', blurb: '二次扫描骨架', status: 'ready' },
+      { slug: 'distsum', title: '距离和换根', blurb: '深度和·带权距离和', status: 'ready' },
+      { slug: 'inout', title: '子树内外合并', blurb: '距离≤k 点权和', status: 'ready' },
+      { slug: 'center', title: '中心 / 偏心距', blurb: '树的直径·核', status: 'ready' },
     ],
   },
   {
@@ -85,11 +85,11 @@ export const PARTS: Part[] = [
     motif: '分叉的树冠',
     tagline: 'dp[u][…] 表示子树最优，后序遍历自底向上合并。',
     types: [
-      { slug: 'select', title: '选点 / 最大独立集', blurb: '没有上司的舞会', status: 'planned' },
-      { slug: 'knapsack', title: '树上背包', blurb: '二叉苹果树·选课', status: 'planned' },
-      { slug: 'diameter', title: '直径 / 重心 DP', blurb: '过点最长链', status: 'planned' },
-      { slug: 'cover', title: '覆盖 / 支配 / 染色', blurb: '三状态·染色计数', status: 'planned' },
-      { slug: 'count', title: '方案数 / 距离统计', blurb: '联合权值·括号树', status: 'planned' },
+      { slug: 'select', title: '选点 / 最大独立集', blurb: '没有上司的舞会', status: 'ready' },
+      { slug: 'knapsack', title: '树上背包', blurb: '二叉苹果树·选课', status: 'ready' },
+      { slug: 'diameter', title: '直径 / 重心 DP', blurb: '过点最长链', status: 'ready' },
+      { slug: 'cover', title: '覆盖 / 支配 / 染色', blurb: '三状态·染色计数', status: 'ready' },
+      { slug: 'count', title: '方案数 / 距离统计', blurb: '联合权值·括号树', status: 'ready' },
     ],
   },
   {
@@ -97,11 +97,11 @@ export const PARTS: Part[] = [
     motif: '比特点阵 / 超立方体',
     tagline: '状态是一个集合，用二进制整数表示；转移在 mask 间进行。',
     types: [
-      { slug: 'board', title: '棋盘 / 轮廓状压', blurb: '互不侵犯·炮兵阵地', status: 'planned' },
-      { slug: 'tsp', title: '集合状压 / TSP', blurb: '最短 Hamilton·吃奶酪', status: 'planned' },
-      { slug: 'cover', title: '状压 + 覆盖', blurb: '愤怒的小鸟·宝藏', status: 'planned' },
-      { slug: 'subset', title: '综合技巧', blurb: '枚举子集·计数变形', status: 'planned' },
-      { slug: 'plug', title: '插头 DP（选修）', blurb: '轮廓线连通性', status: 'planned' },
+      { slug: 'board', title: '棋盘 / 轮廓状压', blurb: '互不侵犯·炮兵阵地', status: 'ready' },
+      { slug: 'tsp', title: '集合状压 / TSP', blurb: '最短 Hamilton·吃奶酪', status: 'ready' },
+      { slug: 'cover', title: '状压 + 覆盖', blurb: '愤怒的小鸟·宝藏', status: 'ready' },
+      { slug: 'subset', title: '综合技巧', blurb: '枚举子集·计数变形', status: 'ready' },
+      { slug: 'plug', title: '插头 DP（选修）', blurb: '轮廓线连通性', status: 'ready' },
     ],
   },
 ]
