@@ -215,7 +215,7 @@ export default function ScoreTree() {
       </section>
 
       <section className="lesson">
-        <h2 className="section-title">看三角表一层一层长出来</h2>
+        <h2 className="section-title">看三角表一层一层长出来 · 枚举根、左右相乘</h2>
         <div className="demo">
           <div className="demo__body">
             <ScoreTreeDemo />
@@ -327,7 +327,7 @@ export default function ScoreTree() {
         />
         <Exercise
           pid="P1043"
-          name="[NOIP2003 提高组] 数字游戏"
+          name="[NOIP2003 普及组] 数字游戏"
           hint="环形 + 区间划分 DP：数字排成环，切成 m 段求各段和取模再相乘的最大/最小。断环为链后，dp[l][r][k] 记「区间 [l,r] 分成 k 段」的最优，转移枚举最后一段的分割点。取模后可能为负，求最小值时别漏「负负得正」。与加分树同为『区间上枚举一个分界并合并』的区间 DP。"
         />
         <p className="prose" style={{ maxWidth: 'none', fontSize: '13px', color: 'var(--text-3)', marginTop: 'var(--sp-3)' }}>

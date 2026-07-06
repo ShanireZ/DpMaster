@@ -350,7 +350,7 @@ export default function LinearPath() {
 
       <div className="pointer-cue">
         <Gamepad2 size={18} />
-        想更直观地体会「一步一步累积」？到 <Link to="/part/b" style={{ color: 'var(--accent-1)', fontWeight: 600 }}>A 部分页的互动小游戏</Link>里，
+        想更直观地体会「一步一步累积」？到 <Link to="/part/b" style={{ color: 'var(--accent-1)', fontWeight: 600 }}>本部分（线性 DP）页的互动小游戏</Link>里，
         亲手在格子间走一条路，看每一步如何叠出最终的答案。
       </div>
 

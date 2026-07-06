@@ -45,3 +45,12 @@ a.typerow:hover { background: var(--surface-2); }
 .badge-status.planned { color: var(--text-3); border: 1px solid var(--border); }
 .typerow__arrow { color: var(--text-3); }
 a.typerow:hover .typerow__arrow { color: var(--text-1); }
+
+/* 小节标题（部分页「互动游戏」区用；与 typepage.css 同款，避免依赖 lazy 加载的 typepage chunk） */
+.section-title {
+  display: flex; align-items: center; gap: var(--sp-3);
+  font-size: 22px; margin-bottom: var(--sp-4);
+}
+.section-title::before {
+  content: ''; width: 8px; height: 26px; border-radius: 3px; background: var(--grad-accent); flex: none;
+}

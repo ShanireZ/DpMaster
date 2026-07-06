@@ -244,7 +244,7 @@ export default function KnapsackComplete() {
           </Field>
         </ExampleCard>
 
-        <ExampleCard pid="P5662" name="[CSP-J2019] 纪念品" src="CSP-J 2019" diff="普及/提高-">
+        <ExampleCard pid="P5662" name="[CSP-J2019] 纪念品" src="CSP-J 2019" diff="普及+/提高">
           <Field k="题意">
             <M>{'T'}</M> 天、<M>{'n'}</M> 种纪念品，每天可无限量买卖。用初始金币 <M>{'m'}</M>，问 <M>{'T'}</M> 天后最多有多少金币。
           </Field>
@@ -256,7 +256,7 @@ export default function KnapsackComplete() {
           </Field>
         </ExampleCard>
 
-        <ExampleCard pid="P5020" name="[NOIP2018 提高组] 货币系统" src="NOIP2018 提高" diff="提高+">
+        <ExampleCard pid="P5020" name="[NOIP2018 提高组] 货币系统" src="NOIP2018 提高" diff="提高+/省选-">
           <Field k="题意">
             给定 <M>{'n'}</M> 种面值的货币系统，求一个<strong>面值种数最少</strong>的等价系统（能表示的金额集合完全相同）。
           </Field>
@@ -281,7 +281,7 @@ export default function KnapsackComplete() {
 
       <div className="pointer-cue">
         <Gamepad2 size={18} />
-        回到 <Link to="/part/a" style={{ color: 'var(--accent-1)', fontWeight: 600 }}>B 部分页的「装包大师」</Link>，切到不同难度再挑一挑——虽然它是 01 规则，但「凑最大价值」的直觉两类背包相通。
+        回到 <Link to="/part/a" style={{ color: 'var(--accent-1)', fontWeight: 600 }}>A 部分页的「装包大师」</Link>时，不妨设想若同一件宝物可以无限件地装——完全背包正是把「每件只拿一次」的枷锁彻底松开的那一步。
       </div>
 
       <nav className="type-nav">

@@ -277,7 +277,7 @@ export default function EditDistance() {
           </Field>
         </ExampleCard>
 
-        <ExampleCard pid="P1279" name="字串距离" src="洛谷原生 P" diff="普及+/提高">
+        <ExampleCard pid="P1279" name="字串距离" src="洛谷原生" diff="普及+/提高">
           <Field k="题意">
             给两个串与一个空位代价 <M>{'k'}</M>。把两串对齐（允许在任一串插入「空位」），一段对齐的代价 = 各位配对代价之和：两字符对齐记 ASCII 差 <M>{'|A_i-B_j|'}</M>，字符对空位记 <M>{'k'}</M>。求最小总代价。
           </Field>
@@ -295,11 +295,6 @@ export default function EditDistance() {
 
       <section className="lesson exercises">
         <h2 className="section-title">练习</h2>
-        <Exercise
-          pid="P2543"
-          name="[AGTC]"
-          hint="编辑距离原版：允许增（插）、删、改三种操作，把 A 变成 B 求最少步数。直接套本页主演示的三向转移 dp[i][j]=min(删,插,改)，是 P2758 之外再练一遍裸模板、把边界与三来源写熟的一题。"
-        />
         <Exercise
           pid="P1032"
           name="[NOIP2002 提高组] 字串变换"

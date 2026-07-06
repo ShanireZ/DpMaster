@@ -60,7 +60,7 @@
   height: 14px; border-radius: 999px; background: var(--surface-3); overflow: hidden; border: 1px solid var(--border);
 }
 .gauge__fill { height: 100%; background: var(--grad-accent); transition: width var(--t-med) var(--ease); }
-.gauge__fill.over { background: linear-gradient(120deg, #fb7185, #f43f5e); }
+.gauge__fill.over { background: linear-gradient(120deg, var(--viz-invalid), color-mix(in srgb, var(--viz-invalid) 72%, #000)); }
 
 .game__value { text-align: center; padding: var(--sp-4) 0; }
 .game__value b { font-family: var(--font-display); font-size: 46px; line-height: 1; }

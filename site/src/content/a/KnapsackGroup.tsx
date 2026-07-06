@@ -267,7 +267,7 @@ export default function KnapsackGroup() {
           </Field>
         </ExampleCard>
 
-        <ExampleCard pid="P5322" name="[BJOI2019] 排兵布阵" src="BJOI2019" diff="提高+">
+        <ExampleCard pid="P5322" name="[BJOI2019] 排兵布阵" src="BJOI2019" diff="提高+/省选-">
           <Field k="题意">
             <M>{'S'}</M> 位对手、<M>{'n'}</M> 座城池、你有 <M>{'m'}</M> 名士兵，要把兵力分配到各城。在某城派出严格<strong>多于对手 2 倍</strong>的兵力即击败该对手，击败第 <M>{'i'}</M> 城的对手得 <M>{'i'}</M> 分（对每位对手分别结算）。求最高总分。
           </Field>
@@ -283,12 +283,12 @@ export default function KnapsackGroup() {
       <section className="lesson exercises">
         <h2 className="section-title">练习</h2>
         <p className="prose" style={{ maxWidth: 'none', fontSize: '13.5px', color: 'var(--text-3)', marginBottom: 'var(--sp-4)' }}>
-          说明：纯分组背包的洛谷原生题目池较窄，更多「组内互斥」的进阶练习并入 <Link to="/part/a/dep" style={{ color: 'var(--accent-2)' }}>B7 有依赖的背包</Link> 与 <Link to="/part/f" style={{ color: 'var(--accent-2)' }}>F 树上背包</Link>。下面两题分别从「依赖归约」与「裸模板复现」两头夯实基础。
+          说明：纯分组背包的洛谷原生题目池较窄，更多「组内互斥」的进阶练习并入 <Link to="/part/a/dep" style={{ color: 'var(--accent-2)' }}>有依赖的背包</Link> 与 <Link to="/part/f" style={{ color: 'var(--accent-2)' }}>F 树上背包</Link>。下面两题分别从「依赖归约」与「裸模板复现」两头夯实基础。
         </p>
         <Exercise
           pid="P1064"
           name="[NOIP2006 提高组] 金明的预算方案"
-          hint="主件-附件的依赖可归约为分组背包：把「一个主件 + 它的若干附件」的所有合法组合（仅主 / 主+附1 / 主+附2 / 主+附1+2）打包成同一组的组内物品，组内至多选一件。也属 B7，做承接。"
+          hint="主件-附件的依赖可归约为分组背包：把「一个主件 + 它的若干附件」的所有合法组合（仅主 / 主+附1 / 主+附2 / 主+附1+2）打包成同一组的组内物品，组内至多选一件。也属有依赖背包，做承接。"
         />
         <Exercise
           pid="P1757"
@@ -299,7 +299,7 @@ export default function KnapsackGroup() {
 
       <div className="pointer-cue">
         <Gamepad2 size={18} />
-        回到 <Link to="/part/a" style={{ color: 'var(--accent-1)', fontWeight: 600 }}>B 部分页的「装包大师」</Link>再挑一挑——虽然它是 01 规则，但「在约束下凑最大价值」的直觉与分组背包相通。
+        到 <Link to="/part/a" style={{ color: 'var(--accent-1)', fontWeight: 600 }}>A 部分页的「装包大师」</Link>挑物品时留意：若把清单按「同一栏里只能拿一件」重新分栏，你面对的就是分组背包——组内互斥，正是它区别于 01 背包的那一笔。
       </div>
 
       <nav className="type-nav">

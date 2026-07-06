@@ -266,7 +266,7 @@ export default function KnapsackMultiple() {
           </Field>
         </ExampleCard>
 
-        <ExampleCard pid="P1776" name="宝物筛选" src="洛谷原生" diff="提高+/省选-">
+        <ExampleCard pid="P1776" name="宝物筛选" src="NOI导刊2010" diff="提高+/省选-">
           <Field k="题意">
             <M>{'n'}</M> 种宝物，第 <M>{'i'}</M> 种价值 <M>{'v_i'}</M>、重量 <M>{'w_i'}</M>、数量 <M>{'m_i'}</M>，背包承重 <M>{'W'}</M>，求最大总价值。
           </Field>
@@ -291,7 +291,7 @@ export default function KnapsackMultiple() {
 
       <div className="pointer-cue">
         <Gamepad2 size={18} />
-        想找手感？到 <Link to="/part/a" style={{ color: 'var(--accent-1)', fontWeight: 600 }}>B 部分页的「装包大师」</Link>再挑一挑——虽然它按 01 规则，但「有限资源里凑最大价值」的直觉，多重背包完全相通。
+        到 <Link to="/part/a" style={{ color: 'var(--accent-1)', fontWeight: 600 }}>A 部分页的「装包大师」</Link>时，把某件宝物想成「库存只有有限件、拿完就没」——这份「有限件」的斤斤计较，正是多重背包要拆包处理的核心。
       </div>
 
       <nav className="type-nav">

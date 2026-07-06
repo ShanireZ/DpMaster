@@ -96,26 +96,33 @@ export default function ShaderField() {
 
     const dpr = Math.min(1.5, window.devicePixelRatio || 1)
     const resize = () => {
-      const w = canvas.clientWidth, h = canvas.clientHeight
+      const r = canvas.getBoundingClientRect()
+      const w = Math.round(r.width), h = Math.round(r.height)
+      if (w < 2 || h < 2) return
       canvas.width = Math.max(1, Math.floor(w * dpr))
       canvas.height = Math.max(1, Math.floor(h * dpr))
       gl.viewport(0, 0, canvas.width, canvas.height)
     }
-    resize()
-    const ro = new ResizeObserver(resize)
-    ro.observe(canvas)
 
     let raf = 0
     let running = true
     let start = performance.now()
     const frame = () => {
-      const t = (performance.now() - start) / 1000
-      gl.uniform2f(uRes, canvas.width, canvas.height)
-      gl.uniform1f(uTime, t)
-      gl.uniform2f(uMouse, mouse.x, mouse.y)
-      gl.drawArrays(gl.TRIANGLES, 0, 3)
+      if (canvas.width >= 2) {
+        const t = (performance.now() - start) / 1000
+        gl.uniform2f(uRes, canvas.width, canvas.height)
+        gl.uniform1f(uTime, t)
+        gl.uniform2f(uMouse, mouse.x, mouse.y)
+        gl.drawArrays(gl.TRIANGLES, 0, 3)
+      }
       if (running && !reduce) raf = requestAnimationFrame(frame)
     }
+    const onResize = () => { resize(); if (reduce) frame() }
+    resize()
+    requestAnimationFrame(onResize)
+    const ro = new ResizeObserver(onResize)
+    ro.observe(canvas)
+    window.addEventListener('resize', onResize)
     frame()
 
     const onVis = () => {
@@ -134,6 +141,7 @@ export default function ShaderField() {
       running = false
       cancelAnimationFrame(raf)
       window.removeEventListener('pointermove', onMove)
+      window.removeEventListener('resize', onResize)
       document.removeEventListener('visibilitychange', onVis)
       ro.disconnect()
       gl.getExtension('WEBGL_lose_context')?.loseContext()

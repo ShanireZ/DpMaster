@@ -400,7 +400,28 @@
   font-weight: 700;
 }
 
-/* 向量 × 矩阵 = 向量 */
+/* 约定说明条：列向量左乘 M·old（与正文行向量右乘转置等价） */
+.mbd__convention {
+  font-size: 12.5px;
+  line-height: 1.6;
+  color: var(--text-2);
+  padding: var(--sp-3) var(--sp-4);
+  margin-bottom: var(--sp-4);
+  border-radius: var(--r-2);
+  background: color-mix(in srgb, var(--accent-1) 5%, var(--surface-2));
+  border: 1px solid var(--border);
+  border-left: 3px solid var(--accent-2);
+}
+.mbd__convention b {
+  color: var(--text-1);
+  font-weight: 700;
+}
+.mbd__convention .mono {
+  font-family: var(--font-mono);
+  color: var(--accent-1);
+}
+
+/* M × 旧状态(列) = 新状态(列) */
 .mbd__equation {
   display: flex;
   align-items: center;

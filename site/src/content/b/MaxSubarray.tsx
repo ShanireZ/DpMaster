@@ -76,9 +76,9 @@ int main()
     }
 
     long long ans = -0x3f3f3f3f3f3f3f3f;
-    for (int i = 1; i < n; i++)                  // 枚举分界：左段落在 [1..i]，右段落在 [i+1..n]
+    for (int i = 2; i < n; i++)                  // 枚举被跳过的中间数 i：左段收尾于 ≤ i-1，右段起于 ≥ i+1
     {
-        ans = max(ans, bp[i] + bs[i + 1]);       // 两段不相交，各取自己那侧的最大
+        ans = max(ans, bp[i - 1] + bs[i + 1]);   // 两段不相交且至少隔开中间的 i，各取自己那侧的最大
     }
 
     cout << ans << endl;
@@ -180,8 +180,8 @@ export default function MaxSubarray() {
         <h2 className="section-title">状态与转移：接续，还是另起</h2>
         <div className="prose">
           <p>
-            和 <Link to="/part/b/lis" style={{ color: 'var(--accent-2)' }}>LIS</Link> 同一个抓手：子段可以在任意位置结尾，直接对整体设状态很滑，那就<strong>强制枚举它以哪个数结尾</strong>。
-            设 <M>{'dp[i]'}</M> 表示：<strong>以 <M>{'a_i'}</M> 为最后一个元素</strong>的最大子段和。这样每一段都被它的结尾唯一「认领」，不重不漏。
+            沿用 <Link to="/part/b/lis" style={{ color: 'var(--accent-2)' }}>LIS</Link> 那把母题抓手：最大子段落在哪儿事先不知道，与其对「全局最优段」直接设状态，不如<strong>钉住它的结尾</strong>。
+            设 <M>{'dp[i]'}</M> 表示：<strong>以 <M>{'a_i'}</M> 为最后一个元素</strong>的最大子段和。于是 <M>{'n'}</M> 个不同结尾把所有候选段分门别类地兜住，一个也不漏、一个也不重。
           </p>
         </div>
         <figure className="figure">
@@ -325,10 +325,10 @@ export default function MaxSubarray() {
             在序列中选<strong>两段不相交、非空</strong>的子段，使两段和最大。求这个最大值。
           </Field>
           <Field k="为什么选它">
-            把「两段不相交」单独练透，是环形题 P1121 的台阶。核心套路是<strong>前后缀最优拼接</strong>：正向求「前缀内最大子段」<M>{'bp[i]'}</M>、反向求「后缀内最大子段」<M>{'bs[i]'}</M>，再枚举分界 <M>{'i'}</M> 让两段各据一侧——这是一大类「拆成互不相交若干段」问题的通法。
+            把「两段不相交」单独练透，是环形题 P1121 的台阶。核心套路是<strong>前后缀最优拼接</strong>：正向求「前缀内最大子段」<M>{'bp[i]'}</M>、反向求「后缀内最大子段」<M>{'bs[i]'}</M>，再枚举<strong>被跳过的中间数</strong> <M>{'i'}</M>，让左段取 <M>{'bp[i-1]'}</M>、右段取 <M>{'bs[i+1]'}</M> 各据一侧——这是一大类「拆成互不相交若干段」问题的通法。
           </Field>
           <Field k="转移 · 复杂度">
-            <M>{'pre/suf'}</M> 各跑一遍 Kadane，<M>{'bp/bs'}</M> 做前后缀最大；答案 <M>{'\\max_{i}(bp[i]+bs[i{+}1])'}</M>；时间 <M>{'O(n)'}</M>。
+            <M>{'pre/suf'}</M> 各跑一遍 Kadane，<M>{'bp/bs'}</M> 做前后缀最大；答案 <M>{'\\max_{2\\le i<n}(bp[i{-}1]+bs[i{+}1])'}</M>（枚举被跳过的中间数 <M>{'i'}</M>，保证两段隔开）；时间 <M>{'O(n)'}</M>。
           </Field>
           <Field k="参考代码（前后缀最优拼接）">
             <CodeBlock code={CODE_P2642} luogu="P2642" />
