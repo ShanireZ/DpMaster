@@ -1,0 +1,252 @@
+/* 分数背包（辨析课）自建轻量可视化的样式。
+   不引用 knapsack-demo.css；工具条沿用 kd__/stepper__ 视觉但独立命名前缀 frd__。 */
+
+.frd__toolbar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  gap: var(--sp-4) var(--sp-5);
+  margin-bottom: var(--sp-5);
+  padding: var(--sp-4);
+  border-radius: var(--r-2);
+  background: var(--surface-2);
+  border: 1px solid var(--border);
+}
+.frd__group-label {
+  font-size: 11px;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--text-3);
+  margin-bottom: 8px;
+}
+.frd__items {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--sp-3);
+}
+.frd__item {
+  position: relative;
+  padding: 10px 12px;
+  border-radius: var(--r-2);
+  background: var(--surface-3);
+  border: 1px solid var(--border);
+  display: flex;
+  gap: 14px;
+}
+.frd__item-i {
+  position: absolute;
+  top: -9px;
+  left: -9px;
+  width: 22px;
+  height: 22px;
+  border-radius: 6px;
+  background: var(--grad-accent);
+  color: var(--text-on-accent);
+  display: grid;
+  place-items: center;
+  font-size: 11px;
+  font-weight: 700;
+  font-family: var(--font-display);
+}
+.frd__remove {
+  position: absolute;
+  top: -9px;
+  right: -9px;
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  background: var(--surface-1);
+  border: 1px solid var(--border);
+  color: var(--text-3);
+  display: grid;
+  place-items: center;
+}
+.frd__remove:hover {
+  color: var(--viz-invalid);
+  border-color: var(--viz-invalid);
+}
+.frd__ratio {
+  align-self: center;
+  font-family: var(--font-mono);
+  font-size: 11.5px;
+  color: var(--text-3);
+  white-space: nowrap;
+}
+.frd__add {
+  align-self: center;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 14px;
+  border-radius: var(--r-2);
+  font-size: 13px;
+  font-weight: 600;
+  border: 1px dashed var(--border-strong);
+  color: var(--text-2);
+}
+.frd__add:hover {
+  color: var(--text-1);
+  border-color: var(--accent-2);
+}
+.frd__add:disabled {
+  opacity: 0.4;
+}
+
+/* 贪心装填容量条 */
+.frd__stage {
+  margin-bottom: var(--sp-5);
+}
+.frd__stage-label {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: var(--sp-4);
+  font-size: 13px;
+  color: var(--text-2);
+  margin-bottom: 10px;
+}
+.frd__stage-label .mono {
+  font-family: var(--font-mono);
+  color: var(--text-3);
+}
+.frd__bar {
+  position: relative;
+  display: flex;
+  height: 58px;
+  border-radius: var(--r-2);
+  background: var(--surface-2);
+  border: 1px solid var(--border-strong);
+  overflow: hidden;
+}
+.frd__seg {
+  position: relative;
+  display: grid;
+  place-items: center;
+  min-width: 0;
+  border-right: 1px solid color-mix(in srgb, var(--surface-1) 55%, transparent);
+  overflow: hidden;
+  transition: flex-basis var(--t-med, 0.25s) ease;
+}
+.frd__seg:last-child {
+  border-right: none;
+}
+.frd__seg.full {
+  background: color-mix(in srgb, var(--accent-1) 42%, var(--surface-1));
+}
+.frd__seg.cut {
+  /* 斜纹＝只取一部分 */
+  background: repeating-linear-gradient(
+    45deg,
+    color-mix(in srgb, var(--accent-1) 22%, var(--surface-1)) 0,
+    color-mix(in srgb, var(--accent-1) 22%, var(--surface-1)) 5px,
+    color-mix(in srgb, var(--accent-2) 45%, var(--surface-1)) 5px,
+    color-mix(in srgb, var(--accent-2) 45%, var(--surface-1)) 8px
+  );
+  outline: 1.5px dashed var(--accent-2);
+  outline-offset: -3px;
+}
+.frd__seg.empty {
+  background: repeating-linear-gradient(
+    45deg,
+    transparent 0,
+    transparent 6px,
+    color-mix(in srgb, var(--text-3) 14%, transparent) 6px,
+    color-mix(in srgb, var(--text-3) 14%, transparent) 7px
+  );
+}
+.frd__seg-txt {
+  font-family: var(--font-mono);
+  font-size: 12px;
+  line-height: 1.35;
+  text-align: center;
+  padding: 0 4px;
+  white-space: nowrap;
+}
+.frd__seg.full .frd__seg-txt {
+  color: var(--text-on-accent);
+}
+.frd__seg.cut .frd__seg-txt {
+  color: var(--accent-1);
+  font-weight: 600;
+}
+.frd__seg.empty .frd__seg-txt {
+  color: var(--text-3);
+}
+
+/* 刻度 */
+.frd__ticks {
+  position: relative;
+  height: 18px;
+  margin-top: 2px;
+}
+.frd__tick {
+  position: absolute;
+  transform: translateX(-50%);
+  top: 4px;
+  font-family: var(--font-mono);
+  font-size: 10.5px;
+  color: var(--text-3);
+}
+
+/* 两数对照读数 */
+.frd__compare {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: var(--sp-4);
+}
+@media (max-width: 40rem) {
+  .frd__compare {
+    grid-template-columns: 1fr;
+  }
+}
+.frd__card {
+  padding: var(--sp-4);
+  border-radius: var(--r-2);
+  background: var(--surface-2);
+  border: 1px solid var(--border);
+}
+.frd__card.win {
+  border-color: var(--accent-2);
+  background: color-mix(in srgb, var(--accent-1) 8%, var(--surface-2));
+}
+.frd__card-head {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text-2);
+  margin-bottom: 6px;
+}
+.frd__card.win .frd__card-head {
+  color: var(--accent-1);
+}
+.frd__card-val {
+  font-family: var(--font-mono);
+  font-size: 30px;
+  font-weight: 700;
+  line-height: 1.1;
+  color: var(--text-1);
+}
+.frd__card.win .frd__card-val {
+  color: var(--accent-1);
+}
+.frd__card-sub {
+  margin-top: 6px;
+  font-size: 12px;
+  color: var(--text-3);
+}
+.frd__delta {
+  margin-top: var(--sp-4);
+  font-size: 14px;
+  color: var(--text-2);
+  padding: var(--sp-3) var(--sp-4);
+  border-radius: var(--r-2);
+  background: var(--surface-2);
+  border: 1px solid var(--border);
+}
+.frd__delta b {
+  font-family: var(--font-mono);
+  font-weight: 700;
+  color: var(--accent-1);
+}
