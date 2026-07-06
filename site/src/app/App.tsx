@@ -7,6 +7,7 @@ import Placeholder from '../pages/Placeholder'
 const Home = lazy(() => import('../pages/Home'))
 const PartPage = lazy(() => import('../pages/PartPage'))
 const TypePage = lazy(() => import('../pages/TypePage'))
+const NotFound = lazy(() => import('../pages/NotFound'))
 
 export default function App() {
   return (
@@ -21,7 +22,7 @@ export default function App() {
               <Route path="/method" element={<Placeholder title="DP 通用方法论" />} />
               <Route path="/problems" element={<Placeholder title="题目索引" />} />
               <Route path="/about" element={<Placeholder title="关于 · 如何使用" />} />
-              <Route path="*" element={<Placeholder title="页面不存在" />} />
+              <Route path="*" element={<NotFound />} />
             </Route>
           </Routes>
         </Suspense>
