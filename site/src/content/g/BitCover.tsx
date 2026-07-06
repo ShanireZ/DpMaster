@@ -163,6 +163,10 @@ export default function BitCover() {
             边界：<M>{'dp[0]=0'}</M>（什么都没覆盖，代价 0），其余 <M>{'+\\infty'}</M>。答案：<M>{'dp[(1{<}{<}n)-1]'}</M>。按 <M>{'S'}</M> 从小到大枚举即可，因为 <M>{'S\\,|\\,c_k\\ge S'}</M>，依赖的子状态先算好。
           </p>
         </div>
+        <figure className="figure">
+          <BitLattice bits={[1, 1, 1, 1, 1]} labels={['0', '1', '2', '3', '4']} showBinary={false} />
+          <figcaption className="figure__cap">目标态：全集 (1&lt;&lt;n)−1（全 1）。dp 从 dp[0]=0 出发，每次按位或把 S 推向这一格，取到它的最小代价即答案。</figcaption>
+        </figure>
         <InfoBox kind="key" title="本质">
           状压把「覆盖进度」编码成一个整数：<strong>「还差哪些没盖」一目了然，「加一个选择」就是一次按位或</strong>。TSP 的 <M>{'dp[S][i]'}</M> 关心「停在哪」，覆盖的 <M>{'dp[S]'}</M> 只关心「盖到哪」——同样是 <M>{'2^n'}</M> 个集合状态，少一维。预处理每个选择的覆盖 mask，是这类题的<strong>题眼</strong>。
         </InfoBox>
