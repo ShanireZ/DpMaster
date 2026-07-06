@@ -1,5 +1,5 @@
 import { Link } from 'react-router-dom'
-import { ArrowLeft, Compass } from 'lucide-react'
+import { ArrowLeft } from 'lucide-react'
 import ShaderField from '../components/notfound/ShaderField'
 import GridSolver from '../components/notfound/GridSolver'
 import './notfound.css'
@@ -40,9 +40,6 @@ export default function NotFound() {
         <div className="nf__cta">
           <Link to="/" className="nf-btn nf-btn--primary">
             <ArrowLeft size={18} /> 回到 dp[0][0]
-          </Link>
-          <Link to="/part/a/01" className="nf-btn nf-btn--ghost">
-            <Compass size={18} /> 从 01 背包开始
           </Link>
         </div>
       </div>

@@ -7,6 +7,9 @@ const Home = lazy(() => import('../pages/Home'))
 const PartPage = lazy(() => import('../pages/PartPage'))
 const TypePage = lazy(() => import('../pages/TypePage'))
 const NotFound = lazy(() => import('../pages/NotFound'))
+const AboutPage = lazy(() => import('../pages/AboutPage'))
+const MethodPage = lazy(() => import('../pages/MethodPage'))
+const ProblemsPage = lazy(() => import('../pages/ProblemsPage'))
 
 export default function App() {
   return (
@@ -18,6 +21,9 @@ export default function App() {
               <Route path="/" element={<Home />} />
               <Route path="/part/:pid" element={<PartPage />} />
               <Route path="/part/:pid/:slug" element={<TypePage />} />
+              <Route path="/method" element={<MethodPage />} />
+              <Route path="/problems" element={<ProblemsPage />} />
+              <Route path="/about" element={<AboutPage />} />
               <Route path="*" element={<NotFound />} />
             </Route>
           </Routes>

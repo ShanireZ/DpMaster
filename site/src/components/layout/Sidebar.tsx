@@ -1,6 +1,6 @@
 import { Link, NavLink, useMatch } from 'react-router-dom'
 import type { CSSProperties } from 'react'
-import { Sparkles } from 'lucide-react'
+import { Sparkles, Info, BookOpen, Library } from 'lucide-react'
 import { PARTS } from '../../data/parts'
 
 export default function Sidebar({ onNavigate }: { onNavigate?: () => void }) {
@@ -61,6 +61,47 @@ export default function Sidebar({ onNavigate }: { onNavigate?: () => void }) {
           </div>
         )
       })}
+
+      <NavLink
+        to="/method"
+        className={({ isActive }) => `nav-part${isActive ? ' active' : ''}`}
+        onClick={onNavigate}
+        style={{ marginTop: 'var(--sp-4)' }}
+      >
+        <span
+          className="nav-part__badge"
+          style={{ ['--pg']: 'var(--grad-brand)' } as CSSProperties}
+        >
+          <BookOpen size={15} />
+        </span>
+        <span className="nav-part__title">通用方法论</span>
+      </NavLink>
+      <NavLink
+        to="/problems"
+        className={({ isActive }) => `nav-part${isActive ? ' active' : ''}`}
+        onClick={onNavigate}
+      >
+        <span
+          className="nav-part__badge"
+          style={{ ['--pg']: 'var(--grad-brand)' } as CSSProperties}
+        >
+          <Library size={15} />
+        </span>
+        <span className="nav-part__title">题目索引</span>
+      </NavLink>
+      <NavLink
+        to="/about"
+        className={({ isActive }) => `nav-part${isActive ? ' active' : ''}`}
+        onClick={onNavigate}
+      >
+        <span
+          className="nav-part__badge"
+          style={{ ['--pg']: 'var(--grad-brand)' } as CSSProperties}
+        >
+          <Info size={15} />
+        </span>
+        <span className="nav-part__title">关于 · 如何使用</span>
+      </NavLink>
     </nav>
   )
 }
