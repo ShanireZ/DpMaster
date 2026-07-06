@@ -1,0 +1,230 @@
+/* 编辑距离 · 回溯操作序列的自建轻量可视化样式。
+   独立命名前缀 etb__，工具条沿用 kd__/stepper__ 视觉，配色只用设计令牌。
+   同时定义两处 grid 演示共用的 ed__input / ed__presets（字符串输入框与预设按钮）。
+   ★不使用 opacity:0 起步的进场动画（无头/后台标签页会永久卡隐藏）。 */
+
+/* ---------- 两处演示共用：字符串输入框 + 预设按钮 ---------- */
+.ed__input {
+  width: 150px;
+  padding: 8px 12px;
+  border-radius: var(--r-2);
+  border: 1px solid var(--border-strong);
+  background: var(--surface-1);
+  color: var(--text-1);
+  font-family: var(--font-mono);
+  font-size: 17px;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+}
+.ed__input:focus {
+  outline: none;
+  border-color: var(--accent-2);
+  box-shadow: 0 0 0 2px color-mix(in srgb, var(--accent-2) 25%, transparent);
+}
+.ed__presets {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.etb__toolbar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  gap: var(--sp-4) var(--sp-6);
+  margin-bottom: var(--sp-5);
+  padding: var(--sp-4);
+  border-radius: var(--r-2);
+  background: var(--surface-2);
+  border: 1px solid var(--border);
+}
+
+/* ---------- 操作序列条：每一步一列，A 在上、操作在中、B 在下 ---------- */
+.etb__stage {
+  overflow-x: auto;
+  padding: var(--sp-4) var(--sp-3);
+  border-radius: var(--r-2);
+  background: var(--surface-2);
+  border: 1px solid var(--border);
+}
+.etb__track {
+  display: flex;
+  gap: 8px;
+  min-width: min-content;
+}
+.etb__col {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  min-width: 46px;
+}
+.etb__slot {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  height: 40px;
+  border-radius: var(--r-1);
+  font-family: var(--font-mono);
+  font-size: 18px;
+  font-weight: 700;
+  border: 1px solid var(--border-strong);
+  background: var(--surface-3);
+  color: var(--text-1);
+}
+.etb__slot.empty {
+  color: var(--text-3);
+  background: var(--surface-2);
+  border-style: dashed;
+}
+/* 未走到的步：低调（不透明度用于「已揭示 vs 未揭示」的静态区分，起点不为 0） */
+.etb__col.future .etb__slot {
+  opacity: 0.32;
+}
+.etb__col.future .etb__badge {
+  opacity: 0.32;
+}
+
+/* 中间的操作徽标：按操作类型上色 */
+.etb__badge {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 3px;
+  min-width: 40px;
+  height: 24px;
+  padding: 0 7px;
+  border-radius: 999px;
+  font-size: 11.5px;
+  font-weight: 700;
+  white-space: nowrap;
+  color: var(--text-on-accent);
+}
+.etb__badge.keep {
+  color: var(--text-2);
+  background: var(--surface-1);
+  border: 1px solid var(--border-strong);
+}
+.etb__badge.sub {
+  background: color-mix(in srgb, var(--viz-current) 82%, var(--surface-1));
+}
+.etb__badge.del {
+  background: color-mix(in srgb, var(--viz-invalid) 80%, var(--surface-1));
+}
+.etb__badge.ins {
+  background: color-mix(in srgb, var(--viz-chosen) 78%, var(--surface-1));
+}
+
+/* 当前步：描一圈强调边 */
+.etb__col.active .etb__slot {
+  border-color: var(--accent-2);
+  box-shadow: 0 0 0 2px color-mix(in srgb, var(--accent-2) 30%, transparent);
+}
+
+/* ---------- 结果串：回溯落地后 A 变成的样子 ---------- */
+.etb__result {
+  margin-top: var(--sp-5);
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 10px var(--sp-4);
+  padding: var(--sp-3) var(--sp-4);
+  border-radius: var(--r-2);
+  background: var(--surface-2);
+  border: 1px solid var(--border);
+  font-size: 14px;
+  color: var(--text-2);
+}
+.etb__result .lab {
+  font-size: 11px;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--text-3);
+}
+.etb__result .str {
+  font-family: var(--font-mono);
+  font-size: 16px;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  color: var(--text-1);
+}
+.etb__result b {
+  font-family: var(--font-mono);
+  color: var(--accent-1);
+}
+
+/* ---------- 图例 + 读数 ---------- */
+.etb__legend {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px var(--sp-4);
+  margin: var(--sp-4) 0 0;
+  font-size: 12px;
+  color: var(--text-3);
+}
+.etb__legend span {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+.etb__legend i {
+  width: 12px;
+  height: 12px;
+  border-radius: 4px;
+  display: inline-block;
+}
+.etb__delta {
+  margin-top: var(--sp-4);
+  font-size: 14px;
+  line-height: 1.55;
+  color: var(--text-2);
+  padding: var(--sp-3) var(--sp-4);
+  border-radius: var(--r-2);
+  background: var(--surface-2);
+  border: 1px solid var(--border);
+}
+.etb__delta b {
+  font-family: var(--font-mono);
+  font-weight: 700;
+  color: var(--accent-1);
+}
+
+/* ---------- 步进控制 ---------- */
+.etb__ctl {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-4);
+  margin-top: var(--sp-4);
+}
+.etb__ctl-btns {
+  display: flex;
+  gap: 6px;
+}
+.etb__ctl-btns button {
+  width: 34px;
+  height: 34px;
+  border-radius: var(--r-1);
+  border: 1px solid var(--border);
+  background: var(--surface-2);
+  color: var(--text-1);
+  display: grid;
+  place-items: center;
+}
+.etb__ctl-btns button:hover:not(:disabled) {
+  border-color: var(--accent-2);
+}
+.etb__ctl-btns button:disabled {
+  opacity: 0.35;
+}
+.etb__ctl input[type='range'] {
+  flex: 1;
+  accent-color: var(--accent-2);
+}
+.etb__ctl-count {
+  font-family: var(--font-mono);
+  font-size: 13px;
+  color: var(--text-3);
+  min-width: 46px;
+  text-align: right;
+}

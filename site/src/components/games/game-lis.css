@@ -1,0 +1,142 @@
+/* LIS 接龙专属样式——复用 game.css 的外壳（game / game__head / game__panel /
+   game__feedback / game__compare / gbtn / game__stats 等），此处只补数列卡片、
+   链条 chip、链序徽章、★ 标的自建视觉。配色只用设计令牌；★不做 opacity:0 起步动画。
+   前缀 glis__，绝不改动 game.css。 */
+
+.glis__body {
+  /* 数列可能较长（困难 ~14），左列比背包宽松：面板略窄 */
+  grid-template-columns: 1fr 280px;
+}
+@media (max-width: 860px) {
+  .glis__body {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* ---------- 数列一行：横排数字卡片 ---------- */
+.glis__row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--sp-2);
+}
+.glis__cell {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  width: 58px;
+  padding: 10px 6px 8px;
+  border-radius: var(--r-2);
+  background: var(--surface-3);
+  border: 1.5px solid var(--border);
+  cursor: pointer;
+  transition:
+    transform var(--t-fast),
+    border-color var(--t-fast),
+    background var(--t-fast),
+    box-shadow var(--t-fast);
+}
+.glis__cell:hover {
+  transform: translateY(-2px);
+  border-color: var(--border-strong);
+}
+/* 已选入链：蜜金/部分强调描边 + 轻底 */
+.glis__cell.picked {
+  border-color: var(--accent-2);
+  background: color-mix(in srgb, var(--accent-1) 16%, var(--surface-3));
+  box-shadow: 0 2px 10px color-mix(in srgb, var(--accent-1) 26%, transparent);
+}
+/* 当前不可接（下标在链尾前 或 值不够大）——弱化并去掉悬浮抬升，暗示禁选 */
+.glis__cell.blocked {
+  opacity: 0.42;
+  cursor: not-allowed;
+}
+.glis__cell.blocked:hover {
+  transform: none;
+  border-color: var(--border);
+}
+/* 揭示后：DP 最优取法的一格——绿色定稿描边（同背包 ★ 语义） */
+.glis__cell.opt {
+  border-color: var(--viz-chosen);
+  background: color-mix(in srgb, var(--viz-chosen) 16%, var(--surface-3));
+}
+/* 玩家选中且恰好也在最优集里——蜜金底 + 绿描边叠加 */
+.glis__cell.picked.opt {
+  border-color: var(--viz-chosen);
+  background: color-mix(in srgb, var(--accent-1) 14%, color-mix(in srgb, var(--viz-chosen) 14%, var(--surface-3)));
+}
+
+.glis__val {
+  font-family: var(--font-display);
+  font-size: 22px;
+  font-weight: 700;
+  line-height: 1;
+  color: var(--text-1);
+}
+.glis__pos {
+  margin-top: 5px;
+  font-family: var(--font-mono);
+  font-size: 10px;
+  color: var(--text-3);
+}
+
+/* 链序徽章（左上角，1-based 表示第几个被接上） */
+.glis__rank {
+  position: absolute;
+  top: -7px;
+  left: -7px;
+  min-width: 18px;
+  height: 18px;
+  padding: 0 4px;
+  display: grid;
+  place-items: center;
+  border-radius: var(--r-full);
+  font-family: var(--font-mono);
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--text-on-accent);
+  background: var(--grad-accent);
+  box-shadow: var(--shadow-1);
+}
+/* ★ 最优标（右上角，仿背包 gitem__star） */
+.glis__star {
+  position: absolute;
+  top: -8px;
+  right: -8px;
+  color: var(--viz-chosen);
+  filter: drop-shadow(0 1px 3px rgba(0, 0, 0, 0.5));
+}
+
+/* ---------- 「你的链」条：把已选数按序连成 a → b → c ---------- */
+.glis__chain {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 4px 6px;
+  margin-top: var(--sp-4);
+  padding: 10px 12px;
+  border-radius: var(--r-2);
+  background: var(--surface-2);
+  border: 1px solid var(--border);
+}
+.glis__chain-label {
+  margin-right: 6px;
+  font-size: 11px;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--text-3);
+}
+.glis__chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-family: var(--font-mono);
+  font-size: 15px;
+  font-weight: 700;
+  color: var(--text-1);
+}
+.glis__arrow {
+  color: var(--accent-1);
+  font-weight: 400;
+}

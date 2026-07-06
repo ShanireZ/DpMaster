@@ -1,0 +1,226 @@
+/* LIS · O(n log n) 耐心排序 / 二分维护 tails 的自建轻量可视化样式。
+   不引用 knapsack-demo.css / dp-viz.css；工具条沿用 kd__/stepper__ 视觉，
+   但独立命名前缀 lp__，配色只用设计令牌。★不做 opacity:0 起步动画。 */
+
+.lp__toolbar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--sp-3) var(--sp-5);
+  margin-bottom: var(--sp-5);
+  padding: var(--sp-4);
+  border-radius: var(--r-2);
+  background: var(--surface-2);
+  border: 1px solid var(--border);
+}
+.lp__modes {
+  display: flex;
+  gap: 6px;
+  flex-wrap: wrap;
+}
+.lp__mode {
+  padding: 7px 13px;
+  border-radius: var(--r-2);
+  font-size: 13px;
+  font-weight: 600;
+  border: 1px solid var(--border);
+  color: var(--text-2);
+  background: var(--surface-2);
+  transition: color var(--t-fast, 0.18s), border-color var(--t-fast, 0.18s);
+}
+.lp__mode:hover {
+  color: var(--text-1);
+  border-color: var(--accent-2);
+}
+.lp__mode.on {
+  color: var(--text-on-accent);
+  background: var(--grad-accent);
+  border-color: transparent;
+}
+
+/* ---------- 输入序列一行：当前元素高亮、已处理弱化 ---------- */
+.lp__seq {
+  margin-bottom: var(--sp-5);
+}
+.lp__seq-label {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: var(--sp-4);
+  font-size: 13px;
+  color: var(--text-2);
+  margin-bottom: 10px;
+}
+.lp__seq-label .mono {
+  font-family: var(--font-mono);
+  color: var(--text-3);
+}
+.lp__seq-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 5px;
+}
+.lp__num {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 34px;
+  height: 34px;
+  padding: 0 6px;
+  border-radius: var(--r-1);
+  font-family: var(--font-mono);
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--text-2);
+  background: var(--surface-3);
+  border: 1px solid var(--border-strong);
+  transition: background var(--t-fast, 0.18s), border-color var(--t-fast, 0.18s), color var(--t-fast, 0.18s);
+}
+.lp__num.done {
+  color: var(--text-3);
+  background: var(--surface-2);
+  opacity: 0.7;
+}
+.lp__num.cur {
+  color: var(--text-on-accent);
+  background: var(--grad-accent);
+  border-color: transparent;
+  box-shadow: 0 2px 10px color-mix(in srgb, var(--accent-1) 40%, transparent);
+}
+
+/* ---------- tails 舞台：横排小格 + 命中位高亮 ---------- */
+.lp__stage {
+  padding: var(--sp-5) var(--sp-4);
+  border-radius: var(--r-2);
+  background: var(--surface-2);
+  border: 1px solid var(--border);
+  margin-bottom: var(--sp-5);
+}
+.lp__stage-head {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: var(--sp-4);
+  font-size: 13px;
+  color: var(--text-2);
+  margin-bottom: 14px;
+}
+.lp__stage-head .mono {
+  font-family: var(--font-mono);
+  color: var(--text-3);
+}
+.lp__tails {
+  display: flex;
+  align-items: flex-end;
+  gap: 8px;
+  min-height: 76px;
+}
+.lp__tail {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+}
+.lp__tail-idx {
+  font-family: var(--font-mono);
+  font-size: 10.5px;
+  color: var(--text-3);
+}
+.lp__tail-box {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 48px;
+  height: 48px;
+  border-radius: var(--r-1);
+  font-family: var(--font-mono);
+  font-size: 18px;
+  font-weight: 700;
+  color: var(--text-1);
+  background: color-mix(in srgb, var(--accent-1) 22%, var(--surface-1));
+  border: 1.5px solid var(--border-strong);
+  transition: background var(--t-fast, 0.18s), border-color var(--t-fast, 0.18s), transform var(--t-fast, 0.18s);
+}
+/* 二分命中位（本步将被替换/追加处）——蜜金描边 */
+.lp__tail.hit .lp__tail-box {
+  border-color: var(--viz-current);
+  background: color-mix(in srgb, var(--viz-current) 24%, var(--surface-1));
+  transform: translateY(-3px);
+}
+/* 刚被替换 / 追加进来的那格——绿色定稿 */
+.lp__tail.just .lp__tail-box {
+  border-color: var(--viz-chosen);
+  background: color-mix(in srgb, var(--viz-chosen) 26%, var(--surface-1));
+  color: var(--text-1);
+}
+/* 追加位（末尾+1 的虚位，仅在 append 时短暂出现引导）*/
+.lp__tail.ghost .lp__tail-box {
+  color: var(--text-3);
+  background: var(--surface-2);
+  border-style: dashed;
+}
+
+/* ---------- 读数条 ---------- */
+.lp__readout {
+  font-size: 14.5px;
+  line-height: 1.6;
+  color: var(--text-2);
+  padding: var(--sp-3) var(--sp-4);
+  border-radius: var(--r-2);
+  background: var(--surface-2);
+  border: 1px solid var(--border);
+  margin-bottom: var(--sp-4);
+}
+.lp__readout b {
+  font-family: var(--font-mono);
+  font-weight: 700;
+}
+.lp__readout .ok {
+  color: var(--viz-chosen);
+}
+.lp__readout .cur {
+  color: var(--accent-1);
+}
+
+/* ---------- 播放控制（仿 dpctl 但独立） ---------- */
+.lp__ctl {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-4);
+  flex-wrap: wrap;
+}
+.lp__ctl-btns {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.lp__ctl-btns button {
+  display: grid;
+  place-items: center;
+  width: 38px;
+  height: 38px;
+  border-radius: var(--r-2);
+  color: var(--text-1);
+  border: 1px solid var(--border);
+  background: var(--surface-2);
+  transition: border-color var(--t-fast, 0.18s), background var(--t-fast, 0.18s);
+}
+.lp__ctl-btns button:hover:not(:disabled) {
+  border-color: var(--accent-2);
+}
+.lp__ctl-btns button:disabled {
+  opacity: 0.35;
+}
+.lp__ctl-btns button.primary {
+  background: var(--grad-accent);
+  color: var(--text-on-accent);
+  border-color: transparent;
+  width: 44px;
+  height: 44px;
+}
+.lp__ctl-count {
+  font-family: var(--font-mono);
+  font-size: 13px;
+  color: var(--text-3);
+}
