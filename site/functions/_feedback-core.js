@@ -1,7 +1,7 @@
 // 反馈处理核心 —— 被三处入口复用（单一事实来源）：
 //   - CF Workers 静态资源托管：../worker.js 里 import 本文件，路由 /api/feedback。
 //   - CF Pages Functions：./api/feedback.js 薄封装 import 本文件（若改用 Pages 部署）。
-//   - EdgeOne Pages 边缘函数：scripts/postbuild.mjs 构建期把本文件内联进 dist/edge-functions/api/feedback.js。
+//   - EdgeOne Pages 边缘函数：scripts/postbuild.mjs 构建期把本文件内联进 dist/edge-functions/[[default]].js。
 // 三家运行时都基于 Fetch API（Request/Response/fetch/crypto.subtle），故同一函数通用。
 //
 // ★环境变量（在各托管平台配置）：

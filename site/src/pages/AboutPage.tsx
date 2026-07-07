@@ -112,10 +112,10 @@ export default function AboutPage() {
             原生题库（P / B 题），按难度与家族逐题精选。
           </li>
           <li>
-            <b>字体</b>：思源黑体 / 得意黑 / Space Grotesk / JetBrains Mono，均 OFL 开源许可。
+            <b>字体</b>：Space Grotesk / JetBrains Mono 自托管，中文正文走 Noto Sans SC / 微软雅黑等系统字体栈。
           </li>
           <li>
-            <b>图标</b> Lucide（MIT）·<b>公式</b> KaTeX ·<b>代码高亮</b> Shiki——公式与高亮均构建期预渲染，运行时零负担。
+            <b>图标</b> Lucide（MIT）·<b>公式</b> KaTeX ·<b>代码高亮</b> Shiki——公式在组件中渲染，代码高亮按需懒加载。
           </li>
           <li>本站为教学用途，非商业项目。</li>
         </ul>

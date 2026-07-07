@@ -107,7 +107,9 @@ a.nav-type.active { color: var(--text-1); border-left-color: var(--accent-2); ba
   display: flex; align-items: center; gap: 8px;
   height: 38px; padding: 0 12px; border-radius: var(--r-2);
   border: 1px solid var(--border); color: var(--text-3); font-size: 13px;
+  text-decoration: none;
 }
+.searchhint:hover { color: var(--text-1); border-color: var(--border-strong); background: var(--surface-2); }
 .searchhint kbd {
   font-size: 11px; padding: 1px 6px; border-radius: 4px;
   background: var(--surface-3); border: 1px solid var(--border);

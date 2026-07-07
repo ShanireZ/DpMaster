@@ -35,11 +35,10 @@ export default function TopBar({ onHamburger }: { onHamburger: () => void }) {
 
       <div className="topbar__spacer" />
 
-      <div className="searchhint" aria-hidden="true">
+      <Link className="searchhint" to="/problems" aria-label="打开题目索引">
         <Search size={15} />
-        <span>搜题跳转</span>
-        <kbd>⌘K</kbd>
-      </div>
+        <span>题目索引</span>
+      </Link>
 
       <button className="icon-btn" onClick={toggle} aria-label="切换深浅色">
         {theme === 'dark' ? <Sun size={18} /> : <Moon size={18} />}

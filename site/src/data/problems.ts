@@ -14,7 +14,7 @@ export interface Problem {
   src: string // 来源/赛事，练习可能为空
 }
 
-// 覆盖已上线的 a/b/c/d 全部 23 个类型（提取自各内容组件的例题/练习）。
+// 覆盖已上线的 A-G 全部 37 个类型（提取自各内容组件的例题/练习）。
 export const PROBLEMS: Problem[] = [
   { part: 'a', partTitle: '背包 DP', slug: '01', typeTitle: '01 背包', pid: 'P1048', name: '采药', diff: '普及-', kind: 'example', src: 'NOIP2005 普及组' },
   { part: 'a', partTitle: '背包 DP', slug: '01', typeTitle: '01 背包', pid: 'P2871', name: '[USACO07DEC] Charm Bracelet S', diff: '普及/提高-', kind: 'example', src: 'USACO 2007' },
