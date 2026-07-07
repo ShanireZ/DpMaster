@@ -106,7 +106,7 @@ export default function AboutPage() {
         <ul className="about-list">
           <li>
             <b>例题</b>：全部来自{' '}
-            <a href="https://www.luogu.com.cn" target="_blank" rel="noreferrer">
+            <a href="https://www.luogu.com.cn" target="_blank" rel="noopener noreferrer">
               洛谷
             </a>{' '}
             原生题库（P / B 题），按难度与家族逐题精选。
