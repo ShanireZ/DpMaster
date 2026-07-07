@@ -13,6 +13,7 @@
   overflow-y: auto;
   padding: var(--sp-4) var(--sp-3);
   background: color-mix(in srgb, var(--surface-1) 88%, transparent);
+  -webkit-backdrop-filter: blur(10px);
   backdrop-filter: blur(10px);
   border-right: 1px solid var(--border);
   z-index: var(--z-nav);
@@ -86,6 +87,7 @@ a.nav-type.active { color: var(--text-1); border-left-color: var(--accent-2); ba
   display: flex; align-items: center; gap: var(--sp-4);
   padding: 0 var(--sp-6);
   background: var(--surface-glass);
+  -webkit-backdrop-filter: blur(12px);
   backdrop-filter: blur(12px);
   border-bottom: 1px solid var(--border);
 }
