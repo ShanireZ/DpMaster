@@ -1,6 +1,6 @@
 # DpMaster
 
-[![License: GPL-3.0-only](https://img.shields.io/badge/license-GPL--3.0--only-blue.svg?style=flat-square)](LICENSE)
+[![License: GPL-3.0](https://img.shields.io/badge/license-GPL--3.0-blue.svg?style=flat-square)](LICENSE)
 ![React 19](https://img.shields.io/badge/React-19-61DAFB.svg?style=flat-square&logo=react&logoColor=white)
 ![Vite 8](https://img.shields.io/badge/Vite-8-646CFF.svg?style=flat-square&logo=vite&logoColor=white)
 ![TypeScript 6](https://img.shields.io/badge/TypeScript-6-3178C6.svg?style=flat-square&logo=typescript&logoColor=white)
@@ -118,4 +118,4 @@ DpMaster/
 
 ## 许可证
 
-本项目采用 [GNU General Public License v3.0 only](LICENSE)（`GPL-3.0-only`）发布。
+本项目采用 [GNU General Public License v3.0](LICENSE) 发布。
