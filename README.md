@@ -1,33 +1,46 @@
-# DP 教学网站 · 方案
+# DpMaster
 
-正常风格（非修真）、几何动态渐变视觉、精讲 + 重交互的**动态规划教学网站**。覆盖 A–G 七大 DP 家族，每类型 2–3 例题 + 3 练习，**全部洛谷原生题**；React + Vite 构建，产出可部署静态文件；主看设备 = 笔记本电脑。
+DpMaster（DP 图谱）是一个独立的动态规划交互式教学网站：中文讲解、React + Vite 静态站、Warm Ink 视觉、可改值 DP 演示、每个 DP 家族一个小游戏，例题与练习全部使用洛谷原生 P/B 题。
 
-> 与 `Cpplearn` / `cpplearn-animation-lab` **无关**的独立项目。目录：`D:\WorkSpace\dp`。
+当前项目根目录是 `D:\WorkSpace\DpMaster`，站点代码在 `site/`。旧文档里出现的 `D:\WorkSpace\dp` 是历史路径，已废弃。
 
-## 方案文档
+## 当前状态
 
-| 文档 | 内容 |
+- 7 个 DP 家族，37 个类型页全部注册为 `ready`。
+- `/method`、`/problems`、`/about` 已上线。
+- 题目索引含 158 个题目槽位，其中 112 个唯一洛谷题号。
+- 部署目标是 Cloudflare Workers Static Assets + Tencent EdgeOne Pages 双发。
+- 站内反馈通过同源 `POST /api/feedback` 转发到群机器人，钉钉配置见 [deploy.md](deploy.md)。
+
+## 本地运行
+
+```bash
+cd D:\WorkSpace\DpMaster\site
+npm install
+npm run dev
+npm run lint
+npm run build
+```
+
+常用脚本在 `site/package.json`：
+
+| 命令 | 作用 |
 |---|---|
-| [01-项目方案.md](01-项目方案.md) | 定位 · 范围 · 页面架构 · **并行建设路线图** · 里程碑验收 · **开放问题（待拍板）** |
-| [02-内容架构与洛谷选题.md](02-内容架构与洛谷选题.md) | 7 部分 37 类型 · 逐题核验的洛谷原生**例题/练习题库** · 复用索引 · 诚实缺口 |
-| [03-设计与交互规范.md](03-设计与交互规范.md) | 几何动态渐变**设计系统** · DP 可视化引擎 · 各部分演示与**互动游戏**清单 |
-| [04-技术栈与素材清单.md](04-技术栈与素材清单.md) | React/Vite 技术选型 · **2026 许可证核实** · 免费字体/图标/音效素材 · 性能红线 |
-| [05-内容创作标准.md](05-内容创作标准.md) | 类型页**撰写标准**（章节流水线 · 深度基线 · 文风 · 组件词汇表 · 自检清单） |
-| [06-反馈到钉钉设置.md](06-反馈到钉钉设置.md) | 站内**反馈 → 钉钉**全套配置（建机器人 · 环境变量 · 部署 · 测试排查 · 换其它机器人） |
+| `npm run dev` | Vite dev server，端口 5173 |
+| `npm run lint` | Oxlint |
+| `npm run build` | TypeScript + Vite build，并生成 EdgeOne 回退产物 |
+| `npm run deploy` | 构建一次后依次发布 Cloudflare 和 EdgeOne |
 
-## 关键决策（已定）
+## 文档
 
-- 视觉：**几何动态渐变风**（双层分离：舞台层华丽 / 正文层高可读）
-- 技术：**React + Vite** → 静态 `dist/` 部署
-- 深度：**精讲 + 重交互**
-- 代码：ShanireZ OJ 风（Allman / 4 空格 / 1-based / `endl` / 显式 long long）
-- 选题：全洛谷原生 **P/B** 前缀，无 remote judge，偏新且有代表性
+项目知识已经整理为 OKF bundle：
 
-## 七部分一览
+- [docs/index.md](docs/index.md) - 文档入口
+- [docs/project/overview.md](docs/project/overview.md) - 项目身份与状态
+- [docs/product/content-taxonomy.md](docs/product/content-taxonomy.md) - 当前 A-G 家族与类型表
+- [docs/product/problem-policy.md](docs/product/problem-policy.md) - 洛谷题目策略
+- [docs/engineering/architecture.md](docs/engineering/architecture.md) - 工程结构
+- [deploy.md](deploy.md) - 部署与反馈契约
 
-A 线性DP · B 背包DP · C 区间DP · D 矩阵DP · E 换根DP · F 树形DP · G 状压DP
-（各部分含多类型，逐类 2–3 例题 + 3 练习 + 可改值演示；每部分 1 互动小游戏。）
+旧的根目录编号方案文档、`handoff/` 文档和 `site/` 下 Markdown 已退休；不要再把它们作为维护来源。
 
-## 现在的状态
-
-**M0 方案已出**（本文件夹 4 份文档）。下一步：请看 [01-项目方案.md](01-项目方案.md) §10 **开放问题**拍板（范围 / 建设方式 / 正文基调 / 站名 / 缺口确认），确认后进入 M1 脚手架 + 样板部分建设。

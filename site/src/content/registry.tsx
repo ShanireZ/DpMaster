@@ -4,7 +4,7 @@ import { lazy, type ComponentType, type LazyExoticComponent } from 'react'
  * 类型页正文内容注册表，键为 `${pid}/${slug}`。
  *
  * 每个内容组件用 React.lazy 动态 import——按类型独立分包，避免把全部内容
- * （连同其 KaTeX 预渲染、代码块、演示组件）静态打进 TypePage 主 chunk。
+ * （连同公式、代码块、演示组件）静态打进 TypePage 主 chunk。
  * 打开某个类型页时才拉取该类型这一个 chunk。TypePage 内已用 Suspense 兜底。
  */
 export const CONTENT: Record<string, LazyExoticComponent<ComponentType>> = {

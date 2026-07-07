@@ -1,0 +1,19 @@
+{
+  // Cloudflare Workers 静态资源托管（路子 A：Workers Static Assets）+ 一个极薄 Worker。
+  // 静态文件由资源绑定直出（不进 Worker）；只有 /api/feedback 这类未命中文件的请求才进
+  // worker.js，用来接反馈端点，其余回退 SPA。文档：
+  //   https://developers.cloudflare.com/workers/static-assets/binding/
+  "$schema": "node_modules/wrangler/config-schema.json",
+  "name": "dpmaster",
+  "compatibility_date": "2026-07-06",
+  // Worker 入口：先接 /api/feedback，其余交回 env.ASSETS（见 worker.js）。
+  "main": "worker.js",
+  "assets": {
+    "directory": "./dist/",
+    // 让 Worker 能通过 env.ASSETS.fetch() 取静态资源 / 触发 SPA 回退。
+    "binding": "ASSETS",
+    // 未命中任何静态文件时，回退到 /index.html 并返回 HTTP 200，
+    // 交给 react-router 处理客户端路由（深链/刷新不再 404）。
+    "not_found_handling": "single-page-application"
+  }
+}

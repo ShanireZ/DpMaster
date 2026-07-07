@@ -36,4 +36,3 @@ dist-ssr
 .wrangler/
 wrangler-account.json
 node_modules/.cache/wrangler/
-wrangler.jsonc

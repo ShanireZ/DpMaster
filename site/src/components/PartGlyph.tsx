@@ -1,6 +1,6 @@
 import type { PartId } from '../data/parts'
 
-/** 每个部分的几何母题字形——映射该 DP 的结构（线/容器/弧/网格/放射树/树/比特）。 */
+/** 每个部分的几何母题字形——映射该 DP 的结构（容器/线/弧/网格/放射树/树/比特）。 */
 export default function PartGlyph({ id, size = 120 }: { id: PartId; size?: number }) {
   const common = {
     width: size,
@@ -14,17 +14,7 @@ export default function PartGlyph({ id, size = 120 }: { id: PartId; size?: numbe
     'aria-hidden': true,
   }
   switch (id) {
-    case 'a': // 递增刻度序列
-      return (
-        <svg {...common}>
-          <path d="M12 82 H88" strokeOpacity={0.5} />
-          {[0, 1, 2, 3, 4].map((i) => (
-            <line key={i} x1={20 + i * 15} y1={82} x2={20 + i * 15} y2={70 - i * 12} />
-          ))}
-          <path d="M20 58 L35 46 L50 34 L65 22 L80 14" strokeOpacity={0.9} />
-        </svg>
-      )
-    case 'b': // 容器逐格填充
+    case 'a': // 容器逐格填充
       return (
         <svg {...common}>
           <rect x={20} y={20} width={60} height={60} rx={6} />
@@ -43,6 +33,16 @@ export default function PartGlyph({ id, size = 120 }: { id: PartId; size?: numbe
               />
             )),
           )}
+        </svg>
+      )
+    case 'b': // 递增刻度序列
+      return (
+        <svg {...common}>
+          <path d="M12 82 H88" strokeOpacity={0.5} />
+          {[0, 1, 2, 3, 4].map((i) => (
+            <line key={i} x1={20 + i * 15} y1={82} x2={20 + i * 15} y2={70 - i * 12} />
+          ))}
+          <path d="M20 58 L35 46 L50 34 L65 22 L80 14" strokeOpacity={0.9} />
         </svg>
       )
     case 'c': // 嵌套弧

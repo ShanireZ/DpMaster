@@ -27,7 +27,6 @@ pnpm-debug.log*
 **/.tef_dist/
 **/wrangler-account.json
 **/node_modules/.cache/wrangler/
-**/wrangler.jsonc
 
 # editor / OS
 .vscode/*
