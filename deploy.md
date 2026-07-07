@@ -26,12 +26,12 @@ npm run deploy:eo
 
 ## 构建合同
 
-| 命令 | 作用 |
-|---|---|
-| `npm run build` | `tsc -b && vite build`，随后 npm lifecycle 执行 `postbuild` |
+| 命令                | 作用                                                                                   |
+| ------------------- | -------------------------------------------------------------------------------------- |
+| `npm run build`     | `tsc -b && vite build`，随后 npm lifecycle 执行 `postbuild`                            |
 | `npm run postbuild` | 复制 `dist/index.html` 为 `dist/404.html`，并生成 `dist/edge-functions/[[default]].js` |
-| `npm run deploy:cf` | `wrangler deploy` |
-| `npm run deploy:eo` | `edgeone pages deploy ./dist -n dpmaster -e production` |
+| `npm run deploy:cf` | `wrangler deploy`                                                                      |
+| `npm run deploy:eo` | `edgeone pages deploy ./dist -n dpmaster -e production`                                |
 
 构建输出目录是 `site/dist/`。`dist/` 不入仓库。
 
@@ -56,6 +56,64 @@ npm run deploy:eo
 - 其他 `/api/feedback` 方法返回 405，并带 `Allow: POST`。
 - 其余请求交给 `env.ASSETS.fetch(request)`；未命中静态文件时按 SPA 回退到 `index.html`。
 
+## Cloudflare 端操作
+
+### 1. 首次登录与部署
+
+```bash
+cd <workspace>\DpMaster\site
+npx wrangler login
+npm run build
+npm run deploy:cf
+```
+
+首次 `wrangler deploy` 会创建/更新名为 `dpmaster` 的 Worker。部署成功后，进入 Cloudflare Dashboard：
+
+1. 打开 **Workers & Pages**。
+2. 选择 Worker `dpmaster`。
+3. 进入 **Settings**，确认它使用 `site/wrangler.jsonc` 中的 `worker.js` 和 `ASSETS` 静态资源绑定。
+
+### 2. 配置反馈环境变量
+
+Dashboard 路径：
+
+1. **Workers & Pages** -> `dpmaster` -> **Settings**。
+2. 找到 **Variables and Secrets**。
+3. 添加：
+   - `FEEDBACK_WEBHOOK_URL`：类型选 **Secret**。
+   - `FEEDBACK_WEBHOOK_SECRET`：加签模式才添加，类型选 **Secret**。
+   - `FEEDBACK_WEBHOOK_KIND`：类型选 **Text**，值为 `dingtalk`。
+4. 点击 **Deploy** 让变量生效。
+
+CLI 等价操作：
+
+```bash
+cd <workspace>\DpMaster\site
+npx wrangler secret put FEEDBACK_WEBHOOK_URL
+npx wrangler secret put FEEDBACK_WEBHOOK_SECRET
+```
+
+`FEEDBACK_WEBHOOK_KIND=dingtalk` 非敏感，推荐在 Dashboard 作为 Text 变量配置；不要把 webhook URL 或 secret 写进 `wrangler.jsonc`。
+
+### 3. Cloudflare 线路测试
+
+```powershell
+$body = @{
+  kind = "建议"
+  page = "Cloudflare 部署检查"
+  path = "/"
+  description = "Cloudflare 反馈端点测试"
+  ts = (Get-Date).ToString("o")
+} | ConvertTo-Json
+Invoke-RestMethod -Method Post -Uri "https://<workers域名>/api/feedback" -ContentType "application/json" -Body $body
+```
+
+验收：
+
+- 响应 `{ "ok": true }`。
+- Cloudflare Logs 中出现 `[feedback]`。
+- 钉钉目标群收到消息。
+
 ## EdgeOne 合同
 
 当前 EdgeOne 线路发布 `site/dist/` 到项目 `dpmaster` 的 production 环境。
@@ -67,33 +125,100 @@ npm run deploy:eo
 
 EdgeOne 的 catch-all 函数行为需要每次上线后抽测，因为旧平台说明里没有把这条行为写成稳定接口。
 
+## EdgeOne 端操作
+
+### 1. 首次登录与项目确认
+
+```bash
+cd <workspace>\DpMaster\site
+npx edgeone login
+npm run build
+npm run deploy:eo
+```
+
+登录时选择中国站/China，并使用腾讯云账号。EdgeOne Pages 项目名必须是 `dpmaster`，因为脚本写死了：
+
+```bash
+edgeone pages deploy ./dist -n dpmaster -e production
+```
+
+如果控制台尚无 `dpmaster` 项目，先在 EdgeOne Pages/Makers 控制台创建同名项目，或按 CLI 部署提示创建。
+
+### 2. 配置反馈环境变量
+
+EdgeOne 侧变量必须配置到生产环境的边缘函数运行时。操作路径会随控制台版本变化，按当前腾讯云文档的通用入口理解为：
+
+1. 打开腾讯云 EdgeOne 控制台，进入 Pages 项目 `dpmaster`。
+2. 找到 **项目设置 / 环境变量**，或进入对应 Edge Function 的 **Environment Variables / Secret** 配置区。
+3. 添加：
+   - `FEEDBACK_WEBHOOK_URL`：类型选 **Secret**。
+   - `FEEDBACK_WEBHOOK_SECRET`：加签模式才添加，类型选 **Secret**。
+   - `FEEDBACK_WEBHOOK_KIND`：类型选 **String**，值为 `dingtalk`。
+4. 作用环境选 **production**。
+5. 保存后重新部署：
+
+```bash
+npm run deploy:eo
+```
+
+注意：EdgeOne 的环境变量/Secret 需要部署后才会进入函数运行环境；只保存不重新部署，线上函数可能仍读不到。
+
+### 3. EdgeOne 线路测试
+
+深链回退：
+
+```bash
+curl.exe -I https://dpmaster.edgeone.app/state-not-reachable
+```
+
+理想结果是 HTTP 200。如果是 404 但页面内容能进入 SPA，说明落到了 `404.html` 安全网。
+
+反馈端点：
+
+```powershell
+$body = @{
+  kind = "建议"
+  page = "EdgeOne 部署检查"
+  path = "/"
+  description = "EdgeOne 反馈端点测试"
+  ts = (Get-Date).ToString("o")
+} | ConvertTo-Json
+Invoke-RestMethod -Method Post -Uri "https://dpmaster.edgeone.app/api/feedback" -ContentType "application/json" -Body $body
+```
+
+验收：
+
+- 响应 `{ "ok": true }`。
+- EdgeOne 函数日志出现 `[feedback]`。
+- 钉钉目标群收到消息。
+
 ## 反馈接口合同
 
 前端 `FeedbackWidget` 向同源 `POST /api/feedback` 发送 JSON。
 
 请求字段：
 
-| 字段 | 来源 | 说明 |
-|---|---|---|
-| `kind` | 前端表单 | `内容有误` / `显示异常` / `功能问题` / `建议` / `其他` |
-| `page` | 前端自动生成 | 人类可读页面名 |
-| `path` | 当前路由 | 例如 `/part/a/01` |
-| `description` | 必填 | trim 后至少 4 个字符 |
-| `steps` | 选填 | 复现步骤或期望 |
-| `contact` | 选填 | 用户自愿留下的联系方式 |
-| `url` | 前端附带 | 当前完整 URL；后端当前不使用 |
-| `ua` | 前端自动生成 | user agent |
-| `viewport` | 前端自动生成 | 视口尺寸 |
-| `ts` | 前端自动生成 | ISO 时间 |
+| 字段          | 来源         | 说明                                                   |
+| ------------- | ------------ | ------------------------------------------------------ |
+| `kind`        | 前端表单     | `内容有误` / `显示异常` / `功能问题` / `建议` / `其他` |
+| `page`        | 前端自动生成 | 人类可读页面名                                         |
+| `path`        | 当前路由     | 例如 `/part/a/01`                                      |
+| `description` | 必填         | trim 后至少 4 个字符                                   |
+| `steps`       | 选填         | 复现步骤或期望                                         |
+| `contact`     | 选填         | 用户自愿留下的联系方式                                 |
+| `url`         | 前端附带     | 当前完整 URL；后端当前不使用                           |
+| `ua`          | 前端自动生成 | user agent                                             |
+| `viewport`    | 前端自动生成 | 视口尺寸                                               |
+| `ts`          | 前端自动生成 | ISO 时间                                               |
 
 响应：
 
-| 条件 | 状态 | Body |
-|---|---:|---|
-| 非法 JSON | 400 | `{ "ok": false, "error": "bad_json" }` |
-| `description` 少于 4 字符 | 422 | `{ "ok": false, "error": "empty" }` |
-| JSON 过大 | 413 | `{ "ok": false, "error": "too_large" }` |
-| 合法请求 | 200 | `{ "ok": true }` |
+| 条件                      | 状态 | Body                                    |
+| ------------------------- | ---: | --------------------------------------- |
+| 非法 JSON                 |  400 | `{ "ok": false, "error": "bad_json" }`  |
+| `description` 少于 4 字符 |  422 | `{ "ok": false, "error": "empty" }`     |
+| JSON 过大                 |  413 | `{ "ok": false, "error": "too_large" }` |
+| 合法请求                  |  200 | `{ "ok": true }`                        |
 
 合法请求会先输出一条 `[feedback]` 日志。即使 webhook 未配置或转发失败，前端仍收到 `{ "ok": true }`，因此上线验收必须同时检查函数日志和钉钉群是否收到消息。
 
@@ -101,11 +226,11 @@ EdgeOne 的 catch-all 函数行为需要每次上线后抽测，因为旧平台�
 
 Cloudflare 和 EdgeOne 生产环境都要配置同一套变量：
 
-| 变量 | 必填 | 敏感 | 说明 |
-|---|---|---|---|
-| `FEEDBACK_WEBHOOK_URL` | 是 | 是 | 钉钉机器人 webhook，含 `access_token` |
-| `FEEDBACK_WEBHOOK_KIND` | 是 | 否 | 固定为 `dingtalk`；不设会按默认企业微信格式发送 |
-| `FEEDBACK_WEBHOOK_SECRET` | 加签模式必填 | 是 | 钉钉机器人加签密钥，`SEC...` 开头；关键词模式留空 |
+| 变量                      | 必填         | 敏感 | 说明                                              |
+| ------------------------- | ------------ | ---- | ------------------------------------------------- |
+| `FEEDBACK_WEBHOOK_URL`    | 是           | 是   | 钉钉机器人 webhook，含 `access_token`             |
+| `FEEDBACK_WEBHOOK_KIND`   | 是           | 否   | 固定为 `dingtalk`；不设会按默认企业微信格式发送   |
+| `FEEDBACK_WEBHOOK_SECRET` | 加签模式必填 | 是   | 钉钉机器人加签密钥，`SEC...` 开头；关键词模式留空 |
 
 钉钉机器人安全设置二选一：
 
@@ -113,6 +238,37 @@ Cloudflare 和 EdgeOne 生产环境都要配置同一套变量：
 - 自定义关键词：关键词用 `反馈` 或 `DP 图谱`，因为消息开头包含 `DP 图谱 · 新反馈`。
 
 不要把 webhook URL、secret、Cloudflare token 或 EdgeOne token 写进仓库。
+
+## 钉钉端操作
+
+当前实现使用的是**群自定义机器人 / 群 Webhook 机器人**。这类 webhook 在群设置里创建，消息只能发到该群。
+
+### 1. 创建群自定义机器人
+
+1. 打开钉钉客户端，进入用于接收反馈的群。
+2. 打开右上角 **群设置**。
+3. 进入 **机器人 / 智能群助手**。
+4. 点击 **添加机器人**。
+5. 选择 **自定义机器人**。
+6. 命名，例如 `DP 图谱反馈`。
+7. 配置安全设置，二选一：
+   - 推荐 **加签**：复制 `SEC...` 密钥，填入 `FEEDBACK_WEBHOOK_SECRET`。
+   - 简单模式 **自定义关键词**：关键词填 `反馈` 或 `DP 图谱`，不要设置 `FEEDBACK_WEBHOOK_SECRET`。
+8. 创建完成后复制 webhook URL，填入两端的 `FEEDBACK_WEBHOOK_URL`。
+9. 两端都配置 `FEEDBACK_WEBHOOK_KIND=dingtalk`。
+
+### 2. 不建议使用 IP 白名单
+
+Cloudflare Workers 和 EdgeOne Pages 的 Serverless 出口 IP 不适合手工维护白名单。当前推荐使用加签；如果只是临时内部测试，可以用关键词模式。
+
+### 3. 钉钉收不到时看哪里
+
+| 现象                                  | 优先检查                                                                        |
+| ------------------------------------- | ------------------------------------------------------------------------------- |
+| 端点返回 `{ "ok": true }`，群里没消息 | Cloudflare/EdgeOne 日志是否有 `[feedback] webhook non-2xx` 或 `webhook errcode` |
+| 钉钉报签名错误                        | `FEEDBACK_WEBHOOK_SECRET` 是否与机器人加签密钥一致                              |
+| 钉钉报关键词错误                      | 机器人关键词是否包含 `反馈` 或 `DP 图谱`                                        |
+| 收到企业微信格式错误/无消息           | `FEEDBACK_WEBHOOK_KIND` 是否漏配为 `dingtalk`                                   |
 
 ## 上线检查
 
@@ -156,3 +312,12 @@ Invoke-RestMethod -Method Post -Uri "https://<线上域名>/api/feedback" -Conte
 - 当前接口没有验证码、鉴权、应用侧限流或来源校验，主要依赖同源入口和钉钉机器人自身频率限制。
 - `site/functions/api/feedback.js` 只在未来切到 Cloudflare Pages Functions 时生效；当前 Cloudflare 部署不加载它。
 - 如切换项目名，必须同步 `site/wrangler.jsonc` 的 `name` 与 `site/package.json` 中 `deploy:eo` 的 `-n dpmaster`。
+
+## 参考
+
+- Cloudflare Workers 环境变量与 Secret：<https://developers.cloudflare.com/workers/configuration/environment-variables/>
+- Cloudflare Wrangler Secret：<https://developers.cloudflare.com/workers/configuration/secrets/>
+- EdgeOne Edge Functions 环境变量与 Secret：<https://www.tencentcloud.com/document/product/1145/62764>
+- 钉钉聊天机器人概述：<https://open-dingtalk.github.io/developerpedia/docs/learn/bot/overview/>
+- 钉钉群自定义机器人：<https://open-dingtalk.github.io/developerpedia/docs/learn/bot/webhook/overview/>
+- 钉钉应用机器人：<https://open-dingtalk.github.io/developerpedia/docs/learn/bot/appbot/overview/>
