@@ -1,37 +1,49 @@
 {
-  // Cloudflare Workers 静态资源托管（路子 A：Workers Static Assets）+ 一个极薄 Worker。
-  // 静态文件由资源绑定直出（不进 Worker）；只有 /api/feedback 这类未命中文件的请求才进
-  // worker.js，用来接反馈端点，其余回退 SPA。文档：
-  //   https://developers.cloudflare.com/workers/static-assets/binding/
-  "$schema": "node_modules/wrangler/config-schema.json",
-  "name": "dpmaster",
-  // 只走自定义域名，不暴露 *.workers.dev 入口。
-  "workers_dev": false,
-  // 不为部署版本生成 Cloudflare Preview URLs。
-  "preview_urls": false,
-  "compatibility_date": "2026-07-06",
-  // Worker 入口：先接 /api/feedback，其余交回 env.ASSETS（见 worker.js）。
-  "main": "worker.js",
-  // Webhook URL / secret / kind 在 Cloudflare Dashboard 配置；部署时保留这些变量。
-  "keep_vars": true,
-  "observability": {
-    "enabled": true,
-    "logs": {
-      "enabled": true,
-      "invocation_logs": true,
-      // 1 = 100% 采样；如果流量变大，可降到 0.1 或 0.01。
-      "head_sampling_rate": 1
-    },
-    "traces": {
-      "enabled": false
-    }
-  },
-  "assets": {
-    "directory": "./dist/",
-    // 让 Worker 能通过 env.ASSETS.fetch() 取静态资源 / 触发 SPA 回退。
-    "binding": "ASSETS",
-    // 未命中任何静态文件时，回退到 /index.html 并返回 HTTP 200，
-    // 交给 react-router 处理客户端路由（深链/刷新不再 404）。
-    "not_found_handling": "single-page-application"
-  }
+	// Cloudflare Workers 静态资源托管（路子 A：Workers Static Assets）+ 一个极薄 Worker。
+	// 静态文件由资源绑定直出（不进 Worker）；只有 /api/feedback 这类未命中文件的请求才进
+	// worker.js，用来接反馈端点，其余回退 SPA。文档：
+	//   https://developers.cloudflare.com/workers/static-assets/binding/
+	"$schema": "node_modules/wrangler/config-schema.json",
+	"name": "dpmaster",
+	// 只走自定义域名，不暴露 *.workers.dev 入口。
+	"workers_dev": false,
+	// 不为部署版本生成 Cloudflare Preview URLs。
+	"preview_urls": false,
+	"routes": [
+		{
+			"pattern": "dp.betaoi.cc",
+			"custom_domain": true,
+			"enabled": true,
+			"previews_enabled": false,
+			"zone_name": "betaoi.cc"
+		}
+	],
+	"compatibility_date": "2026-07-06",
+	// Worker 入口：先接 /api/feedback，其余交回 env.ASSETS（见 worker.js）。
+	"main": "worker.js",
+	"vars": {
+		"FEEDBACK_WEBHOOK_KIND": "dingtalk"
+	},
+	// Webhook URL / secret 在 Cloudflare Dashboard 配置；部署时保留这些变量。
+	"keep_vars": true,
+	"observability": {
+		"enabled": true,
+		"logs": {
+			"enabled": true,
+			"invocation_logs": true,
+			// 1 = 100% 采样；如果流量变大，可降到 0.1 或 0.01。
+			"head_sampling_rate": 1
+		},
+		"traces": {
+			"enabled": false
+		}
+	},
+	"assets": {
+		"directory": "./dist/",
+		// 让 Worker 能通过 env.ASSETS.fetch() 取静态资源 / 触发 SPA 回退。
+		"binding": "ASSETS",
+		// 未命中任何静态文件时，回退到 /index.html 并返回 HTTP 200，
+		// 交给 react-router 处理客户端路由（深链/刷新不再 404）。
+		"not_found_handling": "single-page-application"
+	}
 }
