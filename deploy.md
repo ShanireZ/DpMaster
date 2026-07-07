@@ -1,6 +1,6 @@
 # DpMaster 部署指南
 
-本文面向需要把 DpMaster 发布到线上、配置站内反馈机器人、或排查部署问题的维护者。所有命令默认在 `D:\WorkSpace\DpMaster\site` 执行。
+本文面向需要把 DpMaster 发布到线上、配置站内反馈机器人、或排查部署问题的维护者。所有命令默认在 `site` 目录下执行。
 
 DpMaster 是一个 React + Vite 静态站。生产部署采用双线路：
 
@@ -12,7 +12,6 @@ DpMaster 是一个 React + Vite 静态站。生产部署采用双线路：
 ## 一页流程
 
 ```bash
-cd D:\WorkSpace\DpMaster\site
 npm install
 npm run lint
 npm run build
@@ -66,7 +65,6 @@ npm run deploy:eo
 ## 本地构建
 
 ```bash
-cd D:\WorkSpace\DpMaster\site
 npm install
 npm run lint
 npm run build
@@ -87,12 +85,12 @@ npm run build
 
 ### Cloudflare 使用的文件
 
-| 文件 | 作用 |
-|---|---|
-| `site/wrangler.jsonc` | Worker 名称、入口、静态资源目录、SPA 回退配置。 |
-| `site/worker.js` | 接住 `/api/feedback`，其余请求交给 `env.ASSETS.fetch(request)`。 |
-| `site/functions/_feedback-core.js` | 反馈处理核心，与 EdgeOne 共用。 |
-| `site/dist/` | Vite 构建产物。 |
+| 文件                               | 作用                                                             |
+| ---------------------------------- | ---------------------------------------------------------------- |
+| `site/wrangler.jsonc`              | Worker 名称、入口、静态资源目录、SPA 回退配置。                  |
+| `site/worker.js`                   | 接住 `/api/feedback`，其余请求交给 `env.ASSETS.fetch(request)`。 |
+| `site/functions/_feedback-core.js` | 反馈处理核心，与 EdgeOne 共用。                                  |
+| `site/dist/`                       | Vite 构建产物。                                                  |
 
 当前 Cloudflare Worker 名称是 `dpmaster`。`wrangler.jsonc` 中的关键配置是：
 
@@ -113,7 +111,6 @@ npm run build
 ### 首次发布到 Cloudflare
 
 ```bash
-cd D:\WorkSpace\DpMaster\site
 npx wrangler login
 npm run build
 npm run deploy:cf
@@ -142,11 +139,11 @@ npm run deploy:cf
 3. 添加下面的变量。
 4. 点击 **Deploy** 让变量进入线上版本。
 
-| 名称 | 类型 | 必填 | 值 |
-|---|---|---:|---|
-| `FEEDBACK_WEBHOOK_URL` | Secret | 是 | 钉钉 webhook 完整 URL，包含 `access_token`。 |
-| `FEEDBACK_WEBHOOK_KIND` | Text | 是 | 钉钉填 `dingtalk`。 |
-| `FEEDBACK_WEBHOOK_SECRET` | Secret | 加签模式必填 | 钉钉机器人加签密钥，通常以 `SEC` 开头。 |
+| 名称                      | 类型   |         必填 | 值                                           |
+| ------------------------- | ------ | -----------: | -------------------------------------------- |
+| `FEEDBACK_WEBHOOK_URL`    | Secret |           是 | 钉钉 webhook 完整 URL，包含 `access_token`。 |
+| `FEEDBACK_WEBHOOK_KIND`   | Text   |           是 | 钉钉填 `dingtalk`。                          |
+| `FEEDBACK_WEBHOOK_SECRET` | Secret | 加签模式必填 | 钉钉机器人加签密钥，通常以 `SEC` 开头。      |
 
 CLI 设置 Secret：
 
@@ -201,12 +198,12 @@ npx wrangler tail dpmaster
 
 ### EdgeOne 使用的文件
 
-| 文件 | 作用 |
-|---|---|
-| `site/package.json` | `deploy:eo` 命令固定发布到 `dpmaster` production。 |
-| `site/scripts/postbuild.mjs` | 生成 `404.html` 和 EdgeOne catch-all 函数。 |
-| `site/functions/_feedback-core.js` | 构建期内联进 EdgeOne 函数。 |
-| `site/dist/` | EdgeOne Pages 发布目录。 |
+| 文件                               | 作用                                               |
+| ---------------------------------- | -------------------------------------------------- |
+| `site/package.json`                | `deploy:eo` 命令固定发布到 `dpmaster` production。 |
+| `site/scripts/postbuild.mjs`       | 生成 `404.html` 和 EdgeOne catch-all 函数。        |
+| `site/functions/_feedback-core.js` | 构建期内联进 EdgeOne 函数。                        |
+| `site/dist/`                       | EdgeOne Pages 发布目录。                           |
 
 当前 EdgeOne 发布命令是：
 
@@ -219,7 +216,6 @@ edgeone pages deploy ./dist -n dpmaster -e production
 ### 首次发布到 EdgeOne
 
 ```bash
-cd D:\WorkSpace\DpMaster\site
 npx edgeone login
 npm run build
 npm run deploy:eo
@@ -245,11 +241,11 @@ EdgeOne 的变量要配置到生产环境的边缘函数运行时。控制台入
 4. 环境选择 `production`。
 5. 保存后点击 **Deploy**，或重新执行 `npm run deploy:eo`。
 
-| 名称 | 类型 | 必填 | 值 |
-|---|---|---:|---|
-| `FEEDBACK_WEBHOOK_URL` | Secret | 是 | 钉钉 webhook 完整 URL，包含 `access_token`。 |
-| `FEEDBACK_WEBHOOK_KIND` | String | 是 | 钉钉填 `dingtalk`。 |
-| `FEEDBACK_WEBHOOK_SECRET` | Secret | 加签模式必填 | 钉钉机器人加签密钥。 |
+| 名称                      | 类型   |         必填 | 值                                           |
+| ------------------------- | ------ | -----------: | -------------------------------------------- |
+| `FEEDBACK_WEBHOOK_URL`    | Secret |           是 | 钉钉 webhook 完整 URL，包含 `access_token`。 |
+| `FEEDBACK_WEBHOOK_KIND`   | String |           是 | 钉钉填 `dingtalk`。                          |
+| `FEEDBACK_WEBHOOK_SECRET` | Secret | 加签模式必填 | 钉钉机器人加签密钥。                         |
 
 EdgeOne 变量保存后需要部署才会生效。只保存不部署，线上函数可能仍读不到变量。
 
@@ -334,42 +330,42 @@ Invoke-RestMethod `
 
 请求字段：
 
-| 字段 | 来源 | 说明 |
-|---|---|---|
-| `kind` | 前端表单 | `内容有误` / `显示异常` / `功能问题` / `建议` / `其他` |
-| `page` | 前端自动生成 | 人类可读页面名 |
-| `path` | 当前路由 | 例如 `/part/a/01` |
-| `description` | 必填 | trim 后至少 4 个字符 |
-| `steps` | 选填 | 复现步骤或期望 |
-| `contact` | 选填 | 用户自愿留下的联系方式 |
-| `url` | 前端附带 | 当前完整 URL，后端当前不使用 |
-| `ua` | 前端自动生成 | User-Agent |
-| `viewport` | 前端自动生成 | 视口尺寸 |
-| `ts` | 前端自动生成 | ISO 时间 |
+| 字段          | 来源         | 说明                                                   |
+| ------------- | ------------ | ------------------------------------------------------ |
+| `kind`        | 前端表单     | `内容有误` / `显示异常` / `功能问题` / `建议` / `其他` |
+| `page`        | 前端自动生成 | 人类可读页面名                                         |
+| `path`        | 当前路由     | 例如 `/part/a/01`                                      |
+| `description` | 必填         | trim 后至少 4 个字符                                   |
+| `steps`       | 选填         | 复现步骤或期望                                         |
+| `contact`     | 选填         | 用户自愿留下的联系方式                                 |
+| `url`         | 前端附带     | 当前完整 URL，后端当前不使用                           |
+| `ua`          | 前端自动生成 | User-Agent                                             |
+| `viewport`    | 前端自动生成 | 视口尺寸                                               |
+| `ts`          | 前端自动生成 | ISO 时间                                               |
 
 响应：
 
-| 条件 | 状态 | Body |
-|---|---:|---|
-| 非法 JSON | 400 | `{ "ok": false, "error": "bad_json" }` |
-| `description` 少于 4 字符 | 422 | `{ "ok": false, "error": "empty" }` |
-| JSON 过大 | 413 | `{ "ok": false, "error": "too_large" }` |
-| 合法请求 | 200 | `{ "ok": true }` |
+| 条件                      | 状态 | Body                                    |
+| ------------------------- | ---: | --------------------------------------- |
+| 非法 JSON                 |  400 | `{ "ok": false, "error": "bad_json" }`  |
+| `description` 少于 4 字符 |  422 | `{ "ok": false, "error": "empty" }`     |
+| JSON 过大                 |  413 | `{ "ok": false, "error": "too_large" }` |
+| 合法请求                  |  200 | `{ "ok": true }`                        |
 
 合法请求会先输出一条 `[feedback]` 日志。即使 webhook 未配置或转发失败，前端仍收到 `{ "ok": true }`，所以验收时必须同时检查平台日志和钉钉送达。
 
 ## 常见问题
 
-| 现象 | 优先检查 |
-|---|---|
-| Cloudflare 深链返回 404 | `wrangler.jsonc` 是否保留 `assets.not_found_handling = "single-page-application"`，是否已重新部署。 |
-| Cloudflare `/api/feedback` 返回 HTML | 请求方法是否是 `POST`，URL 是否真的指向 `/api/feedback`，Worker 是否是最新版本。 |
-| EdgeOne 深链返回 404 但页面能打开 | 说明 `404.html` 安全网生效，继续检查 `edge-functions/[[default]].js` 是否发布。 |
-| EdgeOne `/api/feedback` 返回 HTML | catch-all 函数没有接住反馈分支，检查 `postbuild` 产物和 EdgeOne 函数日志。 |
-| 端点返回 `{ "ok": true }` 但钉钉没消息 | 看平台日志中是否有 `[feedback] webhook non-2xx` 或 `webhook errcode`。 |
-| 钉钉签名错误 | `FEEDBACK_WEBHOOK_SECRET` 是否与机器人加签密钥一致。 |
-| 钉钉关键词错误 | 关键词是否包含 `反馈` 或 `DP 图谱`。 |
-| 收到企业微信格式或完全无消息 | `FEEDBACK_WEBHOOK_KIND` 是否漏配为 `dingtalk`。 |
+| 现象                                   | 优先检查                                                                                            |
+| -------------------------------------- | --------------------------------------------------------------------------------------------------- |
+| Cloudflare 深链返回 404                | `wrangler.jsonc` 是否保留 `assets.not_found_handling = "single-page-application"`，是否已重新部署。 |
+| Cloudflare `/api/feedback` 返回 HTML   | 请求方法是否是 `POST`，URL 是否真的指向 `/api/feedback`，Worker 是否是最新版本。                    |
+| EdgeOne 深链返回 404 但页面能打开      | 说明 `404.html` 安全网生效，继续检查 `edge-functions/[[default]].js` 是否发布。                     |
+| EdgeOne `/api/feedback` 返回 HTML      | catch-all 函数没有接住反馈分支，检查 `postbuild` 产物和 EdgeOne 函数日志。                          |
+| 端点返回 `{ "ok": true }` 但钉钉没消息 | 看平台日志中是否有 `[feedback] webhook non-2xx` 或 `webhook errcode`。                              |
+| 钉钉签名错误                           | `FEEDBACK_WEBHOOK_SECRET` 是否与机器人加签密钥一致。                                                |
+| 钉钉关键词错误                         | 关键词是否包含 `反馈` 或 `DP 图谱`。                                                                |
+| 收到企业微信格式或完全无消息           | `FEEDBACK_WEBHOOK_KIND` 是否漏配为 `dingtalk`。                                                     |
 
 ## 维护边界
 
