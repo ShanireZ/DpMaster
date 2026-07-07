@@ -25,6 +25,15 @@ dist-ssr
 
 # Tencent Cloud EdgeOne
 .env
-.edgeone/*
-.tef_dist/*
-  
+.env.*
+!.env.example
+.dev.vars
+.dev.vars.*
+.edgeone/
+.tef_dist/
+
+# Cloudflare / Wrangler local auth and deployment state
+.wrangler/
+wrangler-account.json
+node_modules/.cache/wrangler/
+wrangler.jsonc

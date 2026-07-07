@@ -16,6 +16,19 @@ yarn-debug.log*
 yarn-error.log*
 pnpm-debug.log*
 
+# deployment auth / provider caches
+.env
+.env.*
+!.env.example
+.dev.vars
+.dev.vars.*
+**/.edgeone/
+**/.wrangler/
+**/.tef_dist/
+**/wrangler-account.json
+**/node_modules/.cache/wrangler/
+**/wrangler.jsonc
+
 # editor / OS
 .vscode/*
 !.vscode/extensions.json
