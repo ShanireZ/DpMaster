@@ -5,9 +5,25 @@
   //   https://developers.cloudflare.com/workers/static-assets/binding/
   "$schema": "node_modules/wrangler/config-schema.json",
   "name": "dpmaster",
+  // 只走自定义域名，不暴露 *.workers.dev 入口。
+  "workers_dev": false,
+  // 不为部署版本生成 Cloudflare Preview URLs。
+  "preview_urls": false,
   "compatibility_date": "2026-07-06",
   // Worker 入口：先接 /api/feedback，其余交回 env.ASSETS（见 worker.js）。
   "main": "worker.js",
+  "observability": {
+    "enabled": true,
+    "logs": {
+      "enabled": true,
+      "invocation_logs": true,
+      // 1 = 100% 采样；如果流量变大，可降到 0.1 或 0.01。
+      "head_sampling_rate": 1
+    },
+    "traces": {
+      "enabled": false
+    }
+  },
   "assets": {
     "directory": "./dist/",
     // 让 Worker 能通过 env.ASSETS.fetch() 取静态资源 / 触发 SPA 回退。
