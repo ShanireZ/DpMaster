@@ -310,20 +310,6 @@ Invoke-RestMethod `
 
 不建议使用 IP 白名单。Cloudflare Workers 和 EdgeOne Pages 的 Serverless 出口 IP 不适合手工维护白名单。
 
-### 能不能不部署到群里，而作为单独聊天机器人存在
-
-**当前实现不能。** 当前实现是 webhook 转发模型，而钉钉群自定义 webhook 机器人不支持单聊。
-
-如果要做“单独聊天机器人”或“应用机器人”，需要改为钉钉应用机器人方案：
-
-1. 在钉钉开发者后台创建企业内部应用。
-2. 在应用中开启机器人与消息推送。
-3. 配置机器人接收消息或发送消息能力。
-4. 使用钉钉应用凭证、OpenAPI、Stream Mode 或会话 webhook 发送消息。
-5. 修改 `site/functions/_feedback-core.js`，不要再只依赖 `FEEDBACK_WEBHOOK_URL` 这种群 webhook URL。
-
-短期替代方案：创建一个只有维护者的小群，把群自定义机器人放进去。用户体验上不是单聊机器人，但能让反馈只进入维护者私域。
-
 ## 反馈接口合同
 
 前端 `FeedbackWidget` 向同源 `POST /api/feedback` 发送 JSON。
