@@ -7,7 +7,7 @@
 ![Lessons](https://img.shields.io/badge/lessons-37%2F37%20ready-success.svg?style=flat-square)
 ![Deploy](https://img.shields.io/badge/deploy-Cloudflare%20%2B%20EdgeOne-orange.svg?style=flat-square)
 
-DpMaster 是一个面向 C++ 算法学习者的动态规划交互式教学网站。把常见 DP 模型整理成可浏览的图谱：知识点精讲、可改值演示、小游戏、手算过程、C++ 代码和洛谷练习路径放在同一套静态站里。
+DpMaster 是一个面向 C++ 算法学习者的动态规划交互式学习网站。把常见 DP 模型整理成可浏览的图谱：知识点精讲、可改值演示、小游戏、手算过程、C++ 代码和洛谷练习路径放在同一套静态站里。
 
 适合正在准备 NOIP、CSP、省选基础阶段，或想系统补齐动态规划模型的学习者。
 
