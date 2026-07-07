@@ -12,6 +12,8 @@
   "compatibility_date": "2026-07-06",
   // Worker 入口：先接 /api/feedback，其余交回 env.ASSETS（见 worker.js）。
   "main": "worker.js",
+  // Webhook URL / secret / kind 在 Cloudflare Dashboard 配置；部署时保留这些变量。
+  "keep_vars": true,
   "observability": {
     "enabled": true,
     "logs": {
