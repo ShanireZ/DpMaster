@@ -1,0 +1,4 @@
+User-agent: *
+Allow: /
+
+Sitemap: https://dp.betaoi.cc/sitemap.xml

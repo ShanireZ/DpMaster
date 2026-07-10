@@ -10,6 +10,8 @@ source_paths:
   - site/src/pages/MethodPage.tsx
   - site/src/pages/ProblemsPage.tsx
   - site/src/pages/AboutPage.tsx
+  - site/src/lib/pageMeta.ts
+  - site/public/sitemap.xml
 ---
 
 # Promise
@@ -32,6 +34,8 @@ The current app routes are:
 
 Invalid family/type routes and unregistered content should fall through to `NotFound`.
 
+All seven family pages and all 37 completed lesson pages are public and indexable. Lesson titles follow `课程名 · 家族名 · DP大师`; every public route has a canonical URL, description, and Open Graph metadata. The complete discovery surface is published through `robots.txt` and a generated 48-URL sitemap.
+
 # Learning Surface
 
 Every type page should provide:
@@ -53,6 +57,8 @@ Every family has one registered game:
 * E 换根 DP - 换根巡礼.
 * F 树形 DP - 舞会邀请.
 * G 状压 DP - 棋盘布阵.
+
+The shared shell supports keyboard navigation with a skip link, explicit current-page state, route announcements, an accessible mobile drawer, visible focus styles, and reduced-motion behavior. Visualization playback uses the same reset/previous/play-pause/next/progress/speed semantics across full and compact layouts.
 
 # Exclusions
 

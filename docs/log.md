@@ -8,5 +8,6 @@
 * **2026-07-10 feedback hardening**: Added a validated same-origin JSON contract, per-instance rolling 30-minute/10-request protection, structured logged receipts, best-effort Webhook diagnostics, consistent runtime Adapters, and an accessible focus-managed feedback dialog.
 * **2026-07-10 playback deepening**: Centralized finite-frame playback state, timing, speed, keyboard behavior, live status, and full/compact controls; migrated grid, tree, board, set, and reroot carriers away from duplicated transports.
 * **2026-07-10 game runtime**: Added seeded/browser random sources, duplicate-safe round statistics, a shared lazy Web Audio Adapter, and a 400 px viewport gate; migrated all seven family games while preserving their rules and catalog-owned chunks.
+* **2026-07-10 SEO and accessibility**: Added catalog-derived metadata for all public routes, 37 indexable lesson pages, a 48-URL sitemap and robots policy; added skip navigation, current-page semantics, route announcements, accessible mobile navigation, and executable SEO/accessibility contracts.
 * **Update**: Promoted root `deploy.md` as the single deployment and feedback runbook.
 * **Deprecation**: Removed root numbered planning docs, `handoff/` handoff notes, and `site/README.md` / `site/DEPLOY.md` as maintained documentation sources.
