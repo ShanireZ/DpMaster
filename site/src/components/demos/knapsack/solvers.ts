@@ -116,7 +116,7 @@ export function knapsack1D(items: Item[], W: number, mode: Mode1D): VizModel {
         `物品 <b>${i}</b>（w=${w}, v=${v}）· <b>${forward ? '正' : '逆'}推</b> j=${j}：` +
         `f[${j - w}]+${v} = <b>${cand}</b> ${better ? '&gt;' : '≤'} f[${j}]=<b>${old}</b> → ${better ? `更新为 <b>${cand}</b>` : '不变'}。`
       if (reused && better) {
-        caption += ` <span style="color:var(--viz-invalid)">⚠ f[${j - w}] 本轮已被物品 ${i} 更新过——物品 ${i} 被<b>重复计入</b>！这正是 01 背包顺推的 bug。</span>`
+        caption += ` <span class="bad">⚠ f[${j - w}] 本轮已被物品 ${i} 更新过——物品 ${i} 被<b>重复计入</b>！这正是 01 背包顺推的 bug。</span>`
       }
       if (better) updated.add(j)
 

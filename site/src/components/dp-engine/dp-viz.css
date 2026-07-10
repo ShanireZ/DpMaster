@@ -63,6 +63,8 @@
 .dpviz__formula { color: var(--text-1); overflow-x: auto; }
 .dpviz__caption { color: var(--text-2); font-size: 14px; }
 .dpviz__caption b { color: var(--text-1); }
+.dpviz__caption .ok { color: var(--viz-chosen); }
+.dpviz__caption .bad { color: var(--viz-invalid); }
 
 /* 图例 */
 .dpviz__legend { display: flex; flex-wrap: wrap; gap: var(--sp-4); font-size: 12px; color: var(--text-3); }

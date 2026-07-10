@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useState } from 'react'
-import { ChevronLeft, ChevronRight, RotateCcw } from 'lucide-react'
+import { PlaybackControls } from '../../dp-engine/playback/PlaybackControls'
+import { useStepPlayer } from '../../dp-engine/playback/useStepPlayer'
 import { editTrace } from './editTrace'
 import type { Op, Step } from './editTrace'
 import '../knapsack/knapsack-demo.css'
@@ -26,12 +27,16 @@ export default function EditTracebackDemo() {
 
   const { dist, steps } = useMemo(() => editTrace(a || '', b || ''), [a, b])
   // 步进：0 = 还没走任何一步；steps.length = 全部揭示。
-  const [shown, setShown] = useState(steps.length)
+  const player = useStepPlayer(steps.length + 1)
+  const shown = player.index
+  const pause = player.pause
+  const setPlaybackIndex = player.setIndex
 
   // 换串后把步进拉满，直接展示最终对齐。
   useEffect(() => {
-    setShown(steps.length)
-  }, [steps.length])
+    pause()
+    setPlaybackIndex(steps.length)
+  }, [a, b, pause, setPlaybackIndex, steps.length])
 
   // 落地结果：把 keep/sub 的目标字符、ins 的插入字符拼起来（del 不产出字符），
   // 只统计已揭示到的步。等于「A 应用前 shown 步操作后的样子」。
@@ -142,34 +147,12 @@ export default function EditTracebackDemo() {
         </span>
       </div>
 
-      <div className="etb__ctl">
-        <div className="etb__ctl-btns">
-          <button onClick={() => setShown(0)} aria-label="回到起点" title="回到起点">
-            <RotateCcw size={16} />
-          </button>
-          <button onClick={() => setShown((s) => Math.max(0, s - 1))} disabled={shown === 0} aria-label="上一步">
-            <ChevronLeft size={18} />
-          </button>
-          <button
-            onClick={() => setShown((s) => Math.min(steps.length, s + 1))}
-            disabled={shown >= steps.length}
-            aria-label="下一步"
-          >
-            <ChevronRight size={18} />
-          </button>
-        </div>
-        <input
-          type="range"
-          min={0}
-          max={steps.length}
-          value={shown}
-          onChange={(e) => setShown(Number(e.target.value))}
-          aria-label="揭示到第几步"
-        />
-        <span className="etb__ctl-count">
-          {shown}/{steps.length}
-        </span>
-      </div>
+      <PlaybackControls
+        player={player}
+        variant="compact"
+        label="编辑距离回溯逐帧播放"
+        className="etb__ctl"
+      />
 
       <div className="etb__delta">
         把 "<b>{a || '∅'}</b>" 变成 "<b>{b || '∅'}</b>" 的一条最优编辑序列共 <b>{steps.length}</b> 步，其中{' '}

@@ -1,5 +1,5 @@
 import assert from 'node:assert/strict'
-import { access, readFile } from 'node:fs/promises'
+import { access, readFile, readdir } from 'node:fs/promises'
 import test from 'node:test'
 
 const root = new URL('../src/components/', import.meta.url)
@@ -7,6 +7,13 @@ const root = new URL('../src/components/', import.meta.url)
 async function component(path) {
   return readFile(new URL(path, root), 'utf8')
 }
+
+const remainingTransports = [
+  'demos/lis/LISPatienceDemo.tsx',
+  'demos/grid/LCSToLISDemo.tsx',
+  'demos/interval/PalindromeInsertDemo.tsx',
+  'demos/grid/EditTracebackDemo.tsx',
+]
 
 test('deep playback hook exposes one typed player contract', async () => {
   const [types, hook] = await Promise.all([
@@ -78,6 +85,44 @@ test('board, subset, cover, and reroot carriers share compact playback semantics
   }
 })
 
+for (const path of remainingTransports) {
+  test(`${path} delegates its transport to the shared player`, async () => {
+    const text = await component(path)
+
+    assert.match(text, /dp-engine\/playback\/useStepPlayer/)
+    assert.match(text, /dp-engine\/playback\/PlaybackControls/)
+    assert.match(text, /variant="compact"/)
+    assert.doesNotMatch(text, /\b(?:playing|setPlaying|timer|setTimeout|clearTimeout)\b/)
+    assert.doesNotMatch(text, /\[(?:idx|shown),\s*set(?:Idx|Shown)\]/)
+    assert.doesNotMatch(text, /className="(?:lp|ll|etb)__ctl-btns"/)
+  })
+}
+
+test('caption carriers use SafeCaption and raw HTML sinks remain restricted', async () => {
+  const captionCarriers = [
+    'dp-engine/DPViz.tsx',
+    'demos/treedp/TreeCanvas.tsx',
+    'demos/reroot/RerootTwoPassDemo.tsx',
+    'demos/bitmask/BoardDemo.tsx',
+  ]
+  for (const path of captionCarriers) {
+    const text = await component(path)
+    assert.match(text, /SafeCaption/, `${path} must render teaching captions safely`)
+    assert.doesNotMatch(text, /dangerouslySetInnerHTML/, `${path} must not own a raw HTML sink`)
+  }
+
+  const allowedRawSinks = new Set(['ui/CodeBlock.tsx', 'ui/Math.tsx'])
+  const paths = (await readdir(root, { recursive: true }))
+    .map((path) => path.replaceAll('\\', '/'))
+    .filter((path) => /\.[jt]sx?$/.test(path))
+  for (const path of paths) {
+    const text = await component(path)
+    if (!allowedRawSinks.has(path)) {
+      assert.doesNotMatch(text, /dangerouslySetInnerHTML/, `${path} introduces an unapproved raw HTML sink`)
+    }
+  }
+})
+
 test('every playback caller imports the deep hook path', async () => {
   const paths = [
     'dp-engine/DPViz.tsx',
@@ -88,6 +133,7 @@ test('every playback caller imports the deep hook path', async () => {
     'demos/bitmask/SubsetEnumDemo.tsx',
     'demos/bitmask/CoverDemo.tsx',
     'demos/reroot/RerootTwoPassDemo.tsx',
+    ...remainingTransports,
   ]
   for (const path of paths) {
     const text = await component(path)

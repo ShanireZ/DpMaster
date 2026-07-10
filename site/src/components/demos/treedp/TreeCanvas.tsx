@@ -1,4 +1,5 @@
 import { PlaybackControls } from '../../dp-engine/playback/PlaybackControls'
+import { SafeCaption } from '../../dp-engine/SafeCaption'
 import type { StepPlayer } from '../../dp-engine/playback/types'
 import type { TreeLayout } from './treedpSolver'
 
@@ -129,5 +130,5 @@ export function Legend({ items }: { items: { color: string; label: string; bg?: 
 }
 
 export function Panel({ html }: { html: string }) {
-  return <div className="td__panel" dangerouslySetInnerHTML={{ __html: html }} />
+  return <SafeCaption html={html} className="td__panel" />
 }

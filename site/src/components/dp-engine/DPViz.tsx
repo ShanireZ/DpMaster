@@ -2,6 +2,7 @@ import type { CSSProperties } from 'react'
 import { MB } from '../ui/Math'
 import type { VizModel, CellState } from './types'
 import { key } from './types'
+import { SafeCaption } from './SafeCaption'
 import { PlaybackControls } from './playback/PlaybackControls'
 import { useStepPlayer } from './playback/useStepPlayer'
 import './dp-viz.css'
@@ -142,7 +143,7 @@ export default function DPViz({ model }: { model: VizModel }) {
           </div>
         )}
         {frame.caption && (
-          <div className="dpviz__caption" dangerouslySetInnerHTML={{ __html: frame.caption }} />
+          <SafeCaption html={frame.caption} className="dpviz__caption" />
         )}
       </div>
 
