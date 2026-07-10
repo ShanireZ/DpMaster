@@ -1,5 +1,6 @@
-import { useMemo, useState, useEffect, useRef } from 'react'
-import { Play, Pause, ChevronLeft, ChevronRight, RotateCcw } from 'lucide-react'
+import { useMemo, useState } from 'react'
+import { PlaybackControls } from '../../dp-engine/playback/PlaybackControls'
+import { useStepPlayer } from '../../dp-engine/playback/useStepPlayer'
 import './lcs-lis.css'
 
 // 两个都是 1..n 的排列。第一组取恒等排列 A，映射最直观（值即位置）；第二组 A 打乱，见一般映射。
@@ -58,34 +59,16 @@ export default function LCSToLISDemo() {
   const lisPick = useMemo(() => lisIndices(mapped), [mapped])
   const lisLen = lisPick.size
 
-  // 步进游标：0..b.length-1 是「正在映射第 idx 个」；== b.length 表示映射完成、点亮 LIS。
+  // 算法帧 0..b.length-1 是逐项映射；b.length 是映射完成、点亮 LIS。
   const total = b.length + 1 // 映射 n 步 + 收尾 1 步
-  const [idx, setIdx] = useState(-1)
-  const [playing, setPlaying] = useState(false)
-  const timer = useRef<number | null>(null)
-
-  useEffect(() => {
-    setIdx(-1)
-    setPlaying(false)
-  }, [a, b])
-
-  useEffect(() => {
-    if (!playing) return
-    if (idx >= total - 1) {
-      setPlaying(false)
-      return
-    }
-    timer.current = window.setTimeout(() => setIdx((k) => k + 1), 850)
-    return () => {
-      if (timer.current) window.clearTimeout(timer.current)
-    }
-  }, [playing, idx, total])
-
+  const player = useStepPlayer(total + 1)
+  const idx = player.index - 1 // player 0 是显式初始帧。
   const mappedCount = Math.min(idx + 1, b.length) // 已映射的个数
   const done = idx >= b.length // 是否进入「点亮 LIS」阶段
   const curCol = idx >= 0 && idx < b.length ? idx : -1 // 正在映射的列
 
   const setPreset = (p: { a: number[]; b: number[] }) => {
+    player.reset()
     setA(p.a)
     setB(p.b)
   }
@@ -186,33 +169,12 @@ export default function LCSToLISDemo() {
         )}
       </div>
 
-      {/* 步进控制 */}
-      <div className="ll__ctl">
-        <div className="ll__ctl-btns">
-          <button onClick={() => { setPlaying(false); setIdx(-1) }} aria-label="重置" title="重置">
-            <RotateCcw size={18} />
-          </button>
-          <button onClick={() => { setPlaying(false); setIdx((k) => Math.max(-1, k - 1)) }} disabled={idx < 0} aria-label="上一步">
-            <ChevronLeft size={20} />
-          </button>
-          <button
-            className="primary"
-            onClick={() => {
-              if (idx >= total - 1) setIdx(-1)
-              setPlaying((p) => !p)
-            }}
-            aria-label={playing ? '暂停' : '播放'}
-          >
-            {playing ? <Pause size={20} /> : <Play size={20} />}
-          </button>
-          <button onClick={() => { setPlaying(false); setIdx((k) => Math.min(total - 1, k + 1)) }} disabled={idx >= total - 1} aria-label="下一步">
-            <ChevronRight size={20} />
-          </button>
-        </div>
-        <span className="ll__ctl-count">
-          {idx + 1}/{total}
-        </span>
-      </div>
+      <PlaybackControls
+        player={player}
+        variant="compact"
+        label="排列 LCS 转 LIS 逐帧播放"
+        className="ll__ctl"
+      />
     </div>
   )
 }

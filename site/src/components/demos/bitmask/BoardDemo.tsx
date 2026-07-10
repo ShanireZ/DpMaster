@@ -1,5 +1,6 @@
 import { useMemo, useState } from 'react'
 import { Minus, Plus, Sigma } from 'lucide-react'
+import { SafeCaption } from '../../dp-engine/SafeCaption'
 import { PlaybackControls } from '../../dp-engine/playback/PlaybackControls'
 import { useStepPlayer } from '../../dp-engine/playback/useStepPlayer'
 import { layoutFrames } from './boardSolver'
@@ -136,7 +137,7 @@ export default function BoardDemo() {
             </svg>
           </div>
 
-          <div className="bm__caption" dangerouslySetInnerHTML={{ __html: frame?.caption ?? '' }} />
+          <SafeCaption html={frame?.caption ?? ''} className="bm__caption" />
 
           <PlaybackControls player={p} variant="compact" label="棋盘布局逐帧播放" />
 

@@ -1,5 +1,7 @@
-import { useMemo, useState, useEffect, useRef } from 'react'
-import { Play, Pause, ChevronLeft, ChevronRight, RotateCcw, Shuffle } from 'lucide-react'
+import { useMemo, useState } from 'react'
+import { Shuffle } from 'lucide-react'
+import { PlaybackControls } from '../../dp-engine/playback/PlaybackControls'
+import { useStepPlayer } from '../../dp-engine/playback/useStepPlayer'
 import './lis-patience.css'
 
 // 与主演示同源的预设，方便两处对照（经典乱序最终 LIS=5）。
@@ -52,35 +54,18 @@ export default function LISPatienceDemo() {
   const [a, setA] = useState<number[]>(PRESETS[0].a)
   const steps = useMemo(() => buildSteps(a), [a])
 
-  // 播放游标：-1 表示「还没开始」（tails 空）。
-  const [idx, setIdx] = useState(-1)
-  const [playing, setPlaying] = useState(false)
-  const timer = useRef<number | null>(null)
-
-  // 换数组 → 复位。
-  useEffect(() => {
-    setIdx(-1)
-    setPlaying(false)
-  }, [a])
-
-  useEffect(() => {
-    if (!playing) return
-    if (idx >= steps.length - 1) {
-      setPlaying(false)
-      return
-    }
-    timer.current = window.setTimeout(() => setIdx((k) => k + 1), 900)
-    return () => {
-      if (timer.current) window.clearTimeout(timer.current)
-    }
-  }, [playing, idx, steps.length])
-
+  // player 0 是显式初始帧；算法第 k 步位于 player k+1。
+  const player = useStepPlayer(steps.length + 1)
+  const idx = player.index - 1
   const started = idx >= 0
   const cur = started ? steps[idx] : null
   const tails = cur ? cur.after : []
   const lisLen = tails.length
 
-  const setPreset = (arr: number[]) => setA(arr)
+  const setPreset = (arr: number[]) => {
+    player.reset()
+    setA(arr)
+  }
 
   return (
     <div>
@@ -95,7 +80,14 @@ export default function LISPatienceDemo() {
               {p.label}
             </button>
           ))}
-          <button className="lp__mode" onClick={() => setA(shuffle(a))} title="打乱当前数组">
+          <button
+            className="lp__mode"
+            onClick={() => {
+              player.reset()
+              setA(shuffle(a))
+            }}
+            title="打乱当前数组"
+          >
             <Shuffle size={13} style={{ verticalAlign: '-2px', marginRight: 4 }} />
             打乱
           </button>
@@ -169,33 +161,12 @@ export default function LISPatienceDemo() {
         )}
       </div>
 
-      {/* 播放控制 */}
-      <div className="lp__ctl">
-        <div className="lp__ctl-btns">
-          <button onClick={() => { setPlaying(false); setIdx(-1) }} aria-label="重置" title="重置">
-            <RotateCcw size={18} />
-          </button>
-          <button onClick={() => { setPlaying(false); setIdx((k) => Math.max(-1, k - 1)) }} disabled={idx < 0} aria-label="上一步">
-            <ChevronLeft size={20} />
-          </button>
-          <button
-            className="primary"
-            onClick={() => {
-              if (idx >= steps.length - 1) setIdx(-1)
-              setPlaying((p) => !p)
-            }}
-            aria-label={playing ? '暂停' : '播放'}
-          >
-            {playing ? <Pause size={20} /> : <Play size={20} />}
-          </button>
-          <button onClick={() => { setPlaying(false); setIdx((k) => Math.min(steps.length - 1, k + 1)) }} disabled={idx >= steps.length - 1} aria-label="下一步">
-            <ChevronRight size={20} />
-          </button>
-        </div>
-        <span className="lp__ctl-count">
-          {idx + 1}/{steps.length}
-        </span>
-      </div>
+      <PlaybackControls
+        player={player}
+        variant="compact"
+        label="耐心排序逐帧播放"
+        className="lp__ctl"
+      />
     </div>
   )
 }

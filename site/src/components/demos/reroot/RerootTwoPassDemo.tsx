@@ -1,5 +1,6 @@
 import { useMemo, useState } from 'react'
 import { M } from '../../ui/Math'
+import { SafeCaption } from '../../dp-engine/SafeCaption'
 import { PlaybackControls } from '../../dp-engine/playback/PlaybackControls'
 import { useStepPlayer } from '../../dp-engine/playback/useStepPlayer'
 import { buildTree, layoutTree, rerootDistSum, rerootFrames, bruteDistSum } from './rerootSolver'
@@ -173,7 +174,7 @@ export default function RerootTwoPassDemo() {
         />
       </div>
 
-      <div className="rr__caption" dangerouslySetInnerHTML={{ __html: f.caption }} />
+      <SafeCaption html={f.caption} className="rr__caption" />
 
       <div className="rr__cmp">
         <div className="rr__cmp-card brute">

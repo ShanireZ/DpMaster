@@ -1,5 +1,7 @@
-import { useMemo, useState, useEffect, useRef } from 'react'
-import { Play, Pause, ChevronLeft, ChevronRight, RotateCcw } from 'lucide-react'
+import { useMemo, useState } from 'react'
+import { RotateCcw } from 'lucide-react'
+import { PlaybackControls } from '../../dp-engine/playback/PlaybackControls'
+import { useStepPlayer } from '../../dp-engine/playback/useStepPlayer'
 import { palindromeInsert } from './palindromeSolver'
 import '../knapsack/knapsack-demo.css'
 import './palindrome-demo.css'
@@ -21,29 +23,10 @@ export default function PalindromeInsertDemo() {
   const s = res.chars
   const n = s.length
 
-  // 步进：-1 = 初始；0..steps.length-1 逐步收缩/插入；steps.length = 完成（整串已回文）。
+  // 算法帧 0..steps.length-1 逐步收缩/插入；steps.length = 完成。
   const total = res.steps.length + 1
-  const [idx, setIdx] = useState(-1)
-  const [playing, setPlaying] = useState(false)
-  const timer = useRef<number | null>(null)
-
-  useEffect(() => {
-    setIdx(-1)
-    setPlaying(false)
-  }, [text])
-
-  useEffect(() => {
-    if (!playing) return
-    if (idx >= total - 1) {
-      setPlaying(false)
-      return
-    }
-    timer.current = window.setTimeout(() => setIdx((k) => k + 1), 900)
-    return () => {
-      if (timer.current) window.clearTimeout(timer.current)
-    }
-  }, [playing, idx, total])
-
+  const player = useStepPlayer(total + 1)
+  const idx = player.index - 1 // player 0 是显式初始帧。
   const done = idx >= res.steps.length
   const curStep = idx >= 0 && idx < res.steps.length ? res.steps[idx] : null
 
@@ -100,10 +83,20 @@ export default function PalindromeInsertDemo() {
               value={text}
               maxLength={16}
               spellCheck={false}
-              onChange={(e) => setText(e.target.value)}
+              onChange={(e) => {
+                player.reset()
+                setText(e.target.value)
+              }}
               aria-label="输入字符串"
             />
-            <button className="pal__reset" onClick={() => setText('google')} aria-label="复位">
+            <button
+              className="pal__reset"
+              onClick={() => {
+                player.reset()
+                setText('google')
+              }}
+              aria-label="复位"
+            >
               <RotateCcw size={14} /> 复位
             </button>
           </div>
@@ -112,7 +105,10 @@ export default function PalindromeInsertDemo() {
               <button
                 key={p}
                 className={`pal__chip ${s.join('') === p ? 'on' : ''}`}
-                onClick={() => setText(p)}
+                onClick={() => {
+                  player.reset()
+                  setText(p)
+                }}
               >
                 {p}
               </button>
@@ -191,33 +187,12 @@ export default function PalindromeInsertDemo() {
         )}
       </div>
 
-      {/* 步进控制 */}
-      <div className="ll__ctl">
-        <div className="ll__ctl-btns">
-          <button onClick={() => { setPlaying(false); setIdx(-1) }} aria-label="重置" title="重置">
-            <RotateCcw size={18} />
-          </button>
-          <button onClick={() => { setPlaying(false); setIdx((k) => Math.max(-1, k - 1)) }} disabled={idx < 0} aria-label="上一步">
-            <ChevronLeft size={20} />
-          </button>
-          <button
-            className="primary"
-            onClick={() => {
-              if (idx >= total - 1) setIdx(-1)
-              setPlaying((p) => !p)
-            }}
-            aria-label={playing ? '暂停' : '播放'}
-          >
-            {playing ? <Pause size={20} /> : <Play size={20} />}
-          </button>
-          <button onClick={() => { setPlaying(false); setIdx((k) => Math.min(total - 1, k + 1)) }} disabled={idx >= total - 1} aria-label="下一步">
-            <ChevronRight size={20} />
-          </button>
-        </div>
-        <span className="ll__ctl-count">
-          {idx + 1}/{total}
-        </span>
-      </div>
+      <PlaybackControls
+        player={player}
+        variant="compact"
+        label="最少插入构回文逐帧播放"
+        className="ll__ctl"
+      />
     </div>
   )
 }

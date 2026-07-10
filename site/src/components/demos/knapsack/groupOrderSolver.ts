@@ -60,7 +60,7 @@ export function groupOrderCorrect(groups: Group[], W: number): VizModel {
         caption =
           `<b>${label(g)}</b> [${itemsStr(items, hit)}] · <b>倒序</b> j=${j}：` +
           `组内挑最好的一件 <b>(${w},${v})</b> → f[${j - w}]+${v} = <b>${best}</b> &gt; f[${j}]=<b>${oldJ}</b> → 更新为 <b>${best}</b>。` +
-          `<span style="color:var(--viz-chosen)"> f[${j - w}] 用的是本组还没动过的旧值，故只计入这一件。</span>`
+          `<span class="ok"> f[${j - w}] 用的是本组还没动过的旧值，故只计入这一件。</span>`
         formula = `f[${j}]=\\max(${oldJ},\\ ${src}+${v})=${best}`
       } else {
         caption = `<b>${label(g)}</b> [${itemsStr(items, -1)}] · <b>倒序</b> j=${j}：组内没有件能让 f[${j}] 变大，保持 <b>${oldJ}</b>。`
@@ -128,7 +128,7 @@ export function groupOrderWrong(groups: Group[], W: number): VizModel {
           `<b>${label(g)}</b> [${itemsStr(items, k)}] · 组内第 <b>${k + 1}</b> 件 <b>(${w},${v})</b> 单独跑倒序 · j=${j}：` +
           `f[${j - w}]+${v} = <b>${cand}</b> ${changed ? '&gt;' : '≤'} f[${j}]=<b>${oldJ}</b> → ${changed ? `更新为 <b>${cand}</b>` : '不变'}。`
         if (stacked) {
-          caption += ` <span style="color:var(--viz-invalid)">⚠ f[${j - w}] 已含本组更早的件——这一步把<b>同一组的两件叠在了一起</b>，组内互斥失效！</span>`
+          caption += ` <span class="bad">⚠ f[${j - w}] 已含本组更早的件——这一步把<b>同一组的两件叠在了一起</b>，组内互斥失效！</span>`
         }
         const formula = `f[${j}]=\\max(${oldJ},\\ ${cand - v}+${v})=${after}`
 
