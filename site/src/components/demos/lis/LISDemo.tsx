@@ -2,6 +2,7 @@ import { useMemo, useState } from 'react'
 import { Minus, Plus, X, Shuffle } from 'lucide-react'
 import DPViz from '../../dp-engine/DPViz'
 import { lisNaive } from './lisSolver'
+import { solveLis } from '../../../algorithms/lis/index.ts'
 import '../knapsack/knapsack-demo.css'
 
 // 三组预设：默认题最优 LIS=5；「已排好序」全升 → LIS=n；「递减」→ LIS=1。
@@ -57,7 +58,7 @@ export default function LISDemo() {
   const [a, setA] = useState<number[]>(PRESETS[0].a)
 
   const model = useMemo(() => lisNaive(a), [a])
-  const ans = useMemo(() => Math.max(...a.map((_, i) => model.frames[model.frames.length - 1].values[1][i] ?? 1)), [model, a])
+  const ans = useMemo(() => solveLis(a).length, [a])
 
   // key 变 → DPViz remount 重播。
   const modelKey = `lis-${a.join('_')}`

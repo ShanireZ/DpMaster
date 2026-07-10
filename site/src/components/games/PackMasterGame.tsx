@@ -1,5 +1,6 @@
 import { useMemo, useState } from 'react'
 import { Package, Sparkles, Shuffle, Trophy, Volume2, VolumeX } from 'lucide-react'
+import { solveZeroOneKnapsack } from '../../algorithms/knapsack/index.ts'
 import './game.css'
 
 interface GItem {
@@ -26,25 +27,6 @@ const DIFFS: Record<Difficulty, DiffSpec> = {
 }
 
 const DIFF_ORDER: Difficulty[] = ['easy', 'medium', 'hard']
-
-function solveOpt(items: GItem[], cap: number): { value: number; pick: boolean[] } {
-  const n = items.length
-  const f = Array.from({ length: n + 1 }, () => Array<number>(cap + 1).fill(0))
-  for (let i = 1; i <= n; i++)
-    for (let j = 0; j <= cap; j++) {
-      f[i][j] = f[i - 1][j]
-      if (j >= items[i - 1].w) f[i][j] = Math.max(f[i][j], f[i - 1][j - items[i - 1].w] + items[i - 1].v)
-    }
-  const pick = Array<boolean>(n).fill(false)
-  let j = cap
-  for (let i = n; i >= 1; i--) {
-    if (f[i][j] !== f[i - 1][j]) {
-      pick[i - 1] = true
-      j -= items[i - 1].w
-    }
-  }
-  return { value: f[n][cap], pick }
-}
 
 // 贪心基线：按性价比 v/w 降序依次尝试装入（装得下就装）
 function solveGreedy(items: GItem[], cap: number): { value: number; pick: boolean[] } {
@@ -104,7 +86,7 @@ export default function PackMasterGame() {
   // 本局是否已计入战绩（同一局重复点「看 DP 最优」不重复计数）
   const [countedThisRound, setCountedThisRound] = useState(false)
 
-  const opt = useMemo(() => solveOpt(game.items, game.cap), [game])
+  const opt = useMemo(() => solveZeroOneKnapsack(game.items, game.cap), [game])
   const greedy = useMemo(() => solveGreedy(game.items, game.cap), [game])
   const curW = game.items.reduce((s, it, i) => s + (sel[i] ? it.w : 0), 0)
   const curV = game.items.reduce((s, it, i) => s + (sel[i] ? it.v : 0), 0)

@@ -1,3 +1,16 @@
+---
+type: Implementation Plan
+title: DP大师算法结果与可执行验证实施计划
+description: Separate typed algorithm results from teaching traces and establish executable cross-checks.
+tags: [engineering, algorithms, testing, visualization]
+timestamp: 2026-07-10T09:20:00+08:00
+source_paths:
+  - site/src/algorithms/
+  - site/src/components/demos/
+  - site/src/components/games/
+  - site/scripts/algorithm-results.test.mjs
+---
+
 # DP大师算法结果与可执行验证实施计划
 
 > 状态：在当前 `main` 工作区直接实施；不创建 branch 或 worktree。

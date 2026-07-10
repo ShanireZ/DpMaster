@@ -4,5 +4,6 @@
 
 * **Initialization**: Created the DP大师 OKF bundle under `docs/` and moved durable knowledge out of stale root, `handoff/`, and `site/` Markdown files.
 * **2026-07-10 catalog deepening**: Renamed the product to DP大师, centralized 37 lessons and 7 lazy games in `site/src/data/catalog.ts`, and replaced the stale manual problem index with a 177-slot generated projection guarded by tests and CI.
+* **2026-07-10 algorithm separation**: Added typed result Modules for 01 knapsack, LIS, and stone merge; converted their demos into event-driven teaching Adapters; reused results in games and readouts; and added exhaustive algorithm and frame-contract verification.
 * **Update**: Promoted root `deploy.md` as the single deployment and feedback runbook.
 * **Deprecation**: Removed root numbered planning docs, `handoff/` handoff notes, and `site/README.md` / `site/DEPLOY.md` as maintained documentation sources.

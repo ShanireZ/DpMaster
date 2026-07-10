@@ -1,5 +1,6 @@
 import { useMemo, useState } from 'react'
 import { TrendingUp, Sparkles, Shuffle, Trophy, Volume2, VolumeX, RotateCcw } from 'lucide-react'
+import { solveLis } from '../../algorithms/lis/index.ts'
 import './game.css'
 import './game-lis.css'
 
@@ -20,26 +21,6 @@ const DIFFS: Record<Difficulty, DiffSpec> = {
 
 const DIFF_ORDER: Difficulty[] = ['easy', 'medium', 'hard']
 
-// 自写 O(n²) LIS：求最长严格上升子序列的长度，并回溯出一种最优取法（下标集合）。
-function solveLIS(a: number[]): { len: number; pick: boolean[] } {
-  const n = a.length
-  if (n === 0) return { len: 0, pick: [] }
-  const dp = Array<number>(n).fill(1) // dp[i]：以 a[i] 结尾的最长上升子序列长度
-  const prev = Array<number>(n).fill(-1) // 回溯指针：a[i] 接在谁后面
-  for (let i = 0; i < n; i++)
-    for (let j = 0; j < i; j++)
-      if (a[j] < a[i] && dp[j] + 1 > dp[i]) {
-        dp[i] = dp[j] + 1
-        prev[i] = j
-      }
-  // 找全行最大值所在下标——LIS 可在任意位置结尾
-  let end = 0
-  for (let i = 1; i < n; i++) if (dp[i] > dp[end]) end = i
-  const pick = Array<boolean>(n).fill(false)
-  for (let k = end; k !== -1; k = prev[k]) pick[k] = true
-  return { len: dp[end], pick }
-}
-
 // 玩家手动挑出的严格上升子序列长度（按原下标序、后选值 > 前一已选值）。
 // 因为下方交互只允许合法追加，selOrder 天然满足条件，这里直接返回其长度。
 function chainLen(selOrder: number[]): number {
@@ -50,7 +31,7 @@ function makeSeq(difficulty: Difficulty): number[] {
   const d = DIFFS[difficulty]
   const seq = Array.from({ length: d.count }, () => d.vMin + Math.floor(Math.random() * d.vRange))
   // 保证至少存在一条长度≥3 的上升子序列，避免生成近乎单调下降的枯燥串（重开即可）。
-  if (solveLIS(seq).len < 3) return makeSeq(difficulty)
+  if (solveLis(seq).length < 3) return makeSeq(difficulty)
   return seq
 }
 
@@ -89,9 +70,9 @@ export default function LISChainGame() {
   // 本局是否已计入战绩（同一局重复点「看 DP 最优」不重复计数）
   const [countedThisRound, setCountedThisRound] = useState(false)
 
-  const dp = useMemo(() => solveLIS(seq), [seq])
+  const dp = useMemo(() => solveLis(seq), [seq])
   const you = chainLen(selOrder)
-  const win = revealed && you === dp.len && you > 0
+  const win = revealed && you === dp.length && you > 0
 
   // 每个下标的选中序号（1-based）；未选为 0。用于卡片上标「链序」。
   const rank = useMemo(() => {
@@ -132,7 +113,7 @@ export default function LISChainGame() {
 
   const reveal = () => {
     setRevealed(true)
-    const w = you === dp.len && you > 0
+    const w = you === dp.length && you > 0
     if (!countedThisRound) {
       setCountedThisRound(true)
       setPlayed((n) => n + 1)
@@ -172,9 +153,9 @@ export default function LISChainGame() {
     fbClass = 'win'
   } else if (revealed) {
     feedback =
-      you < dp.len
-        ? `DP 最长是 ${dp.len}，你接出了 ${you}，还差 ${dp.len - you}。带 ★ 的是一种最优接法。`
-        : `DP 最长是 ${dp.len}。带 ★ 的是一种最优接法。`
+      you < dp.length
+        ? `DP 最长是 ${dp.length}，你接出了 ${you}，还差 ${dp.length - you}。带 ★ 的是一种最优接法。`
+        : `DP 最长是 ${dp.length}。带 ★ 的是一种最优接法。`
   } else if (selOrder.length) {
     feedback = `已接 ${you} 个：${selOrder.map((i) => seq[i]).join(' → ')}。还能往后接更大的数吗？`
   }
@@ -262,10 +243,10 @@ export default function LISChainGame() {
                   你 <b>{you}</b>
                 </span>
                 <span className="game__cmp game__cmp--dp">
-                  DP 最长 <b>{dp.len}</b>
+                  DP 最长 <b>{dp.length}</b>
                 </span>
               </div>
-              {you < dp.len && (
+              {you < dp.length && (
                 <div className="game__compare-tip">
                   贪心「能接就接」常常不是最长——此刻接哪个，取决于后面还剩什么，这正是要用 DP 的原因。
                 </div>

@@ -172,7 +172,7 @@ Document package-root commands and preserved deployment identifiers in `AGENTS.m
 
 - [ ] **Step 3: Apply the DP大师 rename**
 
-Replace product-facing DpMaster / DP 图谱 / DP ATLAS copy while preserving filesystem paths, URLs, deployment names, and historical source paths.
+Replace every legacy product-facing name with DP大师 while preserving filesystem paths, URLs, deployment names, and historical source paths.
 
 - [ ] **Step 4: Update canonical counts and run text audits**
 
@@ -203,4 +203,3 @@ Expected: zero known vulnerabilities; only intended files changed; no branch/wor
 Run: `git diff --check` and inspect `git diff --stat` plus focused diffs for catalog, generator, package manifest, CI, and docs.
 
 Expected: no whitespace errors, no accidental compatibility-identifier rename, no unrelated changes.
-

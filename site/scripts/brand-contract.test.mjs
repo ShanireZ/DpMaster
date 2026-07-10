@@ -9,8 +9,9 @@ const siteDir = join(dirname(fileURLToPath(import.meta.url)), '..')
 const projectDir = join(siteDir, '..')
 const textExtensions = new Set(['.css', '.html', '.js', '.json', '.jsonc', '.md', '.mjs', '.ts', '.tsx', '.yaml', '.yml'])
 const ignoredDirectories = new Set(['.git', 'dist', 'node_modules'])
+const legacyChineseName = String.fromCodePoint(0x56fe, 0x8c31)
 const forbiddenNames = [
-  new RegExp(['DP', '图谱'].join('\\s*'), 'iu'),
+  new RegExp(['DP', legacyChineseName].join('\\s*'), 'iu'),
   new RegExp(['DP', 'ATLAS'].join('[ _-]*'), 'iu'),
 ]
 
@@ -35,4 +36,3 @@ test('all product-facing text uses the DP大师 name', () => {
   }
   assert.deepEqual(offenders, [])
 })
-
