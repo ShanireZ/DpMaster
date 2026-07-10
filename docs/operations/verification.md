@@ -31,11 +31,10 @@ Install its local Chromium runtime once with `npx playwright install chromium`. 
 
 Algorithm verification runs directly on Node 24's TypeScript stripping support and includes:
 
-* exhaustive small-case cross-checks for 01 knapsack, LIS, and stone merge;
-* reroot distance sums against the quadratic oracle and tree independent set against subset enumeration;
-* equality between public `solve` results and recorded teaching runs;
-* teaching-frame dimensions, references, immutable snapshots, and final-result projection;
-* architecture guards that prevent games from importing internal Modules or restoring private duplicate solvers;
+* independent small-case oracles or property checks for every public result behind the 29 teaching solver surfaces;
+* legal witness/table invariants where a public result exposes them, including reroot distance sums against a quadratic oracle and tree independent set against subset enumeration;
+* equality between public `solve` results and recorded teaching runs, immutable domain-event snapshots, and final teaching-Adapter projections;
+* exact enumeration of all 29 teaching Adapters plus architecture guards that prevent games/readouts from importing internal Modules, deriving answers from teaching frames, or restoring private duplicate solvers;
 * a brand contract that rejects legacy product-facing names.
 
 Pure TypeScript Modules imported by Node tests must use explicit `.ts` extensions for their runtime relative imports.
@@ -44,7 +43,9 @@ Pure TypeScript Modules imported by Node tests must use explicit `.ts` extension
 
 `npm run check:seo` verifies that route metadata remains complete and that `robots.txt` and the 48-URL sitemap match the catalog. When routes or lesson readiness change, run `npm run seo:generate` and review the generated URL set before committing it.
 
-The browser suite directly opens `/`, `/part/a`, `/part/a/01`, `/method`, and the deep link `/part/g/plug` against the built site. It automatically checks HTTP route status, route metadata, the page-level heading, route announcements, current-page semantics, and console errors.
+The browser gate runs nine Chromium tests against the built production `dist` through a strict, non-reused `vite preview` server. Seven route tests directly open `/`, `/part/a`, `/part/a/01`, `/method`, and `/part/g/plug`, then exercise live client navigation and keyboard focus. They check HTTP route status where applicable, title/description/canonical/Open Graph metadata, one visible `h1`, route announcements, current-page semantics, initial-load focus, changed-route focus, skip-link focus, and zero console/page errors.
+
+Two game tests cover the catalog-owned lazy boundary and shared runtime contracts. Pack must keep its chunk absent before the near-viewport gate, auto-load without a manual control, replay the currently displayed seed into the identical round with cleared interaction state, and preserve exact played/matched totals across replay, shuffle, difficulty, and reveal. BitBoard must suppress duplicate completion counts and rearm after clear. These tests do not provide arbitrary-seed entry or pixel-regression coverage.
 
 For browser-facing changes, keep those automated samples representative and manually inspect additional affected routes when needed. Confirm:
 
@@ -54,7 +55,13 @@ For browser-facing changes, keep those automated samples representative and manu
 * Initial page load does not steal focus; later keyboard route navigation focuses `#main-content` without scrolling, and activating the first-target skip link focuses the same element.
 * The mobile navigation exposes `aria-expanded`, references `#site-sidebar`, and has a keyboard-operable close scrim.
 * With `prefers-reduced-motion: reduce`, smooth scrolling is disabled and transitions/animations are reduced without hiding content.
-* The browser console reports no errors or warnings.
+* The browser console reports no errors; no uncaught page error occurs.
+
+# Playback And Caption Checks
+
+Playback architecture/state tests require every transport to import the deep shared player, use full or compact `PlaybackControls`, and avoid local transport/timer state. Safe-caption tests cover the approved teaching vocabulary plus scripted, attributed, unsupported, and malformed inputs. A recursive `site/src` guard permits raw HTML sinks only at the exact existing Shiki and KaTeX Adapter counts; all playback captions must pass through `SafeCaption`.
+
+Game runtime tests prove equal displayed seeds produce equal rounds for all six random games and require every round builder to accept an injected `RandomSource`. Architecture tests require all seven games that display totals to use `useRoundStats` and its duplicate-safe record/rearm lifecycle.
 
 # Documentation Checks
 

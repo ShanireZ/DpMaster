@@ -28,8 +28,9 @@
 
 - Source review: `architecture-review-dpmaster-20260710-080946.html` generated 2026-07-10 08:15 +08:00.
 - Review baseline: `2d1878a`.
-- Implementation snapshot: `51ebb92` on `main`.
-- Current gate: `npm run verify` passes 69/69 tests, zero-warning lint, TypeScript/Vite build, generated-content/SEO drift checks, and asset budgets.
+- Final implementation snapshot: `b098772` on `main`.
+- Plan closure: the Task 7 documentation commit closes this plan; its hash is intentionally not embedded in the commit it describes.
+- Current gate: `npm run verify` passes 127/127 Node tests, 9/9 production-preview Chromium tests, zero-warning lint, TypeScript/Vite build, generated-content/SEO drift checks, and asset budgets.
 - Current security audit: `npm audit --audit-level=low` reports 0 vulnerabilities.
 - Current working tree at audit time: clean.
 
@@ -45,12 +46,12 @@
 | # | Review area | State | Completed scope | Remaining closure condition |
 |---|---|---|---|---|
 | 1 | Course catalog and problem corpus | `[x]` | One 37-course/7-game catalog; lesson-derived 177-slot generated corpus; P1880/P1436 correction; drift gate. | None. |
-| 2 | Algorithm results vs. teaching traces | `[-]` | 01 knapsack, LIS, and stone merge have public results, internal event emitters, teaching Adapters, game reuse, and exhaustive checks. | Migrate the remaining 26 solver implementations listed below. |
-| 3 | Executable verification Module | `[-]` | `test`, `verify`, CI, catalog/SEO/feedback/playback/game contracts, five representative algorithm oracles, build and asset gates. | Add automated production-preview/deep-link/browser focus smoke tests and expand algorithm coverage with each migration wave. |
-| 4 | Visualization trace and playback shell | `[-]` | Shared typed player and full/compact controls cover DPViz, tree, board, subset, cover, and reroot carriers. | Migrate four bespoke transports and replace raw caption HTML sinks with one safe renderer. |
+| 2 | Algorithm results vs. teaching traces | `[x]` | All 29 teaching solver surfaces use public typed results, internal event emitters, teaching Adapters, independent small-case oracle/property checks, and public-result game/readout consumers. | None. |
+| 3 | Executable verification Module | `[x]` | `test`, `verify`, CI, catalog/SEO/feedback/playback/game contracts, every public-result oracle/property, 9 production-preview Chromium tests, build and asset gates. | None. |
+| 4 | Visualization trace and playback shell | `[x]` | Every transport uses the shared typed player and full/compact controls; `SafeCaption` owns playback captions and a whole-source guard restricts raw sinks. | None. |
 | 5 | Feedback intake and delivery semantics | `[!]` | Body/schema/kind/origin gates, 10/30m limiter, stable JSON errors, structured logs, three runtime Adapters, focus-managed dialog. | Original report requested redacted logs and delivered semantics; the user explicitly replaced that requirement with log-write acceptance. Keep full validated feedback logs unless policy changes. |
-| 6 | Game runtime and lazy loading | `[-]` | Seven lazy game chunks, 400 px gate, shared audio/random helpers, duplicate-safe statistics in six games. | Make six random games reproducible from a round seed and move BitBoard completion totals onto the shared round contract. |
-| 7 | Document metadata and focus semantics | `[-]` | Dynamic route metadata, 37 lesson titles, canonical/OG, robots, sitemap, skip link, current-page state, route status, dialog focus lifecycle, reduced motion. | Move focus on client route changes and enforce it in browser smoke tests. |
+| 6 | Game runtime and lazy loading | `[x]` | Seven lazy game chunks, 400 px gate, shared audio/runtime helpers, displayed-seed replay in six random games, and duplicate-safe shared statistics across all seven games. | None. |
+| 7 | Document metadata and focus semantics | `[x]` | Dynamic route metadata, 37 lesson titles, canonical/OG, robots, sitemap, skip link, current-page state, route status, guarded route-change focus, dialog focus lifecycle, reduced motion, and production-preview browser enforcement. | None. |
 
 ## Completed Checklist
 
@@ -129,7 +130,7 @@
 
 ---
 
-## Remaining Execution Queue
+## Closed Execution Queue
 
 ### Task 1: Complete Algorithm Result/Teaching Trace Separation — Knapsack Wave
 
@@ -157,14 +158,14 @@
 - Consumes: `EventSink<Event>`, `RecordedRun<Result, Event>`, and `ignoreEvents` from `site/src/algorithms/contracts.ts`.
 - Produces: one public `solve*` result function per domain and one internal `execute*`/`record*` event surface; teaching Adapters consume events and never recover answers from the last frame.
 
-- [ ] Add failing exhaustive-oracle cases for group, multiple, mixed, two-cost, dependency, and variant results.
-- [ ] Run `node --test scripts/algorithm-results.test.mjs`; expect the new imports or assertions to fail before the Modules exist.
-- [ ] Move each sole transition loop into its `internal.ts`; public `index.ts` calls it with `ignoreEvents`.
-- [ ] Convert the eight existing teaching solvers into event-to-`VizModel` Adapters.
-- [ ] Extend the architecture contract with all eight Adapter/import pairs and prohibit private duplicate loops.
-- [ ] Run `node --test scripts/algorithm-results.test.mjs scripts/algorithm-architecture.test.mjs`; expect all cases to pass.
-- [ ] Run `npm run verify`; expect all gates to pass with no generated drift.
-- [ ] Commit: `feat: separate remaining knapsack results from teaching traces`.
+- [x] Add failing exhaustive-oracle cases for group, multiple, mixed, two-cost, dependency, and variant results.
+- [x] Run `node --test scripts/algorithm-results.test.mjs`; expect the new imports or assertions to fail before the Modules exist.
+- [x] Move each sole transition loop into its `internal.ts`; public `index.ts` calls it with `ignoreEvents`.
+- [x] Convert the eight existing teaching solvers into event-to-`VizModel` Adapters.
+- [x] Extend the architecture contract with all eight Adapter/import pairs and prohibit private duplicate loops.
+- [x] Run `node --test scripts/algorithm-results.test.mjs scripts/algorithm-architecture.test.mjs`; expect all cases to pass.
+- [x] Run `npm run verify`; expect all gates to pass with no generated drift.
+- [x] Commit: `feat: separate remaining knapsack results from teaching traces`.
 
 The required implementation pattern is:
 
@@ -206,13 +207,13 @@ export function recordDomain(input: readonly Input[]): RecordedRun<DomainResult,
 
 **Interfaces:** Same `solve*` + `execute*` + `record*` contract as Task 1; result types own answers/witnesses/tables, while events remain UI-neutral.
 
-- [ ] Add brute-force or independent reference checks for all eight results before moving implementations.
-- [ ] Run the focused tests and confirm the new cases fail against the current teaching-only solvers.
-- [ ] Create the eight public/internal pairs and preserve exactly one transition loop per algorithm.
-- [ ] Rewrite the eight teaching files as event Adapters without changing existing visual frame contracts.
-- [ ] Add result/record equality and immutable-event tests for every pair.
-- [ ] Run focused tests, then `npm run verify`.
-- [ ] Commit: `feat: separate linear and grid results from teaching traces`.
+- [x] Add brute-force or independent reference checks for all eight results before moving implementations.
+- [x] Run the focused tests and confirm the new cases fail against the current teaching-only solvers.
+- [x] Create the eight public/internal pairs and preserve exactly one transition loop per algorithm.
+- [x] Rewrite the eight teaching files as event Adapters without changing existing visual frame contracts.
+- [x] Add result/record equality and immutable-event tests for every pair.
+- [x] Run focused tests, then `npm run verify`.
+- [x] Commit: `feat: separate linear and grid results from teaching traces`.
 
 ### Task 3: Complete Algorithm Separation — Interval, Tree, Reroot, And Bitmask Wave
 
@@ -244,13 +245,13 @@ export function recordDomain(input: readonly Input[]): RecordedRun<DomainResult,
 
 **Interfaces:** Same result/event contract as Tasks 1-2. Existing reroot-distance and independent-set oracles become public-result tests rather than teaching-solver tests.
 
-- [ ] Add or move independent reference/oracle tests for all ten results.
-- [ ] Confirm the new public-result assertions fail before migration.
-- [ ] Create the ten result/event implementations and convert teaching solvers into Adapters.
-- [ ] Remove any game/readout answer extraction from teaching frames.
-- [ ] Change the architecture test to enumerate all 29 migrated solver surfaces, so a new teaching-only solver fails CI.
-- [ ] Run focused tests, `npm run verify`, and `npm audit --audit-level=low`.
-- [ ] Commit: `feat: complete algorithm result and teaching trace separation`.
+- [x] Add or move independent reference/oracle tests for all ten results.
+- [x] Confirm the new public-result assertions fail before migration.
+- [x] Create the ten result/event implementations and convert teaching solvers into Adapters.
+- [x] Remove any game/readout answer extraction from teaching frames.
+- [x] Change the architecture test to enumerate all 29 migrated solver surfaces, so a new teaching-only solver fails CI.
+- [x] Run focused tests, `npm run verify`, and `npm audit --audit-level=low`.
+- [x] Commit: `feat: complete algorithm result and teaching trace separation`.
 
 ### Task 4: Automate Production Preview, Deep-Link, And Focus Verification
 
@@ -270,14 +271,14 @@ export function recordDomain(input: readonly Input[]): RecordedRun<DomainResult,
 - Produces `npm run test:browser`, which starts `vite preview` against the built `dist` and checks real client navigation plus direct deep links.
 - `Shell` focuses `#main-content` with `{ preventScroll: true }` only after pathname changes, not on the initial page load.
 
-- [ ] Add `@playwright/test` as a pinned dev dependency and add `test:browser` after the production build in `verify`.
-- [ ] Add a failing browser test for `/`, `/part/a`, `/part/a/01`, `/method`, and direct navigation to `/part/g/plug`.
-- [ ] Assert title, description, canonical, Open Graph type, one `h1`, route status, current-page state, and zero console errors on every sampled route.
-- [ ] Add a failing keyboard test proving route navigation focuses `#main-content` and skip-link activation still does the same.
-- [ ] Add a previous-path ref in `Shell`; on later pathname changes call `mainRef.current?.focus({ preventScroll: true })` after scroll reset.
-- [ ] Install Chromium in CI with `npx playwright install --with-deps chromium` before `npm run verify`.
-- [ ] Run `npm run verify`; expect unit, browser, lint, build, and asset gates to pass.
-- [ ] Commit: `test: automate route and focus smoke coverage`.
+- [x] Add `@playwright/test` as a pinned dev dependency and add `test:browser` after the production build in `verify`.
+- [x] Add a failing browser test for `/`, `/part/a`, `/part/a/01`, `/method`, and direct navigation to `/part/g/plug`.
+- [x] Assert title, description, canonical, Open Graph type, one `h1`, route status, current-page state, and zero console errors on every sampled route.
+- [x] Add a failing keyboard test proving route navigation focuses `#main-content` and skip-link activation still does the same.
+- [x] Add a previous-path ref in `Shell`; on later pathname changes call `mainRef.current?.focus({ preventScroll: true })` after scroll reset.
+- [x] Install Chromium in CI with `npx playwright install --with-deps chromium` before `npm run verify`.
+- [x] Run `npm run verify`; expect unit, browser, lint, build, and asset gates to pass.
+- [x] Commit: `test: automate route and focus smoke coverage`.
 
 The focus guard must use this shape so initial page load is not unexpectedly stolen:
 
@@ -315,15 +316,15 @@ useEffect(() => {
 - All four remaining transports consume `useStepPlayer` and render `PlaybackControls`.
 - `SafeCaption` accepts `{ html: string; className?: string }`, preserves only the existing teaching emphasis vocabulary, and renders all other markup as text.
 
-- [ ] Extend `playback-architecture.test.mjs` with the four remaining component paths and assert the absence of local `playing`, timer, and transport button state.
-- [ ] Run the focused test and confirm it fails for all four current bespoke transports.
-- [ ] Prepend an explicit initial frame where a demo currently uses index `-1`; use player index `0` for the initial state and `index - 1` for the first algorithm step.
-- [ ] Replace each local reset/previous/play/next/progress control with `PlaybackControls`, retaining its existing visual stage.
-- [ ] Add safe-caption tests containing `<b>allowed</b>`, `<img onerror=...>`, `<script>`, event attributes, and malformed markup.
-- [ ] Implement `SafeCaption` without adding a broad animation/rendering dependency; allow only `b`, `strong`, `code`, `br`, and approved static `span` classes.
-- [ ] Replace all four raw `dangerouslySetInnerHTML` playback sinks with `SafeCaption` and fail the architecture test if a new raw sink appears.
-- [ ] Run playback tests, `npm run verify`, and the browser keyboard smoke.
-- [ ] Commit: `feat: finish unified playback and safe captions`.
+- [x] Extend `playback-architecture.test.mjs` with the four remaining component paths and assert the absence of local `playing`, timer, and transport button state.
+- [x] Run the focused test and confirm it fails for all four current bespoke transports.
+- [x] Prepend an explicit initial frame where a demo currently uses index `-1`; use player index `0` for the initial state and `index - 1` for the first algorithm step.
+- [x] Replace each local reset/previous/play/next/progress control with `PlaybackControls`, retaining its existing visual stage.
+- [x] Add safe-caption tests containing `<b>allowed</b>`, `<img onerror=...>`, `<script>`, event attributes, and malformed markup.
+- [x] Implement `SafeCaption` without adding a broad animation/rendering dependency; allow only `b`, `strong`, `code`, `br`, and approved static `span` classes.
+- [x] Replace all four raw `dangerouslySetInnerHTML` playback sinks with `SafeCaption` and fail the architecture test if a new raw sink appears.
+- [x] Run playback tests, `npm run verify`, and the browser keyboard smoke.
+- [x] Commit: `feat: finish unified playback and safe captions`.
 
 ### Task 6: Make Game Rounds Reproducible And Finish Shared Statistics
 
@@ -348,14 +349,14 @@ useEffect(() => {
 - Each random round builder accepts `RandomSource`; the component passes `createSeededRandom(seed)` rather than `browserRandom` directly.
 - BitBoard uses `useRoundStats`; a completed legal layout calls `round.record(true)`, while clear/difficulty/reset calls `round.start()`.
 
-- [ ] Add failing architecture assertions that no game round builder references `browserRandom` directly and that all seven games use the shared round/stat contract where totals are shown.
-- [ ] Add deterministic tests proving the same seed creates identical pack, sequence, stones, exponent, tree, and party rounds.
-- [ ] Implement `useRoundSeed`, seed the six random games, and expose the current numeric seed in the game status for reproducible reports.
-- [ ] Replace BitBoard `solved` state with `useRoundStats` and keep duplicate-success counting impossible until the next round.
-- [ ] Run game-runtime tests and browser-check shuffle, difficulty, reveal, reset, replay seed, and lazy chunk behavior.
-- [ ] Update architecture wording only after all seven games match it.
-- [ ] Run `npm run verify`.
-- [ ] Commit: `feat: make game rounds reproducible`.
+- [x] Add failing architecture assertions that no game round builder references `browserRandom` directly and that all seven games use the shared round/stat contract where totals are shown.
+- [x] Add deterministic tests proving the same seed creates identical pack, sequence, stones, exponent, tree, and party rounds.
+- [x] Implement `useRoundSeed`, seed the six random games, and expose the current numeric seed in the game status for reproducible reports.
+- [x] Replace BitBoard `solved` state with `useRoundStats` and keep duplicate-success counting impossible until the next round.
+- [x] Run game-runtime tests and browser-check shuffle, difficulty, reveal, reset, replay seed, and lazy chunk behavior.
+- [x] Update architecture wording only after all seven games match it.
+- [x] Run `npm run verify`.
+- [x] Commit: `feat: make game rounds reproducible`.
 
 ### Task 7: Close Workspace And Documentation Truth Gaps
 
@@ -370,37 +371,37 @@ useEffect(() => {
 
 **Interfaces:** Documentation must describe only behavior enforced by code/tests; the workspace index must include DP大师 and link its project guideline.
 
-- [ ] Add this exact project-index row to `D:\WorkSpace\AGENTS.md`:
+- [x] Add this exact project-index row to `D:\WorkSpace\AGENTS.md`:
 
 ```markdown
 | `DpMaster/` | DP大师 — React/Vite 动态规划交互式教程；37 门课程、逐帧可视化、小游戏、题目索引与反馈入口。 | [`DpMaster/AGENTS.md`](DpMaster/AGENTS.md) |
 ```
 
-- [ ] Update architecture and verification docs with the final 29-algorithm, browser-smoke, playback, safe-caption, seeded-round, and seven-game statistics contracts.
-- [ ] Mark every completed checkbox in this master plan and update the audit snapshot to the closing commit.
-- [ ] Run `git diff --check`, `npm run verify`, and `npm audit --audit-level=low`.
-- [ ] Confirm `git status --short` contains only the intended plan/document changes before committing.
-- [ ] Commit: `docs: close architecture remediation plan`.
+- [x] Update architecture and verification docs with the final 29-algorithm, browser-smoke, playback, safe-caption, seeded-round, and seven-game statistics contracts.
+- [x] Mark every completed checkbox in this master plan and update the audit snapshot to the closing commit.
+- [x] Run `git diff --check`, `npm run verify`, and `npm audit --audit-level=low`.
+- [x] Confirm `git status --short` contains only the intended plan/document changes before committing.
+- [x] Commit: `docs: close architecture remediation plan`.
 
 ---
 
 ## Final Exit Checklist
 
-- [ ] All 29 solver surfaces have a public result Module and a teaching event Adapter.
-- [ ] Every public result is checked against an independent small-case oracle or property test.
-- [ ] No game or readout derives answers from a teaching frame.
-- [ ] Every playback transport uses the common player and full/compact controls.
-- [ ] No playback carrier renders raw caption HTML outside `SafeCaption`.
-- [ ] Six random games can reproduce a round from the displayed seed.
-- [ ] All seven games use the documented shared statistics semantics where totals are displayed.
-- [ ] Production-preview browser tests cover direct deep links, route metadata, focus, current-page semantics, lazy games, and zero console errors.
-- [ ] Route changes focus the main content without stealing focus on initial load.
-- [ ] Feedback retains the approved logged-receipt and 10/30m rate-limit behavior.
-- [ ] Catalog generation still reports exactly 177 slots and SEO generation exactly 48 canonical URLs.
-- [ ] `npm run verify` passes from `site/`.
-- [ ] `npm audit --audit-level=low` reports 0 vulnerabilities.
-- [ ] `git diff --check` passes and the working tree is clean after the final commit.
-- [ ] `D:\WorkSpace\AGENTS.md` lists `DpMaster/`.
+- [x] All 29 solver surfaces have a public result Module and a teaching event Adapter.
+- [x] Every public result is checked against an independent small-case oracle or property test.
+- [x] No game or readout derives answers from a teaching frame.
+- [x] Every playback transport uses the common player and full/compact controls.
+- [x] No playback carrier renders raw caption HTML outside `SafeCaption`.
+- [x] Six random games can reproduce a round from the displayed seed.
+- [x] All seven games use the documented shared statistics semantics where totals are displayed.
+- [x] Production-preview browser tests cover direct deep links, route metadata, focus, current-page semantics, lazy games, and zero console errors.
+- [x] Route changes focus the main content without stealing focus on initial load.
+- [x] Feedback retains the approved logged-receipt and 10/30m rate-limit behavior.
+- [x] Catalog generation still reports exactly 177 slots and SEO generation exactly 48 canonical URLs.
+- [x] `npm run verify` passes from `site/`.
+- [x] `npm audit --audit-level=low` reports 0 vulnerabilities.
+- [x] `git diff --check` passes and the working tree is clean after the final commit.
+- [x] `D:\WorkSpace\AGENTS.md` lists `DpMaster/`.
 
 ## Execution Order
 
