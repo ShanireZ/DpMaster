@@ -559,6 +559,32 @@ function bruteBitmaskTsp(distances) {
   return best
 }
 
+function* rootedParentArrays(size) {
+  const parent = [-1]
+  function* fill(node) {
+    if (node === size) {
+      yield parent.slice()
+      return
+    }
+    for (let candidate = 0; candidate < node; candidate++) {
+      parent[node] = candidate
+      yield* fill(node + 1)
+    }
+  }
+  yield* fill(1)
+}
+
+function* dominatingWitnessCases() {
+  yield { parent: [-1, 0, 0, 0, 2], weight: [5, 3, 4, 6, 2] }
+  for (let size = 1; size <= 5; size++) {
+    for (const parent of rootedParentArrays(size)) {
+      for (const weight of vectors([1, 2, 4], size, false)) {
+        if (weight.length === size) yield { parent, weight }
+      }
+    }
+  }
+}
+
 function assertEventSnapshots(execute) {
   const events = []
   const snapshots = []
@@ -1170,6 +1196,31 @@ test('tree-DP public independent-set results match exhaustive node subsets', () 
       return best
     },
   })
+})
+
+test('tree dominating-set witnesses have exactly the reported minimum cost', () => {
+  for (const { parent, weight } of dominatingWitnessCases()) {
+    const result = solveTreeDominatingSet(buildRootedTree(parent, weight))
+    const witnessCost = [...result.guards].reduce((sum, node) => sum + weight[node], 0)
+    assert.equal(witnessCost, result.ans, `invalid guard cost for ${JSON.stringify({ parent, weight, guards: [...result.guards] })}`)
+  }
+})
+
+test('tree dominating-set witnesses dominate every node', () => {
+  for (const { parent, weight } of dominatingWitnessCases()) {
+    const tree = buildRootedTree(parent, weight)
+    const result = solveTreeDominatingSet(tree)
+    for (let node = 0; node < tree.n; node++) {
+      const dominated = result.guards.has(node)
+        || (tree.parent[node] >= 0 && result.guards.has(tree.parent[node]))
+        || tree.children[node].some((child) => result.guards.has(child))
+      assert.equal(
+        dominated,
+        true,
+        `node ${node} is not dominated for ${JSON.stringify({ parent, weight, guards: [...result.guards] })}`,
+      )
+    }
+  }
 })
 
 test('score-tree public results match recursive root enumeration', () => {

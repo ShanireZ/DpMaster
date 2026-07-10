@@ -231,6 +231,18 @@ test('Task 3 games and readouts consume public results instead of teaching solve
     assert.doesNotMatch(source, /frames\s*\[|\.frames\s*\[/)
   }
 
+  const boardDemo = read('src', 'components', 'demos', 'bitmask', 'BoardDemo.tsx')
+  assert.match(boardDemo, /algorithms\/bitmask-board\/index\.ts/)
+  assert.equal(boardDemo.match(/\bsolveKingsBoard\(/g)?.length, 1)
+  assert.doesNotMatch(boardDemo, /import\s*\{[^}]*\b(?:countKings|findOneLayout)\b[^}]*\}\s*from\s*['"]\.\/boardSolver/)
+  assert.doesNotMatch(boardDemo, /\.frames\s*\[/)
+
+  const scoreTreeBuildDemo = read('src', 'components', 'demos', 'interval', 'ScoreTreeBuildDemo.tsx')
+  assert.match(scoreTreeBuildDemo, /algorithms\/score-tree\/index\.ts/)
+  assert.equal(scoreTreeBuildDemo.match(/\bsolveScoreTree\(/g)?.length, 1)
+  assert.doesNotMatch(scoreTreeBuildDemo, /\bbuildScoreTree\b/)
+  assert.doesNotMatch(scoreTreeBuildDemo, /frames\s*\[|\.frames\s*\[/)
+
   const games = [
     ['BitBoardGame.tsx', /algorithms\/bitmask-board\/index\.ts/, /demos\/bitmask\/boardSolver/],
     ['RerootGame.tsx', /algorithms\/reroot\/index\.ts/, /demos\/reroot\/rerootSolver/],
