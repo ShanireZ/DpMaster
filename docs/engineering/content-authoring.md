@@ -1,7 +1,7 @@
 ---
 type: Engineering Contract
 title: Content Authoring Contract
-description: How to maintain DpMaster type pages, examples, formulas, code, and registration.
+description: How to maintain DP大师 type pages, examples, formulas, code, and registration.
 tags: [content, authoring, lessons]
 timestamp: 2026-07-07T00:00:00+08:00
 source_paths:
@@ -65,10 +65,9 @@ Example code must follow ShanireZ OJ style:
 
 When adding or changing a type:
 
-1. Place the content component under `site/src/content/<part>/`.
-2. Register it in `site/src/content/registry.tsx`.
-3. Keep `site/src/data/parts.ts` in sync.
-4. Update `site/src/data/problems.ts` for example/exercise changes.
+1. Place the lesson implementation under `site/src/content/<part>/`.
+2. Register its metadata and literal lazy import once in `site/src/data/catalog.ts`.
+3. Keep example/exercise metadata as literal props on lesson `ExampleCard` / `Exercise` entries.
+4. Run `npm run content:generate` to refresh generated `site/src/data/problems.ts`.
 5. Add or update any demo solvers under `site/src/components/demos/<topic>/`.
-6. Run `npm run build` from `site/`.
-
+6. Run `npm run verify` from `site/`.

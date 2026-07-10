@@ -1,5 +1,5 @@
 import { Link } from 'react-router-dom'
-import { ArrowLeft, ArrowRight, MousePointerClick, Gamepad2 } from 'lucide-react'
+import { MousePointerClick, Gamepad2 } from 'lucide-react'
 import { M, MB } from '../../components/ui/Math'
 import InfoBox from '../../components/ui/InfoBox'
 import CodeBlock from '../../components/ui/CodeBlock'
@@ -340,20 +340,6 @@ export default function ScoreTree() {
         想亲手感受「同一批分数、换个根，总加分差多少」？到 <Link to="/part/c" style={{ color: 'var(--accent-1)', fontWeight: 600 }}>C 部分页</Link>的互动里挑一棵树，再对照 DP 给出的最优。
       </div>
 
-      <nav className="type-nav">
-        <Link to="/part/c/palindrome">
-          <span className="dir">← 上一类型</span>
-          <span className="nm">
-            <ArrowLeft size={15} style={{ verticalAlign: '-2px' }} /> 回文 / 括号
-          </span>
-        </Link>
-        <Link to="/part/c/merge" className="next">
-          <span className="dir">下一类型 →</span>
-          <span className="nm">
-            合并 / 删除类 <ArrowRight size={15} style={{ verticalAlign: '-2px' }} />
-          </span>
-        </Link>
-      </nav>
     </>
   )
 }

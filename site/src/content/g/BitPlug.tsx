@@ -1,5 +1,3 @@
-import { Link } from 'react-router-dom'
-import { ArrowLeft } from 'lucide-react'
 import { M, MB } from '../../components/ui/Math'
 import InfoBox from '../../components/ui/InfoBox'
 import CodeBlock from '../../components/ui/CodeBlock'
@@ -196,15 +194,6 @@ export default function BitPlug() {
         <Exercise pid="P2704" name="[NOI2001] 炮兵阵地（对照回顾）" hint="不是插头 DP，但同为「轮廓状压」思想的入门端——回到棋盘状压，对比「记两行 mask」与「记一整条轮廓线插头」的异同，理解轮廓状压从简到繁的谱系。" />
       </section>
 
-      <nav className="type-nav">
-        <Link to="/part/g/subset" className="prev">
-          <span className="dir">
-            <ArrowLeft size={13} style={{ verticalAlign: '-2px' }} /> 上一类型
-          </span>
-          <span className="nm">综合技巧：枚举子集</span>
-        </Link>
-        <span />
-      </nav>
     </>
   )
 }

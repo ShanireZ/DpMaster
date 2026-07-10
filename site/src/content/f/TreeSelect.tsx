@@ -1,5 +1,5 @@
 import { Link } from 'react-router-dom'
-import { ArrowLeft, ArrowRight, MousePointerClick } from 'lucide-react'
+import { MousePointerClick } from 'lucide-react'
 import { M, MB } from '../../components/ui/Math'
 import InfoBox from '../../components/ui/InfoBox'
 import CodeBlock from '../../components/ui/CodeBlock'
@@ -289,20 +289,6 @@ export default function TreeSelect() {
         <Exercise pid="P1352" name="没有上司的舞会（自测）" hint="把例题不看代码独立写一遍：邻接表建树、找根、后序 DFS 填 f[u][0/1]。手熟这套骨架，后面所有树形 DP 都顺。" />
       </section>
 
-      <nav className="type-nav">
-        <Link to="/part/e/center" className="prev">
-          <span className="dir">
-            <ArrowLeft size={15} style={{ verticalAlign: '-2px' }} /> 上一类型
-          </span>
-          <span className="nm">中心 / 偏心距</span>
-        </Link>
-        <Link to="/part/f/knapsack" className="next">
-          <span className="dir">下一类型 →</span>
-          <span className="nm">
-            树上背包 <ArrowRight size={15} style={{ verticalAlign: '-2px' }} />
-          </span>
-        </Link>
-      </nav>
     </>
   )
 }

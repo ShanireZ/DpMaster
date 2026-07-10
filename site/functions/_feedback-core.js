@@ -17,9 +17,9 @@ function clip(s, n) {
 }
 
 function buildText(d) {
-  // 开头含「反馈」「DP 图谱」，方便钉钉「自定义关键词」模式命中
+  // 开头含「反馈」「DP大师」，方便钉钉「自定义关键词」模式命中
   const lines = [
-    '🐞 DP 图谱 · 新反馈',
+    '🐞 DP大师 · 新反馈',
     `类型：${clip(d.kind, 20)}`,
     `页面：${clip(d.page, 120)}（${clip(d.path, 120)}）`,
     `描述：${clip(d.description, 1500)}`,

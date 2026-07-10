@@ -1,5 +1,5 @@
 import { Link } from 'react-router-dom'
-import { ArrowRight, MousePointerClick, Gamepad2 } from 'lucide-react'
+import { MousePointerClick, Gamepad2 } from 'lucide-react'
 import { M, MB } from '../../components/ui/Math'
 import InfoBox from '../../components/ui/InfoBox'
 import CodeBlock from '../../components/ui/CodeBlock'
@@ -354,15 +354,6 @@ export default function LinearPath() {
         亲手在格子间走一条路，看每一步如何叠出最终的答案。
       </div>
 
-      <nav className="type-nav">
-        <span />
-        <Link to="/part/b/maxseg" className="next">
-          <span className="dir">下一类型 →</span>
-          <span className="nm">
-            最大子段和 <ArrowRight size={15} style={{ verticalAlign: '-2px' }} />
-          </span>
-        </Link>
-      </nav>
     </>
   )
 }

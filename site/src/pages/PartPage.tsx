@@ -3,8 +3,7 @@ import { Link, useParams } from 'react-router-dom'
 import { ArrowRight } from 'lucide-react'
 import GeometryBackdrop from '../components/GeometryBackdrop'
 import PartGlyph from '../components/PartGlyph'
-import { getPart } from '../data/parts'
-import { GAMES } from '../components/games/registry'
+import { getPart } from '../data/catalog'
 import './part.css'
 
 const NotFound = lazy(() => import('./NotFound'))
@@ -19,7 +18,7 @@ export default function PartPage() {
       </Suspense>
     )
 
-  const Game = GAMES[part.id]?.comp
+  const Game = part.game.content
 
   return (
     <div>
@@ -72,12 +71,12 @@ export default function PartPage() {
         })}
       </div>
 
-      {Game && (
-        <section style={{ marginTop: 'var(--sp-8)' }}>
-          <h2 className="section-title">本部分 · 互动游戏</h2>
+      <section style={{ marginTop: 'var(--sp-8)' }}>
+        <h2 className="section-title">本部分 · 互动游戏</h2>
+        <Suspense fallback={<div style={{ minHeight: 240 }} aria-busy="true" />}>
           <Game />
-        </section>
-      )}
+        </Suspense>
+      </section>
     </div>
   )
 }

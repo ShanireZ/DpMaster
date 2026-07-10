@@ -6,7 +6,7 @@ tags: [maintenance, staleness, drift]
 timestamp: 2026-07-07T00:00:00+08:00
 source_paths:
   - README.md
-  - site/src/data/parts.ts
+  - site/src/data/catalog.ts
   - site/src/data/problems.ts
   - site/src/styles/tokens.css
   - site/functions/_feedback-core.js
@@ -23,6 +23,8 @@ source_paths:
 | `site/README.md` was still mostly Vite template text. | It was removed as a maintained doc source. |
 | Deployment and feedback lived in separate old docs. | Root `deploy.md` is now the maintained operational runbook. |
 | Handoff notes said M2 was pending. | Current code has all 37 type pages ready; historical handoff was retired. |
+| Course metadata, lazy imports, games, and previous/next links lived in parallel registries and lesson files. | `site/src/data/catalog.ts` now owns the course directory and `TypePage` owns navigation. |
+| The manual problem index had 158 slots while lesson JSX contained 177, including a `c/tree` classification conflict. | Lesson JSX is now the source; `generate-problems.mjs` produces 177 slots and CI checks drift. |
 
 # Recorded Risks
 
@@ -36,4 +38,3 @@ source_paths:
 * License and commercial-use claims for third-party assets and libraries.
 * Provider CLI behavior for Cloudflare Workers and EdgeOne Pages.
 * Any problem that was once marked disputed or thin-pool before being used in implemented content.
-

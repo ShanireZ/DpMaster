@@ -1,5 +1,5 @@
 import { Link } from 'react-router-dom'
-import { ArrowLeft, ArrowRight, MousePointerClick } from 'lucide-react'
+import { MousePointerClick } from 'lucide-react'
 import { M, MB } from '../../components/ui/Math'
 import InfoBox from '../../components/ui/InfoBox'
 import CodeBlock from '../../components/ui/CodeBlock'
@@ -303,20 +303,6 @@ export default function TreeCover() {
         <Exercise pid="P2585" name="三色二叉树（自测）" hint="独立写一遍括号串建树 + 三色 DP，注意叶子/单孩子的边界，以及 max 与 min 两份数组同步转移。" />
       </section>
 
-      <nav className="type-nav">
-        <Link to="/part/f/diameter" className="prev">
-          <span className="dir">
-            <ArrowLeft size={15} style={{ verticalAlign: '-2px' }} /> 上一类型
-          </span>
-          <span className="nm">直径 / 重心 DP</span>
-        </Link>
-        <Link to="/part/f/count" className="next">
-          <span className="dir">下一类型 →</span>
-          <span className="nm">
-            方案数 / 距离统计 <ArrowRight size={15} style={{ verticalAlign: '-2px' }} />
-          </span>
-        </Link>
-      </nav>
     </>
   )
 }

@@ -1,7 +1,7 @@
 ---
 type: Product Scope
-title: DpMaster Product Scope
-description: User-facing DpMaster scope, routes, learning flow, and explicit exclusions.
+title: DP大师 Product Scope
+description: User-facing DP大师 scope, routes, learning flow, and explicit exclusions.
 tags: [product, routes, scope]
 timestamp: 2026-07-07T00:00:00+08:00
 source_paths:
@@ -14,7 +14,7 @@ source_paths:
 
 # Promise
 
-DpMaster teaches dynamic programming through precise explanations, editable visualizations, and small interactive games. The teaching promise is "精讲 + 重交互": explain the state and transition, then let the learner change inputs and watch the DP table, tree, or bitmask state recompute.
+DP大师 teaches dynamic programming through precise explanations, editable visualizations, and small interactive games. The teaching promise is "精讲 + 重交互": explain the state and transition, then let the learner change inputs and watch the DP table, tree, or bitmask state recompute.
 
 # Routes
 
@@ -56,5 +56,4 @@ Every family has one registered game:
 
 # Exclusions
 
-DpMaster does not copy full Luogu statements. It uses summaries, teaching commentary, and links to the original problem pages. It does not ship paid or redistribution-prohibited assets.
-
+DP大师 does not copy full Luogu statements. It uses summaries, teaching commentary, and links to the original problem pages. It does not ship paid or redistribution-prohibited assets.

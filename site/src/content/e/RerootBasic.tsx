@@ -1,5 +1,5 @@
 import { Link } from 'react-router-dom'
-import { ArrowRight, ArrowLeft, MousePointerClick, Gamepad2 } from 'lucide-react'
+import { MousePointerClick, Gamepad2 } from 'lucide-react'
 import { M, MB } from '../../components/ui/Math'
 import InfoBox from '../../components/ui/InfoBox'
 import CodeBlock from '../../components/ui/CodeBlock'
@@ -331,20 +331,6 @@ export default function RerootBasic() {
         />
       </section>
 
-      <nav className="type-nav">
-        <Link to="/part/d/matpow" className="prev">
-          <span className="dir">
-            <ArrowLeft size={15} style={{ verticalAlign: '-2px' }} /> 上一类型
-          </span>
-          <span className="nm">矩阵快速幂加速</span>
-        </Link>
-        <Link to="/part/e/distsum" className="next">
-          <span className="dir">下一类型 →</span>
-          <span className="nm">
-            距离和换根 <ArrowRight size={15} style={{ verticalAlign: '-2px' }} />
-          </span>
-        </Link>
-      </nav>
     </>
   )
 }

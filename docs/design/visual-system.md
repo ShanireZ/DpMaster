@@ -1,7 +1,7 @@
 ---
 type: Design System
 title: Warm Ink Visual System
-description: Current DpMaster visual system, including tokens, motion constraints, and superseded palette guidance.
+description: Current DP大师 visual system, including tokens, motion constraints, and superseded palette guidance.
 tags: [design, css, accessibility]
 timestamp: 2026-07-07T00:00:00+08:00
 source_paths:
@@ -41,4 +41,3 @@ Respect reduced-motion users. Complex backgrounds and demos should keep a readab
 # Accessibility
 
 Color should not be the only information channel. Pair colors with labels, icons, shape, or position. Text and lesson content should meet high contrast, and controls should remain keyboard reachable.
-

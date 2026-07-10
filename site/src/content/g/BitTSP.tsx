@@ -1,5 +1,4 @@
-import { Link } from 'react-router-dom'
-import { ArrowRight, ArrowLeft, MousePointerClick } from 'lucide-react'
+import { MousePointerClick } from 'lucide-react'
 import { M, MB } from '../../components/ui/Math'
 import InfoBox from '../../components/ui/InfoBox'
 import CodeBlock from '../../components/ui/CodeBlock'
@@ -304,20 +303,6 @@ export default function BitTSP() {
         <Exercise pid="P2915" name="[USACO08NOV] Mixed Up Cows G" hint="排列型集合状压，与 TSP 同构：f[S][i]=用完集合 S、末位是 i 的合法排列数，转移要求相邻编号差 > K。把「最短路」换成「计数」。" />
       </section>
 
-      <nav className="type-nav">
-        <Link to="/part/g/board" className="prev">
-          <span className="dir">
-            <ArrowLeft size={13} style={{ verticalAlign: '-2px' }} /> 上一类型
-          </span>
-          <span className="nm">棋盘 / 轮廓状压</span>
-        </Link>
-        <Link to="/part/g/cover" className="next">
-          <span className="dir">下一类型 →</span>
-          <span className="nm">
-            状压 + 覆盖 <ArrowRight size={15} style={{ verticalAlign: '-2px' }} />
-          </span>
-        </Link>
-      </nav>
     </>
   )
 }

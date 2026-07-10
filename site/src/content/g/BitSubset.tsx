@@ -1,5 +1,4 @@
-import { Link } from 'react-router-dom'
-import { ArrowRight, ArrowLeft, MousePointerClick } from 'lucide-react'
+import { MousePointerClick } from 'lucide-react'
 import { M, MB } from '../../components/ui/Math'
 import InfoBox from '../../components/ui/InfoBox'
 import CodeBlock from '../../components/ui/CodeBlock'
@@ -212,20 +211,6 @@ export default function BitSubset() {
         <Exercise pid="P3959" name="[NOIP2017 提高组] 宝藏" hint="亲手把「层内枚举子集扩展」写一遍：rest=full ^ S，for(sub=rest; sub; sub=(sub-1)&rest) 枚举新接入的一层，注意深度乘子与边权预处理。" />
       </section>
 
-      <nav className="type-nav">
-        <Link to="/part/g/cover" className="prev">
-          <span className="dir">
-            <ArrowLeft size={13} style={{ verticalAlign: '-2px' }} /> 上一类型
-          </span>
-          <span className="nm">状压 + 覆盖</span>
-        </Link>
-        <Link to="/part/g/plug" className="next">
-          <span className="dir">下一类型 →</span>
-          <span className="nm">
-            插头 DP（选修） <ArrowRight size={15} style={{ verticalAlign: '-2px' }} />
-          </span>
-        </Link>
-      </nav>
     </>
   )
 }

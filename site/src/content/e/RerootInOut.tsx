@@ -1,5 +1,4 @@
-import { Link } from 'react-router-dom'
-import { ArrowRight, ArrowLeft, MousePointerClick } from 'lucide-react'
+import { MousePointerClick } from 'lucide-react'
 import { M } from '../../components/ui/Math'
 import InfoBox from '../../components/ui/InfoBox'
 import CodeBlock from '../../components/ui/CodeBlock'
@@ -245,20 +244,6 @@ export default function RerootInOut() {
         <Exercise pid="P3478" name="[POI2008] STA-Station" hint="深度和最大：同样可拆成 down + up，验证换根不止一种推法。" />
       </section>
 
-      <nav className="type-nav">
-        <Link to="/part/e/distsum" className="prev">
-          <span className="dir">
-            <ArrowLeft size={15} style={{ verticalAlign: '-2px' }} /> 上一类型
-          </span>
-          <span className="nm">距离和换根</span>
-        </Link>
-        <Link to="/part/e/center" className="next">
-          <span className="dir">下一类型 →</span>
-          <span className="nm">
-            中心 / 偏心距 <ArrowRight size={15} style={{ verticalAlign: '-2px' }} />
-          </span>
-        </Link>
-      </nav>
     </>
   )
 }

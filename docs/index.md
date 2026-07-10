@@ -2,9 +2,9 @@
 okf_version: "0.1"
 ---
 
-# DpMaster Documentation Bundle
+# DP大师 Documentation Bundle
 
-This directory is the canonical OKF bundle for DpMaster after the July 7, 2026 documentation consolidation. It replaces the older root-level planning documents, the `handoff/` notes, and the `site/` README/deploy notes.
+This directory is the canonical OKF bundle for DP大师 after the July 7, 2026 documentation consolidation. It replaces the older root-level planning documents, the `handoff/` notes, and the `site/` README/deploy notes.
 
 # Project
 
@@ -34,4 +34,3 @@ This directory is the canonical OKF bundle for DpMaster after the July 7, 2026 d
 # Maintenance
 
 * [Staleness Register](/maintenance/staleness-register.md) - conflicts resolved during consolidation and claims that need future review.
-

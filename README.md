@@ -1,4 +1,4 @@
-# DpMaster
+# DP大师
 
 [![License: GPL-3.0](https://img.shields.io/badge/license-GPL--3.0-blue.svg?style=flat-square)](LICENSE)
 ![React 19](https://img.shields.io/badge/React-19-61DAFB.svg?style=flat-square&logo=react&logoColor=white)
@@ -7,7 +7,7 @@
 ![Lessons](https://img.shields.io/badge/lessons-37%2F37%20ready-success.svg?style=flat-square)
 ![Deploy](https://img.shields.io/badge/deploy-Cloudflare%20%2B%20EdgeOne-orange.svg?style=flat-square)
 
-DpMaster 是一个面向 C++ 算法学习者的动态规划交互式学习网站。把常见 DP 模型整理成可浏览的图谱：知识点精讲、可改值演示、小游戏、手算过程、C++ 代码和洛谷练习路径放在同一套静态站里。
+DP大师是一个面向 C++ 算法学习者的动态规划交互式学习网站。把常见 DP 模型整理成可浏览的学习体系：知识点精讲、可改值演示、小游戏、手算过程、C++ 代码和洛谷练习路径放在同一套静态站里。
 
 适合正在准备 NOIP、CSP、省选基础阶段，或想系统补齐动态规划模型的学习者。
 
@@ -19,7 +19,7 @@ DpMaster 是一个面向 C++ 算法学习者的动态规划交互式学习网站
 - 7 个 DP 家族已注册。
 - 37 个类型页已注册并标记为 `ready`。
 - 7 个家族小游戏已接入。
-- 题目索引包含 158 个题目槽位，其中 112 个唯一洛谷题号。
+- 题目索引包含 177 个题目槽位，其中 116 个唯一洛谷题号。
 - 站点是静态 React 应用，不依赖数据库、登录系统或在线评测后端。
 - 生产部署支持 Cloudflare Workers Static Assets 与 Tencent EdgeOne Pages 双线路。
 
@@ -67,8 +67,10 @@ npm run dev
 | 命令              | 作用                                           |
 | ----------------- | ---------------------------------------------- |
 | `npm run dev`     | 启动 Vite 开发服务器。                         |
-| `npm run lint`    | 运行 Oxlint。                                  |
+| `npm run test`    | 运行课程目录、题目语料与资产预算合同测试。     |
+| `npm run lint`    | 运行零 warning 的 Oxlint。                     |
 | `npm run build`   | TypeScript 检查并构建到 `site/dist/`。         |
+| `npm run verify`  | 运行内容检查、测试、lint、构建与资产预算。     |
 | `npm run preview` | 本地预览构建产物。                             |
 | `npm run deploy`  | 构建一次，然后依次发布 Cloudflare 和 EdgeOne。 |
 
@@ -83,8 +85,9 @@ DpMaster/
    ├─ src/
    │  ├─ app/               # 路由与应用壳
    │  ├─ components/        # 布局、演示、小游戏、反馈组件
-   │  ├─ content/           # 按路由注册的类型课文
-   │  ├─ data/              # DP 家族、类型与题目索引
+   │  ├─ content/           # 课程正文，也是题目语料来源
+   │  ├─ data/catalog.ts    # 家族、课程、正文与游戏的统一目录
+   │  ├─ data/problems.ts   # 由正文自动生成的题目索引
    │  ├─ pages/             # 首页、家族页、类型页、方法页、题单页、关于页
    │  └─ styles/            # 全局样式与设计 token
    ├─ functions/            # 反馈端点核心与可选 Pages Functions 包装

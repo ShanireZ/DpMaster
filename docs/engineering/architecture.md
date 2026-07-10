@@ -7,14 +7,14 @@ timestamp: 2026-07-07T00:00:00+08:00
 source_paths:
   - site/package.json
   - site/src/app/App.tsx
-  - site/src/content/registry.tsx
+  - site/src/data/catalog.ts
   - site/src/lib/highlighter.ts
   - site/src/components/ui/Math.tsx
 ---
 
 # Stack
 
-DpMaster is a static React app in `site/`.
+DP大师 is a static React app in `site/`.
 
 Key dependencies actively used by current source:
 
@@ -34,9 +34,9 @@ The manifest also includes GSAP, `@gsap/react`, Motion, `react-katex`, and `@typ
 |---|---|
 | `site/src/app/App.tsx` | Router registration and app shell. |
 | `site/src/pages/` | Home, family pages, type page host, method, problems, about, not-found. |
-| `site/src/data/parts.ts` | Family/type metadata and readiness. |
-| `site/src/data/problems.ts` | Searchable problem index. |
-| `site/src/content/` | Type lesson content, lazy-loaded by route. |
+| `site/src/data/catalog.ts` | Family/type metadata, route order, and lazy lesson/game implementations. |
+| `site/src/data/problems.ts` | Generated searchable problem-index projection. |
+| `site/src/content/` | Type lesson content and the problem-corpus source of truth. |
 | `site/src/components/demos/` | Editable DP demos and solvers. |
 | `site/src/components/dp-engine/` | Shared visualization engine. |
 | `site/src/components/games/` | One game per family. |
@@ -46,7 +46,9 @@ The manifest also includes GSAP, `@gsap/react`, Motion, `react-katex`, and `@typ
 
 # Routing And Splitting
 
-`App.tsx` uses `BrowserRouter` and lazy routes. Type content is lazy-loaded per `site/src/content/registry.tsx` key (`${pid}/${slug}`), so opening one lesson should not eagerly load every lesson.
+`App.tsx` uses `BrowserRouter` and lazy routes. `site/src/data/catalog.ts` owns literal lazy imports for every lesson and family game, so opening one lesson or family should not eagerly load unrelated lessons or games.
+
+Problem metadata is extracted from lesson JSX by `site/scripts/generate-problems.mjs`. Run `npm run content:generate` after changing `ExampleCard` or `Exercise`; `npm run check:content` rejects drift.
 
 Deep links require hosting support. See root [deploy.md](../../deploy.md) for the Cloudflare and EdgeOne contracts.
 

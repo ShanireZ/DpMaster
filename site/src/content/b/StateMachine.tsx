@@ -1,5 +1,4 @@
-import { Link } from 'react-router-dom'
-import { ArrowLeft, ArrowRight, MousePointerClick } from 'lucide-react'
+import { MousePointerClick } from 'lucide-react'
 import { M, MB } from '../../components/ui/Math'
 import InfoBox from '../../components/ui/InfoBox'
 import CodeBlock from '../../components/ui/CodeBlock'
@@ -309,20 +308,6 @@ export default function StateMachine() {
         />
       </section>
 
-      <nav className="type-nav">
-        <Link to="/part/b/edit">
-          <span className="dir">← 上一类型</span>
-          <span className="nm">
-            <ArrowLeft size={15} style={{ verticalAlign: '-2px' }} /> 编辑距离
-          </span>
-        </Link>
-        <Link to="/part/b/count" className="next">
-          <span className="dir">下一类型 →</span>
-          <span className="nm">
-            计数 / 划分型 <ArrowRight size={15} style={{ verticalAlign: '-2px' }} />
-          </span>
-        </Link>
-      </nav>
     </>
   )
 }

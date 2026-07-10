@@ -1,5 +1,4 @@
-import { Link } from 'react-router-dom'
-import { ArrowLeft, ArrowRight, MousePointerClick } from 'lucide-react'
+import { MousePointerClick } from 'lucide-react'
 import { M, MB } from '../../components/ui/Math'
 import InfoBox from '../../components/ui/InfoBox'
 import CodeBlock from '../../components/ui/CodeBlock'
@@ -256,20 +255,6 @@ export default function TreeKnapsack() {
         <Exercise pid="P1064" name="[NOIP2006] 金明的预算方案" hint="主件带 ≤2 附件的依赖背包：把「主件 + 其附件的子集」枚举成一组物品做分组背包。是树上背包退化到「深度 1」的特例。" />
       </section>
 
-      <nav className="type-nav">
-        <Link to="/part/f/select" className="prev">
-          <span className="dir">
-            <ArrowLeft size={15} style={{ verticalAlign: '-2px' }} /> 上一类型
-          </span>
-          <span className="nm">选点 / 最大独立集</span>
-        </Link>
-        <Link to="/part/f/diameter" className="next">
-          <span className="dir">下一类型 →</span>
-          <span className="nm">
-            直径 / 重心 DP <ArrowRight size={15} style={{ verticalAlign: '-2px' }} />
-          </span>
-        </Link>
-      </nav>
     </>
   )
 }

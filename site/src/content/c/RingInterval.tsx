@@ -1,5 +1,5 @@
 import { Link } from 'react-router-dom'
-import { ArrowRight, ArrowLeft, MousePointerClick, Gamepad2 } from 'lucide-react'
+import { MousePointerClick, Gamepad2 } from 'lucide-react'
 import { M, MB } from '../../components/ui/Math'
 import InfoBox from '../../components/ui/InfoBox'
 import CodeBlock from '../../components/ui/CodeBlock'
@@ -313,20 +313,6 @@ ans = min over i∈[0,n-1] of dp[i][i+n-1]   // ★扫 n 个整圈窗口取优`}
         想更直观地感受「从哪儿断、绕哪一圈」？回 <Link to="/part/c" style={{ color: 'var(--accent-1)', fontWeight: 600 }}>C 部分页</Link>的互动里亲手挑一个断点与合并顺序，再看 DP 给出的最优圈。
       </div>
 
-      <nav className="type-nav">
-        <Link to="/part/c/stone" className="prev">
-          <span className="dir">
-            <ArrowLeft size={15} style={{ verticalAlign: '-2px' }} /> 上一类型
-          </span>
-          <span className="nm">石子合并（链形）</span>
-        </Link>
-        <Link to="/part/c/palindrome" className="next">
-          <span className="dir">下一类型 →</span>
-          <span className="nm">
-            回文 / 括号 <ArrowRight size={15} style={{ verticalAlign: '-2px' }} />
-          </span>
-        </Link>
-      </nav>
     </>
   )
 }

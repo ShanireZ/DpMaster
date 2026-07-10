@@ -1,4 +1,3 @@
-import type { ReactNode } from 'react'
 import { Play, Pause, ChevronLeft, ChevronRight, RotateCcw } from 'lucide-react'
 import type { TreeLayout } from './treedpSolver'
 
@@ -191,10 +190,3 @@ export function Legend({ items }: { items: { color: string; label: string; bg?: 
 export function Panel({ html }: { html: string }) {
   return <div className="td__panel" dangerouslySetInnerHTML={{ __html: html }} />
 }
-
-/** 小工具：把 0..1 x 坐标映射到像素（演示内画额外覆盖层时用）。 */
-export function makeScale(width: number, padX = 44) {
-  return (x: number) => padX + x * (width - 2 * padX)
-}
-
-export type { ReactNode }

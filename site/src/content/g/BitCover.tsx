@@ -1,5 +1,4 @@
-import { Link } from 'react-router-dom'
-import { ArrowRight, ArrowLeft, MousePointerClick } from 'lucide-react'
+import { MousePointerClick } from 'lucide-react'
 import { M, MB } from '../../components/ui/Math'
 import InfoBox from '../../components/ui/InfoBox'
 import CodeBlock from '../../components/ui/CodeBlock'
@@ -274,20 +273,6 @@ export default function BitCover() {
         <Exercise pid="P3694" name="邦邦的大合唱站队" hint="把「已经排成连续块的乐队集合」压成 mask，dp[S]=让 S 中乐队各自连续所需最少移出人数，枚举下一个整块接入的乐队——覆盖式扩展 + 前缀计数。" />
       </section>
 
-      <nav className="type-nav">
-        <Link to="/part/g/tsp" className="prev">
-          <span className="dir">
-            <ArrowLeft size={13} style={{ verticalAlign: '-2px' }} /> 上一类型
-          </span>
-          <span className="nm">集合状压 / TSP</span>
-        </Link>
-        <Link to="/part/g/subset" className="next">
-          <span className="dir">下一类型 →</span>
-          <span className="nm">
-            综合技巧：枚举子集 <ArrowRight size={15} style={{ verticalAlign: '-2px' }} />
-          </span>
-        </Link>
-      </nav>
     </>
   )
 }

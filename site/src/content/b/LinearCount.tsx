@@ -1,6 +1,6 @@
 import type { CSSProperties } from 'react'
 import { Link } from 'react-router-dom'
-import { ArrowLeft, MousePointerClick } from 'lucide-react'
+import { MousePointerClick } from 'lucide-react'
 import { M, MB } from '../../components/ui/Math'
 import InfoBox from '../../components/ui/InfoBox'
 import CodeBlock from '../../components/ui/CodeBlock'
@@ -380,15 +380,6 @@ for i = 1 to n:
         />
       </section>
 
-      <nav className="type-nav">
-        <Link to="/part/b/fsm">
-          <span className="dir">← 上一类型</span>
-          <span className="nm">
-            <ArrowLeft size={15} style={{ verticalAlign: '-2px' }} /> 线性状态机 DP
-          </span>
-        </Link>
-        <span />
-      </nav>
     </>
   )
 }

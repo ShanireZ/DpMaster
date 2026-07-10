@@ -1,6 +1,6 @@
 import type { CSSProperties } from 'react'
 import { Link } from 'react-router-dom'
-import { ArrowLeft, ArrowRight, MousePointerClick, Gamepad2 } from 'lucide-react'
+import { MousePointerClick, Gamepad2 } from 'lucide-react'
 import { M, MB } from '../../components/ui/Math'
 import InfoBox from '../../components/ui/InfoBox'
 import CodeBlock from '../../components/ui/CodeBlock'
@@ -357,20 +357,6 @@ export default function KnapsackMixed() {
         回 <Link to="/part/a" style={{ color: 'var(--accent-1)', fontWeight: 600 }}>A 部分页的「装包大师」</Link>时，试着给每件宝物先贴个标签：这件只有一件、那件成箱、另一件管够——混合背包做的就是这道「逐件分派」的分诊，再把三条支路各自转移。
       </div>
 
-      <nav className="type-nav">
-        <Link to="/part/a/group">
-          <span className="dir">← 上一类型</span>
-          <span className="nm">
-            <ArrowLeft size={15} style={{ verticalAlign: '-2px' }} /> 分组背包
-          </span>
-        </Link>
-        <Link to="/part/a/cost2d" className="next">
-          <span className="dir">下一类型 →</span>
-          <span className="nm">
-            二维费用背包 <ArrowRight size={15} style={{ verticalAlign: '-2px' }} />
-          </span>
-        </Link>
-      </nav>
     </>
   )
 }

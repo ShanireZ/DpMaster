@@ -1,7 +1,7 @@
 ---
 type: Engineering Contract
 title: Visualization Engine Contract
-description: Shared DpMaster DP visualization model and demo behavior contract.
+description: Shared DP大师 DP visualization model and demo behavior contract.
 tags: [engineering, visualization, dp-engine]
 timestamp: 2026-07-07T00:00:00+08:00
 source_paths:
@@ -44,4 +44,3 @@ Visualizations should expose:
 # Authoring Guidance
 
 Prefer small default examples that fit on laptop screens. Keep input editing bounded so the model remains readable and fast. If a topic needs a richer specialized demo, keep the solver local to `site/src/components/demos/<topic>/` and still reuse `DPViz` where practical.
-
