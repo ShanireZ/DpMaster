@@ -28,9 +28,9 @@
 
 - Source review: `architecture-review-dpmaster-20260710-080946.html` generated 2026-07-10 08:15 +08:00.
 - Review baseline: `2d1878a`.
-- Final implementation snapshot: `b098772` on `main`.
+- Final implementation snapshot: `34c1c92` on `main`.
 - Plan closure: the Task 7 documentation commit closes this plan; its hash is intentionally not embedded in the commit it describes.
-- Current gate: `npm run verify` passes 127/127 Node tests, 9/9 production-preview Chromium tests, zero-warning lint, TypeScript/Vite build, generated-content/SEO drift checks, and asset budgets.
+- Current gate: `npm run verify` passes 133/133 Node tests, 9/9 production-preview Chromium tests, zero-warning lint, TypeScript/Vite build, generated-content/SEO drift checks, and asset budgets.
 - Current security audit: `npm audit --audit-level=low` reports 0 vulnerabilities.
 - Current working tree at audit time: clean.
 
@@ -46,8 +46,8 @@
 | # | Review area | State | Completed scope | Remaining closure condition |
 |---|---|---|---|---|
 | 1 | Course catalog and problem corpus | `[x]` | One 37-course/7-game catalog; lesson-derived 177-slot generated corpus; P1880/P1436 correction; drift gate. | None. |
-| 2 | Algorithm results vs. teaching traces | `[x]` | All 29 teaching solver surfaces use public typed results, internal event emitters, teaching Adapters, independent small-case oracle/property checks, and public-result game/readout consumers. | None. |
-| 3 | Executable verification Module | `[x]` | `test`, `verify`, CI, catalog/SEO/feedback/playback/game contracts, every public-result oracle/property, 9 production-preview Chromium tests, build and asset gates. | None. |
+| 2 | Algorithm results vs. teaching traces | `[x]` | All 29 teaching solver surfaces use public typed results, internal event emitters, teaching Adapters, and public-result game/readout consumers; the primary outcomes of 39 public solver entry points returning 38 named Result Interfaces have independent small-case oracle/property checks, with legality/consistency invariants for key witnesses. | None. |
+| 3 | Executable verification Module | `[x]` | `test`, `verify`, CI, catalog/SEO/feedback/playback/game contracts, independent oracle/property coverage for all 39 named-Result solver primary outcomes, key witness/auxiliary-field invariants, 9 production-preview Chromium tests, build and asset gates. | None. |
 | 4 | Visualization trace and playback shell | `[x]` | Every transport uses the shared typed player and full/compact controls; `SafeCaption` owns playback captions and a whole-source guard restricts raw sinks. | None. |
 | 5 | Feedback intake and delivery semantics | `[!]` | Body/schema/kind/origin gates, 10/30m limiter, stable JSON errors, structured logs, three runtime Adapters, focus-managed dialog. | Original report requested redacted logs and delivered semantics; the user explicitly replaced that requirement with log-write acceptance. Keep full validated feedback logs unless policy changes. |
 | 6 | Game runtime and lazy loading | `[x]` | Seven lazy game chunks, 400 px gate, shared audio/runtime helpers, displayed-seed replay in six random games, and duplicate-safe shared statistics across all seven games. | None. |
@@ -377,7 +377,7 @@ useEffect(() => {
 | `DpMaster/` | DP大师 — React/Vite 动态规划交互式教程；37 门课程、逐帧可视化、小游戏、题目索引与反馈入口。 | [`DpMaster/AGENTS.md`](DpMaster/AGENTS.md) |
 ```
 
-- [x] Update architecture and verification docs with the final 29-algorithm, browser-smoke, playback, safe-caption, seeded-round, and seven-game statistics contracts.
+- [x] Update architecture and verification docs with the final 29-teaching-surface, 39-named-Result-solver, browser-smoke, playback, safe-caption, seeded-round, and seven-game statistics contracts.
 - [x] Mark every completed checkbox in this master plan and update the audit snapshot to the closing commit.
 - [x] Run `git diff --check`, `npm run verify`, and `npm audit --audit-level=low`.
 - [x] Confirm `git status --short` contains only the intended plan/document changes before committing.
@@ -388,7 +388,7 @@ useEffect(() => {
 ## Final Exit Checklist
 
 - [x] All 29 solver surfaces have a public result Module and a teaching event Adapter.
-- [x] Every public result is checked against an independent small-case oracle or property test.
+- [x] The primary outcome of each of the 39 public solver entry points returning the 38 named Result Interfaces is checked against an independent small-case oracle or property test.
 - [x] No game or readout derives answers from a teaching frame.
 - [x] Every playback transport uses the common player and full/compact controls.
 - [x] No playback carrier renders raw caption HTML outside `SafeCaption`.

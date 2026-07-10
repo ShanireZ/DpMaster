@@ -20,6 +20,8 @@ npm run verify
 
 `npm run verify` checks generated content and SEO artifacts, runs Node tests and zero-warning lint, builds with TypeScript/Vite, writes EdgeOne fallback artifacts, runs Chromium against that production `dist` through `vite preview`, and enforces the asset budget.
 
+The current closure gate contains 133 Node tests and nine Chromium tests.
+
 To rerun only the browser smoke suite after a production build:
 
 ```bash
@@ -31,8 +33,10 @@ Install its local Chromium runtime once with `npx playwright install chromium`. 
 
 Algorithm verification runs directly on Node 24's TypeScript stripping support and includes:
 
-* independent small-case oracles or property checks for every public result behind the 29 teaching solver surfaces;
-* legal witness/table invariants where a public result exposes them, including reroot distance sums against a quadratic oracle and tree independent set against subset enumeration;
+* independent small-case oracles or property checks for the primary outcome of all 39 public solver entry points that return the 38 named `*Result` Interfaces;
+* weighted and node-weighted reroot distance oracles, weighted in/out and eccentricity checks, exhaustive exact-`Q` root-connected tree-knapsack subsets, and exhaustive tree path, distance-two, independent-set, and dominating-set checks;
+* legality or consistency invariants for key witness and auxiliary fields, including `chosen`, `guards`, `layout`, representative path/index/argument fields, and child-before-parent orders;
+* input-domain regressions for malformed reroot trees and invalid tree-DP weights or limits, plus large-value sentinel regressions for dominating set and bitmask cover;
 * equality between public `solve` results and recorded teaching runs, immutable domain-event snapshots, and final teaching-Adapter projections;
 * exact enumeration of all 29 teaching Adapters plus architecture guards that prevent games/readouts from importing internal Modules, deriving answers from teaching frames, or restoring private duplicate solvers;
 * a brand contract that rejects legacy product-facing names.
@@ -43,7 +47,7 @@ Pure TypeScript Modules imported by Node tests must use explicit `.ts` extension
 
 `npm run check:seo` verifies that route metadata remains complete and that `robots.txt` and the 48-URL sitemap match the catalog. When routes or lesson readiness change, run `npm run seo:generate` and review the generated URL set before committing it.
 
-The browser gate runs nine Chromium tests against the built production `dist` through a strict, non-reused `vite preview` server. Seven route tests directly open `/`, `/part/a`, `/part/a/01`, `/method`, and `/part/g/plug`, then exercise live client navigation and keyboard focus. They check HTTP route status where applicable, title/description/canonical/Open Graph metadata, one visible `h1`, route announcements, current-page semantics, initial-load focus, changed-route focus, skip-link focus, and zero console/page errors.
+The browser gate runs nine Chromium tests against the built production `dist` through a strict, non-reused `vite preview` server. Seven route tests directly open `/`, `/part/a`, `/part/a/01`, `/method`, and `/part/g/plug`, then exercise live client navigation and keyboard focus. They check HTTP route status where applicable, title/description/canonical/Open Graph metadata, one visible `h1`, route announcements, current-page semantics, initial-load focus, changed-route focus, and skip-link focus. Every one of the seven route tests also requires zero console errors and zero uncaught page errors.
 
 Two game tests cover the catalog-owned lazy boundary and shared runtime contracts. Pack must keep its chunk absent before the near-viewport gate, auto-load without a manual control, replay the currently displayed seed into the identical round with cleared interaction state, and preserve exact played/matched totals across replay, shuffle, difficulty, and reveal. BitBoard must suppress duplicate completion counts and rearm after clear. These tests do not provide arbitrary-seed entry or pixel-regression coverage.
 
