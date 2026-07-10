@@ -25,10 +25,24 @@ async function loadDeferredGame(page: Page, label: string): Promise<Locator> {
 }
 
 async function readSeed(game: Locator): Promise<number> {
-  const status = await game.getByText(/已玩 \d+ 局.*种子 \d+/).textContent()
+  const status = await game.locator('.game__stats > span').textContent()
   const match = status?.match(/种子 (\d+)/)
   if (!match) throw new Error(`Missing numeric game seed in: ${status}`)
   return Number(match[1])
+}
+
+async function expectPackStats(game: Locator, played: number, seed: number): Promise<void> {
+  const status = game.locator('.game__stats > span')
+  const completeStatus = new RegExp(
+    `^已玩 ${played} 局 · 追平 DP (\\d+) 次 · 种子 ${seed}$`,
+  )
+  await expect.poll(async () => (await status.innerText()).trim()).toMatch(completeStatus)
+
+  const match = (await status.innerText()).trim().match(completeStatus)
+  if (!match) throw new Error('Pack statistics changed after the complete status assertion')
+  const matched = Number(match[1])
+  expect(matched).toBeGreaterThanOrEqual(0)
+  expect(matched).toBeLessThanOrEqual(played)
 }
 
 async function readPackItems(game: Locator): Promise<string[]> {
@@ -55,16 +69,18 @@ test('Pack rounds lazy-load automatically and replay from the displayed seed', a
   const originalSeed = await readSeed(game)
   const originalItems = await readPackItems(game)
   await expect(game.getByRole('button', { name: /价值/ })).toHaveCount(5)
+  await expectPackStats(game, 0, originalSeed)
 
   const firstItem = game.getByRole('button', { name: /价值/ }).first()
   await firstItem.click()
   await expect(firstItem).toHaveClass(/\bin\b/)
   await game.getByRole('button', { name: '看 DP 最优' }).click()
   await expect(game.locator('.game__compare')).toBeVisible()
-  await expect(game.locator('.game__stats')).toContainText('已玩 1 局')
+  await expectPackStats(game, 1, originalSeed)
 
   await game.getByRole('button', { name: '重放此种子' }).click()
   expect(await readSeed(game)).toBe(originalSeed)
+  await expectPackStats(game, 1, originalSeed)
   expect(await readPackItems(game)).toEqual(originalItems)
   await expect(game.getByRole('button', { name: /价值/ }).first()).not.toHaveClass(/\bin\b/)
   await expect(game.locator('.game__value b')).toHaveText('0')
@@ -77,13 +93,15 @@ test('Pack rounds lazy-load automatically and replay from the displayed seed', a
     .not.toBe(JSON.stringify(originalItems))
 
   const shuffledSeed = await readSeed(game)
+  await expectPackStats(game, 1, shuffledSeed)
   await game.getByRole('button', { name: '困难' }).click()
   await expect(game.getByRole('button', { name: '困难' })).toHaveAttribute('aria-pressed', 'true')
   await expect(game.getByRole('button', { name: /价值/ })).toHaveCount(6)
   expect(await readSeed(game)).toBe(shuffledSeed)
+  await expectPackStats(game, 1, shuffledSeed)
 
   await game.getByRole('button', { name: '看 DP 最优' }).click()
-  await expect(game.locator('.game__stats')).toContainText('已玩 2 局')
+  await expectPackStats(game, 2, shuffledSeed)
 })
 
 test('BitBoard records one success per round and clear rearms the shared guard', async ({ page }) => {
