@@ -1,11 +1,15 @@
-import type { VizModel, Frame, CellState, Arrow } from '../../dp-engine/types'
-import { key } from '../../dp-engine/types'
+import type { Arrow, CellState, Frame, VizModel } from '../../dp-engine/types.ts'
+import { key } from '../../dp-engine/types.ts'
+import { recordLcs } from '../../../algorithms/lcs/internal.ts'
 
-function settled(vals: (number | null)[][]): Record<string, CellState> {
-  const s: Record<string, CellState> = {}
-  for (let r = 0; r < vals.length; r++)
-    for (let c = 0; c < vals[r].length; c++) if (vals[r][c] !== null) s[key(r, c)] = 'settled'
-  return s
+function settled(values: (number | null)[][]): Record<string, CellState> {
+  const states: Record<string, CellState> = {}
+  for (let row = 0; row < values.length; row++) {
+    for (let column = 0; column < values[row].length; column++) {
+      if (values[row][column] !== null) states[key(row, column)] = 'settled'
+    }
+  }
+  return states
 }
 
 export interface LcsResult {
@@ -14,122 +18,76 @@ export interface LcsResult {
   lcs: string
 }
 
-/**
- * 二维最长公共子序列填表 + 回溯：
- *   dp[i][j] = 前 i 个 A 字符与前 j 个 B 字符的 LCS 长度。
- *   末位相等 A[i-1]==B[j-1]：dp[i][j] = dp[i-1][j-1] + 1（左上来）。
- *   否则：dp[i][j] = max(dp[i-1][j], dp[i][j-1])（上、左取大）。
- * 网格第 0 行 / 第 0 列是「空串」哨兵，恒为 0。填完后从右下角沿转移来路回溯，
- * 斜向（相等）那一步就摘下一个公共字符，逆序拼出一条 LCS。
- */
-export function lcs2D(A: string, B: string): LcsResult {
-  const m = A.length
-  const n = B.length
-  const dp: (number | null)[][] = Array.from({ length: m + 1 }, () => Array<number | null>(n + 1).fill(null))
-  for (let j = 0; j <= n; j++) dp[0][j] = 0
-  for (let i = 0; i <= m; i++) dp[i][0] = 0
-  const snap = () => dp.map((row) => row.slice())
-  const frames: Frame[] = []
-
-  frames.push({
+export function lcs2D(first: string, second: string): LcsResult {
+  const run = recordLcs(first, second)
+  const rows = first.length + 1
+  const columns = second.length + 1
+  const table: (number | null)[][] = Array.from({ length: rows }, () => Array<number | null>(columns).fill(null))
+  for (let row = 0; row < rows; row++) table[row][0] = 0
+  for (let column = 0; column < columns; column++) table[0][column] = 0
+  const snap = (): (number | null)[][] => table.map((row) => row.slice())
+  const frames: Frame[] = [{
     values: snap(),
-    states: settled(dp),
-    caption:
-      '<b>第 0 行、第 0 列</b>是「空串」的地基：任何一串与空串的公共子序列长度都是 <b>0</b>。' +
-      '接下来从左上到右下逐格填 dp[i][j]——只看两串<b>当前末位</b>那一个字符。',
+    states: settled(table),
+    caption: '<b>第 0 行、第 0 列</b>是空串地基：任何字符串与空串的公共子序列长度都是 <b>0</b>。',
     formula: 'dp[i][0]=dp[0][j]=0',
-  })
+  }]
 
-  for (let i = 1; i <= m; i++) {
-    for (let j = 1; j <= n; j++) {
-      const eq = A[i - 1] === B[j - 1]
-      const diag = dp[i - 1][j - 1] as number
-      const up = dp[i - 1][j] as number
-      const left = dp[i][j - 1] as number
-
-      const states = settled(dp)
-      const arrows: Arrow[] = []
-      let caption: string
-      let formula: string
-
-      if (eq) {
-        dp[i][j] = diag + 1
-        states[key(i - 1, j - 1)] = 'chosen'
-        arrows.push({ from: { r: i - 1, c: j - 1 }, to: { r: i, c: j }, kind: 'chosen' })
-        caption =
-          `格 <b>dp[${i}][${j}]</b>：A 的第 ${i} 位 <b>${A[i - 1]}</b> 与 B 的第 ${j} 位 <b>${B[j - 1]}</b> <b>相等</b>——` +
-          `把这对配上，各退一格接着比，长度 = 左上 dp[${i - 1}][${j - 1}] + 1 = ${diag}+1 = <b>${diag + 1}</b>。`
-        formula = `dp[${i}][${j}]=dp[${i - 1}][${j - 1}]{+}1=${diag}{+}1=${diag + 1}`
-      } else {
-        const best = Math.max(up, left)
-        dp[i][j] = best
-        const upWins = up >= left
-        // 两个来源都标出，胜者 chosen
-        states[key(i - 1, j)] = upWins ? 'chosen' : 'source'
-        states[key(i, j - 1)] = upWins ? 'source' : 'chosen'
-        arrows.push({ from: { r: i - 1, c: j }, to: { r: i, c: j }, kind: upWins ? 'chosen' : 'source' })
-        arrows.push({ from: { r: i, c: j - 1 }, to: { r: i, c: j }, kind: upWins ? 'source' : 'chosen' })
-        caption =
-          `格 <b>dp[${i}][${j}]</b>：A 末位 <b>${A[i - 1]}</b> ≠ B 末位 <b>${B[j - 1]}</b>——这一对配不上，` +
-          `至少丢掉其中一个：上 dp[${i - 1}][${j}] = <b>${up}</b>，左 dp[${i}][${j - 1}] = <b>${left}</b>，取较大的 <b>${best}</b>。`
-        formula = `dp[${i}][${j}]=\\max(${up},\\ ${left})=${best}`
-      }
-      states[key(i, j)] = 'current'
-      frames.push({ values: snap(), states, active: { r: i, c: j }, arrows, caption, formula })
-    }
-  }
-
-  const len = dp[m][n] as number
-
-  // 回溯：从 (m,n) 沿来路走回 (0,0)，相等时斜向并摘字符。
-  const pathCells: [number, number][] = []
-  const diagCells: [number, number][] = []
-  let ci = m
-  let cj = n
-  const picked: string[] = []
-  while (ci > 0 && cj > 0) {
-    pathCells.push([ci, cj])
-    if (A[ci - 1] === B[cj - 1]) {
-      diagCells.push([ci, cj])
-      picked.push(A[ci - 1])
-      ci--
-      cj--
-    } else if ((dp[ci - 1][cj] as number) >= (dp[ci][cj - 1] as number)) {
-      ci--
+  for (const event of run.events) {
+    const { row, column } = event
+    table[row][column] = event.length
+    const states = settled(table)
+    const arrows: Arrow[] = []
+    if (event.equal) {
+      states[key(row - 1, column - 1)] = 'chosen'
+      arrows.push({ from: { r: row - 1, c: column - 1 }, to: { r: row, c: column }, kind: 'chosen' })
     } else {
-      cj--
+      const upWins = event.choice === 'up'
+      states[key(row - 1, column)] = upWins ? 'chosen' : 'source'
+      states[key(row, column - 1)] = upWins ? 'source' : 'chosen'
+      arrows.push({ from: { r: row - 1, c: column }, to: { r: row, c: column }, kind: upWins ? 'chosen' : 'source' })
+      arrows.push({ from: { r: row, c: column - 1 }, to: { r: row, c: column }, kind: upWins ? 'source' : 'chosen' })
     }
+    states[key(row, column)] = 'current'
+    const caption = event.equal
+      ? `A 的第 ${row} 位 <b>${first[row - 1]}</b> 与 B 的第 ${column} 位 <b>${second[column - 1]}</b> 相等，接在左上答案后，长度变为 <b>${event.length}</b>。`
+      : `A 末位 <b>${first[row - 1]}</b> ≠ B 末位 <b>${second[column - 1]}</b>：上方 ${event.up} 与左方 ${event.left} 取较大者 <b>${event.length}</b>。`
+    const formula = event.equal
+      ? `dp[${row}][${column}]=${event.diagonal}+1=${event.length}`
+      : `dp[${row}][${column}]=\\max(${event.up},\\ ${event.left})=${event.length}`
+    frames.push({ values: snap(), states, active: { r: row, c: column }, arrows, caption, formula })
   }
-  const lcs = picked.reverse().join('')
 
-  // 回溯定稿帧：高亮整条路径，斜向格标绿。
-  const fin = settled(dp)
-  for (const [r, c] of pathCells) fin[key(r, c)] = 'source'
-  for (const [r, c] of diagCells) fin[key(r, c)] = 'chosen'
-  fin[key(m, n)] = 'chosen'
+  const finalStates = settled(table)
+  for (const cell of run.result.path) finalStates[key(cell.row, cell.column)] = cell.matched ? 'chosen' : 'source'
+  finalStates[key(first.length, second.length)] = 'chosen'
   const backArrows: Arrow[] = []
-  for (let k = 0; k + 1 < pathCells.length; k++) {
-    const [r0, c0] = pathCells[k]
-    const [r1, c1] = pathCells[k + 1]
-    backArrows.push({ from: { r: r1, c: c1 }, to: { r: r0, c: c0 }, kind: 'chosen' })
+  for (let index = 0; index + 1 < run.result.path.length; index++) {
+    const current = run.result.path[index]
+    const next = run.result.path[index + 1]
+    backArrows.push({
+      from: { r: next.row, c: next.column },
+      to: { r: current.row, c: current.column },
+      kind: 'chosen',
+    })
   }
   frames.push({
     values: snap(),
-    states: fin,
+    states: finalStates,
     arrows: backArrows,
-    caption:
-      `右下角 <b>dp[${m}][${n}] = ${len}</b> 就是 LCS 长度。<b>回溯</b>：从这里沿来路走回左上，` +
-      `每遇到一步<b>斜向</b>（当初是「相等」填的）就摘下那个字符——逆序拼起来得到一条 LCS：<b>${lcs || '（空）'}</b>。`,
-    formula: `\\text{LCS}=dp[${m}][${n}]=${len}`,
+    caption: `右下角给出 LCS 长度 <b>${run.result.length}</b>；沿来路回溯得到一条 LCS：<b>${run.result.subsequence || '（空）'}</b>。`,
+    formula: `\\text{LCS}=dp[${first.length}][${second.length}]=${run.result.length}`,
   })
-
-  const model: VizModel = {
-    rows: m + 1,
-    cols: n + 1,
-    cell: 42,
-    rowHeaderLabels: ['∅', ...A.split('')],
-    colHeaderLabels: ['∅', ...B.split('')],
-    frames,
+  return {
+    model: {
+      rows,
+      cols: columns,
+      cell: 42,
+      rowHeaderLabels: ['∅', ...first.split('')],
+      colHeaderLabels: ['∅', ...second.split('')],
+      frames,
+    },
+    len: run.result.length,
+    lcs: run.result.subsequence,
   }
-  return { model, len, lcs }
 }
