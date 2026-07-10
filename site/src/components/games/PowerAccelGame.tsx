@@ -1,5 +1,8 @@
 import { useMemo, useState } from 'react'
 import { Zap, Shuffle, Trophy, Volume2, VolumeX, Undo2, RotateCcw, Sparkles } from 'lucide-react'
+import { playGameTone } from './runtime/audio'
+import { browserRandom, randomInt } from './runtime/random'
+import { useRoundStats } from './runtime/useRoundStats'
 import './game.css'
 import './game-power.css'
 
@@ -48,30 +51,7 @@ interface ChainStep {
 
 function makeTarget(difficulty: Difficulty): number {
   const d = DIFFS[difficulty]
-  return d.nMin + Math.floor(Math.random() * (d.nMax - d.nMin + 1))
-}
-
-let ac: AudioContext | null = null
-function blip(freq: number, dur = 0.09, type: OscillatorType = 'triangle') {
-  try {
-    ac =
-      ac ||
-      new (window.AudioContext ||
-        (window as unknown as { webkitAudioContext: typeof AudioContext }).webkitAudioContext)()
-    const o = ac.createOscillator()
-    const g = ac.createGain()
-    o.type = type
-    o.frequency.value = freq
-    g.gain.setValueAtTime(0.0001, ac.currentTime)
-    g.gain.exponentialRampToValueAtTime(0.1, ac.currentTime + 0.01)
-    g.gain.exponentialRampToValueAtTime(0.0001, ac.currentTime + dur)
-    o.connect(g)
-    g.connect(ac.destination)
-    o.start()
-    o.stop(ac.currentTime + dur)
-  } catch {
-    /* ignore */
-  }
+  return randomInt(browserRandom, d.nMin, d.nMax)
 }
 
 export default function PowerAccelGame() {
@@ -83,9 +63,7 @@ export default function PowerAccelGame() {
   const [picks, setPicks] = useState<number[]>([])
   const [revealed, setRevealed] = useState(false)
   const [muted, setMuted] = useState(false)
-  const [played, setPlayed] = useState(0)
-  const [matched, setMatched] = useState(0)
-  const [countedThisRound, setCountedThisRound] = useState(false)
+  const round = useRoundStats()
 
   // 当前已达指数集合：{1} ∪ 每步的结果
   const reachedList = useMemo(() => {
@@ -116,11 +94,11 @@ export default function PowerAccelGame() {
     setPicks((p) => {
       const idx = p.indexOf(e)
       if (idx >= 0) {
-        if (!muted) blip(300, 0.05, 'sine')
+        playGameTone({ frequency: 300, duration: 0.05, type: 'sine' }, muted)
         return p.filter((_, k) => k !== idx)
       }
       if (p.length >= 2) return p
-      if (!muted) blip(440 + e * 3)
+      playGameTone({ frequency: 440 + e * 3 }, muted)
       return [...p, e]
     })
   }
@@ -130,7 +108,7 @@ export default function PowerAccelGame() {
     if (done || picks.length !== 1) return
     const a = picks[0]
     const r = a + a
-    if (!muted) blip(620, 0.1)
+    playGameTone({ frequency: 620, duration: 0.1 }, muted)
     setSteps((s) => [...s, { a, b: a, r, kind: 'double' }])
     setPicks([])
     setRevealed(false)
@@ -141,7 +119,7 @@ export default function PowerAccelGame() {
     if (done || picks.length !== 2) return
     const [a, b] = picks
     const r = a + b
-    if (!muted) blip(560, 0.1)
+    playGameTone({ frequency: 560, duration: 0.1 }, muted)
     setSteps((s) => [...s, { a, b, r, kind: 'add' }])
     setPicks([])
     setRevealed(false)
@@ -149,31 +127,28 @@ export default function PowerAccelGame() {
 
   const undo = () => {
     if (steps.length === 0) return
-    if (!muted) blip(340, 0.06, 'sine')
+    playGameTone({ frequency: 340, duration: 0.06, type: 'sine' }, muted)
     setSteps((s) => s.slice(0, -1))
     setPicks([])
     setRevealed(false)
   }
   const resetChain = () => {
-    if (!muted) blip(330, 0.06, 'sine')
+    playGameTone({ frequency: 330, duration: 0.06, type: 'sine' }, muted)
     setSteps([])
     setPicks([])
     setRevealed(false)
+    round.start()
   }
 
   const reveal = () => {
     setRevealed(true)
     const beat = done && used <= fast
-    if (!countedThisRound) {
-      setCountedThisRound(true)
-      setPlayed((n) => n + 1)
-      if (beat) setMatched((n) => n + 1)
-    }
-    if (!muted) {
-      if (beat) {
-        blip(523, 0.12)
-        setTimeout(() => blip(784, 0.16), 110)
-      } else blip(300, 0.1, 'sine')
+    round.record(beat)
+    if (beat) {
+      playGameTone({ frequency: 523, duration: 0.12 }, muted)
+      setTimeout(() => playGameTone({ frequency: 784, duration: 0.16 }, muted), 110)
+    } else {
+      playGameTone({ frequency: 300, duration: 0.1, type: 'sine' }, muted)
     }
   }
 
@@ -183,8 +158,8 @@ export default function PowerAccelGame() {
     setSteps([])
     setPicks([])
     setRevealed(false)
-    setCountedThisRound(false)
-    if (!muted) blip(360, 0.06)
+    round.start()
+    playGameTone({ frequency: 360, duration: 0.06 }, muted)
   }
   const pickDiff = (d: Difficulty) => {
     if (d === difficulty) return
@@ -194,8 +169,8 @@ export default function PowerAccelGame() {
     setSteps([])
     setPicks([])
     setRevealed(false)
-    setCountedThisRound(false)
-    if (!muted) blip(420, 0.06)
+    round.start()
+    playGameTone({ frequency: 420, duration: 0.06 }, muted)
   }
 
   let feedback = `从指数 1 出发，把已有指数「翻倍」或「相乘（相加）」，用最少步数拼出 x^${target}。`
@@ -380,7 +355,7 @@ export default function PowerAccelGame() {
           </div>
 
           <div className="game__stats">
-            已玩 {played} 局 · 达到 / 超越快速幂 {matched} 次
+            已玩 {round.stats.played} 局 · 达到 / 超越快速幂 {round.stats.matched} 次
           </div>
         </div>
       </div>

@@ -1,0 +1,38 @@
+.deferred-game {
+  min-height: 280px;
+}
+
+.deferred-game__placeholder,
+.deferred-game__loading {
+  min-height: 280px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--sp-3);
+  padding: var(--sp-6);
+  border: 1px dashed var(--border-strong);
+  border-radius: var(--r-3);
+  color: var(--text-3);
+  background:
+    linear-gradient(110deg, transparent 25%, color-mix(in srgb, var(--accent-1) 7%, transparent) 45%, transparent 65%),
+    var(--surface-2);
+  background-size: 220% 100%;
+  animation: deferred-game-pulse 2.4s linear infinite;
+}
+
+.deferred-game__loading {
+  border-style: solid;
+}
+
+@keyframes deferred-game-pulse {
+  to {
+    background-position: -220% 0;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .deferred-game__placeholder,
+  .deferred-game__loading {
+    animation: none;
+  }
+}

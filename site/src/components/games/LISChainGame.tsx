@@ -1,6 +1,9 @@
 import { useMemo, useState } from 'react'
 import { TrendingUp, Sparkles, Shuffle, Trophy, Volume2, VolumeX, RotateCcw } from 'lucide-react'
 import { solveLis } from '../../algorithms/lis/index.ts'
+import { playGameTone } from './runtime/audio'
+import { browserRandom, randomInt } from './runtime/random'
+import { useRoundStats } from './runtime/useRoundStats'
 import './game.css'
 import './game-lis.css'
 
@@ -29,33 +32,10 @@ function chainLen(selOrder: number[]): number {
 
 function makeSeq(difficulty: Difficulty): number[] {
   const d = DIFFS[difficulty]
-  const seq = Array.from({ length: d.count }, () => d.vMin + Math.floor(Math.random() * d.vRange))
+  const seq = Array.from({ length: d.count }, () => randomInt(browserRandom, d.vMin, d.vMin + d.vRange - 1))
   // 保证至少存在一条长度≥3 的上升子序列，避免生成近乎单调下降的枯燥串（重开即可）。
   if (solveLis(seq).length < 3) return makeSeq(difficulty)
   return seq
-}
-
-let ac: AudioContext | null = null
-function blip(freq: number, dur = 0.09, type: OscillatorType = 'triangle') {
-  try {
-    ac =
-      ac ||
-      new (window.AudioContext ||
-        (window as unknown as { webkitAudioContext: typeof AudioContext }).webkitAudioContext)()
-    const o = ac.createOscillator()
-    const g = ac.createGain()
-    o.type = type
-    o.frequency.value = freq
-    g.gain.setValueAtTime(0.0001, ac.currentTime)
-    g.gain.exponentialRampToValueAtTime(0.1, ac.currentTime + 0.01)
-    g.gain.exponentialRampToValueAtTime(0.0001, ac.currentTime + dur)
-    o.connect(g)
-    g.connect(ac.destination)
-    o.start()
-    o.stop(ac.currentTime + dur)
-  } catch {
-    /* ignore */
-  }
 }
 
 export default function LISChainGame() {
@@ -65,10 +45,7 @@ export default function LISChainGame() {
   const [selOrder, setSelOrder] = useState<number[]>([])
   const [revealed, setRevealed] = useState(false)
   const [muted, setMuted] = useState(false)
-  const [played, setPlayed] = useState(0)
-  const [matched, setMatched] = useState(0)
-  // 本局是否已计入战绩（同一局重复点「看 DP 最优」不重复计数）
-  const [countedThisRound, setCountedThisRound] = useState(false)
+  const round = useRoundStats()
 
   const dp = useMemo(() => solveLis(seq), [seq])
   const you = chainLen(selOrder)
@@ -93,37 +70,33 @@ export default function LISChainGame() {
     const pos = selOrder.indexOf(i)
     if (pos !== -1) {
       // 已选：允许「回退到此」——砍掉这一格及其后的所有选择（保持链的前缀合法）。
-      if (!muted) blip(320, 0.07, 'sine')
+      playGameTone({ frequency: 320, duration: 0.07, type: 'sine' }, muted)
       setSelOrder((s) => s.slice(0, pos))
       return
     }
     if (!canPick(i)) {
       // 非法点击：给一个低沉的轻提示，不改动链。
-      if (!muted) blip(180, 0.08, 'sine')
+      playGameTone({ frequency: 180, duration: 0.08, type: 'sine' }, muted)
       return
     }
-    if (!muted) blip(460 + selOrder.length * 60)
+    playGameTone({ frequency: 460 + selOrder.length * 60 }, muted)
     setSelOrder((s) => [...s, i])
   }
 
   const resetChain = () => {
     setSelOrder([])
-    if (!muted) blip(300, 0.06, 'sine')
+    playGameTone({ frequency: 300, duration: 0.06, type: 'sine' }, muted)
   }
 
   const reveal = () => {
     setRevealed(true)
     const w = you === dp.length && you > 0
-    if (!countedThisRound) {
-      setCountedThisRound(true)
-      setPlayed((n) => n + 1)
-      if (w) setMatched((n) => n + 1)
-    }
-    if (!muted) {
-      if (w) {
-        blip(523, 0.12)
-        setTimeout(() => blip(784, 0.16), 110)
-      } else blip(300, 0.1, 'sine')
+    round.record(w)
+    if (w) {
+      playGameTone({ frequency: 523, duration: 0.12 }, muted)
+      setTimeout(() => playGameTone({ frequency: 784, duration: 0.16 }, muted), 110)
+    } else {
+      playGameTone({ frequency: 300, duration: 0.1, type: 'sine' }, muted)
     }
   }
 
@@ -131,8 +104,8 @@ export default function LISChainGame() {
     setSeq(makeSeq(difficulty))
     setSelOrder([])
     setRevealed(false)
-    setCountedThisRound(false)
-    if (!muted) blip(360, 0.06)
+    round.start()
+    playGameTone({ frequency: 360, duration: 0.06 }, muted)
   }
 
   const pickDiff = (d: Difficulty) => {
@@ -141,8 +114,8 @@ export default function LISChainGame() {
     setSeq(makeSeq(d))
     setSelOrder([])
     setRevealed(false)
-    setCountedThisRound(false)
-    if (!muted) blip(420, 0.06)
+    round.start()
+    playGameTone({ frequency: 420, duration: 0.06 }, muted)
   }
 
   let feedback =
@@ -267,7 +240,7 @@ export default function LISChainGame() {
             </button>
           </div>
           <div className="game__stats">
-            已玩 {played} 局 · 追平 DP {matched} 次
+            已玩 {round.stats.played} 局 · 追平 DP {round.stats.matched} 次
           </div>
         </div>
       </div>
