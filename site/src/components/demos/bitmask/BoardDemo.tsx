@@ -1,6 +1,7 @@
 import { useMemo, useState } from 'react'
-import { Minus, Plus, Play, Pause, ChevronLeft, ChevronRight, RotateCcw, Sigma } from 'lucide-react'
-import { useStepPlayer } from '../../dp-engine/useStepPlayer'
+import { Minus, Plus, Sigma } from 'lucide-react'
+import { PlaybackControls } from '../../dp-engine/playback/PlaybackControls'
+import { useStepPlayer } from '../../dp-engine/playback/useStepPlayer'
 import { findOneLayout, layoutFrames, countKings } from './boardSolver'
 import '../knapsack/knapsack-demo.css'
 import './bitmask-demo.css'
@@ -17,7 +18,7 @@ export default function BoardDemo() {
   )
   const total = useMemo(() => (showCount ? countKings(N, K) : null), [showCount, N, K])
 
-  const p = useStepPlayer(Math.max(1, frames.length))
+  const p = useStepPlayer(frames.length)
   const frame = frames.length ? frames[Math.min(p.index, frames.length - 1)] : null
 
   // 改 N/K 时重置播放与计数
@@ -135,38 +136,7 @@ export default function BoardDemo() {
 
           <div className="bm__caption" dangerouslySetInnerHTML={{ __html: frame?.caption ?? '' }} />
 
-          <div className="dpctl">
-            <div className="dpctl__btns">
-              <button onClick={p.reset} aria-label="重置" title="重置">
-                <RotateCcw size={18} />
-              </button>
-              <button onClick={p.prev} disabled={p.index === 0} aria-label="上一步">
-                <ChevronLeft size={20} />
-              </button>
-              <button className="primary" onClick={p.toggle} aria-label={p.playing ? '暂停' : '播放'}>
-                {p.playing ? <Pause size={20} /> : <Play size={20} />}
-              </button>
-              <button onClick={p.next} disabled={p.index >= p.count - 1} aria-label="下一步">
-                <ChevronRight size={20} />
-              </button>
-            </div>
-            <div className="dpctl__scrub">
-              <input
-                type="range"
-                min={0}
-                max={Math.max(0, p.count - 1)}
-                value={p.index}
-                onChange={(e) => {
-                  p.pause()
-                  p.setIndex(Number(e.target.value))
-                }}
-                aria-label="进度"
-              />
-              <span className="dpctl__count">
-                {p.index + 1}/{p.count}
-              </span>
-            </div>
-          </div>
+          <PlaybackControls player={p} variant="compact" label="棋盘布局逐帧播放" />
 
           <div className="bm__count-row">
             <button className="bm__count-btn" onClick={() => setShowCount((s) => !s)}>

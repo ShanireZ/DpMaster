@@ -1,6 +1,6 @@
 import { useMemo, useState } from 'react'
 import { Minus, Plus } from 'lucide-react'
-import { useStepPlayer } from '../../dp-engine/useStepPlayer'
+import { useStepPlayer } from '../../dp-engine/playback/useStepPlayer'
 import { buildTree, layoutTree, solveIndepSet } from './treedpSolver'
 import { TreeCanvas, StepBar, Legend, Panel, type NodePaint } from './TreeCanvas'
 import '../knapsack/knapsack-demo.css'
@@ -104,21 +104,7 @@ export default function IndepSetDemo() {
         />
       </div>
 
-      <StepBar
-        index={p.index}
-        count={p.count}
-        playing={p.playing}
-        onToggle={p.toggle}
-        onPrev={p.prev}
-        onNext={p.next}
-        onReset={p.reset}
-        onScrub={(i) => {
-          p.pause()
-          p.setIndex(i)
-        }}
-        speed={p.speed}
-        onSpeed={p.setSpeed}
-      />
+      <StepBar player={p} />
 
       <Legend
         items={[

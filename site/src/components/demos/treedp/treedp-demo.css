@@ -87,78 +87,8 @@
     stroke var(--t-fast);
 }
 
-/* —— 播放控制条（仿 dpctl，逐帧后序） —— */
-.td__ctl {
-  display: flex;
-  align-items: center;
-  gap: var(--sp-4);
-  flex-wrap: wrap;
+.td__playback {
   margin-top: var(--sp-4);
-  padding: var(--sp-3) var(--sp-4);
-  border-radius: var(--r-2);
-  background: var(--surface-2);
-  border: 1px solid var(--border);
-}
-.td__ctl-btns {
-  display: flex;
-  gap: 6px;
-}
-.td__ctl-btns button {
-  width: 38px;
-  height: 38px;
-  border-radius: var(--r-2);
-  border: 1px solid var(--border);
-  background: var(--surface-1);
-  color: var(--text-1);
-  display: grid;
-  place-items: center;
-}
-.td__ctl-btns button:hover:not(:disabled) {
-  border-color: var(--accent-2);
-}
-.td__ctl-btns button:disabled {
-  opacity: 0.35;
-}
-.td__ctl-btns button.primary {
-  background: var(--grad-accent);
-  color: var(--text-on-accent);
-  border-color: transparent;
-}
-.td__ctl-scrub {
-  display: flex;
-  align-items: center;
-  gap: var(--sp-3);
-  flex: 1;
-  min-width: 160px;
-}
-.td__ctl-scrub input[type='range'] {
-  flex: 1;
-  accent-color: var(--accent-2);
-}
-.td__ctl-count {
-  font-family: var(--font-mono);
-  font-size: 13px;
-  color: var(--text-2);
-  min-width: 44px;
-  text-align: right;
-}
-.td__ctl-speed {
-  display: flex;
-  gap: 4px;
-}
-.td__ctl-speed button {
-  padding: 6px 10px;
-  border-radius: var(--r-1);
-  font-size: 12px;
-  font-family: var(--font-mono);
-  border: 1px solid var(--border);
-  background: var(--surface-1);
-  color: var(--text-2);
-}
-.td__ctl-speed button.on {
-  color: var(--text-on-accent);
-  background: var(--grad-accent);
-  border-color: transparent;
 }
 
 /* —— 逐帧解说面板 —— */

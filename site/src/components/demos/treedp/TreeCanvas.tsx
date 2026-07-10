@@ -1,4 +1,5 @@
-import { Play, Pause, ChevronLeft, ChevronRight, RotateCcw } from 'lucide-react'
+import { PlaybackControls } from '../../dp-engine/playback/PlaybackControls'
+import type { StepPlayer } from '../../dp-engine/playback/types'
 import type { TreeLayout } from './treedpSolver'
 
 // —— 一个节点的视觉描述（由各演示按当前帧算出） ——
@@ -105,68 +106,8 @@ export function TreeCanvas({
 }
 
 // —— 逐帧播放控制条（后序动画共用） ——
-interface StepBarProps {
-  index: number
-  count: number
-  playing: boolean
-  onToggle: () => void
-  onPrev: () => void
-  onNext: () => void
-  onReset: () => void
-  onScrub: (i: number) => void
-  speed: number
-  onSpeed: (s: number) => void
-}
-export function StepBar({
-  index,
-  count,
-  playing,
-  onToggle,
-  onPrev,
-  onNext,
-  onReset,
-  onScrub,
-  speed,
-  onSpeed,
-}: StepBarProps) {
-  return (
-    <div className="td__ctl">
-      <div className="td__ctl-btns">
-        <button onClick={onReset} aria-label="重置" title="重置">
-          <RotateCcw size={17} />
-        </button>
-        <button onClick={onPrev} disabled={index === 0} aria-label="上一步">
-          <ChevronLeft size={19} />
-        </button>
-        <button className="primary" onClick={onToggle} aria-label={playing ? '暂停' : '播放'}>
-          {playing ? <Pause size={18} /> : <Play size={18} />}
-        </button>
-        <button onClick={onNext} disabled={index >= count - 1} aria-label="下一步">
-          <ChevronRight size={19} />
-        </button>
-      </div>
-      <div className="td__ctl-scrub">
-        <input
-          type="range"
-          min={0}
-          max={Math.max(0, count - 1)}
-          value={index}
-          onChange={(e) => onScrub(Number(e.target.value))}
-          aria-label="进度"
-        />
-        <span className="td__ctl-count">
-          {index + 1}/{count}
-        </span>
-      </div>
-      <div className="td__ctl-speed">
-        {[0.5, 1, 2].map((s) => (
-          <button key={s} className={speed === s ? 'on' : ''} onClick={() => onSpeed(s)}>
-            {s}×
-          </button>
-        ))}
-      </div>
-    </div>
-  )
+export function StepBar({ player }: { player: StepPlayer }) {
+  return <PlaybackControls player={player} variant="compact" label="树形 DP 逐帧播放" className="td__playback" />
 }
 
 export function Legend({ items }: { items: { color: string; label: string; bg?: boolean }[] }) {

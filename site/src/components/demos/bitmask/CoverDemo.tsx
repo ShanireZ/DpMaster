@@ -1,6 +1,7 @@
 import { useMemo, useState } from 'react'
-import { Play, Pause, ChevronLeft, ChevronRight, RotateCcw, Minus, Plus } from 'lucide-react'
-import { useStepPlayer } from '../../dp-engine/useStepPlayer'
+import { RotateCcw, Minus, Plus } from 'lucide-react'
+import { PlaybackControls } from '../../dp-engine/playback/PlaybackControls'
+import { useStepPlayer } from '../../dp-engine/playback/useStepPlayer'
 import { solveCover, toBits } from './coverSolver'
 import type { Choice } from './coverSolver'
 import '../knapsack/knapsack-demo.css'
@@ -44,7 +45,7 @@ export default function CoverDemo() {
   const [choices, setChoices] = useState<Choice[]>(INIT)
 
   const res = useMemo(() => solveCover(N, choices), [choices])
-  const p = useStepPlayer(Math.max(1, res.steps.length))
+  const p = useStepPlayer(res.steps.length)
   const step = res.steps.length ? res.steps[Math.min(p.index, res.steps.length - 1)] : null
 
   const reset = () => {
@@ -134,38 +135,7 @@ export default function CoverDemo() {
         </div>
       )}
 
-      <div className="dpctl">
-        <div className="dpctl__btns">
-          <button onClick={p.reset} aria-label="重置" title="重置">
-            <RotateCcw size={18} />
-          </button>
-          <button onClick={p.prev} disabled={p.index === 0} aria-label="上一步">
-            <ChevronLeft size={20} />
-          </button>
-          <button className="primary" onClick={p.toggle} aria-label={p.playing ? '暂停' : '播放'}>
-            {p.playing ? <Pause size={20} /> : <Play size={20} />}
-          </button>
-          <button onClick={p.next} disabled={p.index >= p.count - 1} aria-label="下一步">
-            <ChevronRight size={20} />
-          </button>
-        </div>
-        <div className="dpctl__scrub">
-          <input
-            type="range"
-            min={0}
-            max={Math.max(0, p.count - 1)}
-            value={p.index}
-            onChange={(e) => {
-              p.pause()
-              p.setIndex(Number(e.target.value))
-            }}
-            aria-label="进度"
-          />
-          <span className="dpctl__count">
-            {p.index + 1}/{p.count}
-          </span>
-        </div>
-      </div>
+      <PlaybackControls player={p} variant="compact" label="集合覆盖逐帧播放" />
 
       <div className="bm__note">
         终态 <b className="mono">{toBits(full, N).slice().reverse().join('')}</b>（全集）的最小代价 ={' '}

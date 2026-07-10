@@ -53,53 +53,13 @@
   color: var(--text-on-accent);
 }
 
-/* ---------- 播放控制条 ---------- */
-.rr__transport {
+.rr__phase-row {
   display: flex;
   align-items: center;
-  gap: var(--sp-3);
-  flex-wrap: wrap;
+  margin-bottom: var(--sp-2);
+}
+.rr__phase-row + .playback {
   margin-bottom: var(--sp-4);
-  padding: var(--sp-3) var(--sp-4);
-  border-radius: var(--r-2);
-  background: var(--surface-2);
-  border: 1px solid var(--border);
-}
-.rr__btn {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  gap: 6px;
-  height: 34px;
-  padding: 0 12px;
-  border-radius: var(--r-2);
-  font-size: 13px;
-  font-weight: 600;
-  color: var(--text-1);
-  background: var(--surface-3);
-  border: 1px solid var(--border);
-  transition: all var(--t-fast);
-}
-.rr__btn:hover:not(:disabled) {
-  border-color: var(--accent-2);
-}
-.rr__btn:disabled {
-  opacity: 0.4;
-}
-.rr__btn--primary {
-  background: var(--grad-accent);
-  color: var(--text-on-accent);
-  border-color: transparent;
-}
-.rr__btn--icon {
-  width: 34px;
-  padding: 0;
-}
-.rr__progress {
-  font-family: var(--font-mono);
-  font-size: 12px;
-  color: var(--text-3);
-  margin-left: auto;
 }
 .rr__phase {
   display: inline-flex;

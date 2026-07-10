@@ -1,9 +1,9 @@
 import type { CSSProperties } from 'react'
-import { Play, Pause, ChevronLeft, ChevronRight, RotateCcw } from 'lucide-react'
 import { MB } from '../ui/Math'
 import type { VizModel, CellState } from './types'
 import { key } from './types'
-import { useStepPlayer } from './useStepPlayer'
+import { PlaybackControls } from './playback/PlaybackControls'
+import { useStepPlayer } from './playback/useStepPlayer'
 import './dp-viz.css'
 
 const stateClass: Record<CellState, string> = {
@@ -146,51 +146,7 @@ export default function DPViz({ model }: { model: VizModel }) {
         )}
       </div>
 
-      <div className="dpctl">
-        <div className="dpctl__btns">
-          <button onClick={p.reset} aria-label="重置" title="重置">
-            <RotateCcw size={18} />
-          </button>
-          <button onClick={p.prev} disabled={p.index === 0} aria-label="上一步">
-            <ChevronLeft size={20} />
-          </button>
-          <button className="primary" onClick={p.toggle} aria-label={p.playing ? '暂停' : '播放'}>
-            {p.playing ? <Pause size={20} /> : <Play size={20} />}
-          </button>
-          <button onClick={p.next} disabled={p.index >= p.count - 1} aria-label="下一步">
-            <ChevronRight size={20} />
-          </button>
-        </div>
-
-        <div className="dpctl__scrub">
-          <input
-            type="range"
-            min={0}
-            max={Math.max(0, p.count - 1)}
-            value={p.index}
-            onChange={(e) => {
-              p.pause()
-              p.setIndex(Number(e.target.value))
-            }}
-            aria-label="进度"
-          />
-          <span className="dpctl__count">
-            {p.index + 1}/{p.count}
-          </span>
-        </div>
-
-        <div className="dpctl__speed">
-          {[0.5, 1, 2].map((s) => (
-            <button
-              key={s}
-              className={p.speed === s ? 'on' : ''}
-              onClick={() => p.setSpeed(s)}
-            >
-              {s}×
-            </button>
-          ))}
-        </div>
-      </div>
+      <PlaybackControls player={p} variant="full" label="DP 表格逐帧播放" />
     </div>
   )
 }

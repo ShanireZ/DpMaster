@@ -1,7 +1,7 @@
 import { useMemo, useState } from 'react'
-import { Play, Pause, SkipBack, SkipForward, RotateCcw } from 'lucide-react'
 import { M } from '../../ui/Math'
-import { useStepPlayer } from '../../dp-engine/useStepPlayer'
+import { PlaybackControls } from '../../dp-engine/playback/PlaybackControls'
+import { useStepPlayer } from '../../dp-engine/playback/useStepPlayer'
 import { buildTree, layoutTree, rerootDistSum, rerootFrames, bruteDistSum } from './rerootSolver'
 import type { Edge } from './rerootSolver'
 import { TreeCanvas } from './TreeCanvas'
@@ -159,35 +159,8 @@ export default function RerootTwoPassDemo() {
         </div>
       </div>
 
-      <div className="rr__transport">
-        <button
-          className="rr__btn rr__btn--icon"
-          onClick={player.reset}
-          aria-label="回到开头"
-          disabled={player.index === 0 && !player.playing}
-        >
-          <RotateCcw size={15} />
-        </button>
-        <button className="rr__btn rr__btn--icon" onClick={player.prev} aria-label="上一步" disabled={player.index === 0}>
-          <SkipBack size={15} />
-        </button>
-        <button className="rr__btn rr__btn--primary" onClick={player.toggle}>
-          {player.playing ? <Pause size={15} /> : <Play size={15} />}
-          {player.playing ? '暂停' : '播放'}
-        </button>
-        <button
-          className="rr__btn rr__btn--icon"
-          onClick={player.next}
-          aria-label="下一步"
-          disabled={player.index >= frames.length - 1}
-        >
-          <SkipForward size={15} />
-        </button>
-        {phasePill}
-        <span className="rr__progress">
-          步 {player.index + 1}/{frames.length}
-        </span>
-      </div>
+      <div className="rr__phase-row">{phasePill}</div>
+      <PlaybackControls player={player} variant="compact" label="换根 DP 两遍扫描逐帧播放" />
 
       <div className="rr__stage">
         <TreeCanvas
