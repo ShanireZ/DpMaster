@@ -9,12 +9,15 @@ source_paths:
   - site/src/app/App.tsx
   - site/src/data/catalog.ts
   - site/src/algorithms/
+  - site/src/components/dp-engine/playback/
+  - site/src/components/dp-engine/SafeCaption.tsx
   - site/src/lib/highlighter.ts
   - site/src/components/ui/Math.tsx
   - site/src/components/games/runtime/
   - site/src/lib/pageMeta.ts
   - site/src/components/seo/RouteMeta.tsx
   - site/scripts/generate-seo.mjs
+  - site/tests/browser/
 ---
 
 # Stack
@@ -42,9 +45,9 @@ The manifest intentionally keeps only dependencies imported by the current sourc
 | `site/src/data/catalog.ts` | Family/type metadata, route order, and lazy lesson/game implementations. |
 | `site/src/data/problems.ts` | Generated searchable problem-index projection. |
 | `site/src/content/` | Type lesson content and the problem-corpus source of truth. |
-| `site/src/algorithms/` | Pure typed algorithm results, domain events, and the single transition Implementation for migrated algorithms. |
+| `site/src/algorithms/` | Pure typed public results, UI-neutral domain events, and the single transition Implementation behind all 29 teaching solver surfaces. |
 | `site/src/components/demos/` | Editable teaching Adapters that project domain events into visual traces. |
-| `site/src/components/dp-engine/` | Shared visualization engine. |
+| `site/src/components/dp-engine/` | Shared visualization, playback, controls, and safe-caption rendering. |
 | `site/src/components/games/` | One game per family; games consume public result Interfaces instead of teaching frames. |
 | `site/src/components/games/runtime/` | Shared deterministic random source, round statistics, lazy audio, and viewport gate for the seven games. |
 | `site/src/lib/pageMeta.ts` | Pure route metadata authority for titles, descriptions, canonical URLs, and Open Graph values. |
@@ -61,7 +64,7 @@ Family pages wrap the catalog-owned lazy game in `DeferredGame`. Its one-way `In
 
 Problem metadata is extracted from lesson JSX by `site/scripts/generate-problems.mjs`. Run `npm run content:generate` after changing `ExampleCard` or `Exercise`; `npm run check:content` rejects drift.
 
-For migrated algorithms, public callers import only `site/src/algorithms/<domain>/index.ts`. The adjacent internal Module owns the sole transition loop and can emit UI-neutral domain events. Teaching code may record those events and adapt them to `VizModel`; games and ordinary readouts must not import internal Modules or recover answers from the last frame.
+All 29 teaching solver surfaces are Adapters over the algorithm boundary: public callers import `site/src/algorithms/<domain>/index.ts`, while the adjacent internal Module owns the sole transition loop and emits UI-neutral domain events. Teaching code records those events and adapts them to `VizModel`; games and ordinary readouts use public typed results and must not import internal Modules or recover answers from teaching frames. Executable architecture tests enumerate the 29 Adapters, and result tests check every public result against an independent small-case oracle or property, including result witnesses where the Interface exposes them.
 
 Deep links require hosting support. See root [deploy.md](../../deploy.md) for the Cloudflare and EdgeOne contracts.
 
@@ -71,14 +74,22 @@ Deep links require hosting support. See root [deploy.md](../../deploy.md) for th
 
 `site/scripts/generate-seo.mjs` derives public discovery files from the same catalog. It currently writes 48 canonical URLs to `public/sitemap.xml`: the home page, seven family pages, 37 completed lessons, and the method, problem-index, and about pages. `public/robots.txt` allows indexing and advertises that sitemap. `npm run check:seo` rejects metadata or generated-file drift.
 
-The shell owns cross-route accessibility behavior: a keyboard-visible skip link targets the focusable `main`, navigation uses current-page semantics, the mobile drawer exposes expanded/controlled state and a real close button, and a polite status region announces route changes. Global reduced-motion styles keep content visible while shortening transitions and animations.
+The shell owns cross-route accessibility behavior: a keyboard-visible skip link targets the focusable `main`, navigation uses current-page semantics, the mobile drawer exposes expanded/controlled state and a real close button, and a polite status region announces route changes. After a client pathname change, the shell focuses `#main-content` with `preventScroll`; a previous-path guard leaves focus unchanged on initial load. Global reduced-motion styles keep content visible while shortening transitions and animations.
+
+The production-preview browser gate runs nine Chromium tests against the built `dist`: seven route/metadata/navigation/focus tests and two game interaction tests. It covers direct deep links, live client navigation, route metadata and current-page state, initial-versus-changed-route focus, deferred game loading, seeded replay and round-stat lifecycles, and rejects browser console or page errors.
+
+# Playback And Captions
+
+Every playback transport uses the typed `useStepPlayer` contract and the shared `PlaybackControls` Adapter. Reset, previous, play/pause, next, progress, speed, keyboard shortcuts, and polite status semantics are common; carriers select only the full or compact visual variant.
+
+Playback caption carriers render through `SafeCaption`. It converts only `b`, `strong`, `code`, `br`, and approved single-class `span` elements into React nodes; unsupported, attributed, scripted, or malformed markup remains inert text. A recursive architecture guard scans all JavaScript and TypeScript under `site/src` and permits raw HTML sinks only at the exact existing KaTeX and Shiki Adapter counts in `Math.tsx` and `CodeBlock.tsx`; playback carriers have no raw sink.
 
 # Game Runtime
 
 Game identities, titles, and dynamic imports remain exclusively in `catalog.ts`; the runtime is infrastructure, not another registry. The seven games share:
 
-* `useRoundSeed` for a browser-generated unsigned seed, with `createSeededRandom(seed)` and `randomInt` driving each round builder through an injected `RandomSource`. The six random games display the numeric seed and can rebuild the current difficulty from it; executable checks prove equal seeds produce equal rounds.
-* `useRoundStats` for duplicate-safe played/matched totals across all seven games. Random-game reveals record at most once until shuffle, difficulty change, reset, or seed replay starts the next round. BitBoard records a legal completed layout once and only clear, difficulty change, or reset unlocks another completion.
+* `useRoundSeed` for a browser-generated unsigned seed, with `createSeededRandom(seed)` and `randomInt` driving each round builder through an injected `RandomSource`. The six random games display the numeric seed and can replay that currently displayed seed at the current difficulty; there is no arbitrary-seed input contract. Executable checks prove equal seeds produce equal pack, sequence, stone, exponent, reroot-tree, and party rounds.
+* `useRoundStats` for duplicate-safe played/matched totals across all seven games. `record(matched)` increments totals at most once until `start()` rearms the guard while preserving aggregate totals. Random-game lifecycle actions and displayed-seed replay start a fresh countable round; BitBoard records one legal completed layout and only clear, difficulty change, or reset rearms completion counting.
 * `playGameTone` for best-effort Web Audio. One `AudioContext` is created only after an unmuted interaction and reused; unsupported or blocked audio never affects game correctness.
 
 Game rules, difficulty tables, visuals, and win conditions stay local to each game.
@@ -96,7 +107,7 @@ Shiki is lazy-loaded via `site/src/lib/highlighter.ts` with only C++ and two Git
 Run commands from `site/`:
 
 ```bash
-npm install
+npm ci
 npm run dev
 npm run lint
 npm run build
