@@ -8,7 +8,7 @@ import type {
   TreeMaxSubtreeChainResult,
 } from './index.ts'
 
-const INF = 1e9
+const INF = Number.POSITIVE_INFINITY
 
 export interface TreeIndependentSetEvent {
   type: 'settled'
@@ -228,6 +228,11 @@ export function executeTreeKnapsack(
 ): TreeKnapsackResult {
   if (parentEdge.length !== tree.n) throw new RangeError('tree edge weights must match tree size')
   if (!Number.isInteger(edgeLimit) || edgeLimit < 0) throw new RangeError('tree edge limit must be non-negative')
+  if (edgeLimit > tree.n - 1) throw new RangeError('tree edge limit cannot exceed the tree edge count')
+  for (const value of parentEdge) {
+    if (!Number.isFinite(value)) throw new RangeError('tree edge weights must be finite')
+    if (value < 0) throw new RangeError('tree edge weights must be non-negative')
+  }
   const sizeEdges = Array<number>(tree.n).fill(0)
   const dp = Array.from({ length: tree.n }, () => Array<number>(edgeLimit + 1).fill(0))
   for (const node of tree.postorder) {
@@ -266,6 +271,10 @@ export function executeTreeJointWeight(
   tree: RootedTree,
   emit: EventSink<TreeJointWeightEvent>,
 ): TreeJointWeightResult {
+  for (const value of tree.weight) {
+    if (!Number.isFinite(value)) throw new RangeError('tree joint weights must be finite')
+    if (value < 0) throw new RangeError('tree joint weights must be non-negative')
+  }
   const neighbors = Array.from({ length: tree.n }, () => [] as number[])
   for (let node = 0; node < tree.n; node++) {
     if (tree.parent[node] >= 0) neighbors[node].push(tree.parent[node])
