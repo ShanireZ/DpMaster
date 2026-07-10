@@ -20,6 +20,17 @@ npm run verify
 
 `npm run verify` checks generated content, runs Node tests and zero-warning lint, builds with TypeScript/Vite, writes EdgeOne fallback artifacts, and enforces the asset budget.
 
+Algorithm verification runs directly on Node 24's TypeScript stripping support and includes:
+
+* exhaustive small-case cross-checks for 01 knapsack, LIS, and stone merge;
+* reroot distance sums against the quadratic oracle and tree independent set against subset enumeration;
+* equality between public `solve` results and recorded teaching runs;
+* teaching-frame dimensions, references, immutable snapshots, and final-result projection;
+* architecture guards that prevent games from importing internal Modules or restoring private duplicate solvers;
+* a brand contract that rejects legacy product-facing names.
+
+Pure TypeScript Modules imported by Node tests must use explicit `.ts` extensions for their runtime relative imports.
+
 # Documentation Checks
 
 For OKF bundle changes:

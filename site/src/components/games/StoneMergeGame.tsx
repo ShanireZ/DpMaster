@@ -1,5 +1,6 @@
 import { useMemo, useState } from 'react'
 import { Layers, Shuffle, Trophy, Volume2, VolumeX, Undo2, RotateCcw } from 'lucide-react'
+import { solveStoneMerge } from '../../algorithms/stone-merge/index.ts'
 import './game.css'
 import './game-stone.css'
 
@@ -19,29 +20,6 @@ const DIFFS: Record<Difficulty, DiffSpec> = {
 }
 
 const DIFF_ORDER: Difficulty[] = ['easy', 'medium', 'hard']
-
-/**
- * 自写 O(n³) 区间 DP：把相邻石子 a[l..r] 合并成一堆的最小总代价。
- *   dp[l][l] = 0；dp[l][r] = min_{k∈[l,r-1]}( dp[l][k] + dp[k+1][r] ) + sum(a[l..r])。
- * 只合并「相邻」两堆——这正是它不能用哈夫曼（贪心取最小两堆）而必须 DP 的原因。
- * 返回最小总代价（与 demos/interval/stoneSolver 同解，此处仅取标量结果供对照）。
- */
-function solveMin(a: number[]): number {
-  const n = a.length
-  if (n <= 1) return 0
-  const pre = new Array<number>(n + 1).fill(0)
-  for (let i = 0; i < n; i++) pre[i + 1] = pre[i] + a[i]
-  const rangeSum = (l: number, r: number) => pre[r + 1] - pre[l]
-  const dp = Array.from({ length: n }, () => Array<number>(n).fill(0))
-  for (let len = 2; len <= n; len++)
-    for (let l = 0; l + len - 1 < n; l++) {
-      const r = l + len - 1
-      let best = Infinity
-      for (let k = l; k <= r - 1; k++) best = Math.min(best, dp[l][k] + dp[k + 1][r])
-      dp[l][r] = best + rangeSum(l, r)
-    }
-  return dp[0][n - 1]
-}
 
 /**
  * 贪心基线（相邻版哈夫曼）：反复挑「相邻两堆之和最小」的一对合并，累加代价。
@@ -125,7 +103,7 @@ export default function StoneMergeGame() {
   // 本局是否已计入战绩（同一局重复点「看 DP 最优」不重复计数）
   const [countedThisRound, setCountedThisRound] = useState(false)
 
-  const dpMin = useMemo(() => solveMin(stones), [stones])
+  const dpMin = useMemo(() => solveStoneMerge(stones, 'min').cost, [stones])
   const greedy = useMemo(() => solveGreedy(stones), [stones])
   const done = heaps.length === 1
   const win = revealed && done && cost === dpMin

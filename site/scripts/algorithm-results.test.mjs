@@ -7,6 +7,9 @@ import { solveLis } from '../src/algorithms/lis/index.ts'
 import { recordLis } from '../src/algorithms/lis/internal.ts'
 import { solveStoneMerge } from '../src/algorithms/stone-merge/index.ts'
 import { recordStoneMerge } from '../src/algorithms/stone-merge/internal.ts'
+import { knapsack2D } from '../src/components/demos/knapsack/solvers.ts'
+import { lisNaive } from '../src/components/demos/lis/lisSolver.ts'
+import { stoneMerge } from '../src/components/demos/interval/stoneSolver.ts'
 import { buildTree as buildRerootTree, bruteDistSum, rerootDistSum } from '../src/components/demos/reroot/rerootSolver.ts'
 import { buildTree as buildRootedTree, solveIndepSet } from '../src/components/demos/treedp/treedpSolver.ts'
 
@@ -63,6 +66,26 @@ function bruteStone(values, objective) {
     return answer
   }
   return values.length < 2 ? 0 : visit(0, values.length - 1)
+}
+
+function assertTeachingModel(model) {
+  assert.ok(model.frames.length > 0)
+  for (let frameIndex = 0; frameIndex < model.frames.length; frameIndex++) {
+    const frame = model.frames[frameIndex]
+    assert.equal(frame.values.length, model.rows)
+    for (const row of frame.values) assert.equal(row.length, model.cols)
+    if (frameIndex > 0) {
+      assert.notEqual(frame.values, model.frames[frameIndex - 1].values)
+      for (let row = 0; row < model.rows; row++) {
+        assert.notEqual(frame.values[row], model.frames[frameIndex - 1].values[row])
+      }
+    }
+    for (const ref of [frame.active, ...(frame.arrows ?? []).flatMap((arrow) => [arrow.from, arrow.to])]) {
+      if (ref == null) continue
+      assert.ok(ref.r >= 0 && ref.r < model.rows)
+      assert.ok(ref.c >= 0 && ref.c < model.cols)
+    }
+  }
 }
 
 test('01 knapsack result matches exhaustive subsets and returns a legal witness', () => {
@@ -143,6 +166,29 @@ test('recorded teaching runs share the exact result Implementation', () => {
   assert.deepEqual(recordStoneMerge([7, 6, 5, 4], 'min').result, solveStoneMerge([7, 6, 5, 4], 'min'))
 })
 
+test('teaching Adapters preserve frame contracts and project the typed result', () => {
+  const items = [{ w: 2, v: 3 }, { w: 3, v: 4 }, { w: 4, v: 5 }]
+  const capacity = 8
+  const knapsackModel = knapsack2D(items, capacity)
+  assertTeachingModel(knapsackModel)
+  assert.equal(
+    knapsackModel.frames.at(-1).values[items.length][capacity],
+    solveZeroOneKnapsack(items, capacity).value,
+  )
+
+  const values = [2, 1, 5, 3, 6, 4, 8, 9, 7]
+  const lisModel = lisNaive(values)
+  assertTeachingModel(lisModel)
+  assert.equal(Math.max(...lisModel.frames.at(-1).values[1]), solveLis(values).length)
+
+  const stones = [7, 6, 5, 4]
+  for (const objective of ['min', 'max']) {
+    const stoneModel = stoneMerge(stones, objective)
+    assertTeachingModel(stoneModel)
+    assert.equal(stoneModel.frames.at(-1).values[0][stones.length - 1], solveStoneMerge(stones, objective).cost)
+  }
+})
+
 test('reroot distance sums match the existing quadratic oracle', () => {
   const cases = []
   for (let n = 1; n <= 8; n++) {
@@ -193,4 +239,3 @@ test('tree independent-set results match exhaustive node subsets', () => {
     },
   })
 })
-

@@ -2,7 +2,7 @@ import { useMemo, useState } from 'react'
 import { Minus, Plus, ArrowDownWideNarrow, ArrowUpWideNarrow, X } from 'lucide-react'
 import DPViz from '../../dp-engine/DPViz'
 import { stoneMerge } from './stoneSolver'
-import type { VizModel } from '../../dp-engine/types'
+import { solveStoneMerge } from '../../../algorithms/stone-merge/index.ts'
 import '../knapsack/knapsack-demo.css'
 
 function Stepper({
@@ -34,21 +34,14 @@ function Stepper({
   )
 }
 
-// 取右上角 dp[0][n-1] = 全区间合并的最终答案。
-const answer = (m: VizModel): number => {
-  const last = m.frames[m.frames.length - 1].values
-  const x = last[0][last[0].length - 1]
-  return x == null ? 0 : x
-}
-
 /** 同一排石子：左求最小合并代价、右求最大，并排两张三角表——点明「一题双问」。 */
 export default function StoneMinMaxDemo() {
   const [stones, setStones] = useState<number[]>([7, 6, 5, 4])
 
   const minModel = useMemo(() => stoneMerge(stones, 'min'), [stones])
   const maxModel = useMemo(() => stoneMerge(stones, 'max'), [stones])
-  const aMin = answer(minModel)
-  const aMax = answer(maxModel)
+  const aMin = useMemo(() => solveStoneMerge(stones, 'min').cost, [stones])
+  const aMax = useMemo(() => solveStoneMerge(stones, 'max').cost, [stones])
   const k = stones.join('_')
 
   const setStone = (i: number, val: number) =>

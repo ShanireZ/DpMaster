@@ -8,6 +8,7 @@ source_paths:
   - site/package.json
   - site/src/app/App.tsx
   - site/src/data/catalog.ts
+  - site/src/algorithms/
   - site/src/lib/highlighter.ts
   - site/src/components/ui/Math.tsx
 ---
@@ -26,7 +27,7 @@ Key dependencies actively used by current source:
 * Lucide React for icons.
 * `@fontsource` packages for JetBrains Mono and Space Grotesk.
 
-The manifest also includes GSAP, `@gsap/react`, Motion, `react-katex`, and `@types/react-katex`, but current `src/` code does not import them. Do not document react-three-fiber, react-bits, anime.js, D3, or React Flow as installed unless the package manifest changes. Older planning docs mentioned them as options, not current dependencies.
+The manifest intentionally keeps only dependencies imported by the current source. Do not document react-three-fiber, react-bits, anime.js, D3, React Flow, GSAP, Motion, or `react-katex` as installed unless the package manifest changes.
 
 # Directory Roles
 
@@ -37,9 +38,10 @@ The manifest also includes GSAP, `@gsap/react`, Motion, `react-katex`, and `@typ
 | `site/src/data/catalog.ts` | Family/type metadata, route order, and lazy lesson/game implementations. |
 | `site/src/data/problems.ts` | Generated searchable problem-index projection. |
 | `site/src/content/` | Type lesson content and the problem-corpus source of truth. |
-| `site/src/components/demos/` | Editable DP demos and solvers. |
+| `site/src/algorithms/` | Pure typed algorithm results, domain events, and the single transition Implementation for migrated algorithms. |
+| `site/src/components/demos/` | Editable teaching Adapters that project domain events into visual traces. |
 | `site/src/components/dp-engine/` | Shared visualization engine. |
-| `site/src/components/games/` | One game per family. |
+| `site/src/components/games/` | One game per family; games consume public result Interfaces instead of teaching frames. |
 | `site/functions/` | Shared feedback endpoint core and optional CF Pages wrapper. |
 | `site/worker.js` | Current Cloudflare Workers entry. |
 | `site/scripts/postbuild.mjs` | EdgeOne SPA fallback and feedback edge function generator. |
@@ -49,6 +51,8 @@ The manifest also includes GSAP, `@gsap/react`, Motion, `react-katex`, and `@typ
 `App.tsx` uses `BrowserRouter` and lazy routes. `site/src/data/catalog.ts` owns literal lazy imports for every lesson and family game, so opening one lesson or family should not eagerly load unrelated lessons or games.
 
 Problem metadata is extracted from lesson JSX by `site/scripts/generate-problems.mjs`. Run `npm run content:generate` after changing `ExampleCard` or `Exercise`; `npm run check:content` rejects drift.
+
+For migrated algorithms, public callers import only `site/src/algorithms/<domain>/index.ts`. The adjacent internal Module owns the sole transition loop and can emit UI-neutral domain events. Teaching code may record those events and adapt them to `VizModel`; games and ordinary readouts must not import internal Modules or recover answers from the last frame.
 
 Deep links require hosting support. See root [deploy.md](../../deploy.md) for the Cloudflare and EdgeOne contracts.
 

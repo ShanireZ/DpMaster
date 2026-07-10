@@ -8,6 +8,7 @@ source_paths:
   - site/src/components/dp-engine/types.ts
   - site/src/components/dp-engine/DPViz.tsx
   - site/src/components/dp-engine/useStepPlayer.ts
+  - site/src/algorithms/
   - site/src/components/demos/
 ---
 
@@ -19,7 +20,9 @@ The DP visualization engine lets lessons show how a state table, array, tree, or
 
 Each demo should compute a `VizModel` with `frames[]`. Frames describe the current values, active state, dependency arrows, semantic cell states, formula text, and caption. The UI consumes the model and handles playback.
 
-The solver should be deterministic for the same input. Editable inputs should regenerate the model and remount or reset the visualizer so learners can replay the new computation from the beginning.
+`VizModel` is a teaching projection, not an algorithm-result Interface. Games, tests, answer readouts, and other non-teaching callers use the typed result Modules under `site/src/algorithms/`. A migrated algorithm has one internal transition Implementation with an event sink: the result path ignores events, while its teaching Adapter records UI-neutral events and turns them into frames.
+
+The algorithm and teaching Adapter should be deterministic for the same input. Editable inputs should regenerate the model and remount or reset the visualizer so learners can replay the new computation from the beginning.
 
 # Supported Carriers
 
@@ -43,4 +46,4 @@ Visualizations should expose:
 
 # Authoring Guidance
 
-Prefer small default examples that fit on laptop screens. Keep input editing bounded so the model remains readable and fast. If a topic needs a richer specialized demo, keep the solver local to `site/src/components/demos/<topic>/` and still reuse `DPViz` where practical.
+Prefer small default examples that fit on laptop screens. Keep input editing bounded so the model remains readable and fast. If a topic needs a richer specialized view, keep its teaching Adapter local to `site/src/components/demos/<topic>/` and still reuse `DPViz` where practical. Do not put HTML, colors, KaTeX, or `VizModel` into a public algorithm result.

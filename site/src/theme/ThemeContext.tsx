@@ -8,7 +8,7 @@ interface ThemeCtx {
 }
 
 const Ctx = createContext<ThemeCtx>({ theme: 'dark', toggle: () => {} })
-const KEY = 'dp-atlas-theme'
+const KEY = 'dp-master-theme'
 
 export function ThemeProvider({ children }: { children: ReactNode }) {
   const [theme, setTheme] = useState<Theme>(() => {

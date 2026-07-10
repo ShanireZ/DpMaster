@@ -1,5 +1,5 @@
-import type { VizModel, Frame, CellState, Arrow } from '../../dp-engine/types'
-import { key } from '../../dp-engine/types'
+import type { VizModel, Frame, CellState, Arrow } from '../../dp-engine/types.ts'
+import { key } from '../../dp-engine/types.ts'
 import { recordZeroOneKnapsack } from '../../../algorithms/knapsack/internal.ts'
 import type { KnapsackItem } from '../../../algorithms/knapsack/index.ts'
 
