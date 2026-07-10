@@ -2,10 +2,20 @@ import assert from 'node:assert/strict'
 import { access, readFile, readdir } from 'node:fs/promises'
 import test from 'node:test'
 
-const root = new URL('../src/components/', import.meta.url)
+const sourceRoot = new URL('../src/', import.meta.url)
+const root = new URL('components/', sourceRoot)
+
+const LOCAL_TRANSPORT_STATE =
+  /\b(?:const|let)\s*\[\s*[\w$]*(?:playing|index|idx|step|frame|shown)[\w$]*\s*,\s*[\w$]+\s*\]\s*=\s*useState\b/i
+const LOCAL_TIMER_API =
+  /\b(?:(?:window|globalThis)\s*\.\s*)?(?:setTimeout|clearTimeout|setInterval|clearInterval)\s*\(/
 
 async function component(path) {
   return readFile(new URL(path, root), 'utf8')
+}
+
+async function source(path) {
+  return readFile(new URL(path, sourceRoot), 'utf8')
 }
 
 const remainingTransports = [
@@ -92,8 +102,8 @@ for (const path of remainingTransports) {
     assert.match(text, /dp-engine\/playback\/useStepPlayer/)
     assert.match(text, /dp-engine\/playback\/PlaybackControls/)
     assert.match(text, /variant="compact"/)
-    assert.doesNotMatch(text, /\b(?:playing|setPlaying|timer|setTimeout|clearTimeout)\b/)
-    assert.doesNotMatch(text, /\[(?:idx|shown),\s*set(?:Idx|Shown)\]/)
+    assert.doesNotMatch(text, LOCAL_TRANSPORT_STATE)
+    assert.doesNotMatch(text, LOCAL_TIMER_API)
     assert.doesNotMatch(text, /className="(?:lp|ll|etb)__ctl-btns"/)
   })
 }
@@ -111,16 +121,30 @@ test('caption carriers use SafeCaption and raw HTML sinks remain restricted', as
     assert.doesNotMatch(text, /dangerouslySetInnerHTML/, `${path} must not own a raw HTML sink`)
   }
 
-  const allowedRawSinks = new Set(['ui/CodeBlock.tsx', 'ui/Math.tsx'])
-  const paths = (await readdir(root, { recursive: true }))
+  const allowedRawSinkCounts = new Map([
+    ['components/ui/CodeBlock.tsx', 1],
+    ['components/ui/Math.tsx', 2],
+  ])
+  const foundAllowedSinks = new Set()
+  const paths = (await readdir(sourceRoot, { recursive: true }))
     .map((path) => path.replaceAll('\\', '/'))
-    .filter((path) => /\.[jt]sx?$/.test(path))
+    .filter((path) => /\.(?:[cm]?[jt]s|[jt]sx)$/.test(path))
   for (const path of paths) {
-    const text = await component(path)
-    if (!allowedRawSinks.has(path)) {
-      assert.doesNotMatch(text, /dangerouslySetInnerHTML/, `${path} introduces an unapproved raw HTML sink`)
-    }
+    const text = await source(path)
+    const actualCount = text.match(/dangerouslySetInnerHTML/g)?.length ?? 0
+    const expectedCount = allowedRawSinkCounts.get(path) ?? 0
+    assert.equal(
+      actualCount,
+      expectedCount,
+      `${path} must contain exactly ${expectedCount} approved raw HTML sink occurrences`,
+    )
+    if (allowedRawSinkCounts.has(path)) foundAllowedSinks.add(path)
   }
+  assert.deepEqual(
+    [...foundAllowedSinks].sort(),
+    [...allowedRawSinkCounts.keys()].sort(),
+    'every approved raw HTML sink file must remain in the source tree',
+  )
 })
 
 test('every playback caller imports the deep hook path', async () => {
