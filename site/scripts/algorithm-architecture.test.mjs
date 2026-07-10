@@ -26,6 +26,22 @@ const algorithmFiles = [
   ['src', 'algorithms', 'lis', 'internal.ts'],
   ['src', 'algorithms', 'stone-merge', 'index.ts'],
   ['src', 'algorithms', 'stone-merge', 'internal.ts'],
+  ['src', 'algorithms', 'max-subarray', 'index.ts'],
+  ['src', 'algorithms', 'max-subarray', 'internal.ts'],
+  ['src', 'algorithms', 'linear-count', 'index.ts'],
+  ['src', 'algorithms', 'linear-count', 'internal.ts'],
+  ['src', 'algorithms', 'edit-distance', 'index.ts'],
+  ['src', 'algorithms', 'edit-distance', 'internal.ts'],
+  ['src', 'algorithms', 'lcs', 'index.ts'],
+  ['src', 'algorithms', 'lcs', 'internal.ts'],
+  ['src', 'algorithms', 'two-path', 'index.ts'],
+  ['src', 'algorithms', 'two-path', 'internal.ts'],
+  ['src', 'algorithms', 'grid-path', 'index.ts'],
+  ['src', 'algorithms', 'grid-path', 'internal.ts'],
+  ['src', 'algorithms', 'max-square', 'index.ts'],
+  ['src', 'algorithms', 'max-square', 'internal.ts'],
+  ['src', 'algorithms', 'linear-fsm', 'index.ts'],
+  ['src', 'algorithms', 'linear-fsm', 'internal.ts'],
 ]
 
 test('algorithm result Modules stay independent from teaching and React', () => {
@@ -64,9 +80,33 @@ test('teaching solvers are event Adapters over the shared Implementation', () =>
     ['knapsack', 'variantUndoSolver.ts', /algorithms\/knapsack-variant\/internal\.ts/],
     ['lis', 'lisSolver.ts', /algorithms\/lis\/internal\.ts/],
     ['interval', 'stoneSolver.ts', /algorithms\/stone-merge\/internal\.ts/],
+    ['linear', 'maxsegSolver.ts', /algorithms\/max-subarray\/internal\.ts/],
+    ['linear', 'countSolver.ts', /algorithms\/linear-count\/internal\.ts/],
+    ['grid', 'editSolver.ts', /algorithms\/edit-distance\/internal\.ts/],
+    ['grid', 'lcsSolver.ts', /algorithms\/lcs\/internal\.ts/],
+    ['grid', 'twoPathSolver.ts', /algorithms\/two-path\/internal\.ts/],
+    ['grid', 'pathSolver.ts', /algorithms\/grid-path\/internal\.ts/],
+    ['grid', 'maxSquareSolver.ts', /algorithms\/max-square\/internal\.ts/],
+    ['fsm', 'fsmSolver.ts', /algorithms\/linear-fsm\/(?:index|internal)\.ts/],
   ]
   for (const [family, file, internalImport] of adapters) {
     assert.match(read('src', 'components', 'demos', family, file), internalImport)
+  }
+})
+
+test('linear, grid, and FSM teaching Adapters do not retain private transition loops', () => {
+  const contracts = [
+    ['linear', 'maxsegSolver.ts', /for\s*\(let\s+i\s*=\s*0;\s*i\s*<\s*n/],
+    ['linear', 'countSolver.ts', /for\s*\(let\s+i\s*=\s*2;\s*i\s*<=\s*n/],
+    ['grid', 'editSolver.ts', /for\s*\(let\s+i\s*=\s*1;\s*i\s*<=\s*m/],
+    ['grid', 'lcsSolver.ts', /for\s*\(let\s+i\s*=\s*1;\s*i\s*<=\s*m/],
+    ['grid', 'twoPathSolver.ts', /for\s*\(let\s+k\s*=\s*1;\s*k\s*<=\s*steps/],
+    ['grid', 'pathSolver.ts', /for\s*\(let\s+i\s*=\s*n\s*-\s*2/],
+    ['grid', 'maxSquareSolver.ts', /for\s*\(let\s+i\s*=\s*0;\s*i\s*<\s*R/],
+    ['fsm', 'fsmSolver.ts', /for\s*\(let\s+i\s*=\s*1;\s*i\s*<=\s*n/],
+  ]
+  for (const [family, file, privateLoop] of contracts) {
+    assert.doesNotMatch(read('src', 'components', 'demos', family, file), privateLoop)
   }
 })
 

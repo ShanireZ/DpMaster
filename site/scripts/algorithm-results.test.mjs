@@ -594,6 +594,247 @@ test('stone merge min and max results match recursive interval enumeration', () 
   }
 })
 
+test('max and min subarray results match exhaustive contiguous ranges with legal witnesses', () => {
+  const cases = [...vectors([-2, 0, 3], 6)]
+  for (const objective of ['max', 'min']) {
+    verifyCases({
+      name: `${objective}-subarray`,
+      cases,
+      solve: (values) => objective === 'max' ? solveMaxSubarray(values) : solveMinSubarray(values),
+      oracle: (values) => bruteSubarray(values, objective),
+      equivalent: (actual, expected) => actual.sum === expected.sum,
+      invariants: [
+        (actual, values) => {
+          assert.equal(Object.hasOwn(actual, 'frames'), false)
+          assert.equal(actual.sums.length, values.length)
+          if (values.length === 0) {
+            assert.equal(actual.start, null)
+            assert.equal(actual.end, null)
+          } else {
+            assert.ok(actual.start >= 0 && actual.end >= actual.start && actual.end < values.length)
+            assert.equal(values.slice(actual.start, actual.end + 1).reduce((sum, value) => sum + value, 0), actual.sum)
+          }
+        },
+      ],
+    })
+  }
+})
+
+test('linear counting results match independent recurrences', () => {
+  verifyCases({
+    name: 'stair-count',
+    cases: Array.from({ length: 13 }, (_, step) => step),
+    solve: solveStairCount,
+    oracle: bruteStairCount,
+    equivalent: (actual, expected) => actual.count === expected,
+    invariants: [(actual, step) => {
+      assert.equal(actual.counts.length, step + 1)
+      assert.equal(Object.hasOwn(actual, 'frames'), false)
+    }],
+  })
+  verifyCases({
+    name: 'integer-partition',
+    cases: Array.from({ length: 11 }, (_, total) => total),
+    solve: solveIntegerPartition,
+    oracle: bruteIntegerPartition,
+    equivalent: (actual, expected) => actual.count === expected,
+    invariants: [(actual, total) => {
+      assert.equal(actual.table.length, total + 1)
+      assert.equal(Object.hasOwn(actual, 'frames'), false)
+    }],
+  })
+})
+
+test('edit-distance results match a memoized suffix oracle', () => {
+  const words = [...vectors(['a', 'b'], 3)].map((letters) => letters.join(''))
+  const cases = words.flatMap((a) => words.map((b) => ({ a, b })))
+  verifyCases({
+    name: 'edit-distance',
+    cases,
+    solve: ({ a, b }) => solveEditDistance(a, b),
+    oracle: ({ a, b }) => bruteEditDistance(a, b),
+    equivalent: (actual, expected) => actual.distance === expected,
+    invariants: [(actual, { a, b }) => {
+      assert.equal(actual.table.length, a.length + 1)
+      assert.equal(actual.table[0].length, b.length + 1)
+      assert.equal(Object.hasOwn(actual, 'frames'), false)
+    }],
+  })
+})
+
+test('LCS results match exhaustive subsequences and return a common witness', () => {
+  const words = [...vectors(['a', 'b'], 4)].map((letters) => letters.join(''))
+  const cases = words.flatMap((a) => words.map((b) => ({ a, b })))
+  verifyCases({
+    name: 'lcs-grid',
+    cases,
+    solve: ({ a, b }) => solveLcs(a, b),
+    oracle: ({ a, b }) => bruteLcs(a, b),
+    equivalent: (actual, expected) => actual.length === expected,
+    invariants: [(actual, { a, b }) => {
+      const isSubsequence = (candidate, value) => {
+        let index = 0
+        for (const char of value) if (char === candidate[index]) index++
+        return index === candidate.length
+      }
+      assert.equal(actual.subsequence.length, actual.length)
+      assert.equal(isSubsequence(actual.subsequence, a), true)
+      assert.equal(isSubsequence(actual.subsequence, b), true)
+      assert.equal(Object.hasOwn(actual, 'model'), false)
+    }],
+  })
+})
+
+test('two-path results match exhaustive pairs of right/down paths', () => {
+  const cases = [
+    [[5]],
+    [[1, 2], [3, 4]],
+    [[1, -2, 3], [4, 5, -6]],
+    [[1, 2, 3], [0, 4, 5], [7, -1, 6]],
+  ]
+  verifyCases({
+    name: 'two-path',
+    cases,
+    solve: solveTwoPath,
+    oracle: bruteTwoPath,
+    equivalent: (actual, expected) => actual.value === expected,
+    invariants: [(actual, grid) => {
+      assert.equal(actual.table.length, grid.length)
+      assert.equal(actual.table[0].length, grid.length)
+      assert.equal(Object.hasOwn(actual, 'frames'), false)
+    }],
+  })
+})
+
+test('triangle and blocked-grid path results match recursive enumeration', () => {
+  const triangles = [
+    [[4]],
+    [[1], [2, 3]],
+    [[2], [-1, 4], [3, 5, -2]],
+    [[0], [7, 1], [2, -3, 4], [5, 6, 1, 2]],
+  ]
+  verifyCases({
+    name: 'triangle-path',
+    cases: triangles,
+    solve: solveTrianglePath,
+    oracle: bruteTrianglePath,
+    equivalent: (actual, expected) => actual.value === expected,
+    invariants: [(actual, triangle) => assert.equal(actual.table.length, triangle.length)],
+  })
+
+  const cases = []
+  for (let rows = 1; rows <= 4; rows++) {
+    for (let cols = 1; cols <= 4; cols++) {
+      for (let variant = 0; variant < 8; variant++) {
+        const blocked = new Set()
+        for (let row = 1; row <= rows; row++) {
+          for (let col = 1; col <= cols; col++) {
+            if (((row * 5 + col * 3 + variant) % 11) === 0) blocked.add(`${row},${col}`)
+          }
+        }
+        cases.push({ rows, cols, blocked })
+      }
+    }
+  }
+  verifyCases({
+    name: 'grid-path-count',
+    cases,
+    solve: ({ rows, cols, blocked }) => solveGridPathCount(rows, cols, blocked),
+    oracle: ({ rows, cols, blocked }) => bruteGridPathCount(rows, cols, blocked),
+    equivalent: (actual, expected) => actual.count === expected,
+    invariants: [(actual, { rows, cols }) => {
+      assert.equal(actual.table.length, rows)
+      assert.equal(actual.table[0].length, cols)
+    }],
+  })
+})
+
+test('maximum-square results match exhaustive square scans', () => {
+  const cases = []
+  for (let rows = 1; rows <= 4; rows++) {
+    for (let cols = 1; cols <= 4; cols++) {
+      for (let variant = 0; variant < 16; variant++) {
+        cases.push(Array.from({ length: rows }, (_, row) =>
+          Array.from({ length: cols }, (_, col) => ((row * 7 + col * 5 + variant) % 4 === 0 ? 0 : 1))))
+      }
+    }
+  }
+  verifyCases({
+    name: 'max-square',
+    cases,
+    solve: solveMaxSquare,
+    oracle: bruteMaxSquare,
+    equivalent: (actual, expected) => actual.side === expected,
+    invariants: [(actual) => {
+      assert.equal(actual.area, actual.side ** 2)
+      assert.equal(Object.hasOwn(actual, 'frames'), false)
+    }],
+  })
+})
+
+test('linear and stock FSM results match exhaustive decisions', () => {
+  verifyCases({
+    name: 'linear-fsm',
+    cases: vectors([-2, 0, 3], 7),
+    solve: solveLinearFsm,
+    oracle: bruteLinearFsm,
+    equivalent: (actual, expected) => actual.value === expected,
+    invariants: [(actual, values) => {
+      assert.equal(actual.table.length, 2)
+      assert.equal(actual.table[0].length, values.length + 1)
+    }],
+  })
+
+  const priceCases = []
+  for (const prices of vectors([1, 2, 3], 5)) {
+    for (const cooldown of [false, true]) priceCases.push({ prices, cooldown })
+  }
+  verifyCases({
+    name: 'stock-fsm',
+    cases: priceCases,
+    solve: ({ prices, cooldown }) => solveStockFsm(prices, cooldown),
+    oracle: ({ prices, cooldown }) => bruteStockFsm(prices, cooldown),
+    equivalent: (actual, expected) => actual.profit === expected,
+    invariants: [(actual, { prices }) => assert.equal(actual.days.length, prices.length)],
+  })
+})
+
+test('linear, grid, and FSM recorded runs share their exact result Implementations', () => {
+  const values = [3, -5, 4, 2, -1]
+  for (const objective of ['max', 'min']) {
+    const solved = objective === 'max' ? solveMaxSubarray(values) : solveMinSubarray(values)
+    assert.deepEqual(recordSubarray(values, objective).result, solved)
+  }
+  assert.deepEqual(recordStairCount(7).result, solveStairCount(7))
+  assert.deepEqual(recordIntegerPartition(7).result, solveIntegerPartition(7))
+  assert.deepEqual(recordEditDistance('kitten', 'sitting').result, solveEditDistance('kitten', 'sitting'))
+  assert.deepEqual(recordLcs('ABCBDAB', 'BDCABA').result, solveLcs('ABCBDAB', 'BDCABA'))
+  const grid = [[1, 2, 3], [4, 5, 6]]
+  assert.deepEqual(recordTwoPath(grid).result, solveTwoPath(grid))
+  const triangle = [[2], [3, 4], [6, 5, 7]]
+  assert.deepEqual(recordTrianglePath(triangle).result, solveTrianglePath(triangle))
+  const blocked = new Set(['2,2'])
+  assert.deepEqual(recordGridPathCount(4, 5, blocked).result, solveGridPathCount(4, 5, blocked))
+  const binary = [[1, 1, 0], [1, 1, 1], [0, 1, 1]]
+  assert.deepEqual(recordMaxSquare(binary).result, solveMaxSquare(binary))
+  assert.deepEqual(recordLinearFsm(values).result, solveLinearFsm(values))
+  assert.deepEqual(recordStockFsm([1, 3, 2, 5], true).result, solveStockFsm([1, 3, 2, 5], true))
+})
+
+test('linear, grid, and FSM events remain immutable snapshots after later transitions', () => {
+  assertEventSnapshots((emit) => executeSubarray([3, -5, 4], 'max', emit))
+  assertEventSnapshots((emit) => executeStairCount(6, emit))
+  assertEventSnapshots((emit) => executeIntegerPartition(5, emit))
+  assertEventSnapshots((emit) => executeEditDistance('abc', 'adc', emit))
+  assertEventSnapshots((emit) => executeLcs('abca', 'acba', emit))
+  assertEventSnapshots((emit) => executeTwoPath([[1, 2, 3], [4, 5, 6]], emit))
+  assertEventSnapshots((emit) => executeTrianglePath([[2], [3, 4], [6, 5, 7]], emit))
+  assertEventSnapshots((emit) => executeGridPathCount(3, 4, new Set(['2,2']), emit))
+  assertEventSnapshots((emit) => executeMaxSquare([[1, 1], [1, 1]], emit))
+  assertEventSnapshots((emit) => executeLinearFsm([2, 7, 9, 3], emit))
+  assertEventSnapshots((emit) => executeStockFsm([1, 3, 2, 5], true, emit))
+})
+
 test('recorded teaching runs share the exact result Implementation', () => {
   const knapsackInput = [[{ w: 2, v: 3 }, { w: 3, v: 4 }, { w: 4, v: 5 }], 8]
   assert.deepEqual(recordZeroOneKnapsack(...knapsackInput).result, solveZeroOneKnapsack(...knapsackInput))
@@ -638,6 +879,52 @@ test('teaching Adapters preserve frame contracts and project the typed result', 
     assertTeachingModel(stoneModel)
     assert.equal(stoneModel.frames.at(-1).values[0][stones.length - 1], solveStoneMerge(stones, objective).cost)
   }
+
+  const subarrayValues = [3, -5, 4, 2, -1]
+  for (const [model, solved] of [
+    [kadane(subarrayValues), solveMaxSubarray(subarrayValues)],
+    [minSegViz(subarrayValues), solveMinSubarray(subarrayValues)],
+  ]) {
+    assertTeachingModel(model)
+    assert.equal(model.frames.at(-1).values[1][solved.end], solved.sum)
+  }
+
+  const stairModel = stairCount(7)
+  assertTeachingModel(stairModel)
+  assert.equal(stairModel.frames.at(-1).values[0][7], solveStairCount(7).count)
+  const partitionModel = integerPartition(6)
+  assertTeachingModel(partitionModel)
+  assert.equal(partitionModel.frames.at(-1).values[6][6], solveIntegerPartition(6).count)
+
+  const editModel = edit2D('kitten', 'sitting')
+  assertTeachingModel(editModel)
+  assert.equal(editModel.frames.at(-1).values[6][7], solveEditDistance('kitten', 'sitting').distance)
+  const lcsTeaching = lcs2D('ABCBDAB', 'BDCABA')
+  assertTeachingModel(lcsTeaching.model)
+  assert.equal(lcsTeaching.len, solveLcs('ABCBDAB', 'BDCABA').length)
+  assert.equal(lcsTeaching.lcs, solveLcs('ABCBDAB', 'BDCABA').subsequence)
+
+  const pathGrid = [[1, 2, 3], [4, 5, 6]]
+  const twoPathModel = twoPath2D(pathGrid)
+  assertTeachingModel(twoPathModel)
+  assert.equal(twoPathModel.frames.at(-1).values[1][1], solveTwoPath(pathGrid).value)
+  const triangle = [[2], [3, 4], [6, 5, 7]]
+  const triangleModel = triangle2D(triangle)
+  assertTeachingModel(triangleModel)
+  assert.equal(triangleModel.frames.at(-1).values[0][0], solveTrianglePath(triangle).value)
+  const blocked = new Set(['2,2'])
+  const pathModel = gridCount2D(3, 4, blocked)
+  assertTeachingModel(pathModel)
+  assert.equal(pathModel.frames.at(-1).values[2][3], solveGridPathCount(3, 4, blocked).count)
+
+  const binary = [[1, 1, 0], [1, 1, 1], [0, 1, 1]]
+  const squareModel = maxSquare2D(binary)
+  assertTeachingModel(squareModel)
+  assert.equal(Math.max(...squareModel.frames.at(-1).values.flat()), solveMaxSquare(binary).side)
+  const fsmModel = fsmPickTable(subarrayValues)
+  assertTeachingModel(fsmModel)
+  assert.equal(Math.max(...fsmModel.frames.at(-1).values.map((row) => row.at(-1))), solveLinearFsm(subarrayValues).value)
+  assert.deepEqual(stockStates([1, 3, 2, 5], true), solveStockFsm([1, 3, 2, 5], true).days)
 })
 
 test('reroot distance sums match the existing quadratic oracle', () => {
