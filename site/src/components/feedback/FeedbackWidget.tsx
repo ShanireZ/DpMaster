@@ -32,22 +32,45 @@ export default function FeedbackWidget() {
   const [steps, setSteps] = useState('')
   const [contact, setContact] = useState('')
   const [status, setStatus] = useState<Status>('idle')
+  const [errorMessage, setErrorMessage] = useState('')
   const [copied, setCopied] = useState(false)
   const [page, setPage] = useState('')
+  const triggerRef = useRef<HTMLButtonElement>(null)
   const descRef = useRef<HTMLTextAreaElement>(null)
   const dialogRef = useRef<HTMLDivElement>(null)
+  const doneRef = useRef<HTMLButtonElement>(null)
 
-  // 打开时快照当前页 + 聚焦描述框；Esc 关闭
+  // 打开时快照当前页、锁定背景滚动，并把键盘焦点限定在对话框内。
   useEffect(() => {
     if (!open) return
     setPage(pageLabel(location.pathname))
     const t = setTimeout(() => descRef.current?.focus(), 40)
+    const previousOverflow = document.body.style.overflow
+    document.body.style.overflow = 'hidden'
     const onKey = (e: KeyboardEvent) => {
       if (e.key === 'Escape') close()
+      if (e.key === 'Tab') {
+        const focusable = Array.from(
+          dialogRef.current?.querySelectorAll<HTMLElement>(
+            'button:not([disabled]), [href], input:not([disabled]), textarea:not([disabled]), select:not([disabled]), [tabindex]:not([tabindex="-1"])',
+          ) ?? [],
+        ).filter((element) => element.offsetParent !== null)
+        if (focusable.length === 0) return
+        const first = focusable[0]
+        const last = focusable[focusable.length - 1]
+        if (e.shiftKey && (document.activeElement === first || !dialogRef.current?.contains(document.activeElement))) {
+          e.preventDefault()
+          last.focus()
+        } else if (!e.shiftKey && document.activeElement === last) {
+          e.preventDefault()
+          first.focus()
+        }
+      }
     }
     document.addEventListener('keydown', onKey)
     return () => {
       clearTimeout(t)
+      document.body.style.overflow = previousOverflow
       document.removeEventListener('keydown', onKey)
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -59,13 +82,19 @@ export default function FeedbackWidget() {
     setSteps('')
     setContact('')
     setStatus('idle')
+    setErrorMessage('')
     setCopied(false)
   }
   const close = () => {
     setOpen(false)
+    setTimeout(() => triggerRef.current?.focus(), 0)
     // 提交成功后关闭时清空，避免下次残留
     if (status === 'ok') setTimeout(reset, 200)
   }
+
+  useEffect(() => {
+    if (status === 'ok') doneRef.current?.focus()
+  }, [status])
 
   const payload = () => ({
     kind,
@@ -103,16 +132,32 @@ export default function FeedbackWidget() {
       return
     }
     setStatus('sending')
+    setErrorMessage('')
     try {
       const res = await fetch('/api/feedback', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(payload()),
       })
-      if (!res.ok) throw new Error(String(res.status))
+      let result: { ok?: boolean; message?: string } | null = null
+      try {
+        result = await res.json()
+      } catch {
+        result = null
+      }
+      if (!res.ok || !result?.ok) {
+        setErrorMessage(
+          res.status === 429
+            ? '提交太频繁，请稍后再试。'
+            : result?.message || '提交没成功，请检查网络后再试。',
+        )
+        setStatus('error')
+        return
+      }
       setStatus('ok')
     } catch {
       // 后端未接通/网络失败：降级为「复制反馈」，让用户仍能把内容交出去
+      setErrorMessage('提交没成功，请检查网络后再试。')
       setStatus('error')
     }
   }
@@ -130,6 +175,7 @@ export default function FeedbackWidget() {
   return (
     <>
       <button
+        ref={triggerRef}
         className="fbw__fab"
         onClick={() => setOpen(true)}
         aria-label="反馈问题或建议"
@@ -159,33 +205,34 @@ export default function FeedbackWidget() {
             </div>
 
             {status === 'ok' ? (
-              <div className="fbw__done">
+              <div className="fbw__done" aria-live="polite">
                 <span className="fbw__done-icon">
                   <Check size={26} />
                 </span>
                 <p className="fbw__done-title">已收到，谢谢你！</p>
                 <p className="fbw__done-sub">你的反馈会帮这份教程变得更准、更好。</p>
-                <button className="fbw__btn fbw__btn--primary" onClick={close}>
+                <button ref={doneRef} className="fbw__btn fbw__btn--primary" onClick={close}>
                   完成
                 </button>
               </div>
             ) : (
               <div className="fbw__body">
-                <div className="fbw__field">
-                  <label className="fbw__label">这是关于</label>
+                <fieldset className="fbw__field">
+                  <legend className="fbw__label">这是关于</legend>
                   <div className="fbw__kinds">
                     {KINDS.map((k) => (
                       <button
                         key={k}
                         type="button"
                         className={`fbw__kind${kind === k ? ' on' : ''}`}
+                        aria-pressed={kind === k}
                         onClick={() => setKind(k)}
                       >
                         {k}
                       </button>
                     ))}
                   </div>
-                </div>
+                </fieldset>
 
                 <div className="fbw__field">
                   <label className="fbw__label">
@@ -240,8 +287,8 @@ export default function FeedbackWidget() {
                 </div>
 
                 {status === 'error' && (
-                  <div className="fbw__error">
-                    提交没成功（后端可能还没接通或网络问题）。你可以
+                  <div className="fbw__error" role="alert">
+                    {errorMessage}你也可以
                     <button type="button" className="fbw__link" onClick={copyFallback}>
                       {copied ? '已复制 ✓' : '复制反馈内容'}
                     </button>

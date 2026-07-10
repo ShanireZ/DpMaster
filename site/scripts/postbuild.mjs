@@ -35,15 +35,20 @@ console.log('[postbuild] 已生成 dist/404.html（EdgeOne 深链安全网 · 40
 //         单一事实来源，与 CF Worker 同一份代码）。
 //     (b) 其余未命中静态资源的路径 → SPA 入口 + HTTP 200，交给 react-router 的 path="*"。
 //     用「一个 catch-all 内按路径分支」而非「多文件路由」，避免依赖 EdgeOne 未记载的路由优先级；
-//     反馈分支整段包在 try 里，任何异常都回落到 SPA HTML —— 绝不影响深链兜底这条已验证行为。
+//     反馈分支独立捕获异常并返回 JSON 500，避免 API 故障被误包装为 SPA HTML 200。
 //     HTML 内联注入，避免运行时 fetch/asset 依赖；每次构建随 index.html 的 hash 引用自动刷新。
 const coreSrc = readFileSync(
   fileURLToPath(new URL('../functions/_feedback-core.js', import.meta.url)),
   'utf8',
-).replace('export async function handleFeedback', 'async function handleFeedback')
+).replace(/^export /gm, '')
 
 const fnDir = join(distDir, 'edge-functions')
 mkdirSync(fnDir, { recursive: true })
+const feedbackInternalBody = JSON.stringify({
+  ok: false,
+  error: 'internal',
+  message: '反馈服务暂时不可用',
+})
 const fnSource =
   '// 自动生成，请勿手改（源见 site/scripts/postbuild.mjs + site/functions/_feedback-core.js）。\n' +
   '// EdgeOne Pages Edge Function（catch-all）：POST /api/feedback 走反馈端点，其余回退 SPA 入口。\n\n' +
@@ -53,19 +58,22 @@ const fnSource =
   JSON.stringify(html) +
   '\n\n' +
   'export default async function onRequest(context) {\n' +
-  '  try {\n' +
-  '    const request = context && context.request\n' +
-  '    if (request) {\n' +
-  '      const url = new URL(request.url)\n' +
-  "      if (url.pathname === '/api/feedback') {\n" +
-  '        const env = (context && context.env) || {}\n' +
-  "        if (request.method === 'POST') return await handleFeedback(request, env)\n" +
-  "        if (request.method === 'OPTIONS') return new Response(null, { status: 204 })\n" +
-  "        return new Response('Method Not Allowed', { status: 405, headers: { Allow: 'POST' } })\n" +
-  '      }\n' +
+  '  const request = context && context.request\n' +
+  "  if (request && new URL(request.url).pathname === '/api/feedback') {\n" +
+  '    try {\n' +
+  '      const env = (context && context.env) || {}\n' +
+  "      if (request.method === 'POST') return await handleFeedback(request, env)\n" +
+  "      if (request.method === 'OPTIONS') return new Response(null, { status: 204 })\n" +
+  "      return new Response('Method Not Allowed', { status: 405, headers: { Allow: 'POST' } })\n" +
+  '    } catch (error) {\n' +
+  '      console.error(\'[feedback] edge handler failed\', error)\n' +
+  '      return new Response(' +
+  JSON.stringify(feedbackInternalBody) +
+  ', {\n' +
+  '        status: 500,\n' +
+  "        headers: { 'content-type': 'application/json; charset=utf-8' },\n" +
+  '      })\n' +
   '    }\n' +
-  '  } catch (e) {\n' +
-  '    /* 反馈分支异常 → 回落到下方 SPA 兜底，深链行为不受影响 */\n' +
   '  }\n' +
   '  return new Response(HTML, {\n' +
   '    status: 200,\n' +

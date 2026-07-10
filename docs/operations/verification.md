@@ -57,5 +57,7 @@ Deployment checks live in root [deploy.md](../../deploy.md). At minimum after de
 
 * Open a normal route and a direct deep link.
 * Submit a feedback test.
-* Check Cloudflare or EdgeOne logs for `[feedback]`.
-* Check DingTalk delivery if webhook variables are configured.
+* Confirm the receipt is `ok: true`, `status: logged`, and includes a `requestId`.
+* Check Cloudflare or EdgeOne logs for the matching `feedback_received` event.
+* If webhook variables are configured, check the matching `feedback_webhook` status and DingTalk delivery separately; forwarding failure does not change the browser's received state.
+* For a rate-limit smoke test, use a disposable source and confirm request 11 inside 30 minutes returns 429 with `Retry-After`. The built-in limiter is per edge instance; configure the same policy at platform level when global enforcement is required.

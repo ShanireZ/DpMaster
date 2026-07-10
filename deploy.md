@@ -184,9 +184,9 @@ Invoke-RestMethod `
 
 验收标准：
 
-- HTTP 响应是 `{ "ok": true }`。
-- Cloudflare 日志出现 `[feedback]`。
-- 钉钉目标群收到消息。
+- HTTP 响应的 `ok` 为 `true`、`status` 为 `logged`，并带有 `requestId`。
+- Cloudflare 日志出现结构化的 `feedback_received` 记录。
+- 配置 Webhook 时，日志还有同一 `requestId` 的 `feedback_webhook` 状态；钉钉目标群应收到消息。
 
 可以用 Wrangler 看实时日志：
 
@@ -279,9 +279,9 @@ Invoke-RestMethod `
 
 验收标准：
 
-- HTTP 响应是 `{ "ok": true }`。
-- EdgeOne 函数日志出现 `[feedback]`。
-- 钉钉目标群收到消息。
+- HTTP 响应的 `ok` 为 `true`、`status` 为 `logged`，并带有 `requestId`。
+- EdgeOne 函数日志出现结构化的 `feedback_received` 记录。
+- 配置 Webhook 时，日志还有同一 `requestId` 的 `feedback_webhook` 状态；钉钉目标群应收到消息。
 
 ## 钉钉反馈机器人
 
@@ -329,16 +329,26 @@ Invoke-RestMethod `
 | `viewport`    | 前端自动生成 | 视口尺寸                                               |
 | `ts`          | 前端自动生成 | ISO 时间                                               |
 
+字段长度上限与前端表单一致：`description` 2000、`steps` 1000、`contact` 120；请求整体不得超过 16 KB。类型必须是表中的五种之一，浏览器请求必须同源并使用 `application/json`。
+
 响应：
 
-| 条件                      | 状态 | Body                                    |
-| ------------------------- | ---: | --------------------------------------- |
-| 非法 JSON                 |  400 | `{ "ok": false, "error": "bad_json" }`  |
-| `description` 少于 4 字符 |  422 | `{ "ok": false, "error": "empty" }`     |
-| JSON 过大                 |  413 | `{ "ok": false, "error": "too_large" }` |
-| 合法请求                  |  200 | `{ "ok": true }`                        |
+| 条件                       | 状态 | Body 要点                                                      |
+| -------------------------- | ---: | -------------------------------------------------------------- |
+| 非 JSON 内容类型            |  415 | `error: "unsupported_media_type"`                              |
+| 跨站浏览器请求             |  403 | `error: "forbidden_origin"`                                   |
+| 非法 JSON                  |  400 | `error: "bad_json"`                                          |
+| 字段、类型或描述长度无效       |  422 | 稳定的 `error` 代码与可读 `message`                           |
+| JSON 过大                  |  413 | `error: "too_large"`                                         |
+| 同一来源 30 分钟内第 11 条     |  429 | `error: "rate_limited"`，并带 `Retry-After`                 |
+| 结构化日志写入失败            |  500 | `error: "log_failed"`                                        |
+| 日志已写入                  |  200 | `{ "ok": true, "status": "logged", "forwarded": …, "requestId": … }` |
 
-合法请求会先输出一条 `[feedback]` 日志。即使 webhook 未配置或转发失败，前端仍收到 `{ "ok": true }`，所以验收时必须同时检查平台日志和钉钉送达。
+合法请求会先输出一条 `[feedback]` 结构化日志，其中 `event=feedback_received`。这条日志写入后就视为“已收到”；Webhook 是尽力转发，未配置或转发失败都不会把浏览器的成功态改成失败。配置 Webhook 时，第二条 `event=feedback_webhook` 日志会记录 `forwarded`、`http_error`、`business_error` 或 `network_error`。日志不输出 Webhook URL 和签名密钥。
+
+### 限流边界
+
+代码内置“同一来源滚动 30 分钟最多 10 条”限流，但状态保存在单个边缘实例内存中，只是低成本保护，不是跨实例强一致安全边界。如果需要全局严格限制，应在 Cloudflare 和 EdgeOne 的 WAF / Rate Limiting 中同时配置 `/api/feedback` 每来源 30 分钟 10 次。
 
 ## 常见问题
 
@@ -348,7 +358,8 @@ Invoke-RestMethod `
 | Cloudflare `/api/feedback` 返回 HTML   | 请求方法是否是 `POST`，URL 是否真的指向 `/api/feedback`，Worker 是否是最新版本。                    |
 | EdgeOne 深链返回 404 但页面能打开      | 说明 `404.html` 安全网生效，继续检查 `edge-functions/[[default]].js` 是否发布。                     |
 | EdgeOne `/api/feedback` 返回 HTML      | catch-all 函数没有接住反馈分支，检查 `postbuild` 产物和 EdgeOne 函数日志。                          |
-| 端点返回 `{ "ok": true }` 但钉钉没消息 | 看平台日志中是否有 `[feedback] webhook non-2xx` 或 `webhook errcode`。                              |
+| 端点返回 `status: "logged"` 但钉钉没消息 | 用 `requestId` 查找 `feedback_webhook`，检查其 `http_error` / `business_error` / `network_error` 状态。              |
+| 端点返回 429                         | 同一来源在 30 分钟窗口已提交 10 条；按 `Retry-After` 等待，或核对平台限流规则。                       |
 | 钉钉签名错误                           | `FEEDBACK_WEBHOOK_SECRET` 是否与机器人加签密钥一致。                                                |
 | 钉钉关键词错误                         | 关键词是否包含 `反馈` 或 `DP大师`。                                                                 |
 | 收到企业微信格式或完全无消息           | `FEEDBACK_WEBHOOK_KIND` 是否漏配为 `dingtalk`。                                                     |
