@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react'
+import { useLayoutEffect, useMemo, useState } from 'react'
 import { PartyPopper, Sparkles, Shuffle, Trophy, Volume2, VolumeX } from 'lucide-react'
 import {
   buildRootedTree,
@@ -6,7 +6,9 @@ import {
   solveTreeIndependentSet,
 } from '../../algorithms/tree-dp/index.ts'
 import { playGameTone } from './runtime/audio'
-import { browserRandom, randomInt } from './runtime/random'
+import { createSeededRandom, randomInt } from './runtime/random'
+import type { RandomSource } from './runtime/random'
+import { useRoundSeed } from './runtime/useRoundSeed'
 import { useRoundStats } from './runtime/useRoundStats'
 import './game-treeparty.css'
 
@@ -33,29 +35,43 @@ interface GameState {
 }
 
 // 随机长一棵树：每个新节点挂到一个已存在的、孩子数未超上限的节点下。
-function makeGame(d: DiffSpec): GameState {
+// oxlint-disable-next-line react/only-export-components -- executable tests import the pure round builder
+export function buildPartyRound(difficulty: Difficulty, random: RandomSource): GameState {
+  const d = DIFFS[difficulty]
   const parent: number[] = [-1]
   const childCount: number[] = [0]
   for (let i = 1; i < d.count; i++) {
     // 候选父亲：孩子数未满
     const cand: number[] = []
     for (let j = 0; j < i; j++) if (childCount[j] < d.maxChildren) cand.push(j)
-    const fa = cand[randomInt(browserRandom, 0, cand.length - 1)]
+    const fa = cand[randomInt(random, 0, cand.length - 1)]
     parent.push(fa)
     childCount[fa]++
     childCount.push(0)
   }
-  const weight = Array.from({ length: d.count }, () => randomInt(browserRandom, d.wMin, d.wMin + d.wRange - 1))
+  const weight = Array.from({ length: d.count }, () => randomInt(random, d.wMin, d.wMin + d.wRange - 1))
   return { parent, weight }
 }
 
 export default function TreePartyGame() {
   const [difficulty, setDifficulty] = useState<Difficulty>('easy')
-  const [game, setGame] = useState<GameState>(() => makeGame(DIFFS.easy))
+  const roundSeed = useRoundSeed()
+  const [game, setGame] = useState<GameState>(() =>
+    buildPartyRound('easy', createSeededRandom(roundSeed.seed)),
+  )
   const [sel, setSel] = useState<boolean[]>(() => game.weight.map(() => false))
   const [revealed, setRevealed] = useState(false)
   const [muted, setMuted] = useState(false)
   const round = useRoundStats()
+  const startRound = round.start
+
+  useLayoutEffect(() => {
+    const nextGame = buildPartyRound(difficulty, createSeededRandom(roundSeed.seed))
+    setGame(nextGame)
+    setSel(nextGame.weight.map(() => false))
+    setRevealed(false)
+    startRound()
+  }, [difficulty, roundSeed, startRound])
 
   const tree = useMemo(() => buildRootedTree(game.parent, game.weight), [game])
   const layout = useMemo(() => layoutRootedTree(tree), [tree])
@@ -98,19 +114,14 @@ export default function TreePartyGame() {
       playGameTone({ frequency: 300, duration: 0.1, type: 'sine' }, muted)
     }
   }
-  const newGame = (d: Difficulty) => {
-    const g = makeGame(DIFFS[d])
-    setGame(g)
-    setSel(g.weight.map(() => false))
-    setRevealed(false)
-    round.start()
+  const shuffle = () => {
+    roundSeed.next()
     playGameTone({ frequency: 360, duration: 0.06 }, muted)
   }
-  const shuffle = () => newGame(difficulty)
   const pickDiff = (d: Difficulty) => {
     if (d === difficulty) return
     setDifficulty(d)
-    newGame(d)
+    playGameTone({ frequency: 420, duration: 0.06 }, muted)
   }
 
   let feedback = '点员工把他请来舞会，凑最大欢乐值——但不能同时请一对直接上下级。再点「看 DP 最优」对照。'
@@ -270,7 +281,16 @@ export default function TreePartyGame() {
             </button>
           </div>
           <div className="tpg__stats">
-            已玩 {round.stats.played} 局 · 追平 DP {round.stats.matched} 次
+            <span>
+              已玩 {round.stats.played} 局 · 追平 DP {round.stats.matched} 次 · 种子 {roundSeed.seed}
+            </span>
+            <button
+              type="button"
+              className="tpg__btn"
+              onClick={() => roundSeed.replay(roundSeed.seed)}
+            >
+              重放此种子
+            </button>
           </div>
         </div>
       </div>

@@ -1,8 +1,10 @@
-import { useMemo, useState } from 'react'
+import { useLayoutEffect, useMemo, useState } from 'react'
 import { TrendingUp, Sparkles, Shuffle, Trophy, Volume2, VolumeX, RotateCcw } from 'lucide-react'
 import { solveLis } from '../../algorithms/lis/index.ts'
 import { playGameTone } from './runtime/audio'
-import { browserRandom, randomInt } from './runtime/random'
+import { createSeededRandom, randomInt } from './runtime/random'
+import type { RandomSource } from './runtime/random'
+import { useRoundSeed } from './runtime/useRoundSeed'
 import { useRoundStats } from './runtime/useRoundStats'
 import './game.css'
 import './game-lis.css'
@@ -30,22 +32,34 @@ function chainLen(selOrder: number[]): number {
   return selOrder.length
 }
 
-function makeSeq(difficulty: Difficulty): number[] {
+// oxlint-disable-next-line react/only-export-components -- executable tests import the pure round builder
+export function buildSequenceRound(difficulty: Difficulty, random: RandomSource): number[] {
   const d = DIFFS[difficulty]
-  const seq = Array.from({ length: d.count }, () => randomInt(browserRandom, d.vMin, d.vMin + d.vRange - 1))
+  const seq = Array.from({ length: d.count }, () => randomInt(random, d.vMin, d.vMin + d.vRange - 1))
   // 保证至少存在一条长度≥3 的上升子序列，避免生成近乎单调下降的枯燥串（重开即可）。
-  if (solveLis(seq).length < 3) return makeSeq(difficulty)
+  if (solveLis(seq).length < 3) return buildSequenceRound(difficulty, random)
   return seq
 }
 
 export default function LISChainGame() {
   const [difficulty, setDifficulty] = useState<Difficulty>('medium')
-  const [seq, setSeq] = useState<number[]>(() => makeSeq('medium'))
+  const roundSeed = useRoundSeed()
+  const [seq, setSeq] = useState<number[]>(() =>
+    buildSequenceRound('medium', createSeededRandom(roundSeed.seed)),
+  )
   // 玩家已选下标，按点击（=原序）先后记录，构成一条链
   const [selOrder, setSelOrder] = useState<number[]>([])
   const [revealed, setRevealed] = useState(false)
   const [muted, setMuted] = useState(false)
   const round = useRoundStats()
+  const startRound = round.start
+
+  useLayoutEffect(() => {
+    setSeq(buildSequenceRound(difficulty, createSeededRandom(roundSeed.seed)))
+    setSelOrder([])
+    setRevealed(false)
+    startRound()
+  }, [difficulty, roundSeed, startRound])
 
   const dp = useMemo(() => solveLis(seq), [seq])
   const you = chainLen(selOrder)
@@ -101,20 +115,13 @@ export default function LISChainGame() {
   }
 
   const shuffle = () => {
-    setSeq(makeSeq(difficulty))
-    setSelOrder([])
-    setRevealed(false)
-    round.start()
+    roundSeed.next()
     playGameTone({ frequency: 360, duration: 0.06 }, muted)
   }
 
   const pickDiff = (d: Difficulty) => {
     if (d === difficulty) return
     setDifficulty(d)
-    setSeq(makeSeq(d))
-    setSelOrder([])
-    setRevealed(false)
-    round.start()
     playGameTone({ frequency: 420, duration: 0.06 }, muted)
   }
 
@@ -240,7 +247,12 @@ export default function LISChainGame() {
             </button>
           </div>
           <div className="game__stats">
-            已玩 {round.stats.played} 局 · 追平 DP {round.stats.matched} 次
+            <span>
+              已玩 {round.stats.played} 局 · 追平 DP {round.stats.matched} 次 · 种子 {roundSeed.seed}
+            </span>
+            <button type="button" className="gbtn" onClick={() => roundSeed.replay(roundSeed.seed)}>
+              重放此种子
+            </button>
           </div>
         </div>
       </div>

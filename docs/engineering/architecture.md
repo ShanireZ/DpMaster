@@ -77,8 +77,8 @@ The shell owns cross-route accessibility behavior: a keyboard-visible skip link 
 
 Game identities, titles, and dynamic imports remain exclusively in `catalog.ts`; the runtime is infrastructure, not another registry. The seven games share:
 
-* `browserRandom` and `randomInt` for bounded generation; `createSeededRandom` makes mechanics reproducible in executable checks.
-* `useRoundStats` for duplicate-safe played/matched totals. A reveal records at most once until shuffle, difficulty change, or reset starts the next round.
+* `useRoundSeed` for a browser-generated unsigned seed, with `createSeededRandom(seed)` and `randomInt` driving each round builder through an injected `RandomSource`. The six random games display the numeric seed and can rebuild the current difficulty from it; executable checks prove equal seeds produce equal rounds.
+* `useRoundStats` for duplicate-safe played/matched totals across all seven games. Random-game reveals record at most once until shuffle, difficulty change, reset, or seed replay starts the next round. BitBoard records a legal completed layout once and only clear, difficulty change, or reset unlocks another completion.
 * `playGameTone` for best-effort Web Audio. One `AudioContext` is created only after an unmuted interaction and reused; unsupported or blocked audio never affects game correctness.
 
 Game rules, difficulty tables, visuals, and win conditions stay local to each game.

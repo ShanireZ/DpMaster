@@ -41,6 +41,17 @@ test('PartPage gates its catalog-owned lazy game behind DeferredGame', async () 
   assert.match(page, /<Suspense[\s\S]*<Game \/>[\s\S]*<\/Suspense>/)
 })
 
+test('useRoundSeed exposes only the current seed, next, and replay controls', async () => {
+  const hook = await source('games/runtime/useRoundSeed.ts')
+  assert.match(hook, /export function useRoundSeed\(\):\s*\{/)
+  assert.match(hook, /seed: number/)
+  assert.match(hook, /next\(\): void/)
+  assert.match(hook, /replay\(seed: number\): void/)
+  assert.match(hook, /createRandomSeed\(browserRandom\)/)
+  assert.match(hook, /return useMemo\(/)
+  assert.match(hook, /seed: round\.seed/)
+})
+
 test('all seven games use shared audio and avoid direct random globals', async () => {
   const paths = [
     'games/PackMasterGame.tsx',
@@ -60,7 +71,28 @@ test('all seven games use shared audio and avoid direct random globals', async (
   }
 })
 
-test('games with round totals share the duplicate-safe statistics hook', async () => {
+test('random game round builders accept RandomSource and components seed every round', async () => {
+  const games = [
+    ['games/PackMasterGame.tsx', 'buildPackRound'],
+    ['games/LISChainGame.tsx', 'buildSequenceRound'],
+    ['games/StoneMergeGame.tsx', 'buildStoneRound'],
+    ['games/PowerAccelGame.tsx', 'buildExponentRound'],
+    ['games/RerootGame.tsx', 'buildTreeRound'],
+    ['games/TreePartyGame.tsx', 'buildPartyRound'],
+  ]
+  for (const [path, builder] of games) {
+    const game = await source(path)
+    assert.match(game, new RegExp(`export function ${builder}\\([^)]*random: RandomSource`))
+    assert.doesNotMatch(game, /browserRandom/)
+    assert.match(game, /useRoundSeed/)
+    assert.match(game, /createSeededRandom\(/)
+    assert.match(game, /roundSeed\.next\(\)/)
+    assert.match(game, /roundSeed\.replay\(roundSeed\.seed\)/)
+    assert.match(game, /种子 \{roundSeed\.seed\}/)
+  }
+})
+
+test('all seven games with round totals share the duplicate-safe statistics hook', async () => {
   const paths = [
     'games/PackMasterGame.tsx',
     'games/LISChainGame.tsx',
@@ -68,6 +100,7 @@ test('games with round totals share the duplicate-safe statistics hook', async (
     'games/PowerAccelGame.tsx',
     'games/RerootGame.tsx',
     'games/TreePartyGame.tsx',
+    'games/BitBoardGame.tsx',
   ]
   for (const path of paths) {
     const game = await source(path)
@@ -75,6 +108,6 @@ test('games with round totals share the duplicate-safe statistics hook', async (
     assert.doesNotMatch(game, /\[played, setPlayed\]/)
     assert.doesNotMatch(game, /\[matched, setMatched\]/)
     assert.match(game, /round\.record\(/)
-    assert.match(game, /round\.start\(\)/)
+    assert.match(game, /(?:round\.start|startRound)\(\)/)
   }
 })

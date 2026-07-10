@@ -2,6 +2,7 @@ import { useMemo, useState } from 'react'
 import { Grid3x3, Sigma, RotateCcw, Trophy, Volume2, VolumeX } from 'lucide-react'
 import { solveKingsBoard } from '../../algorithms/bitmask-board/index.ts'
 import { playGameTone } from './runtime/audio'
+import { useRoundStats } from './runtime/useRoundStats'
 import './game-bitboard.css'
 
 type Difficulty = 'easy' | 'medium' | 'hard'
@@ -33,7 +34,7 @@ export default function BitBoardGame() {
   const [rows, setRows] = useState<number[]>(() => Array<number>(DIFFS['easy'].N).fill(0))
   const [muted, setMuted] = useState(false)
   const [revealed, setRevealed] = useState(false)
-  const [solved, setSolved] = useState(0)
+  const round = useRoundStats()
 
   // 所有已放王的坐标
   const kings = useMemo(() => {
@@ -64,14 +65,12 @@ export default function BitBoardGame() {
 
   // DP 方案总数（点击才算，避免困难档每次渲染都跑）
   const [totalShown, setTotalShown] = useState<number | null>(null)
-  // 上一次是否处于达成态——用于「刚达成」的一次性庆祝音，避免在渲染期改 state
-  const [wasWin, setWasWin] = useState(false)
 
   const resetBoard = (spec: DiffSpec) => {
     setRows(Array<number>(spec.N).fill(0))
     setRevealed(false)
     setTotalShown(null)
-    setWasWin(false)
+    round.start()
   }
 
   // 计算「若在 (r,c) 落子后」是否恰好达成，用于即时反馈音与计数。
@@ -94,14 +93,13 @@ export default function BitBoardGame() {
     setRevealed(false)
 
     const nowWin = wouldWinAfter(nx)
-    if (nowWin && !wasWin) {
-      setSolved((n) => n + 1)
+    if (nowWin) {
+      round.record(true)
       playGameTone({ frequency: 659, duration: 0.1 }, muted)
       setTimeout(() => playGameTone({ frequency: 988, duration: 0.16 }, muted), 90)
     } else {
       playGameTone({ frequency: placing ? 480 + r * 40 : 300, duration: 0.07 }, muted)
     }
-    setWasWin(nowWin)
   }
 
   const pickDiff = (d: Difficulty) => {
@@ -254,7 +252,9 @@ export default function BitBoardGame() {
             </div>
           )}
 
-          <div className="gbb__stats">已完成布局 {solved} 次</div>
+          <div className="gbb__stats">
+            已玩 {round.stats.played} 局 · 已完成布局 {round.stats.matched} 次
+          </div>
         </div>
       </div>
     </div>
