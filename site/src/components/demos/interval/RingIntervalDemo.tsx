@@ -2,7 +2,7 @@ import { useMemo, useState } from 'react'
 import { Minus, Plus, X } from 'lucide-react'
 import DPViz from '../../dp-engine/DPViz'
 import { ringMerge } from './ringSolver'
-import type { VizModel } from '../../dp-engine/types'
+import { solveRingInterval } from '../../../algorithms/ring-interval/index.ts'
 import '../knapsack/knapsack-demo.css'
 
 function Stepper({
@@ -34,24 +34,12 @@ function Stepper({
   )
 }
 
-// 末帧里被标为 chosen 的那格值 = 环形最优答案（收尾帧把最优窗口涂成 chosen）。
-const ringAnswer = (m: VizModel): number => {
-  const last = m.frames[m.frames.length - 1].values
-  let best: number | null = null
-  const n = last.length / 2
-  for (let i = 0; i < n; i++) {
-    const v = last[i][i + n - 1]
-    if (v != null && (best == null || v < best)) best = v
-  }
-  return best ?? 0
-}
-
 /** 环形石子合并（断环为链）演示：环上 n 堆复制成 2n 链，在链上跑区间三角表，取长度 n 窗口最优。可改环上数值。 */
 export default function RingIntervalDemo() {
   const [stones, setStones] = useState<number[]>([3, 9, 3, 4])
 
   const model = useMemo(() => ringMerge(stones, 'min'), [stones])
-  const ans = ringAnswer(model)
+  const ans = useMemo(() => solveRingInterval(stones).cost, [stones])
   const modelKey = `ring-${stones.join('_')}`
 
   const setStone = (i: number, val: number) =>

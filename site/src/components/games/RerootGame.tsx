@@ -1,7 +1,11 @@
 import { useMemo, useState } from 'react'
 import { Waypoints, Shuffle, Trophy, Volume2, VolumeX } from 'lucide-react'
-import { buildTree, layoutTree, rerootDistSum } from '../demos/reroot/rerootSolver'
-import type { Edge } from '../demos/reroot/rerootSolver'
+import {
+  buildRerootTree,
+  layoutRerootTree,
+  solveRerootDistance,
+  type RerootEdge as Edge,
+} from '../../algorithms/reroot/index.ts'
 import { playGameTone } from './runtime/audio'
 import { browserRandom, randomInt } from './runtime/random'
 import { useRoundStats } from './runtime/useRoundStats'
@@ -43,9 +47,9 @@ export default function RerootGame() {
 
   // 换根一次算好每点距离和（O(n)），并布局
   const { nodes, maxDepth, dist, best, bestNode } = useMemo(() => {
-    const t = buildTree(n, edges, 0)
-    const { nodes, maxDepth } = layoutTree(t)
-    const res = rerootDistSum(t, 'unweighted')
+    const t = buildRerootTree(n, edges, 0)
+    const { nodes, maxDepth } = layoutRerootTree(t)
+    const res = solveRerootDistance(t, 'unweighted')
     return { nodes, maxDepth, dist: res.dist, best: res.best, bestNode: res.bestNode }
   }, [n, edges])
 

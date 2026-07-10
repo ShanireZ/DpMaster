@@ -50,6 +50,66 @@ import {
   recordLinearFsm,
   recordStockFsm,
 } from '../src/algorithms/linear-fsm/internal.ts'
+import { solveScoreTree } from '../src/algorithms/score-tree/index.ts'
+import { executeScoreTree, recordScoreTree } from '../src/algorithms/score-tree/internal.ts'
+import { solveRingInterval } from '../src/algorithms/ring-interval/index.ts'
+import { executeRingInterval, recordRingInterval } from '../src/algorithms/ring-interval/internal.ts'
+import { solvePalindromeInsertion, solvePalindromeLps } from '../src/algorithms/palindrome/index.ts'
+import {
+  executePalindromeInsertion,
+  executePalindromeLps,
+  recordPalindromeInsertion,
+  recordPalindromeLps,
+} from '../src/algorithms/palindrome/internal.ts'
+import { solveMerge248, solveTakeEnds } from '../src/algorithms/interval-merge/index.ts'
+import {
+  executeMerge248,
+  executeTakeEnds,
+  recordMerge248,
+  recordTakeEnds,
+} from '../src/algorithms/interval-merge/internal.ts'
+import {
+  buildRerootTree,
+  solveRerootDistance,
+  solveRerootEccentricity,
+  solveRerootInOut,
+} from '../src/algorithms/reroot/index.ts'
+import {
+  executeRerootDistance,
+  executeRerootEccentricity,
+  executeRerootInOut,
+  recordRerootDistance,
+  recordRerootEccentricity,
+  recordRerootInOut,
+} from '../src/algorithms/reroot/internal.ts'
+import {
+  buildRootedTree,
+  solveTreeDominatingSet,
+  solveTreeIndependentSet,
+  solveTreeJointWeight,
+  solveTreeKnapsack,
+  solveTreeMaxSubtreeChain,
+} from '../src/algorithms/tree-dp/index.ts'
+import {
+  executeTreeDominatingSet,
+  executeTreeIndependentSet,
+  executeTreeJointWeight,
+  executeTreeKnapsack,
+  executeTreeMaxSubtreeChain,
+  recordTreeDominatingSet,
+  recordTreeIndependentSet,
+  recordTreeJointWeight,
+  recordTreeKnapsack,
+  recordTreeMaxSubtreeChain,
+} from '../src/algorithms/tree-dp/internal.ts'
+import { solveKingsBoard } from '../src/algorithms/bitmask-board/index.ts'
+import { executeKingsBoard, recordKingsBoard } from '../src/algorithms/bitmask-board/internal.ts'
+import { solveBitmaskCover } from '../src/algorithms/bitmask-cover/index.ts'
+import { executeBitmaskCover, recordBitmaskCover } from '../src/algorithms/bitmask-cover/internal.ts'
+import { solveBitmaskSubsets } from '../src/algorithms/bitmask-subset/index.ts'
+import { executeBitmaskSubsets, recordBitmaskSubsets } from '../src/algorithms/bitmask-subset/internal.ts'
+import { solveBitmaskTsp } from '../src/algorithms/bitmask-tsp/index.ts'
+import { executeBitmaskTsp, recordBitmaskTsp } from '../src/algorithms/bitmask-tsp/internal.ts'
 import { knapsack2D } from '../src/components/demos/knapsack/solvers.ts'
 import { lisNaive } from '../src/components/demos/lis/lisSolver.ts'
 import { stoneMerge } from '../src/components/demos/interval/stoneSolver.ts'
@@ -61,8 +121,16 @@ import { twoPath2D } from '../src/components/demos/grid/twoPathSolver.ts'
 import { gridCount2D, triangle2D } from '../src/components/demos/grid/pathSolver.ts'
 import { maxSquare2D } from '../src/components/demos/grid/maxSquareSolver.ts'
 import { fsmPickTable, stockStates } from '../src/components/demos/fsm/fsmSolver.ts'
-import { buildTree as buildRerootTree, bruteDistSum, rerootDistSum } from '../src/components/demos/reroot/rerootSolver.ts'
-import { buildTree as buildRootedTree, solveIndepSet } from '../src/components/demos/treedp/treedpSolver.ts'
+import { buildScoreTree, scoreTree } from '../src/components/demos/interval/scoreTreeSolver.ts'
+import { ringMerge } from '../src/components/demos/interval/ringSolver.ts'
+import { palindromeInsert, palindromeLps } from '../src/components/demos/interval/palindromeSolver.ts'
+import { merge248, takeEnds } from '../src/components/demos/interval/mergeSolver.ts'
+import { rerootDistSum } from '../src/components/demos/reroot/rerootSolver.ts'
+import { solveIndepSet } from '../src/components/demos/treedp/treedpSolver.ts'
+import { countKings, findOneLayout } from '../src/components/demos/bitmask/boardSolver.ts'
+import { solveCover } from '../src/components/demos/bitmask/coverSolver.ts'
+import { enumerateSubsets } from '../src/components/demos/bitmask/subsetSolver.ts'
+import { tspHamilton } from '../src/components/demos/bitmask/tspSolver.ts'
 
 function bruteKnapsack(items, capacity) {
   let value = 0
@@ -363,6 +431,132 @@ function bruteStockFsm(prices, cooldown) {
     return best
   }
   return visit(0, false, false)
+}
+
+function bruteScoreTree(scores) {
+  const visit = (left, right) => {
+    if (left > right) return 1
+    if (left === right) return scores[left]
+    let best = -Infinity
+    for (let root = left; root <= right; root++) {
+      best = Math.max(best, visit(left, root - 1) * visit(root + 1, right) + scores[root])
+    }
+    return best
+  }
+  return scores.length === 0 ? 0 : visit(0, scores.length - 1)
+}
+
+function brutePalindromeLps(chars) {
+  let best = 0
+  for (let mask = 0; mask < 1 << chars.length; mask++) {
+    const candidate = chars.filter((_, index) => (mask & (1 << index)) !== 0)
+    if (candidate.every((char, index) => char === candidate[candidate.length - 1 - index])) {
+      best = Math.max(best, candidate.length)
+    }
+  }
+  return best
+}
+
+function bruteTakeEnds(values) {
+  const visit = (left, right) => {
+    if (left === right) return values[left]
+    return Math.max(values[left] - visit(left + 1, right), values[right] - visit(left, right - 1))
+  }
+  return values.length === 0 ? 0 : visit(0, values.length - 1)
+}
+
+function bruteMerge248(values) {
+  const visit = (left, right) => {
+    if (left === right) return values[left]
+    let merged = 0
+    for (let split = left; split < right; split++) {
+      const lhs = visit(left, split)
+      const rhs = visit(split + 1, right)
+      if (lhs > 0 && lhs === rhs) merged = Math.max(merged, lhs + 1)
+    }
+    return merged
+  }
+  let best = 0
+  for (let left = 0; left < values.length; left++) {
+    for (let right = left; right < values.length; right++) best = Math.max(best, visit(left, right))
+  }
+  return best
+}
+
+function bruteRerootDistance(tree) {
+  return Array.from({ length: tree.n }, (_, start) => {
+    const distances = Array(tree.n).fill(Infinity)
+    distances[start] = 0
+    const queue = [start]
+    for (let cursor = 0; cursor < queue.length; cursor++) {
+      const node = queue[cursor]
+      for (const { to, w } of tree.adj[node]) {
+        if (distances[to] !== Infinity) continue
+        distances[to] = distances[node] + w
+        queue.push(to)
+      }
+    }
+    return distances.reduce((sum, distance) => sum + distance, 0)
+  })
+}
+
+function bruteKingsBoard(size, kings) {
+  const cells = size * size
+  let total = 0
+  for (let mask = 0; mask < 2 ** cells; mask++) {
+    let count = 0
+    const placed = []
+    for (let cell = 0; cell < cells; cell++) {
+      if ((mask & 2 ** cell) === 0) continue
+      count++
+      placed.push([Math.floor(cell / size), cell % size])
+    }
+    if (count !== kings) continue
+    let valid = true
+    for (let first = 0; first < placed.length; first++) {
+      for (let second = first + 1; second < placed.length; second++) {
+        if (
+          Math.abs(placed[first][0] - placed[second][0]) <= 1 &&
+          Math.abs(placed[first][1] - placed[second][1]) <= 1
+        ) valid = false
+      }
+    }
+    if (valid) total++
+  }
+  return total
+}
+
+function bruteBitmaskCover(universe, choices) {
+  const full = (1 << universe) - 1
+  let best = Infinity
+  for (let mask = 0; mask < 1 << choices.length; mask++) {
+    let covered = 0
+    let cost = 0
+    for (let index = 0; index < choices.length; index++) {
+      if ((mask & (1 << index)) === 0) continue
+      covered |= choices[index].cover
+      cost += choices[index].cost
+    }
+    if (covered === full) best = Math.min(best, cost)
+  }
+  return Number.isFinite(best) ? best : -1
+}
+
+function bruteBitmaskTsp(distances) {
+  const remaining = Array.from({ length: distances.length - 1 }, (_, index) => index + 1)
+  let best = Infinity
+  const visit = (current, left, distance) => {
+    if (left.length === 0) {
+      best = Math.min(best, distance)
+      return
+    }
+    for (let index = 0; index < left.length; index++) {
+      const next = left[index]
+      visit(next, [...left.slice(0, index), ...left.slice(index + 1)], distance + distances[current][next])
+    }
+  }
+  visit(0, remaining, 0)
+  return best
 }
 
 function assertEventSnapshots(execute) {
@@ -927,7 +1121,7 @@ test('teaching Adapters preserve frame contracts and project the typed result', 
   assert.deepEqual(stockStates([1, 3, 2, 5], true), solveStockFsm([1, 3, 2, 5], true).days)
 })
 
-test('reroot distance sums match the existing quadratic oracle', () => {
+test('reroot public distance results match an independent quadratic oracle', () => {
   const cases = []
   for (let n = 1; n <= 8; n++) {
     for (let variant = 0; variant < 12; variant++) {
@@ -939,12 +1133,12 @@ test('reroot distance sums match the existing quadratic oracle', () => {
   verifyCases({
     name: 'reroot-distance-sum',
     cases,
-    solve: (tree) => rerootDistSum(tree).dist,
-    oracle: (tree) => bruteDistSum(tree).dist,
+    solve: (tree) => solveRerootDistance(tree).dist,
+    oracle: bruteRerootDistance,
   })
 })
 
-test('tree independent-set results match exhaustive node subsets', () => {
+test('tree-DP public independent-set results match exhaustive node subsets', () => {
   const cases = []
   for (let n = 1; n <= 9; n++) {
     const parent = [-1]
@@ -957,7 +1151,7 @@ test('tree independent-set results match exhaustive node subsets', () => {
   verifyCases({
     name: 'tree-independent-set',
     cases,
-    solve: ({ parent, weight }) => solveIndepSet(buildRootedTree(parent, weight)).ans,
+    solve: ({ parent, weight }) => solveTreeIndependentSet(buildRootedTree(parent, weight)).ans,
     oracle: ({ parent, weight }) => {
       let best = 0
       for (let mask = 0; mask < 1 << parent.length; mask++) {
@@ -976,4 +1170,228 @@ test('tree independent-set results match exhaustive node subsets', () => {
       return best
     },
   })
+})
+
+test('score-tree public results match recursive root enumeration', () => {
+  const cases = vectors([1, 2, 4], 6).filter((scores) => scores.length > 0)
+  verifyCases({
+    name: 'score-tree',
+    cases,
+    solve: solveScoreTree,
+    oracle: bruteScoreTree,
+    equivalent: (actual, expected) => actual.ans === expected,
+    invariants: [(actual, scores) => {
+      assert.equal(actual.dp.length, scores.length)
+      assert.equal(actual.preorder.length, scores.length)
+      assert.deepEqual([...actual.preorder].sort((a, b) => a - b), scores.map((_, index) => index + 1))
+    }],
+  })
+})
+
+test('ring-interval public results match every rotated chain partition', () => {
+  const cases = [...vectors([1, 2, 3], 5)].filter((values) => values.length > 0)
+  for (const objective of ['min', 'max']) {
+    verifyCases({
+      name: `ring-interval-${objective}`,
+      cases,
+      solve: (values) => solveRingInterval(values, objective),
+      oracle: (values) => {
+        const windows = values.map((_, start) => bruteStone(
+          [...values.slice(start), ...values.slice(0, start)],
+          objective,
+        ))
+        return objective === 'min' ? Math.min(...windows) : Math.max(...windows)
+      },
+      equivalent: (actual, expected) => actual.cost === expected,
+      invariants: [(actual, values) => {
+        assert.equal(actual.windows.length, values.length)
+        assert.equal(actual.table.length, values.length * 2)
+      }],
+    })
+  }
+})
+
+test('palindrome public results match exhaustive subsequences and insertion identity', () => {
+  const cases = vectors(['a', 'b', 'c'], 7).filter((chars) => chars.length > 0)
+  verifyCases({
+    name: 'palindrome-lps',
+    cases,
+    solve: solvePalindromeLps,
+    oracle: brutePalindromeLps,
+    equivalent: (actual, expected) => actual.length === expected,
+    invariants: [(actual, chars) => assert.equal(actual.table.length, chars.length)],
+  })
+  for (const raw of ['a', 'ab', 'abc', 'google', 'aebcbda']) {
+    const result = solvePalindromeInsertion(raw)
+    assert.equal(result.insertCount, result.chars.length - brutePalindromeLps(result.chars))
+    assert.equal(result.palindrome, [...result.palindrome].reverse().join(''))
+  }
+})
+
+test('interval-merge public results match recursive game and 248 references', () => {
+  const cases = [...vectors([1, 2, 3], 6)].filter((values) => values.length > 0)
+  verifyCases({
+    name: 'take-ends',
+    cases,
+    solve: solveTakeEnds,
+    oracle: bruteTakeEnds,
+    equivalent: (actual, expected) => actual.difference === expected,
+  })
+  verifyCases({
+    name: 'merge-248',
+    cases,
+    solve: solveMerge248,
+    oracle: bruteMerge248,
+    equivalent: (actual, expected) => actual.value === expected,
+  })
+})
+
+test('bitmask-board public totals match exhaustive board placements', () => {
+  for (let size = 1; size <= 3; size++) {
+    for (let kings = 0; kings <= Math.min(4, size * size); kings++) {
+      const result = solveKingsBoard(size, kings)
+      assert.equal(result.total, bruteKingsBoard(size, kings), `${size}x${size}, K=${kings}`)
+      assert.equal(result.layout === null, result.total === 0)
+    }
+  }
+})
+
+test('bitmask-cover public costs match exhaustive choice subsets', () => {
+  const choices = [
+    { cover: 0b0011, cost: 3 },
+    { cover: 0b1100, cost: 4 },
+    { cover: 0b0101, cost: 2 },
+    { cover: 0b1010, cost: 5 },
+  ]
+  for (const subset of vectors(choices, choices.length)) {
+    assert.equal(solveBitmaskCover(4, subset).cost, bruteBitmaskCover(4, subset))
+  }
+})
+
+test('bitmask-subset public results enumerate every non-empty submask exactly once', () => {
+  for (let source = 0; source < 1 << 8; source++) {
+    const actual = solveBitmaskSubsets(source).subsets
+    const expected = []
+    for (let candidate = 1; candidate <= source; candidate++) {
+      if ((candidate & source) === candidate) expected.push(candidate)
+    }
+    assert.deepEqual([...actual].sort((a, b) => a - b), expected)
+    assert.equal(new Set(actual).size, actual.length)
+  }
+})
+
+test('bitmask-TSP public results match exhaustive Hamilton paths', () => {
+  const cases = [
+    [[0]],
+    [[0, 3], [3, 0]],
+    [[0, 2, 5], [2, 0, 1], [5, 1, 0]],
+    [[0, 4, 1, 7], [4, 0, 3, 2], [1, 3, 0, 6], [7, 2, 6, 0]],
+  ]
+  for (const distances of cases) {
+    const result = solveBitmaskTsp(distances)
+    assert.equal(result.distance, bruteBitmaskTsp(distances))
+    assert.equal(result.table.length, 1 << distances.length)
+  }
+})
+
+test('Task 3 recorded runs share the exact public result implementations', () => {
+  const scores = [5, 7, 1, 2, 10]
+  assert.deepEqual(recordScoreTree(scores).result, solveScoreTree(scores))
+  const ring = [3, 9, 3, 4]
+  assert.deepEqual(recordRingInterval(ring).result, solveRingInterval(ring))
+  const chars = [...'character']
+  assert.deepEqual(recordPalindromeLps(chars).result, solvePalindromeLps(chars))
+  assert.deepEqual(recordPalindromeInsertion('google').result, solvePalindromeInsertion('google'))
+  const values = [1, 1, 2, 2]
+  assert.deepEqual(recordTakeEnds(values).result, solveTakeEnds(values))
+  assert.deepEqual(recordMerge248(values).result, solveMerge248(values))
+
+  const rerootTree = buildRerootTree(5, [
+    { u: 0, v: 1 }, { u: 0, v: 2 }, { u: 1, v: 3 }, { u: 1, v: 4 },
+  ])
+  assert.deepEqual(recordRerootDistance(rerootTree).result, solveRerootDistance(rerootTree))
+  assert.deepEqual(recordRerootInOut(rerootTree).result, solveRerootInOut(rerootTree))
+  assert.deepEqual(recordRerootEccentricity(rerootTree).result, solveRerootEccentricity(rerootTree))
+
+  const tree = buildRootedTree([-1, 0, 0, 1, 1], [3, 6, 2, 5, 4])
+  assert.deepEqual(recordTreeIndependentSet(tree).result, solveTreeIndependentSet(tree))
+  assert.deepEqual(recordTreeDominatingSet(tree).result, solveTreeDominatingSet(tree))
+  assert.deepEqual(recordTreeMaxSubtreeChain(tree).result, solveTreeMaxSubtreeChain(tree))
+  assert.deepEqual(recordTreeKnapsack(tree, [0, 2, 3, 4, 5], 3).result, solveTreeKnapsack(tree, [0, 2, 3, 4, 5], 3))
+  assert.deepEqual(recordTreeJointWeight(tree).result, solveTreeJointWeight(tree))
+  assert.deepEqual(recordKingsBoard(4, 4).result, solveKingsBoard(4, 4))
+  const choices = [{ cover: 0b011, cost: 2 }, { cover: 0b110, cost: 3 }]
+  assert.deepEqual(recordBitmaskCover(3, choices).result, solveBitmaskCover(3, choices))
+  assert.deepEqual(recordBitmaskSubsets(0b101101).result, solveBitmaskSubsets(0b101101))
+  const distances = [[0, 2, 5], [2, 0, 1], [5, 1, 0]]
+  assert.deepEqual(recordBitmaskTsp(distances).result, solveBitmaskTsp(distances))
+})
+
+test('Task 3 events remain immutable snapshots after later transitions', () => {
+  assertEventSnapshots((emit) => executeScoreTree([5, 7, 1, 2], emit))
+  assertEventSnapshots((emit) => executeRingInterval([3, 9, 3, 4], 'min', emit))
+  assertEventSnapshots((emit) => executePalindromeLps([...'character'], emit))
+  assertEventSnapshots((emit) => executePalindromeInsertion('google', emit))
+  assertEventSnapshots((emit) => executeTakeEnds([4, 7, 2, 9], emit))
+  assertEventSnapshots((emit) => executeMerge248([1, 1, 2, 2], emit))
+  const rerootTree = buildRerootTree(5, [
+    { u: 0, v: 1 }, { u: 0, v: 2 }, { u: 1, v: 3 }, { u: 1, v: 4 },
+  ])
+  assertEventSnapshots((emit) => executeRerootDistance(rerootTree, 'unweighted', emit))
+  assertEventSnapshots((emit) => executeRerootInOut(rerootTree, emit))
+  assertEventSnapshots((emit) => executeRerootEccentricity(rerootTree, emit))
+  const tree = buildRootedTree([-1, 0, 0, 1, 1], [3, 6, 2, 5, 4])
+  assertEventSnapshots((emit) => executeTreeIndependentSet(tree, emit))
+  assertEventSnapshots((emit) => executeTreeDominatingSet(tree, emit))
+  assertEventSnapshots((emit) => executeTreeMaxSubtreeChain(tree, emit))
+  assertEventSnapshots((emit) => executeTreeKnapsack(tree, [0, 2, 3, 4, 5], 3, emit))
+  assertEventSnapshots((emit) => executeTreeJointWeight(tree, emit))
+  assertEventSnapshots((emit) => executeKingsBoard(4, 4, emit))
+  assertEventSnapshots((emit) => executeBitmaskCover(3, [{ cover: 0b011, cost: 2 }, { cover: 0b110, cost: 3 }], emit))
+  assertEventSnapshots((emit) => executeBitmaskSubsets(0b101101, emit))
+  assertEventSnapshots((emit) => executeBitmaskTsp([[0, 2, 5], [2, 0, 1], [5, 1, 0]], emit))
+})
+
+test('Task 3 teaching Adapters preserve their public exports and result projections', () => {
+  const scores = [5, 7, 1, 2, 10]
+  assert.deepEqual(buildScoreTree(scores), solveScoreTree(scores))
+  const scoreModel = scoreTree(scores)
+  assertTeachingModel(scoreModel)
+  assert.equal(scoreModel.frames.at(-1).values[0][scores.length - 1], solveScoreTree(scores).ans)
+
+  const ring = [3, 9, 3, 4]
+  const ringModel = ringMerge(ring)
+  assertTeachingModel(ringModel)
+  assert.equal(ringModel.frames.at(-1).values[solveRingInterval(ring).start][solveRingInterval(ring).start + ring.length - 1], solveRingInterval(ring).cost)
+
+  const chars = [...'bcabb']
+  const palindromeModel = palindromeLps(chars)
+  assertTeachingModel(palindromeModel)
+  assert.equal(palindromeModel.frames.at(-1).values[0][chars.length - 1], solvePalindromeLps(chars).length)
+  const insertion = palindromeInsert('google')
+  assert.equal(insertion.insertCount, solvePalindromeInsertion('google').insertCount)
+  assert.equal(insertion.palindrome, solvePalindromeInsertion('google').palindrome)
+
+  const values = [1, 1, 2, 2]
+  const takeModel = takeEnds(values)
+  const mergeModel = merge248(values)
+  assertTeachingModel(takeModel)
+  assertTeachingModel(mergeModel)
+  assert.equal(takeModel.frames.at(-1).values[0][values.length - 1], solveTakeEnds(values).difference)
+  const merged = solveMerge248(values)
+  assert.equal(mergeModel.frames.at(-1).values[merged.bestStart][merged.bestEnd], merged.value)
+
+  const rerootTree = buildRerootTree(4, [{ u: 0, v: 1 }, { u: 1, v: 2 }, { u: 1, v: 3 }])
+  assert.deepEqual(rerootDistSum(rerootTree), solveRerootDistance(rerootTree))
+  const tree = buildRootedTree([-1, 0, 0, 1], [3, 6, 2, 5])
+  assert.equal(solveIndepSet(tree).ans, solveTreeIndependentSet(tree).ans)
+  assert.equal(countKings(4, 4), solveKingsBoard(4, 4).total)
+  assert.deepEqual(findOneLayout(4, 4), solveKingsBoard(4, 4).layout)
+  const choices = [{ cover: 0b011, cost: 2 }, { cover: 0b110, cost: 3 }]
+  assert.equal(solveCover(3, choices).ans, solveBitmaskCover(3, choices).cost)
+  assert.deepEqual(enumerateSubsets(0b101101).map((step) => step.T), solveBitmaskSubsets(0b101101).subsets)
+  const distances = [[0, 2, 5], [2, 0, 1], [5, 1, 0]]
+  const tspModel = tspHamilton(3, distances)
+  assertTeachingModel(tspModel)
+  assert.equal(Math.min(...tspModel.frames.at(-1).values.at(-1).filter((value) => value !== null)), solveBitmaskTsp(distances).distance)
 })

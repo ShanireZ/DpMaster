@@ -2,7 +2,7 @@ import { useMemo, useState } from 'react'
 import { Minus, Plus, X } from 'lucide-react'
 import DPViz from '../../dp-engine/DPViz'
 import { merge248 } from './mergeSolver'
-import type { VizModel } from '../../dp-engine/types'
+import { solveMerge248 } from '../../../algorithms/interval-merge/index.ts'
 import '../knapsack/knapsack-demo.css'
 
 function Stepper({
@@ -34,21 +34,13 @@ function Stepper({
   )
 }
 
-// 整排能合成的最大数字 = 三角表里所有格的最大值。
-const boardBest = (m: VizModel): number => {
-  const last = m.frames[m.frames.length - 1].values
-  let best = 0
-  for (const row of last) for (const v of row) if (v != null && v > best) best = v
-  return best
-}
-
 /** 248（P3146）合并可视化：相邻相等的数并成 +1，dp[l][r] 记该区间可合成的单一值（0=不可）。 */
 export default function TwoFourEightDemo() {
   const [nums, setNums] = useState<number[]>([1, 1, 2, 2])
 
   const model = useMemo(() => merge248(nums), [nums])
   const modelKey = `m248-${nums.join('_')}`
-  const best = boardBest(model)
+  const best = useMemo(() => solveMerge248(nums).value, [nums])
 
   const setNum = (i: number, val: number) => setNums((arr) => arr.map((s, k) => (k === i ? val : s)))
   const addNum = () => setNums((arr) => (arr.length < 6 ? [...arr, 1] : arr))

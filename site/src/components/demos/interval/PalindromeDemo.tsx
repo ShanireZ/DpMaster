@@ -2,6 +2,7 @@ import { useMemo, useState } from 'react'
 import { RotateCcw } from 'lucide-react'
 import DPViz from '../../dp-engine/DPViz'
 import { palindromeLps, normalize } from './palindromeSolver'
+import { solvePalindromeLps } from '../../../algorithms/palindrome/index.ts'
 import '../knapsack/knapsack-demo.css'
 import './palindrome-demo.css'
 
@@ -14,7 +15,7 @@ export default function PalindromeDemo() {
   const chars = useMemo(() => normalize(text), [text])
   const model = useMemo(() => palindromeLps(chars), [chars])
   const modelKey = `plps-${chars.join('')}`
-  const lps = model.frames[model.frames.length - 1].values[0][chars.length - 1] ?? 0
+  const lps = useMemo(() => solvePalindromeLps(chars).length, [chars])
 
   return (
     <div>

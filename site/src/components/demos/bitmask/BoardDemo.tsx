@@ -2,7 +2,8 @@ import { useMemo, useState } from 'react'
 import { Minus, Plus, Sigma } from 'lucide-react'
 import { PlaybackControls } from '../../dp-engine/playback/PlaybackControls'
 import { useStepPlayer } from '../../dp-engine/playback/useStepPlayer'
-import { findOneLayout, layoutFrames, countKings } from './boardSolver'
+import { layoutFrames } from './boardSolver'
+import { solveKingsBoard } from '../../../algorithms/bitmask-board/index.ts'
 import '../knapsack/knapsack-demo.css'
 import './bitmask-demo.css'
 
@@ -11,12 +12,13 @@ export default function BoardDemo() {
   const [K, setK] = useState(4)
   const [showCount, setShowCount] = useState(false)
 
-  const layout = useMemo(() => findOneLayout(N, K), [N, K])
+  const solution = useMemo(() => solveKingsBoard(N, K), [N, K])
+  const layout = solution.layout
   const frames = useMemo(
     () => (layout ? layoutFrames(N, K, layout) : []),
     [N, K, layout],
   )
-  const total = useMemo(() => (showCount ? countKings(N, K) : null), [showCount, N, K])
+  const total = showCount ? solution.total : null
 
   const p = useStepPlayer(frames.length)
   const frame = frames.length ? frames[Math.min(p.index, frames.length - 1)] : null

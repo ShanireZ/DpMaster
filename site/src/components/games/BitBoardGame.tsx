@@ -1,6 +1,6 @@
 import { useMemo, useState } from 'react'
 import { Grid3x3, Sigma, RotateCcw, Trophy, Volume2, VolumeX } from 'lucide-react'
-import { countKings } from '../demos/bitmask/boardSolver'
+import { solveKingsBoard } from '../../algorithms/bitmask-board/index.ts'
 import { playGameTone } from './runtime/audio'
 import './game-bitboard.css'
 
@@ -117,7 +117,7 @@ export default function BitBoardGame() {
   }
 
   const reveal = () => {
-    const total = countKings(N, K)
+    const total = solveKingsBoard(N, K).total
     setTotalShown(total)
     setRevealed(true)
     playGameTone({ frequency: 523, duration: 0.12 }, muted)
