@@ -1,26 +1,19 @@
-import type { VizModel, Frame, CellState, Arrow } from '../../dp-engine/types'
-import { key } from '../../dp-engine/types'
+import type { VizModel, Frame, CellState, Arrow } from '../../dp-engine/types.ts'
+import { key } from '../../dp-engine/types.ts'
+import {
+  enumerateDependencyCombos, recordDependencyKnapsack,
+} from '../../../algorithms/knapsack-dependency/internal.ts'
+import type {
+  DependencyAccessory, DependencyCombo, DependencyMaster,
+} from '../../../algorithms/knapsack-dependency/index.ts'
 
 /** 一个主件（附件依它而选）。 */
-export interface Master {
-  w: number
-  v: number
-}
+export type Master = DependencyMaster
 /** 主件的一个附件（合法与否取决于主件是否被选）。 */
-export interface Accessory {
-  w: number
-  v: number
-}
+export type Accessory = DependencyAccessory
 
 /** 由「主件 + 所选附件子集」枚举出的一个合法组合——当作一件“分组物品”。 */
-export interface Combo {
-  w: number // 费用 = 主件费用 + 所选附件费用之和
-  v: number // 价值 = 主件价值 + 所选附件价值之和
-  picks: boolean[] // 各附件是否入选（长度 = 附件数）
-  label: string // 如「仅主」「主+附1」「主+附1+2」
-}
-
-const NEG = -1e9
+export type Combo = DependencyCombo
 
 function settled(vals: (number | null)[][]): Record<string, CellState> {
   const s: Record<string, CellState> = {}
@@ -35,26 +28,7 @@ function settled(vals: (number | null)[][]): Record<string, CellState> {
  * 于是「有依赖的背包」= 这些组合构成**同一组**、组内至多选一个的**分组背包**。
  */
 export function enumCombos(master: Master, acc: Accessory[]): Combo[] {
-  const combos: Combo[] = []
-  const n = acc.length
-  for (let mask = 0; mask < 1 << n; mask++) {
-    let w = master.w
-    let v = master.v
-    const picks: boolean[] = []
-    const on: number[] = []
-    for (let k = 0; k < n; k++) {
-      const take = (mask >> k) & 1
-      picks.push(!!take)
-      if (take) {
-        w += acc[k].w
-        v += acc[k].v
-        on.push(k + 1)
-      }
-    }
-    const label = on.length === 0 ? '仅主' : `主+附${on.join('')}`
-    combos.push({ w, v, picks, label })
-  }
-  return combos
+  return enumerateDependencyCombos(master, acc)
 }
 
 /**
@@ -65,7 +39,8 @@ export function enumCombos(master: Master, acc: Accessory[]): Combo[] {
  * 逐格取「不选本组」与「选组内某个组合」的较大者——恰好复用分组背包的转移。
  */
 export function dependencyKnapsack(master: Master, acc: Accessory[], W: number): VizModel {
-  const combos = enumCombos(master, acc)
+  const run = recordDependencyKnapsack(master, acc, W)
+  const combos = run.result.combos
   // 二维：第 0 行（空组）+ 第 1 行（这一组组合处理后）。
   const f: (number | null)[][] = [Array<number | null>(W + 1).fill(0), Array<number | null>(W + 1).fill(null)]
   const snap = () => f.map((row) => row.slice())
@@ -92,27 +67,12 @@ export function dependencyKnapsack(master: Master, acc: Accessory[], W: number):
   })
 
   // 第 1 行：逐格做「这一组组合」的分组转移。
-  for (let j = 0; j <= W; j++) {
-    const skip = f[0][j] as number // 不选本组 → 继承上一行同列
-    let bestTake = NEG
-    let takeIdx = -1
-    for (let k = 0; k < combos.length; k++) {
-      const { w, v } = combos[k]
-      if (j >= w) {
-        const cand = (f[0][j - w] as number) + v
-        if (cand > bestTake) {
-          bestTake = cand
-          takeIdx = k
-        }
-      }
-    }
-    const best = Math.max(skip, bestTake)
+  for (const event of run.events) {
+    const { capacity: j, skip, bestTake, takeIndex: takeIdx, best, takeWins } = event
     f[1][j] = best
 
     const states = settled(f)
     const arrows: Arrow[] = []
-    const takeWins = bestTake > skip && takeIdx >= 0
-
     states[key(0, j)] = 'source'
     arrows.push({ from: { r: 0, c: j }, to: { r: 1, c: j }, kind: takeWins ? 'source' : 'chosen' })
     if (takeIdx >= 0) {
@@ -142,18 +102,16 @@ export function dependencyKnapsack(master: Master, acc: Accessory[], W: number):
   const fin = settled(f)
   fin[key(1, W)] = 'chosen'
   // 找出最优组合（用于结论解说）。
-  let bestCombo: Combo | null = null
-  let bestVal = 0
-  for (const c of combos) if (c.w <= W && c.v > bestVal) { bestVal = c.v; bestCombo = c }
+  const bestCombo = run.result.bestCombo
   const tail =
-    bestCombo && bestCombo.v === (f[1][W] as number)
+    bestCombo && bestCombo.v === run.result.value
       ? `——最优是选组合 <b>${bestCombo.label}</b>（费用 ${bestCombo.w} ≤ ${W}、价值 ${bestCombo.v}）。`
       : '。'
   frames.push({
     values: snap(),
     states: fin,
-    caption: `答案在 <b>f[1][${W}] = ${f[1][W]}</b>——这一组组合、容量 ${W}、至多选一个组合时的最大价值${tail}`,
-    formula: `f[1][${W}]=${f[1][W]}`,
+    caption: `答案在 <b>f[1][${W}] = ${run.result.value}</b>——这一组组合、容量 ${W}、至多选一个组合时的最大价值${tail}`,
+    formula: `f[1][${W}]=${run.result.value}`,
   })
 
   return {

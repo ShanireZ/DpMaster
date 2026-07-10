@@ -1,13 +1,10 @@
-import type { VizModel, Frame, CellState, Arrow } from '../../dp-engine/types'
-import { key } from '../../dp-engine/types'
+import type { VizModel, Frame, CellState, Arrow } from '../../dp-engine/types.ts'
+import { key } from '../../dp-engine/types.ts'
+import { recordGroupKnapsack } from '../../../algorithms/knapsack-group/internal.ts'
+import type { GroupItem } from '../../../algorithms/knapsack-group/index.ts'
 
-export interface GItem {
-  w: number
-  v: number
-}
+export type GItem = GroupItem
 export type Group = GItem[]
-
-const NEG = -1e9
 
 function settled(vals: (number | null)[][]): Record<string, CellState> {
   const s: Record<string, CellState> = {}
@@ -24,6 +21,7 @@ function settled(vals: (number | null)[][]): Record<string, CellState> {
  */
 export function group2D(groups: Group[], W: number): VizModel {
   const G = groups.length
+  const run = recordGroupKnapsack(groups, W)
   const f: (number | null)[][] = Array.from({ length: G + 1 }, () => Array<number | null>(W + 1).fill(null))
   for (let j = 0; j <= W; j++) f[0][j] = 0
   const snap = () => f.map((row) => row.slice())
@@ -36,31 +34,13 @@ export function group2D(groups: Group[], W: number): VizModel {
     formula: 'f[0][j] = 0',
   })
 
-  for (let g = 1; g <= G; g++) {
-    const items = groups[g - 1]
-    for (let j = 0; j <= W; j++) {
-      // 候选一：本组不选任何件 → 继承上一行同列
-      const skip = f[g - 1][j] as number
-      // 候选二：本组只选某一件 k（都从上一行取，保证每组 ≤1 件）
-      let bestTake = NEG
-      let takeIdx = -1 // 命中的组内件下标（用于高亮来源）
-      for (let k = 0; k < items.length; k++) {
-        const { w, v } = items[k]
-        if (j >= w) {
-          const cand = (f[g - 1][j - w] as number) + v
-          if (cand > bestTake) {
-            bestTake = cand
-            takeIdx = k
-          }
-        }
-      }
-      const best = Math.max(skip, bestTake)
+  for (const event of run.events) {
+      if (event.type !== 'table-cell') continue
+      const { groupIndex: g, capacity: j, items, skip, bestTake, takeIndex: takeIdx, best, takeWins } = event
       f[g][j] = best
 
       const states = settled(f)
       const arrows: Arrow[] = []
-      const takeWins = bestTake > skip && takeIdx >= 0
-
       // 「跳过本组」的来源：上一行同列
       states[key(g - 1, j)] = 'source'
       arrows.push({ from: { r: g - 1, c: j }, to: { r: g, c: j }, kind: takeWins ? 'source' : 'chosen' })
@@ -88,7 +68,6 @@ export function group2D(groups: Group[], W: number): VizModel {
         formula = `f[${g}][${j}]=f[${g - 1}][${j}]=${skip}`
       }
       frames.push({ values: snap(), states, arrows, active: { r: g, c: j }, caption, formula })
-    }
   }
 
   const fin = settled(f)
@@ -96,8 +75,8 @@ export function group2D(groups: Group[], W: number): VizModel {
   frames.push({
     values: snap(),
     states: fin,
-    caption: `答案在右下角 <b>f[${G}][${W}] = ${f[G][W]}</b>——考虑全部 ${G} 组、容量 ${W}、每组至多取一件时的最大价值。`,
-    formula: `f[${G}][${W}]=${f[G][W]}`,
+    caption: `答案在右下角 <b>f[${G}][${W}] = ${run.result.value}</b>——考虑全部 ${G} 组、容量 ${W}、每组至多取一件时的最大价值。`,
+    formula: `f[${G}][${W}]=${run.result.value}`,
   })
 
   return {

@@ -1,10 +1,10 @@
-import type { VizModel, Frame, CellState, Arrow } from '../../dp-engine/types'
-import { key } from '../../dp-engine/types'
+import type { VizModel, Frame, CellState, Arrow } from '../../dp-engine/types.ts'
+import { key } from '../../dp-engine/types.ts'
+import { recordCountKnapsack } from '../../../algorithms/knapsack-variant/internal.ts'
+import type { CountKnapsackItem } from '../../../algorithms/knapsack-variant/index.ts'
 
 // 撤销演示只关心重量；对应洛谷 P4141「消失之物」。
-export interface UndoItem {
-  w: number
-}
+export type UndoItem = CountKnapsackItem
 
 // 把非 null 的单元全部标成 settled（从 variantSolver 复制的样板）。
 function settled(vals: (number | null)[][]): Record<string, CellState> {
@@ -25,17 +25,11 @@ function settled(vals: (number | null)[][]): Record<string, CellState> {
  */
 export function undoKnapsack(items: UndoItem[], W: number, victim: number): VizModel {
   const n = items.length
-  // victim 夹到合法范围（0-based）。
-  const k = Math.min(Math.max(victim, 0), Math.max(n - 1, 0))
+  const run = recordCountKnapsack(items, W, victim)
+  const k = run.result.victimIndex ?? 0
   const wk = n > 0 ? items[k].w : 0
 
-  // —— 先在内部把全集 f 算好（用于第二幕 g 的初值与末帧对照）——
-  const f: number[] = Array<number>(W + 1).fill(0)
-  f[0] = 1
-  for (let i = 0; i < n; i++) {
-    const w = items[i].w
-    for (let j = W; j >= w; j--) f[j] += f[j - w]
-  }
+  const f = run.result.counts
 
   // 两行网格：第 0 行 = 全集 f，第 1 行 = 撤销中的 g。
   // 第一幕里 g 行整行留空（null），只演 f 行的累加。
@@ -56,13 +50,9 @@ export function undoKnapsack(items: UndoItem[], W: number, victim: number): VizM
     formula: 'f[0]=1,\\ f[j]=0\\ (j>0)',
   })
 
-  for (let i = 0; i < n; i++) {
-    const w = items[i].w
-    // 倒序 j:W→w —— 加它用倒序，保证 f[j-w] 停在「这件还没参与」的旧值。
-    for (let j = W; j >= w; j--) {
-      const old = fRow[j] as number
-      const add = fRow[j - w] as number
-      const now = old + add
+  for (const event of run.events) {
+      if (event.type !== 'count-cell') continue
+      const { itemIndex: i, weight: w, capacity: j, before: old, add, after: now } = event
       const grew = add > 0
       fRow[j] = now
 
@@ -80,7 +70,6 @@ export function undoKnapsack(items: UndoItem[], W: number, victim: number): VizM
       // ★formula 内禁中文，纯符号
       const formula = `f[${j}]\\mathrel{+}=f[${j - w}]=${old}+${add}=${now}`
       frames.push({ values: snap(), states, active: { r: 0, c: j }, arrows, caption, formula })
-    }
   }
 
   // 全集建成，作一帧收束（f 行全高亮）。
@@ -99,7 +88,7 @@ export function undoKnapsack(items: UndoItem[], W: number, victim: number): VizM
 
   if (n === 0 || wk > W) {
     // 极端兜底：没有物品或该件比容量还大（退不动），直接给末帧。
-    gRow = fRow.slice()
+    gRow = (run.result.withoutVictim ?? f).slice()
     const st = settled(snap())
     for (let j = 0; j <= W; j++) {
       st[key(0, j)] = 'settled'
@@ -134,11 +123,10 @@ export function undoKnapsack(items: UndoItem[], W: number, victim: number): VizM
     })
   }
 
-  // 正序 j:wk→W —— 退它用正序，方向与加时（倒序）恰好相反。
-  for (let j = wk; j <= W; j++) {
-    const old = gRow[j] as number
-    const sub = gRow[j - wk] as number // 此时 g[j-wk] 已是「退干净第 k 件」的值
-    const now = old - sub
+  // 正序事件由领域 Implementation 产生，Adapter 只负责重放。
+  for (const event of run.events) {
+    if (event.type !== 'undo-cell') continue
+    const { capacity: j, before: old, subtract: sub, after: now } = event
     const changed = sub > 0
     gRow[j] = now
 
