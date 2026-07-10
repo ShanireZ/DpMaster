@@ -1,4 +1,4 @@
-import { expect, test, type Page } from '@playwright/test'
+import { expect, test, type Page, type Response } from '@playwright/test'
 
 const origin = 'https://dp.betaoi.cc'
 
@@ -62,43 +62,82 @@ function captureBrowserErrors(page: Page): string[] {
   return errors
 }
 
-for (const route of routes) {
+function routeByPath(path: string): RouteExpectation {
+  const route = routes.find((candidate) => candidate.path === path)
+  if (!route) throw new Error(`Missing browser route expectation for ${path}`)
+  return route
+}
+
+async function assertRoute(
+  page: Page,
+  route: RouteExpectation,
+  browserErrors: string[],
+  response?: Response | null,
+): Promise<void> {
+  if (response !== undefined) {
+    expect(response).not.toBeNull()
+    expect(response?.status()).toBe(200)
+  }
+  await expect(page).toHaveTitle(route.title)
+  await expect(page.locator('meta[name="description"]')).toHaveAttribute(
+    'content',
+    route.description,
+  )
+  await expect(page.locator('link[rel="canonical"]')).toHaveAttribute(
+    'href',
+    `${origin}${route.path}`,
+  )
+  await expect(page.locator('meta[property="og:type"]')).toHaveAttribute(
+    'content',
+    route.ogType,
+  )
+  await expect(page.locator('h1')).toHaveCount(1)
+  await expect(page.locator('h1')).toBeVisible()
+  await expect(page.locator('.route-announcer')).toHaveText(`已进入 ${route.title}`)
+  await expect(
+    page.locator(`nav[aria-label="主导航"] a[href="${route.path}"]`),
+  ).toHaveAttribute('aria-current', 'page')
+  await expect(
+    page.locator('nav[aria-label="面包屑"] [aria-current="page"]'),
+  ).toHaveText(route.currentLabel)
+  expect(browserErrors).toEqual([])
+}
+
+for (const route of routes.filter(({ path }) => path !== '/part/g/plug')) {
   test(`${route.path} exposes production route metadata and current-page state`, async ({ page }) => {
     const browserErrors = captureBrowserErrors(page)
     const response = await page.goto(route.path)
 
-    expect(response?.status()).toBe(200)
-    await expect(page).toHaveTitle(route.title)
-    await expect(page.locator('meta[name="description"]')).toHaveAttribute(
-      'content',
-      route.description,
-    )
-    await expect(page.locator('link[rel="canonical"]')).toHaveAttribute(
-      'href',
-      `${origin}${route.path}`,
-    )
-    await expect(page.locator('meta[property="og:type"]')).toHaveAttribute(
-      'content',
-      route.ogType,
-    )
-    await expect(page.locator('h1')).toHaveCount(1)
-    await expect(page.locator('h1')).toBeVisible()
-    await expect(page.locator('.route-announcer')).toHaveText(`已进入 ${route.title}`)
-    await expect(
-      page.locator(`nav[aria-label="主导航"] a[href="${route.path}"]`),
-    ).toHaveAttribute('aria-current', 'page')
-    await expect(
-      page.locator('nav[aria-label="面包屑"] [aria-current="page"]'),
-    ).toHaveText(route.currentLabel)
-    expect(browserErrors).toEqual([])
+    await assertRoute(page, route, browserErrors, response)
   })
 }
+
+test('/part/g/plug works as an explicit direct production-preview deep link', async ({ page }) => {
+  const browserErrors = captureBrowserErrors(page)
+  const route = routeByPath('/part/g/plug')
+  const response = await page.goto(route.path)
+
+  await assertRoute(page, route, browserErrors, response)
+})
+
+test('client navigation refreshes the complete route contract', async ({ page }) => {
+  const browserErrors = captureBrowserErrors(page)
+  const home = routeByPath('/')
+  const response = await page.goto(home.path)
+  await assertRoute(page, home, browserErrors, response)
+
+  const familyLink = page.locator('nav[aria-label="主导航"] a[href="/part/a"]')
+  await familyLink.click()
+  await expect(page).toHaveURL('/part/a')
+  await assertRoute(page, routeByPath('/part/a'), browserErrors)
+})
 
 test('keyboard route navigation and skip-link activation focus main without stealing initial focus', async ({
   page,
 }) => {
   await page.goto('/')
   const main = page.locator('#main-content')
+  await expect(main).toBeVisible()
   await expect(main).not.toBeFocused()
 
   const familyLink = page.locator('nav[aria-label="主导航"] a[href="/part/a"]')
@@ -110,6 +149,7 @@ test('keyboard route navigation and skip-link activation focus main without stea
   await expect(main).toBeFocused()
 
   await page.goto('/')
+  await expect(main).toBeVisible()
   await expect(main).not.toBeFocused()
   await page.keyboard.press('Tab')
   const skipLink = page.getByRole('link', { name: '跳到主要内容' })
