@@ -68,22 +68,3 @@
 .dpviz__legend { display: flex; flex-wrap: wrap; gap: var(--sp-4); font-size: 12px; color: var(--text-3); }
 .dpviz__legend span { display: inline-flex; align-items: center; gap: 6px; }
 .dpviz__legend i { width: 12px; height: 12px; border-radius: 4px; border: 1.5px solid; }
-
-/* 控制条 */
-.dpctl { display: flex; align-items: center; gap: var(--sp-3); flex-wrap: wrap; }
-.dpctl__btns { display: flex; gap: 6px; }
-.dpctl button {
-  width: 40px; height: 40px; border-radius: var(--r-2);
-  display: grid; place-items: center; color: var(--text-1);
-  border: 1px solid var(--border); background: var(--surface-2);
-  transition: all var(--t-fast);
-}
-.dpctl button:hover:not(:disabled) { border-color: var(--accent-2); background: var(--surface-3); }
-.dpctl button:disabled { opacity: 0.4; cursor: not-allowed; }
-.dpctl button.primary { background: var(--grad-accent); color: var(--text-on-accent); border-color: transparent; width: 48px; }
-.dpctl__scrub { flex: 1; min-width: 120px; display: flex; align-items: center; gap: 10px; }
-.dpctl__scrub input[type='range'] { flex: 1; accent-color: var(--accent-2); }
-.dpctl__count { font-family: var(--font-mono); font-size: 13px; color: var(--text-3); white-space: nowrap; }
-.dpctl__speed { display: flex; gap: 4px; }
-.dpctl__speed button { width: auto; height: 32px; padding: 0 10px; font-size: 12px; font-family: var(--font-mono); }
-.dpctl__speed button.on { color: var(--text-on-accent); background: var(--grad-accent); border-color: transparent; }
