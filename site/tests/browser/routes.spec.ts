@@ -135,6 +135,7 @@ test('client navigation refreshes the complete route contract', async ({ page })
 test('keyboard route navigation and skip-link activation focus main without stealing initial focus', async ({
   page,
 }) => {
+  const browserErrors = captureBrowserErrors(page)
   await page.goto('/')
   const main = page.locator('#main-content')
   await expect(main).toBeVisible()
@@ -156,4 +157,5 @@ test('keyboard route navigation and skip-link activation focus main without stea
   await expect(skipLink).toBeFocused()
   await page.keyboard.press('Enter')
   await expect(main).toBeFocused()
+  expect(browserErrors).toEqual([])
 })

@@ -71,6 +71,7 @@ export function buildRerootTree(
   if (!Number.isInteger(n) || n < 1) throw new RangeError('reroot tree size must be positive')
   if (!Number.isInteger(root) || root < 0 || root >= n) throw new RangeError('reroot root is out of range')
   if (weight !== undefined && weight.length !== n) throw new RangeError('reroot node weights must match tree size')
+  if (edges.length !== n - 1) throw new RangeError('reroot tree must contain exactly n - 1 edges')
   const adj: { to: number; w: number }[][] = Array.from({ length: n }, () => [])
   for (const edge of edges) {
     if (edge.u < 0 || edge.u >= n || edge.v < 0 || edge.v >= n) throw new RangeError('reroot edge is out of range')

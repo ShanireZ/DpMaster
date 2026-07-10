@@ -1,7 +1,7 @@
 import type { EventSink, RecordedRun } from '../contracts.ts'
 import type { BitmaskCoverChoice, BitmaskCoverResult } from './index.ts'
 
-const INF = 1e9
+const INF = Number.POSITIVE_INFINITY
 
 export interface BitmaskCoverEvent {
   type: 'transition'
@@ -31,9 +31,9 @@ export function executeBitmaskCover(
   }
   const table = Array<number>(full + 1).fill(INF)
   table[0] = 0
-  const snapshot = () => table.map((value) => value >= INF ? -1 : value)
+  const snapshot = () => table.map((value) => Number.isFinite(value) ? value : -1)
   for (let covered = 0; covered <= full; covered++) {
-    if (table[covered] >= INF) continue
+    if (!Number.isFinite(table[covered])) continue
     for (let choice = 0; choice < choices.length; choice++) {
       const next = covered | choices[choice].cover
       if (next === covered) continue
@@ -46,14 +46,14 @@ export function executeBitmaskCover(
         covered,
         choice,
         next,
-        before: before >= INF ? -1 : before,
+        before: Number.isFinite(before) ? before : -1,
         candidate,
         updated,
         table: snapshot(),
       })
     }
   }
-  return { cost: table[full] >= INF ? -1 : table[full], full, universe, table: snapshot() }
+  return { cost: Number.isFinite(table[full]) ? table[full] : -1, full, universe, table: snapshot() }
 }
 
 export function recordBitmaskCover(

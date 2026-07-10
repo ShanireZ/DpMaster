@@ -500,6 +500,152 @@ function bruteRerootDistance(tree) {
   })
 }
 
+function allPairRerootDistances(tree) {
+  return Array.from({ length: tree.n }, (_, start) => {
+    const distances = Array(tree.n).fill(Infinity)
+    distances[start] = 0
+    const queue = [start]
+    for (let cursor = 0; cursor < queue.length; cursor++) {
+      const node = queue[cursor]
+      for (const { to, w } of tree.adj[node]) {
+        if (distances[to] !== Infinity) continue
+        distances[to] = distances[node] + w
+        queue.push(to)
+      }
+    }
+    return distances
+  })
+}
+
+function* weightedRerootCases(maxSize = 8) {
+  for (let n = 1; n <= maxSize; n++) {
+    for (let variant = 0; variant < 8; variant++) {
+      const edges = []
+      for (let node = 1; node < n; node++) {
+        edges.push({
+          u: node,
+          v: (node * 5 + variant * 3) % node,
+          w: 1 + ((node * 7 + variant * 2) % 5),
+        })
+      }
+      const weight = Array.from({ length: n }, (_, node) => 1 + ((node * 3 + variant * 7) % 6))
+      yield buildRerootTree(n, edges, variant % n, weight)
+    }
+  }
+}
+
+function* weightedRootedCases(maxSize = 7, positiveOnly = false) {
+  const values = positiveOnly ? [1, 2, 5, 8] : [-5, -2, 1, 4, 7]
+  for (let n = 1; n <= maxSize; n++) {
+    for (let variant = 0; variant < 8; variant++) {
+      const parent = [-1]
+      for (let node = 1; node < n; node++) parent.push((node * 3 + variant * 5) % node)
+      const weight = Array.from(
+        { length: n },
+        (_, node) => values[(node * 7 + variant * 3) % values.length],
+      )
+      yield buildRootedTree(parent, weight)
+    }
+  }
+}
+
+function rootedAdjacency(tree) {
+  const adjacency = Array.from({ length: tree.n }, () => [])
+  for (let node = 0; node < tree.n; node++) {
+    const parent = tree.parent[node]
+    if (parent < 0) continue
+    adjacency[node].push(parent)
+    adjacency[parent].push(node)
+  }
+  return adjacency
+}
+
+function bruteTreeMaxSubtreeChain(tree) {
+  let ans = Number.NEGATIVE_INFINITY
+  const visitDescendants = (node, sum) => {
+    const nextSum = sum + tree.weight[node]
+    ans = Math.max(ans, nextSum)
+    for (const child of tree.children[node]) visitDescendants(child, nextSum)
+  }
+  for (let start = 0; start < tree.n; start++) visitDescendants(start, 0)
+
+  const adjacency = rootedAdjacency(tree)
+  let diameter = Number.NEGATIVE_INFINITY
+  const visitPaths = (node, parent, sum) => {
+    const nextSum = sum + tree.weight[node]
+    diameter = Math.max(diameter, nextSum)
+    for (const neighbor of adjacency[node]) {
+      if (neighbor !== parent) visitPaths(neighbor, node, nextSum)
+    }
+  }
+  for (let start = 0; start < tree.n; start++) visitPaths(start, -1, 0)
+  return { ans, diameter }
+}
+
+function bruteTreeKnapsack(tree, parentEdge, edgeLimit) {
+  const edgeNodes = Array.from({ length: tree.n }, (_, node) => node).filter((node) => node !== tree.root)
+  const bitByNode = new Map(edgeNodes.map((node, index) => [node, index]))
+  let best = 0
+  for (let mask = 0; mask < 1 << edgeNodes.length; mask++) {
+    let used = 0
+    let value = 0
+    let connected = true
+    for (let index = 0; index < edgeNodes.length; index++) {
+      if ((mask & (1 << index)) === 0) continue
+      used++
+      const node = edgeNodes[index]
+      value += parentEdge[node]
+      const parent = tree.parent[node]
+      if (parent !== tree.root && (mask & (1 << bitByNode.get(parent))) === 0) connected = false
+    }
+    if (connected && used === edgeLimit) best = Math.max(best, value)
+  }
+  return best
+}
+
+function bruteTreeJointWeight(tree) {
+  const adjacency = rootedAdjacency(tree)
+  let unorderedSum = 0
+  let globalMax = 0
+  for (let first = 0; first < tree.n; first++) {
+    const distance = Array(tree.n).fill(Infinity)
+    distance[first] = 0
+    const queue = [first]
+    for (let cursor = 0; cursor < queue.length; cursor++) {
+      const node = queue[cursor]
+      for (const neighbor of adjacency[node]) {
+        if (distance[neighbor] !== Infinity) continue
+        distance[neighbor] = distance[node] + 1
+        queue.push(neighbor)
+      }
+    }
+    for (let second = first + 1; second < tree.n; second++) {
+      if (distance[second] !== 2) continue
+      const product = tree.weight[first] * tree.weight[second]
+      unorderedSum += product
+      globalMax = Math.max(globalMax, product)
+    }
+  }
+  return { totalSum: unorderedSum * 2, globalMax }
+}
+
+function bruteDominatingSet(tree) {
+  let best = Infinity
+  for (let mask = 0; mask < 1 << tree.n; mask++) {
+    let cost = 0
+    let valid = true
+    for (let node = 0; node < tree.n; node++) {
+      if ((mask & (1 << node)) !== 0) cost += tree.weight[node]
+      const dominated = (mask & (1 << node)) !== 0
+        || (tree.parent[node] >= 0 && (mask & (1 << tree.parent[node])) !== 0)
+        || tree.children[node].some((child) => (mask & (1 << child)) !== 0)
+      if (!dominated) valid = false
+    }
+    if (valid) best = Math.min(best, cost)
+  }
+  return best
+}
+
 function bruteKingsBoard(size, kings) {
   const cells = size * size
   let total = 0
@@ -576,6 +722,7 @@ function* rootedParentArrays(size) {
 
 function* dominatingWitnessCases() {
   yield { parent: [-1, 0, 0, 0, 2], weight: [5, 3, 4, 6, 2] }
+  yield { parent: [-1], weight: [2_000_000_000] }
   for (let size = 1; size <= 5; size++) {
     for (const parent of rootedParentArrays(size)) {
       for (const weight of vectors([1, 2, 4], size, false)) {
@@ -750,7 +897,26 @@ test('dependency knapsack result matches exhaustive legal accessory subsets', ()
     solve: ({ master, accessories, capacity }) => solveDependencyKnapsack(master, accessories, capacity),
     oracle: ({ master, accessories, capacity }) => bruteDependencyKnapsack(master, accessories, capacity),
     equivalent: (actual, expected) => actual.value === expected,
-    invariants: [(actual) => assert.equal(Object.hasOwn(actual, 'frames'), false)],
+    invariants: [(actual, { master, accessories, capacity }) => {
+      assert.equal(Object.hasOwn(actual, 'frames'), false)
+      if (actual.bestCombo === null) {
+        assert.equal(actual.value, 0)
+        return
+      }
+      assert.equal(actual.bestCombo.picks.length, accessories.length)
+      const pickedWeight = accessories.reduce(
+        (sum, accessory, index) => sum + (actual.bestCombo.picks[index] ? accessory.w : 0),
+        master.w,
+      )
+      const pickedValue = accessories.reduce(
+        (sum, accessory, index) => sum + (actual.bestCombo.picks[index] ? accessory.v : 0),
+        master.v,
+      )
+      assert.equal(actual.bestCombo.w, pickedWeight)
+      assert.equal(actual.bestCombo.v, pickedValue)
+      assert.ok(pickedWeight <= capacity)
+      assert.equal(pickedValue, actual.value)
+    }],
   })
 })
 
@@ -790,6 +956,17 @@ test('LIS result matches exhaustive subsequences and returns a legal witness', (
         const picked = values.filter((_, index) => actual.pick[index])
         assert.equal(picked.length, actual.length)
         for (let i = 1; i < picked.length; i++) assert.ok(picked[i - 1] < picked[i])
+        assert.deepEqual(actual.indices, actual.pick.flatMap((take, index) => take ? [index] : []))
+        assert.equal(actual.indices.length, actual.length)
+        assert.equal(actual.endIndex, actual.indices.at(-1) ?? null)
+        for (let index = 0; index < values.length; index++) {
+          const previous = actual.previous[index]
+          assert.ok(previous === -1 || (previous < index && values[previous] < values[index]))
+          assert.equal(actual.lengths[index], previous === -1 ? 1 : actual.lengths[previous] + 1)
+        }
+        for (let index = actual.indices.length - 1; index > 0; index--) {
+          assert.equal(actual.previous[actual.indices[index]], actual.indices[index - 1])
+        }
       },
     ],
   })
@@ -900,6 +1077,23 @@ test('LCS results match exhaustive subsequences and return a common witness', ()
       assert.equal(actual.subsequence.length, actual.length)
       assert.equal(isSubsequence(actual.subsequence, a), true)
       assert.equal(isSubsequence(actual.subsequence, b), true)
+      assert.equal(actual.path.length === 0, a.length === 0 || b.length === 0)
+      const matched = []
+      for (let index = 0; index < actual.path.length; index++) {
+        const cell = actual.path[index]
+        assert.ok(cell.row >= 1 && cell.row <= a.length)
+        assert.ok(cell.column >= 1 && cell.column <= b.length)
+        assert.equal(cell.matched, a[cell.row - 1] === b[cell.column - 1])
+        if (cell.matched) matched.push(a[cell.row - 1])
+        const next = actual.path[index + 1]
+        if (!next) continue
+        const rowStep = cell.row - next.row
+        const columnStep = cell.column - next.column
+        assert.ok(rowStep >= 0 && rowStep <= 1)
+        assert.ok(columnStep >= 0 && columnStep <= 1)
+        assert.equal(cell.matched ? rowStep === 1 && columnStep === 1 : rowStep + columnStep === 1, true)
+      }
+      assert.equal(matched.reverse().join(''), actual.subsequence)
       assert.equal(Object.hasOwn(actual, 'model'), false)
     }],
   })
@@ -985,8 +1179,21 @@ test('maximum-square results match exhaustive square scans', () => {
     solve: solveMaxSquare,
     oracle: bruteMaxSquare,
     equivalent: (actual, expected) => actual.side === expected,
-    invariants: [(actual) => {
+    invariants: [(actual, grid) => {
       assert.equal(actual.area, actual.side ** 2)
+      if (actual.side === 0) {
+        assert.equal(actual.bottomRight, null)
+      } else {
+        assert.notEqual(actual.bottomRight, null)
+        const { row, column } = actual.bottomRight
+        assert.ok(row >= actual.side - 1 && row < grid.length)
+        assert.ok(column >= actual.side - 1 && column < grid[0].length)
+        for (let squareRow = row - actual.side + 1; squareRow <= row; squareRow++) {
+          for (let squareColumn = column - actual.side + 1; squareColumn <= column; squareColumn++) {
+            assert.equal(grid[squareRow][squareColumn], 1)
+          }
+        }
+      }
       assert.equal(Object.hasOwn(actual, 'frames'), false)
     }],
   })
@@ -1147,7 +1354,7 @@ test('teaching Adapters preserve frame contracts and project the typed result', 
   assert.deepEqual(stockStates([1, 3, 2, 5], true), solveStockFsm([1, 3, 2, 5], true).days)
 })
 
-test('reroot public distance results match an independent quadratic oracle', () => {
+test('reroot public distance results match independent weighted and node-weighted oracles', () => {
   const cases = []
   for (let n = 1; n <= 8; n++) {
     for (let variant = 0; variant < 12; variant++) {
@@ -1162,6 +1369,114 @@ test('reroot public distance results match an independent quadratic oracle', () 
     solve: (tree) => solveRerootDistance(tree).dist,
     oracle: bruteRerootDistance,
   })
+  for (const tree of weightedRerootCases()) {
+    const distances = allPairRerootDistances(tree)
+    for (const mode of ['unweighted', 'nodeWeighted']) {
+      const nodeWeight = mode === 'nodeWeighted' ? tree.weight : Array(tree.n).fill(1)
+      const expected = distances.map((row) => row.reduce(
+        (sum, distance, node) => sum + distance * nodeWeight[node],
+        0,
+      ))
+      const result = solveRerootDistance(tree, mode)
+      const best = Math.min(...expected)
+      assert.deepEqual(result.dist, expected)
+      assert.equal(result.totalW, nodeWeight.reduce((sum, value) => sum + value, 0))
+      assert.equal(result.best, best)
+      assert.equal(result.bestNode, expected.indexOf(best))
+    }
+  }
+})
+
+test('tree and reroot domain boundaries reject values outside the lesson contracts', () => {
+  const tree = buildRootedTree([-1, 0], [2, 3])
+  assert.throws(() => solveTreeKnapsack(tree, [0, -1], 1), /non-negative/)
+  assert.throws(() => solveTreeKnapsack(tree, [0, Infinity], 1), /finite/)
+  assert.throws(() => solveTreeKnapsack(tree, [0, 1], 2), /edge limit/)
+  assert.throws(() => solveTreeJointWeight(buildRootedTree([-1], [-1])), /non-negative/)
+  assert.throws(
+    () => buildRerootTree(3, [{ u: 0, v: 1 }, { u: 1, v: 2 }, { u: 2, v: 0 }]),
+    /exactly n - 1 edges/,
+  )
+})
+
+test('reroot in-out public results match weighted all-pairs distances', () => {
+  for (const tree of weightedRerootCases()) {
+    const result = solveRerootInOut(tree)
+    const distances = allPairRerootDistances(tree)
+    const descendants = Array.from({ length: tree.n }, () => new Set())
+    for (let node = 0; node < tree.n; node++) {
+      let ancestor = node
+      while (ancestor >= 0) {
+        descendants[ancestor].add(node)
+        ancestor = tree.parent[ancestor]
+      }
+    }
+    const dist = distances.map((row) => row.reduce((sum, value) => sum + value, 0))
+    const down = distances.map((row, node) => (
+      [...descendants[node]].reduce((sum, descendant) => sum + row[descendant], 0)
+    ))
+    assert.deepEqual(result.sz, descendants.map((nodes) => nodes.size))
+    assert.deepEqual(result.down, down)
+    assert.deepEqual(result.dist, dist)
+    assert.deepEqual(result.up, dist.map((value, node) => value - down[node]))
+    assert.equal(result.totalW, tree.n)
+  }
+})
+
+test('reroot eccentricity public results match weighted all-pairs distances', () => {
+  for (const tree of weightedRerootCases()) {
+    const result = solveRerootEccentricity(tree)
+    const distances = allPairRerootDistances(tree)
+    const eccentricity = distances.map((row) => Math.max(...row))
+    const radius = Math.min(...eccentricity)
+    assert.deepEqual(result.ecc, eccentricity)
+    assert.equal(result.radius, radius)
+    assert.equal(result.center, eccentricity.indexOf(radius))
+    assert.equal(result.diameter, Math.max(...eccentricity))
+  }
+})
+
+test('tree max-subtree-chain public results match exhaustive rooted and simple paths', () => {
+  for (const tree of weightedRootedCases()) {
+    const result = solveTreeMaxSubtreeChain(tree)
+    const expected = bruteTreeMaxSubtreeChain(tree)
+    assert.equal(result.ans, expected.ans)
+    assert.equal(result.diameter, expected.diameter)
+    assert.ok(result.argMax >= 0 && result.argMax < tree.n)
+    assert.ok(result.argThrough >= 0 && result.argThrough < tree.n)
+    assert.equal(result.down[result.argMax], result.ans)
+    assert.equal(result.through[result.argThrough], result.diameter)
+  }
+})
+
+test('tree knapsack public results match exhaustive root-connected edge subsets', () => {
+  for (const tree of weightedRootedCases()) {
+    const parentEdge = Array.from({ length: tree.n }, (_, node) => (
+      node === tree.root ? 0 : 1 + ((node * 5 + tree.n * 7) % 11)
+    ))
+    for (let edgeLimit = 0; edgeLimit <= Math.min(5, tree.n - 1); edgeLimit++) {
+      const result = solveTreeKnapsack(tree, parentEdge, edgeLimit)
+      assert.equal(
+        result.ans,
+        bruteTreeKnapsack(tree, parentEdge, edgeLimit),
+        JSON.stringify({ parent: tree.parent, parentEdge, edgeLimit }),
+      )
+      assert.deepEqual([...result.order].sort((a, b) => a - b), Array.from({ length: tree.n }, (_, node) => node))
+      const position = new Map(result.order.map((node, index) => [node, index]))
+      for (let node = 0; node < tree.n; node++) {
+        for (const child of tree.children[node]) assert.ok(position.get(child) < position.get(node))
+      }
+    }
+  }
+})
+
+test('tree joint-weight public results match exhaustive distance-two node pairs', () => {
+  for (const tree of weightedRootedCases(8, true)) {
+    const result = solveTreeJointWeight(tree)
+    const expected = bruteTreeJointWeight(tree)
+    assert.equal(result.totalSum, expected.totalSum)
+    assert.equal(result.globalMax, expected.globalMax)
+  }
 })
 
 test('tree-DP public independent-set results match exhaustive node subsets', () => {
@@ -1177,7 +1492,7 @@ test('tree-DP public independent-set results match exhaustive node subsets', () 
   verifyCases({
     name: 'tree-independent-set',
     cases,
-    solve: ({ parent, weight }) => solveTreeIndependentSet(buildRootedTree(parent, weight)).ans,
+    solve: ({ parent, weight }) => solveTreeIndependentSet(buildRootedTree(parent, weight)),
     oracle: ({ parent, weight }) => {
       let best = 0
       for (let mask = 0; mask < 1 << parent.length; mask++) {
@@ -1195,14 +1510,25 @@ test('tree-DP public independent-set results match exhaustive node subsets', () 
       }
       return best
     },
+    equivalent: (actual, expected) => actual.ans === expected,
+    invariants: [(actual, { parent, weight }) => {
+      const chosenWeight = [...actual.chosen].reduce((sum, node) => sum + weight[node], 0)
+      assert.equal(chosenWeight, actual.ans)
+      for (const node of actual.chosen) {
+        assert.ok(node >= 0 && node < parent.length)
+        assert.equal(parent[node] >= 0 && actual.chosen.has(parent[node]), false)
+      }
+    }],
   })
 })
 
 test('tree dominating-set witnesses have exactly the reported minimum cost', () => {
   for (const { parent, weight } of dominatingWitnessCases()) {
-    const result = solveTreeDominatingSet(buildRootedTree(parent, weight))
+    const tree = buildRootedTree(parent, weight)
+    const result = solveTreeDominatingSet(tree)
     const witnessCost = [...result.guards].reduce((sum, node) => sum + weight[node], 0)
     assert.equal(witnessCost, result.ans, `invalid guard cost for ${JSON.stringify({ parent, weight, guards: [...result.guards] })}`)
+    assert.equal(result.ans, bruteDominatingSet(tree), `non-minimum guard set for ${JSON.stringify({ parent, weight })}`)
   }
 })
 
@@ -1235,6 +1561,24 @@ test('score-tree public results match recursive root enumeration', () => {
       assert.equal(actual.dp.length, scores.length)
       assert.equal(actual.preorder.length, scores.length)
       assert.deepEqual([...actual.preorder].sort((a, b) => a - b), scores.map((_, index) => index + 1))
+      const rebuild = (left, right) => {
+        if (left > right) return { value: 1, preorder: [] }
+        const node = actual.root[left][right]
+        assert.ok(node >= left && node <= right)
+        if (left === right) {
+          assert.equal(node, left)
+          return { value: scores[node], preorder: [node + 1] }
+        }
+        const lhs = rebuild(left, node - 1)
+        const rhs = rebuild(node + 1, right)
+        return {
+          value: lhs.value * rhs.value + scores[node],
+          preorder: [node + 1, ...lhs.preorder, ...rhs.preorder],
+        }
+      }
+      const witness = rebuild(0, scores.length - 1)
+      assert.equal(witness.value, actual.ans)
+      assert.deepEqual(actual.preorder, witness.preorder)
     }],
   })
 })
@@ -1255,8 +1599,15 @@ test('ring-interval public results match every rotated chain partition', () => {
       },
       equivalent: (actual, expected) => actual.cost === expected,
       invariants: [(actual, values) => {
+        const expectedWindows = values.map((_, start) => bruteStone(
+          [...values.slice(start), ...values.slice(0, start)],
+          objective,
+        ))
         assert.equal(actual.windows.length, values.length)
         assert.equal(actual.table.length, values.length * 2)
+        assert.deepEqual(actual.windows, expectedWindows)
+        assert.ok(actual.start >= 0 && actual.start < values.length)
+        assert.equal(actual.windows[actual.start], actual.cost)
       }],
     })
   }
@@ -1274,8 +1625,16 @@ test('palindrome public results match exhaustive subsequences and insertion iden
   })
   for (const raw of ['a', 'ab', 'abc', 'google', 'aebcbda']) {
     const result = solvePalindromeInsertion(raw)
+    const isSubsequence = (source, target) => {
+      let index = 0
+      for (const char of target) if (char === source[index]) index++
+      return index === source.length
+    }
     assert.equal(result.insertCount, result.chars.length - brutePalindromeLps(result.chars))
     assert.equal(result.palindrome, [...result.palindrome].reverse().join(''))
+    assert.equal(result.palindrome.length, result.chars.length + result.insertCount)
+    assert.equal(isSubsequence(result.chars, result.palindrome), true)
+    assert.equal(result.lps, result.chars.length - result.insertCount)
   }
 })
 
@@ -1294,6 +1653,11 @@ test('interval-merge public results match recursive game and 248 references', ()
     solve: solveMerge248,
     oracle: bruteMerge248,
     equivalent: (actual, expected) => actual.value === expected,
+    invariants: [(actual, values) => {
+      assert.ok(actual.bestStart >= 0 && actual.bestStart <= actual.bestEnd)
+      assert.ok(actual.bestEnd < values.length)
+      assert.equal(actual.table[actual.bestStart][actual.bestEnd], actual.value)
+    }],
   })
 })
 
@@ -1303,6 +1667,21 @@ test('bitmask-board public totals match exhaustive board placements', () => {
       const result = solveKingsBoard(size, kings)
       assert.equal(result.total, bruteKingsBoard(size, kings), `${size}x${size}, K=${kings}`)
       assert.equal(result.layout === null, result.total === 0)
+      if (result.layout !== null) {
+        assert.equal(result.layout.length, size)
+        const placed = result.layout.reduce((sum, row) => sum + row.toString(2).replaceAll('0', '').length, 0)
+        assert.equal(placed, kings)
+        for (let row = 0; row < size; row++) {
+          const mask = result.layout[row]
+          assert.equal(mask >>> size, 0)
+          assert.equal((mask & (mask << 1)) === 0, true)
+          if (row === 0) continue
+          const previous = result.layout[row - 1]
+          assert.equal((mask & previous) === 0, true)
+          assert.equal((mask & (previous << 1)) === 0, true)
+          assert.equal((mask & (previous >> 1)) === 0, true)
+        }
+      }
     }
   }
 })
@@ -1317,6 +1696,7 @@ test('bitmask-cover public costs match exhaustive choice subsets', () => {
   for (const subset of vectors(choices, choices.length)) {
     assert.equal(solveBitmaskCover(4, subset).cost, bruteBitmaskCover(4, subset))
   }
+  assert.equal(solveBitmaskCover(1, [{ cover: 1, cost: 1_000_000_000 }]).cost, 1_000_000_000)
 })
 
 test('bitmask-subset public results enumerate every non-empty submask exactly once', () => {
@@ -1342,6 +1722,9 @@ test('bitmask-TSP public results match exhaustive Hamilton paths', () => {
     const result = solveBitmaskTsp(distances)
     assert.equal(result.distance, bruteBitmaskTsp(distances))
     assert.equal(result.table.length, 1 << distances.length)
+    assert.ok(result.end >= 0 && result.end < distances.length)
+    assert.equal(result.table[(1 << distances.length) - 1][result.end], result.distance)
+    assert.equal(result.distance, Math.min(...result.table[(1 << distances.length) - 1]))
   }
 })
 
