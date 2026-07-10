@@ -1,5 +1,6 @@
-import type { VizModel, Frame, CellState, Arrow } from '../../dp-engine/types'
-import { key } from '../../dp-engine/types'
+import type { VizModel, Frame, CellState, Arrow } from '../../dp-engine/types.ts'
+import { key } from '../../dp-engine/types.ts'
+import { recordGroupKnapsack } from '../../../algorithms/knapsack-group/internal.ts'
 import type { Group } from './groupSolver'
 
 // 复用 groupSolver 的 Group / GItem 类型：Group = GItem[]，GItem = { w, v }
@@ -12,7 +13,7 @@ function settled(row: (number | null)[]): Record<string, CellState> {
 }
 
 const label = (g: number) => `组${g}`
-const itemsStr = (items: Group[number][], hit: number) =>
+const itemsStr = (items: readonly Group[number][], hit: number) =>
   items.map((it, k) => `${k === hit ? '★' : ''}(${it.w},${it.v})`).join(' ')
 
 /**
@@ -22,6 +23,7 @@ const itemsStr = (items: Group[number][], hit: number) =>
  * 「本组尚未出手」的旧值，各件在同一起点上竞争，每组至多有一件胜出被计入。
  */
 export function groupOrderCorrect(groups: Group[], W: number): VizModel {
+  const run = recordGroupKnapsack(groups, W, 'rolling-correct')
   const f: (number | null)[] = Array<number | null>(W + 1).fill(0)
   const snap = (): (number | null)[][] => [f.slice()]
   const frames: Frame[] = []
@@ -33,28 +35,13 @@ export function groupOrderCorrect(groups: Group[], W: number): VizModel {
     formula: 'f[j]=0',
   })
 
-  for (let g = 1; g <= groups.length; g++) {
-    const items = groups[g - 1]
-    // ★容量倒序在外，组内件在里
-    for (let j = W; j >= 0; j--) {
-      // 组内枚举每一件，都基于「本组未动过」的旧值 f[·]（本轮该组尚未写 f[j]）
-      const oldJ = f[j] as number
-      let best = oldJ
-      let hit = -1
-      let takeFrom = 0
-      for (let k = 0; k < items.length; k++) {
-        const { w, v } = items[k]
-        if (j >= w) {
-          const cand = (f[j - w] as number) + v
-          if (cand > best) {
-            best = cand
-            hit = k
-            takeFrom = j - w
-          }
-        }
-      }
-      const changed = best > oldJ
-      if (changed) f[j] = best
+  for (const event of run.events) {
+      if (event.type !== 'rolling-cell') continue
+      const {
+        groupIndex: g, capacity: j, items, before: oldJ, best,
+        takeIndex: hit, takeFrom,
+      } = event
+      f[j] = best
 
       const states: Record<string, CellState> = settled(snap()[0])
       const arrows: Arrow[] = []
@@ -80,7 +67,6 @@ export function groupOrderCorrect(groups: Group[], W: number): VizModel {
         formula = `f[${j}]=${oldJ}`
       }
       frames.push({ values: snap(), states, active: { r: 0, c: j }, arrows, caption, formula })
-    }
   }
 
   const fin = settled(f)
@@ -88,8 +74,8 @@ export function groupOrderCorrect(groups: Group[], W: number): VizModel {
   frames.push({
     values: snap(),
     states: fin,
-    caption: `正确顺序的答案 <b>f[${W}] = ${f[W]}</b>：每组至多一件，组内互斥被守住。`,
-    formula: `f[${W}]=${f[W]}`,
+    caption: `正确顺序的答案 <b>f[${W}] = ${run.result.value}</b>：每组至多一件，组内互斥被守住。`,
+    formula: `f[${W}]=${run.result.value}`,
   })
 
   return {
@@ -109,6 +95,7 @@ export function groupOrderCorrect(groups: Group[], W: number): VizModel {
  * 又在「前一件已装进去」的结果上继续叠，于是同组多件可同时选中，答案偏大。
  */
 export function groupOrderWrong(groups: Group[], W: number): VizModel {
+  const run = recordGroupKnapsack(groups, W, 'rolling-wrong')
   const f: (number | null)[] = Array<number | null>(W + 1).fill(0)
   const snap = (): (number | null)[][] => [f.slice()]
   const frames: Frame[] = []
@@ -120,20 +107,14 @@ export function groupOrderWrong(groups: Group[], W: number): VizModel {
     formula: 'f[j]=0',
   })
 
-  for (let g = 1; g <= groups.length; g++) {
-    const items = groups[g - 1]
-    // 本组内、被本组更早的某件更新过的下标——用于标出「同组多件被叠加」
-    const dirtyInGroup = new Set<number>()
-    for (let k = 0; k < items.length; k++) {
-      const { w, v } = items[k]
-      // ✗ 组内件在外、容量在里：这一件独立跑一遍倒序背包
-      for (let j = W; j >= w; j--) {
-        const oldJ = f[j] as number
-        const cand = (f[j - w] as number) + v
-        const changed = cand > oldJ
-        // 若来源列 j-w 曾被本组更早的件更新过，则这一步把同组两件叠在了一起
-        const stacked = changed && dirtyInGroup.has(j - w)
-        if (changed) f[j] = cand
+  for (const event of run.events) {
+        if (event.type !== 'wrong-cell') continue
+        const {
+          groupIndex: g, itemIndex: k, capacity: j, items,
+          before: oldJ, candidate: cand, after, changed, stacked,
+        } = event
+        const { w, v } = items[k]
+        f[j] = after
 
         const states: Record<string, CellState> = settled(snap()[0])
         states[key(0, j - w)] = 'source'
@@ -149,12 +130,9 @@ export function groupOrderWrong(groups: Group[], W: number): VizModel {
         if (stacked) {
           caption += ` <span style="color:var(--viz-invalid)">⚠ f[${j - w}] 已含本组更早的件——这一步把<b>同一组的两件叠在了一起</b>，组内互斥失效！</span>`
         }
-        const formula = `f[${j}]=\\max(${oldJ},\\ ${f[j - w] as number}+${v})=${Math.max(oldJ, cand)}`
+        const formula = `f[${j}]=\\max(${oldJ},\\ ${cand - v}+${v})=${after}`
 
         frames.push({ values: snap(), states, active: { r: 0, c: j }, arrows, caption, formula })
-        if (changed) dirtyInGroup.add(j)
-      }
-    }
   }
 
   const fin = settled(f)
@@ -162,8 +140,8 @@ export function groupOrderWrong(groups: Group[], W: number): VizModel {
   frames.push({
     values: snap(),
     states: fin,
-    caption: `错误顺序的答案 <b>f[${W}] = ${f[W]}</b>：组内多件被重复计入，比正确值偏大。`,
-    formula: `f[${W}]=${f[W]}`,
+    caption: `错误顺序的答案 <b>f[${W}] = ${run.result.value}</b>：组内多件被重复计入，比正确值偏大。`,
+    formula: `f[${W}]=${run.result.value}`,
   })
 
   return {

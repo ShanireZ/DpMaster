@@ -3,6 +3,18 @@ import test from 'node:test'
 import { verifyCases, vectors } from './lib/verify-algorithm.mjs'
 import { solveZeroOneKnapsack } from '../src/algorithms/knapsack/index.ts'
 import { recordZeroOneKnapsack } from '../src/algorithms/knapsack/internal.ts'
+import { solveGroupKnapsack } from '../src/algorithms/knapsack-group/index.ts'
+import { recordGroupKnapsack } from '../src/algorithms/knapsack-group/internal.ts'
+import { solveMultipleKnapsack } from '../src/algorithms/knapsack-multiple/index.ts'
+import { recordMultipleKnapsack } from '../src/algorithms/knapsack-multiple/internal.ts'
+import { solveMixedKnapsack } from '../src/algorithms/knapsack-mixed/index.ts'
+import { recordMixedKnapsack } from '../src/algorithms/knapsack-mixed/internal.ts'
+import { solveCost2DKnapsack } from '../src/algorithms/knapsack-cost2d/index.ts'
+import { recordCost2DKnapsack } from '../src/algorithms/knapsack-cost2d/internal.ts'
+import { solveDependencyKnapsack } from '../src/algorithms/knapsack-dependency/index.ts'
+import { recordDependencyKnapsack } from '../src/algorithms/knapsack-dependency/internal.ts'
+import { solveCountKnapsack } from '../src/algorithms/knapsack-variant/index.ts'
+import { recordCountKnapsack } from '../src/algorithms/knapsack-variant/internal.ts'
 import { solveLis } from '../src/algorithms/lis/index.ts'
 import { recordLis } from '../src/algorithms/lis/internal.ts'
 import { solveStoneMerge } from '../src/algorithms/stone-merge/index.ts'
@@ -26,6 +38,95 @@ function bruteKnapsack(items, capacity) {
     if (weight <= capacity) value = Math.max(value, candidate)
   }
   return value
+}
+
+function bruteGroupKnapsack(groups, capacity) {
+  const visit = (groupIndex, weight, value) => {
+    if (groupIndex === groups.length) return value
+    let best = visit(groupIndex + 1, weight, value)
+    for (const item of groups[groupIndex]) {
+      if (weight + item.w <= capacity) {
+        best = Math.max(best, visit(groupIndex + 1, weight + item.w, value + item.v))
+      }
+    }
+    return best
+  }
+  return visit(0, 0, 0)
+}
+
+function bruteMultipleKnapsack(items, capacity) {
+  const visit = (itemIndex, weight, value) => {
+    if (itemIndex === items.length) return value
+    const item = items[itemIndex]
+    let best = value
+    for (let count = 0; count <= item.m && weight + count * item.w <= capacity; count++) {
+      best = Math.max(best, visit(itemIndex + 1, weight + count * item.w, value + count * item.v))
+    }
+    return best
+  }
+  return visit(0, 0, 0)
+}
+
+function bruteMixedKnapsack(items, capacity) {
+  const visit = (itemIndex, weight, value) => {
+    if (itemIndex === items.length) return value
+    const item = items[itemIndex]
+    const limit = item.kind === '01'
+      ? 1
+      : item.kind === 'multiple'
+        ? Math.max(1, item.m ?? 1)
+        : Math.floor((capacity - weight) / item.w)
+    let best = value
+    for (let count = 0; count <= limit && weight + count * item.w <= capacity; count++) {
+      best = Math.max(best, visit(itemIndex + 1, weight + count * item.w, value + count * item.v))
+    }
+    return best
+  }
+  return visit(0, 0, 0)
+}
+
+function bruteCost2DKnapsack(items, capacityA, capacityB, mode) {
+  let best = 0
+  for (let mask = 0; mask < 1 << items.length; mask++) {
+    let costA = 0
+    let costB = 0
+    let value = 0
+    for (let index = 0; index < items.length; index++) {
+      if ((mask & (1 << index)) === 0) continue
+      costA += items[index].a
+      costB += items[index].b
+      value += mode === 'count' ? 1 : items[index].v
+    }
+    if (costA <= capacityA && costB <= capacityB) best = Math.max(best, value)
+  }
+  return best
+}
+
+function bruteDependencyKnapsack(master, accessories, capacity) {
+  let best = 0
+  for (let mask = 0; mask < 1 << accessories.length; mask++) {
+    let weight = master.w
+    let value = master.v
+    for (let index = 0; index < accessories.length; index++) {
+      if ((mask & (1 << index)) === 0) continue
+      weight += accessories[index].w
+      value += accessories[index].v
+    }
+    if (weight <= capacity) best = Math.max(best, value)
+  }
+  return best
+}
+
+function bruteCountKnapsack(items, capacity) {
+  const counts = Array(capacity + 1).fill(0)
+  for (let mask = 0; mask < 1 << items.length; mask++) {
+    let weight = 0
+    for (let index = 0; index < items.length; index++) {
+      if ((mask & (1 << index)) !== 0) weight += items[index].w
+    }
+    if (weight <= capacity) counts[weight]++
+  }
+  return counts
 }
 
 function bruteLis(values) {
@@ -121,6 +222,131 @@ test('01 knapsack result matches exhaustive subsets and returns a legal witness'
   })
 })
 
+test('group knapsack result matches exhaustive choices of at most one item per group', () => {
+  const groupKinds = [
+    [],
+    [{ w: 1, v: 2 }, { w: 2, v: 3 }],
+    [{ w: 1, v: 1 }, { w: 3, v: 6 }],
+  ]
+  const cases = []
+  for (const groups of vectors(groupKinds, 3)) {
+    for (let capacity = 0; capacity <= 6; capacity++) cases.push({ groups, capacity })
+  }
+  verifyCases({
+    name: 'group-knapsack',
+    cases,
+    solve: ({ groups, capacity }) => solveGroupKnapsack(groups, capacity),
+    oracle: ({ groups, capacity }) => bruteGroupKnapsack(groups, capacity),
+    equivalent: (actual, expected) => actual.value === expected,
+    invariants: [(actual) => assert.equal(Object.hasOwn(actual, 'frames'), false)],
+  })
+})
+
+test('multiple knapsack result matches exhaustive bounded item counts', () => {
+  const itemKinds = [
+    { w: 1, v: 2, m: 1 },
+    { w: 2, v: 3, m: 2 },
+    { w: 3, v: 5, m: 3 },
+  ]
+  const cases = []
+  for (const items of vectors(itemKinds, 3)) {
+    for (let capacity = 0; capacity <= 7; capacity++) cases.push({ items, capacity })
+  }
+  verifyCases({
+    name: 'multiple-knapsack',
+    cases,
+    solve: ({ items, capacity }) => solveMultipleKnapsack(items, capacity),
+    oracle: ({ items, capacity }) => bruteMultipleKnapsack(items, capacity),
+    equivalent: (actual, expected) => actual.value === expected,
+    invariants: [(actual) => assert.equal(Object.hasOwn(actual, 'frames'), false)],
+  })
+})
+
+test('mixed knapsack result matches exhaustive per-kind item counts', () => {
+  const itemKinds = [
+    { kind: '01', w: 1, v: 2 },
+    { kind: 'complete', w: 2, v: 3 },
+    { kind: 'multiple', w: 3, v: 5, m: 2 },
+  ]
+  const cases = []
+  for (const items of vectors(itemKinds, 3)) {
+    for (let capacity = 0; capacity <= 7; capacity++) cases.push({ items, capacity })
+  }
+  verifyCases({
+    name: 'mixed-knapsack',
+    cases,
+    solve: ({ items, capacity }) => solveMixedKnapsack(items, capacity),
+    oracle: ({ items, capacity }) => bruteMixedKnapsack(items, capacity),
+    equivalent: (actual, expected) => actual.value === expected,
+    invariants: [(actual) => assert.equal(Object.hasOwn(actual, 'frames'), false)],
+  })
+})
+
+test('two-cost knapsack result matches exhaustive subsets in value and count modes', () => {
+  const itemKinds = [
+    { a: 1, b: 2, v: 2 },
+    { a: 2, b: 1, v: 4 },
+    { a: 2, b: 2, v: 3 },
+  ]
+  const cases = []
+  for (const items of vectors(itemKinds, 3)) {
+    for (let capacityA = 0; capacityA <= 4; capacityA++) {
+      for (let capacityB = 0; capacityB <= 4; capacityB++) {
+        for (const mode of ['value', 'count']) cases.push({ items, capacityA, capacityB, mode })
+      }
+    }
+  }
+  verifyCases({
+    name: 'two-cost-knapsack',
+    cases,
+    solve: ({ items, capacityA, capacityB, mode }) => solveCost2DKnapsack(items, capacityA, capacityB, mode),
+    oracle: ({ items, capacityA, capacityB, mode }) => bruteCost2DKnapsack(items, capacityA, capacityB, mode),
+    equivalent: (actual, expected) => actual.value === expected,
+    invariants: [(actual) => assert.equal(Object.hasOwn(actual, 'frames'), false)],
+  })
+})
+
+test('dependency knapsack result matches exhaustive legal accessory subsets', () => {
+  const masters = [{ w: 1, v: 2 }, { w: 2, v: 3 }]
+  const accessoryKinds = [{ w: 1, v: 1 }, { w: 2, v: 4 }, { w: 3, v: 5 }]
+  const cases = []
+  for (const master of masters) {
+    for (const accessories of vectors(accessoryKinds, 3)) {
+      for (let capacity = 0; capacity <= 7; capacity++) cases.push({ master, accessories, capacity })
+    }
+  }
+  verifyCases({
+    name: 'dependency-knapsack',
+    cases,
+    solve: ({ master, accessories, capacity }) => solveDependencyKnapsack(master, accessories, capacity),
+    oracle: ({ master, accessories, capacity }) => bruteDependencyKnapsack(master, accessories, capacity),
+    equivalent: (actual, expected) => actual.value === expected,
+    invariants: [(actual) => assert.equal(Object.hasOwn(actual, 'frames'), false)],
+  })
+})
+
+test('counting knapsack variant returns every exact-fill count from exhaustive subsets', () => {
+  const cases = []
+  for (const weights of vectors([1, 2, 3], 6)) {
+    for (let capacity = 0; capacity <= 7; capacity++) {
+      cases.push({ items: weights.map((w) => ({ w })), capacity })
+    }
+  }
+  verifyCases({
+    name: 'count-knapsack',
+    cases,
+    solve: ({ items, capacity }) => solveCountKnapsack(items, capacity),
+    oracle: ({ items, capacity }) => bruteCountKnapsack(items, capacity),
+    equivalent: (actual, expected) => actual.counts.every((count, index) => count === expected[index]),
+    invariants: [
+      (actual, { capacity }) => {
+        assert.equal(actual.count, actual.counts[capacity])
+        assert.equal(Object.hasOwn(actual, 'frames'), false)
+      },
+    ],
+  })
+})
+
 test('LIS result matches exhaustive subsequences and returns a legal witness', () => {
   verifyCases({
     name: 'lis',
@@ -164,6 +390,22 @@ test('recorded teaching runs share the exact result Implementation', () => {
   assert.deepEqual(recordZeroOneKnapsack(...knapsackInput).result, solveZeroOneKnapsack(...knapsackInput))
   assert.deepEqual(recordLis([3, 1, 2, 5, 4]).result, solveLis([3, 1, 2, 5, 4]))
   assert.deepEqual(recordStoneMerge([7, 6, 5, 4], 'min').result, solveStoneMerge([7, 6, 5, 4], 'min'))
+  const groups = [[{ w: 1, v: 2 }, { w: 2, v: 3 }], [{ w: 2, v: 4 }]]
+  assert.deepEqual(recordGroupKnapsack(groups, 4).result, solveGroupKnapsack(groups, 4))
+  const multiple = [{ w: 2, v: 3, m: 3 }]
+  assert.deepEqual(recordMultipleKnapsack(multiple, 7).result, solveMultipleKnapsack(multiple, 7))
+  const mixed = [{ kind: '01', w: 2, v: 3 }, { kind: 'complete', w: 3, v: 4 }]
+  assert.deepEqual(recordMixedKnapsack(mixed, 7).result, solveMixedKnapsack(mixed, 7))
+  const cost2d = [{ a: 1, b: 2, v: 3 }, { a: 2, b: 1, v: 4 }]
+  assert.deepEqual(recordCost2DKnapsack(cost2d, 3, 3).result, solveCost2DKnapsack(cost2d, 3, 3))
+  const master = { w: 2, v: 3 }
+  const accessories = [{ w: 1, v: 2 }, { w: 2, v: 4 }]
+  assert.deepEqual(
+    recordDependencyKnapsack(master, accessories, 5).result,
+    solveDependencyKnapsack(master, accessories, 5),
+  )
+  const countItems = [{ w: 1 }, { w: 2 }, { w: 3 }]
+  assert.deepEqual(recordCountKnapsack(countItems, 5).result, solveCountKnapsack(countItems, 5))
 })
 
 test('teaching Adapters preserve frame contracts and project the typed result', () => {

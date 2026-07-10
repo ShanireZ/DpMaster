@@ -1,15 +1,15 @@
-import type { VizModel, Frame, CellState, Arrow } from '../../dp-engine/types'
-import { key } from '../../dp-engine/types'
+import type { VizModel, Frame, CellState, Arrow } from '../../dp-engine/types.ts'
+import { key } from '../../dp-engine/types.ts'
+import { recordCost2DKnapsack } from '../../../algorithms/knapsack-cost2d/internal.ts'
+import type {
+  Cost2DKnapsackItem, Cost2DKnapsackMode,
+} from '../../../algorithms/knapsack-cost2d/index.ts'
 
 // 一件物品挂两个费用 (a=费用1, b=费用2) 与价值 v。
-export interface C2Item {
-  a: number
-  b: number
-  v: number
-}
+export type C2Item = Cost2DKnapsackItem
 
 // 求解目标：'value' 用每件的 v 求最大价值；'count' 价值恒 1，dp 变成「最多件数」。
-export type C2Mode = 'value' | 'count'
+export type C2Mode = Cost2DKnapsackMode
 
 function settled(vals: (number | null)[][]): Record<string, CellState> {
   const s: Record<string, CellState> = {}
@@ -36,7 +36,7 @@ function settled(vals: (number | null)[][]): Record<string, CellState> {
 export function cost2D(items: C2Item[], A: number, B: number, mode: C2Mode = 'value'): VizModel {
   // count 模式：价值恒 1，每装一件 +1；value 模式：补该件的 v。
   const count = mode === 'count'
-  const gain = (v: number) => (count ? 1 : v)
+  const run = recordCost2DKnapsack(items, A, B, mode)
   // dp[y][x]：行是费用2 y，列是费用1 x，与 DPViz 的 (r=y, c=x) 对齐。
   const dp: number[][] = Array.from({ length: B + 1 }, () => Array<number>(A + 1).fill(0))
   const snap = (): (number | null)[][] => dp.map((row) => row.slice())
@@ -51,21 +51,10 @@ export function cost2D(items: C2Item[], A: number, B: number, mode: C2Mode = 'va
     formula: 'dp[x][y] = 0',
   })
 
-  for (let i = 0; i < items.length; i++) {
-    const { a, b, v } = items[i]
-    // 记录本件真正改写的格，并挑一个「代表格」画来源箭头（取改写后值最大者，平局取 x+y 最大）。
-    const changed: { x: number; y: number; from: number; to: number }[] = []
-    // 两种费用维都倒序：dp[x-a][y-b] 保持本件装入前的旧值。
-    const add = gain(v)
-    for (let x = A; x >= a; x--) {
-      for (let y = B; y >= b; y--) {
-        const cand = dp[y - b][x - a] + add
-        if (cand > dp[y][x]) {
-          changed.push({ x, y, from: dp[y][x], to: cand })
-          dp[y][x] = cand
-        }
-      }
-    }
+  for (const event of run.events) {
+    const { itemIndex: i, item, changed, add } = event
+    const { a, b, v } = item
+    for (const change of changed) dp[change.y][change.x] = change.to
 
     const states = settled(dp)
     const arrows: Arrow[] = []
@@ -106,9 +95,9 @@ export function cost2D(items: C2Item[], A: number, B: number, mode: C2Mode = 'va
     values: snap(),
     states: fin,
     caption: count
-      ? `答案在右下角 <b>dp[${A}][${B}] = ${dp[B][A]}</b>——两种费用分别不超过 A=${A}、B=${B} 时最多能装 <b>${dp[B][A]}</b> 件（价值恒 1，故最大价值就是最多件数）。`
-      : `答案在右下角 <b>dp[${A}][${B}] = ${dp[B][A]}</b>——两种费用分别不超过 A=${A}、B=${B} 时能取得的最大价值。`,
-    formula: `dp[${A}][${B}]=${dp[B][A]}`,
+      ? `答案在右下角 <b>dp[${A}][${B}] = ${run.result.value}</b>——两种费用分别不超过 A=${A}、B=${B} 时最多能装 <b>${run.result.value}</b> 件（价值恒 1，故最大价值就是最多件数）。`
+      : `答案在右下角 <b>dp[${A}][${B}] = ${run.result.value}</b>——两种费用分别不超过 A=${A}、B=${B} 时能取得的最大价值。`,
+    formula: `dp[${A}][${B}]=${run.result.value}`,
   })
 
   return {

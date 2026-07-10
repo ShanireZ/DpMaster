@@ -1,9 +1,9 @@
-import type { VizModel, Frame, CellState, Arrow } from '../../dp-engine/types'
-import { key } from '../../dp-engine/types'
+import type { VizModel, Frame, CellState, Arrow } from '../../dp-engine/types.ts'
+import { key } from '../../dp-engine/types.ts'
+import { recordCountKnapsack } from '../../../algorithms/knapsack-variant/internal.ts'
+import type { CountKnapsackItem } from '../../../algorithms/knapsack-variant/index.ts'
 
-export interface CountItem {
-  w: number // 物品重量（计数只关心重量，价值与方案数无关）
-}
+export type CountItem = CountKnapsackItem
 
 function settled(vals: (number | null)[][]): Record<string, CellState> {
   const s: Record<string, CellState> = {}
@@ -18,6 +18,7 @@ function settled(vals: (number | null)[][]): Record<string, CellState> {
  * 把最值 max 换成累加 +，就把「求最优」变成了「数方案」。网格为一维（1 行 W+1 列）。
  */
 export function countKnapsack(items: CountItem[], W: number): VizModel {
+  const run = recordCountKnapsack(items, W)
   const f: (number | null)[] = Array<number | null>(W + 1).fill(0)
   f[0] = 1 // ★计数地基：凑出 0 有且只有 1 种方案（什么都不装）
   const snap = (): (number | null)[][] => [f.slice()]
@@ -32,13 +33,9 @@ export function countKnapsack(items: CountItem[], W: number): VizModel {
     formula: 'f[0]=1,\\ f[j]=0\\ (j>0)',
   })
 
-  for (let i = 0; i < items.length; i++) {
-    const { w } = items[i]
-    // 倒序 j:W→w，和 01 背包逆推同理——保证每件至多计入一次，f[j-w] 停在「这件还没参与」的旧值。
-    for (let j = W; j >= w; j--) {
-      const old = f[j] as number
-      const add = f[j - w] as number
-      const now = old + add
+  for (const event of run.events) {
+      if (event.type !== 'count-cell') continue
+      const { itemIndex: i, weight: w, capacity: j, before: old, add, after: now } = event
       const grew = add > 0
       f[j] = now
 
@@ -56,7 +53,6 @@ export function countKnapsack(items: CountItem[], W: number): VizModel {
       // ★formula 内禁中文，纯符号表达「+=」这一步
       const formula = `f[${j}]\\mathrel{+}=f[${j - w}]=${old}+${add}=${now}`
       frames.push({ values: snap(), states, active: { r: 0, c: j }, arrows, caption, formula })
-    }
   }
 
   const fin = settled(snap())
@@ -65,9 +61,9 @@ export function countKnapsack(items: CountItem[], W: number): VizModel {
     values: snap(),
     states: fin,
     caption:
-      `答案 <b>f[${W}] = ${f[W]}</b>：恰好装满容量 ${W} 的方案共 <b>${f[W]}</b> 种。` +
+      `答案 <b>f[${W}] = ${run.result.count}</b>：恰好装满容量 ${W} 的方案共 <b>${run.result.count}</b> 种。` +
       `全程没有一次 max——只有一层层累加，把每种能凑出 ${W} 的组合数了个遍。`,
-    formula: `f[${W}]=${f[W]}`,
+    formula: `f[${W}]=${run.result.count}`,
   })
 
   return {
