@@ -1,6 +1,7 @@
 import { useMemo, useState } from 'react'
 import { Minus, Plus } from 'lucide-react'
 import DPViz from '../../dp-engine/DPViz'
+import { solveIntegerPartition } from '../../../algorithms/linear-count/index.ts'
 import { integerPartition } from './countSolver'
 import '../knapsack/knapsack-demo.css'
 
@@ -42,8 +43,7 @@ export default function PartitionDemo() {
   const [n, setN] = useState(5)
 
   const model = useMemo(() => integerPartition(n), [n])
-  const last = model.frames[model.frames.length - 1].values
-  const answer = last[n][n] ?? 0
+  const answer = useMemo(() => solveIntegerPartition(n).count, [n])
 
   const modelKey = `part-${n}`
 

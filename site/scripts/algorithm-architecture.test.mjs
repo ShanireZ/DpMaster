@@ -134,3 +134,20 @@ test('migrated readouts no longer reverse-engineer answers from teaching frames'
     assert.doesNotMatch(read(...parts), /frames\s*\[|\.frames\s*\[/)
   }
 })
+
+test('Task 2 readouts consume public typed results instead of teaching frames', () => {
+  const contracts = [
+    [['src', 'components', 'demos', 'linear', 'StairCountDemo.tsx'], /algorithms\/linear-count\/index\.ts/],
+    [['src', 'components', 'demos', 'linear', 'PartitionDemo.tsx'], /algorithms\/linear-count\/index\.ts/],
+    [['src', 'components', 'demos', 'fsm', 'StateMachineDemo.tsx'], /algorithms\/linear-fsm\/index\.ts/],
+    [['src', 'components', 'demos', 'grid', 'PathGridCountDemo.tsx'], /algorithms\/grid-path\/index\.ts/],
+  ]
+  for (const [parts, publicImport] of contracts) {
+    const source = read(...parts)
+    assert.match(source, publicImport)
+    assert.doesNotMatch(source, /frames\s*\[|\.frames\s*\[/)
+  }
+
+  const gridPathSource = read('src', 'components', 'demos', 'grid', 'PathGridCountDemo.tsx')
+  assert.equal(gridPathSource.match(/\bgridCount2D\(/g)?.length, 1)
+})

@@ -1,6 +1,7 @@
 import { useMemo, useState } from 'react'
 import { Minus, Plus } from 'lucide-react'
 import DPViz from '../../dp-engine/DPViz'
+import { solveGridPathCount } from '../../../algorithms/grid-path/index.ts'
 import { gridCount2D } from './pathSolver'
 import '../knapsack/knapsack-demo.css'
 
@@ -33,13 +34,6 @@ function Stepper({
   )
 }
 
-const finalAns = (rows: number, cols: number, blocked: Set<string>): number => {
-  const m = gridCount2D(rows, cols, blocked)
-  const last = m.frames[m.frames.length - 1].values
-  const x = last[rows - 1][cols - 1]
-  return x == null ? 0 : x
-}
-
 /**
  * 过河卒网格路径计数演示：点小网格里的格子切换障碍（红），实时重算方案数。
  * 默认 4×4，起点(1,1)、终点(4,4)不可设障碍。无障碍 20 条；点中间一格看它如何被截断。
@@ -53,8 +47,8 @@ export default function PathGridCountDemo() {
   const blockedKey = [...blocked].sort().join('|')
   const modelKey = `grid-${rows}x${cols}-${blockedKey}`
 
-  const openTotal = finalAns(rows, cols, new Set())
-  const curTotal = finalAns(rows, cols, blocked)
+  const openTotal = useMemo(() => solveGridPathCount(rows, cols, new Set<string>()).count, [rows, cols])
+  const curTotal = useMemo(() => solveGridPathCount(rows, cols, blocked).count, [rows, cols, blocked])
 
   const isStartOrEnd = (i: number, j: number) => (i === 1 && j === 1) || (i === rows && j === cols)
   const toggle = (i: number, j: number) => {
