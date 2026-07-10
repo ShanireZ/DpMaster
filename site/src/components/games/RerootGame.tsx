@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react'
+import { useLayoutEffect, useMemo, useState } from 'react'
 import { Waypoints, Shuffle, Trophy, Volume2, VolumeX } from 'lucide-react'
 import {
   buildRerootTree,
@@ -7,7 +7,9 @@ import {
   type RerootEdge as Edge,
 } from '../../algorithms/reroot/index.ts'
 import { playGameTone } from './runtime/audio'
-import { browserRandom, randomInt } from './runtime/random'
+import { createSeededRandom, randomInt } from './runtime/random'
+import type { RandomSource } from './runtime/random'
+import { useRoundSeed } from './runtime/useRoundSeed'
 import { useRoundStats } from './runtime/useRoundStats'
 import './game.css'
 import './game-reroot.css'
@@ -26,11 +28,13 @@ const DIFFS: Record<Difficulty, DiffSpec> = {
 }
 const DIFF_ORDER: Difficulty[] = ['easy', 'medium', 'hard']
 
-// 随机生成一棵 n 点树（每个新点挂到一个已有点上），0-based 边
-function makeTree(n: number): Edge[] {
+// 随机生成一棵树（每个新点挂到一个已有点上），0-based 边
+// oxlint-disable-next-line react/only-export-components -- executable tests import the pure round builder
+export function buildTreeRound(difficulty: Difficulty, random: RandomSource): Edge[] {
+  const n = DIFFS[difficulty].n
   const edges: Edge[] = []
   for (let v = 1; v < n; v++) {
-    const p = randomInt(browserRandom, 0, v - 1) // 0..v-1 里随机父
+    const p = randomInt(random, 0, v - 1) // 0..v-1 里随机父
     edges.push({ u: p, v })
   }
   return edges
@@ -38,12 +42,24 @@ function makeTree(n: number): Edge[] {
 
 export default function RerootGame() {
   const [difficulty, setDifficulty] = useState<Difficulty>('medium')
+  const roundSeed = useRoundSeed()
   const [n, setN] = useState(DIFFS.medium.n)
-  const [edges, setEdges] = useState<Edge[]>(() => makeTree(DIFFS.medium.n))
+  const [edges, setEdges] = useState<Edge[]>(() =>
+    buildTreeRound('medium', createSeededRandom(roundSeed.seed)),
+  )
   const [rootSel, setRootSel] = useState(0)
   const [revealed, setRevealed] = useState(false)
   const [muted, setMuted] = useState(false)
   const round = useRoundStats()
+  const startRound = round.start
+
+  useLayoutEffect(() => {
+    setN(DIFFS[difficulty].n)
+    setEdges(buildTreeRound(difficulty, createSeededRandom(roundSeed.seed)))
+    setRootSel(0)
+    setRevealed(false)
+    startRound()
+  }, [difficulty, roundSeed, startRound])
 
   // 换根一次算好每点距离和（O(n)），并布局
   const { nodes, maxDepth, dist, best, bestNode } = useMemo(() => {
@@ -56,13 +72,6 @@ export default function RerootGame() {
   const distOfSel = dist[rootSel]
   const win = revealed && distOfSel === best
 
-  const reset = (nn: number) => {
-    setN(nn)
-    setEdges(makeTree(nn))
-    setRootSel(0)
-    setRevealed(false)
-    round.start()
-  }
   const pickNode = (id: number) => {
     if (revealed) return
     setRootSel(id)
@@ -80,13 +89,12 @@ export default function RerootGame() {
     }
   }
   const shuffle = () => {
-    reset(n)
+    roundSeed.next()
     playGameTone({ frequency: 360, duration: 0.06 }, muted)
   }
   const pickDiff = (d: Difficulty) => {
     if (d === difficulty) return
     setDifficulty(d)
-    reset(DIFFS[d].n)
     playGameTone({ frequency: 420, duration: 0.06 }, muted)
   }
 
@@ -225,7 +233,12 @@ export default function RerootGame() {
             </button>
           </div>
           <div className="game__stats">
-            已玩 {round.stats.played} 局 · 命中重心 {round.stats.matched} 次
+            <span>
+              已玩 {round.stats.played} 局 · 命中重心 {round.stats.matched} 次 · 种子 {roundSeed.seed}
+            </span>
+            <button type="button" className="gbtn" onClick={() => roundSeed.replay(roundSeed.seed)}>
+              重放此种子
+            </button>
           </div>
         </div>
       </div>

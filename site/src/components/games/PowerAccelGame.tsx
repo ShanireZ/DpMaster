@@ -1,7 +1,9 @@
-import { useMemo, useState } from 'react'
+import { useLayoutEffect, useMemo, useState } from 'react'
 import { Zap, Shuffle, Trophy, Volume2, VolumeX, Undo2, RotateCcw, Sparkles } from 'lucide-react'
 import { playGameTone } from './runtime/audio'
-import { browserRandom, randomInt } from './runtime/random'
+import { createSeededRandom, randomInt } from './runtime/random'
+import type { RandomSource } from './runtime/random'
+import { useRoundSeed } from './runtime/useRoundSeed'
 import { useRoundStats } from './runtime/useRoundStats'
 import './game.css'
 import './game-power.css'
@@ -49,14 +51,18 @@ interface ChainStep {
   kind: 'double' | 'add'
 }
 
-function makeTarget(difficulty: Difficulty): number {
+// oxlint-disable-next-line react/only-export-components -- executable tests import the pure round builder
+export function buildExponentRound(difficulty: Difficulty, random: RandomSource): number {
   const d = DIFFS[difficulty]
-  return randomInt(browserRandom, d.nMin, d.nMax)
+  return randomInt(random, d.nMin, d.nMax)
 }
 
 export default function PowerAccelGame() {
   const [difficulty, setDifficulty] = useState<Difficulty>('medium')
-  const [target, setTarget] = useState(() => makeTarget('medium'))
+  const roundSeed = useRoundSeed()
+  const [target, setTarget] = useState(() =>
+    buildExponentRound('medium', createSeededRandom(roundSeed.seed)),
+  )
   // 已合成的步骤链（初始集合恒为 {1}，不计入步骤）
   const [steps, setSteps] = useState<ChainStep[]>([])
   // 当前选中的两个待合成指数（栈式：最多 2 个）
@@ -64,6 +70,15 @@ export default function PowerAccelGame() {
   const [revealed, setRevealed] = useState(false)
   const [muted, setMuted] = useState(false)
   const round = useRoundStats()
+  const startRound = round.start
+
+  useLayoutEffect(() => {
+    setTarget(buildExponentRound(difficulty, createSeededRandom(roundSeed.seed)))
+    setSteps([])
+    setPicks([])
+    setRevealed(false)
+    startRound()
+  }, [difficulty, roundSeed, startRound])
 
   // 当前已达指数集合：{1} ∪ 每步的结果
   const reachedList = useMemo(() => {
@@ -153,23 +168,12 @@ export default function PowerAccelGame() {
   }
 
   const shuffle = () => {
-    const t = makeTarget(difficulty)
-    setTarget(t)
-    setSteps([])
-    setPicks([])
-    setRevealed(false)
-    round.start()
+    roundSeed.next()
     playGameTone({ frequency: 360, duration: 0.06 }, muted)
   }
   const pickDiff = (d: Difficulty) => {
     if (d === difficulty) return
     setDifficulty(d)
-    const t = makeTarget(d)
-    setTarget(t)
-    setSteps([])
-    setPicks([])
-    setRevealed(false)
-    round.start()
     playGameTone({ frequency: 420, duration: 0.06 }, muted)
   }
 
@@ -355,7 +359,12 @@ export default function PowerAccelGame() {
           </div>
 
           <div className="game__stats">
-            已玩 {round.stats.played} 局 · 达到 / 超越快速幂 {round.stats.matched} 次
+            <span>
+              已玩 {round.stats.played} 局 · 达到 / 超越快速幂 {round.stats.matched} 次 · 种子 {roundSeed.seed}
+            </span>
+            <button type="button" className="gbtn" onClick={() => roundSeed.replay(roundSeed.seed)}>
+              重放此种子
+            </button>
           </div>
         </div>
       </div>

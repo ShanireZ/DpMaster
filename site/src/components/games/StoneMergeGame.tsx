@@ -1,8 +1,10 @@
-import { useMemo, useState } from 'react'
+import { useLayoutEffect, useMemo, useState } from 'react'
 import { Layers, Shuffle, Trophy, Volume2, VolumeX, Undo2, RotateCcw } from 'lucide-react'
 import { solveStoneMerge } from '../../algorithms/stone-merge/index.ts'
 import { playGameTone } from './runtime/audio'
-import { browserRandom, randomInt } from './runtime/random'
+import { createSeededRandom, randomInt } from './runtime/random'
+import type { RandomSource } from './runtime/random'
+import { useRoundSeed } from './runtime/useRoundSeed'
 import { useRoundStats } from './runtime/useRoundStats'
 import './game.css'
 import './game-stone.css'
@@ -47,9 +49,10 @@ function solveGreedy(a: number[]): number {
   return cost
 }
 
-function makeStones(difficulty: Difficulty): number[] {
+// oxlint-disable-next-line react/only-export-components -- executable tests import the pure round builder
+export function buildStoneRound(difficulty: Difficulty, random: RandomSource): number[] {
   const d = DIFFS[difficulty]
-  return Array.from({ length: d.count }, () => randomInt(browserRandom, d.vMin, d.vMin + d.vRange - 1))
+  return Array.from({ length: d.count }, () => randomInt(random, d.vMin, d.vMin + d.vRange - 1))
 }
 
 // 一堆石子：value=当前堆值；src=它由哪些原始下标合并而来（用于展示与「代价」溯源）
@@ -67,8 +70,9 @@ interface Step {
 
 export default function StoneMergeGame() {
   const [difficulty, setDifficulty] = useState<Difficulty>('medium')
+  const roundSeed = useRoundSeed()
   // 首帧只随机一次，stones（原始条/DP 求解）与 heaps（可玩堆）同源，避免两者数字不一致
-  const [init] = useState(() => makeStones('medium'))
+  const [init] = useState(() => buildStoneRound('medium', createSeededRandom(roundSeed.seed)))
   const [stones, setStones] = useState<number[]>(init)
   // 当前堆序列（初始为每颗石子各自一堆）
   const [heaps, setHeaps] = useState<Heap[]>(() => init.map((v, i) => ({ value: v, src: [i] })))
@@ -79,6 +83,7 @@ export default function StoneMergeGame() {
   const [revealed, setRevealed] = useState(false)
   const [muted, setMuted] = useState(false)
   const round = useRoundStats()
+  const startRound = round.start
 
   const dpMin = useMemo(() => solveStoneMerge(stones, 'min').cost, [stones])
   const greedy = useMemo(() => solveGreedy(stones), [stones])
@@ -95,6 +100,11 @@ export default function StoneMergeGame() {
     setFirstSel(null)
     setRevealed(false)
   }
+
+  useLayoutEffect(() => {
+    resetWith(buildStoneRound(difficulty, createSeededRandom(roundSeed.seed)))
+    startRound()
+  }, [difficulty, roundSeed, startRound])
 
   // 点一堆：首点选中；再点相邻堆则合并；点非相邻堆则改选它；点自己则取消
   const clickHeap = (i: number) => {
@@ -158,16 +168,13 @@ export default function StoneMergeGame() {
   }
 
   const shuffle = () => {
-    resetWith(makeStones(difficulty))
-    round.start()
+    roundSeed.next()
     playGameTone({ frequency: 360, duration: 0.06 }, muted)
   }
 
   const pickDiff = (d: Difficulty) => {
     if (d === difficulty) return
     setDifficulty(d)
-    resetWith(makeStones(d))
-    round.start()
     playGameTone({ frequency: 420, duration: 0.06 }, muted)
   }
 
@@ -303,7 +310,12 @@ export default function StoneMergeGame() {
             </button>
           </div>
           <div className="game__stats">
-            已玩 {round.stats.played} 局 · 追平 DP {round.stats.matched} 次
+            <span>
+              已玩 {round.stats.played} 局 · 追平 DP {round.stats.matched} 次 · 种子 {roundSeed.seed}
+            </span>
+            <button type="button" className="gbtn" onClick={() => roundSeed.replay(roundSeed.seed)}>
+              重放此种子
+            </button>
           </div>
         </div>
       </div>

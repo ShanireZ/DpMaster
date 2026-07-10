@@ -1,8 +1,10 @@
-import { useMemo, useState } from 'react'
+import { useLayoutEffect, useMemo, useState } from 'react'
 import { Package, Sparkles, Shuffle, Trophy, Volume2, VolumeX } from 'lucide-react'
 import { solveZeroOneKnapsack } from '../../algorithms/knapsack/index.ts'
 import { playGameTone } from './runtime/audio'
-import { browserRandom, randomInt } from './runtime/random'
+import { createSeededRandom, randomInt } from './runtime/random'
+import type { RandomSource } from './runtime/random'
+import { useRoundSeed } from './runtime/useRoundSeed'
 import { useRoundStats } from './runtime/useRoundStats'
 import './game.css'
 
@@ -47,11 +49,12 @@ function solveGreedy(items: GItem[], cap: number): { value: number; pick: boolea
   return { value, pick }
 }
 
-function makeGame(difficulty: Difficulty): { items: GItem[]; cap: number } {
+// oxlint-disable-next-line react/only-export-components -- executable tests import the pure round builder
+export function buildPackRound(difficulty: Difficulty, random: RandomSource): { items: GItem[]; cap: number } {
   const d = DIFFS[difficulty]
   const items = Array.from({ length: d.count }, () => ({
-    w: randomInt(browserRandom, d.wMin, d.wMin + d.wRange - 1),
-    v: randomInt(browserRandom, d.vMin, d.vMin + d.vRange - 1),
+    w: randomInt(random, d.wMin, d.wMin + d.wRange - 1),
+    v: randomInt(random, d.vMin, d.vMin + d.vRange - 1),
   }))
   const totalW = items.reduce((s, it) => s + it.w, 0)
   const cap = Math.max(6, Math.round(totalW * d.capRatio))
@@ -60,11 +63,21 @@ function makeGame(difficulty: Difficulty): { items: GItem[]; cap: number } {
 
 export default function PackMasterGame() {
   const [difficulty, setDifficulty] = useState<Difficulty>('medium')
-  const [game, setGame] = useState(() => makeGame('medium'))
+  const roundSeed = useRoundSeed()
+  const [game, setGame] = useState(() => buildPackRound('medium', createSeededRandom(roundSeed.seed)))
   const [sel, setSel] = useState<boolean[]>(() => game.items.map(() => false))
   const [revealed, setRevealed] = useState(false)
   const [muted, setMuted] = useState(false)
   const round = useRoundStats()
+  const startRound = round.start
+
+  useLayoutEffect(() => {
+    const nextGame = buildPackRound(difficulty, createSeededRandom(roundSeed.seed))
+    setGame(nextGame)
+    setSel(nextGame.items.map(() => false))
+    setRevealed(false)
+    startRound()
+  }, [difficulty, roundSeed, startRound])
 
   const opt = useMemo(() => solveZeroOneKnapsack(game.items, game.cap), [game])
   const greedy = useMemo(() => solveGreedy(game.items, game.cap), [game])
@@ -91,21 +104,12 @@ export default function PackMasterGame() {
     }
   }
   const shuffle = () => {
-    const g = makeGame(difficulty)
-    setGame(g)
-    setSel(g.items.map(() => false))
-    setRevealed(false)
-    round.start()
+    roundSeed.next()
     playGameTone({ frequency: 360, duration: 0.06 }, muted)
   }
   const pickDiff = (d: Difficulty) => {
     if (d === difficulty) return
     setDifficulty(d)
-    const g = makeGame(d)
-    setGame(g)
-    setSel(g.items.map(() => false))
-    setRevealed(false)
-    round.start()
     playGameTone({ frequency: 420, duration: 0.06 }, muted)
   }
 
@@ -216,7 +220,12 @@ export default function PackMasterGame() {
             </button>
           </div>
           <div className="game__stats">
-            已玩 {round.stats.played} 局 · 追平 DP {round.stats.matched} 次
+            <span>
+              已玩 {round.stats.played} 局 · 追平 DP {round.stats.matched} 次 · 种子 {roundSeed.seed}
+            </span>
+            <button type="button" className="gbtn" onClick={() => roundSeed.replay(roundSeed.seed)}>
+              重放此种子
+            </button>
           </div>
         </div>
       </div>
