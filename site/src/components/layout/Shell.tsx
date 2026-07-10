@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { Outlet, useLocation, useMatch } from 'react-router-dom'
 import Sidebar from './Sidebar'
 import TopBar from './TopBar'
@@ -9,6 +9,8 @@ import './shell.css'
 export default function Shell() {
   const [mobileOpen, setMobileOpen] = useState(false)
   const location = useLocation()
+  const mainRef = useRef<HTMLElement>(null)
+  const previousPath = useRef(location.pathname)
   const match = useMatch('/part/:pid/*')
   const pid = match?.params.pid
   const routeMeta = getPageMeta(location.pathname)
@@ -19,10 +21,13 @@ export default function Shell() {
     else delete document.documentElement.dataset.part
   }, [pid])
 
-  // 路由变化：关闭移动抽屉 + 滚动到顶
+  // 路由变化：关闭移动抽屉 + 滚动到顶 + 将键盘焦点移到新页面正文
   useEffect(() => {
+    const changed = previousPath.current !== location.pathname
+    previousPath.current = location.pathname
     setMobileOpen(false)
     window.scrollTo({ top: 0 })
+    if (changed) mainRef.current?.focus({ preventScroll: true })
   }, [location.pathname])
 
   return (
@@ -44,7 +49,7 @@ export default function Shell() {
         />
         <div className="main">
           <TopBar onHamburger={() => setMobileOpen(true)} mobileOpen={mobileOpen} />
-          <main id="main-content" className="content" tabIndex={-1}>
+          <main id="main-content" ref={mainRef} className="content" tabIndex={-1}>
             <Outlet />
           </main>
         </div>

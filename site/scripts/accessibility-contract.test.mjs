@@ -18,6 +18,17 @@ test('Shell owns skip navigation, the main target, and route announcements', asy
   assert.match(shell, /getPageMeta\(location\.pathname\)/)
 })
 
+test('Shell focuses main only after pathname changes', async () => {
+  const shell = await source('components/layout/Shell.tsx')
+  assert.match(shell, /const mainRef = useRef<HTMLElement>\(null\)/)
+  assert.match(shell, /const previousPath = useRef\(location\.pathname\)/)
+  assert.match(shell, /<main[^>]*ref=\{mainRef\}/)
+  assert.match(
+    shell,
+    /const changed = previousPath\.current !== location\.pathname[\s\S]*previousPath\.current = location\.pathname[\s\S]*setMobileOpen\(false\)[\s\S]*window\.scrollTo\(\{ top: 0 \}\)[\s\S]*if \(changed\) mainRef\.current\?\.focus\(\{ preventScroll: true \}\)/,
+  )
+})
+
 test('navigation and breadcrumbs expose current-page semantics', async () => {
   const [sidebar, topbar] = await Promise.all([
     source('components/layout/Sidebar.tsx'),
