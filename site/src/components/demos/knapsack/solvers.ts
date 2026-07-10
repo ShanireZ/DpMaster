@@ -1,12 +1,9 @@
 import type { VizModel, Frame, CellState, Arrow } from '../../dp-engine/types'
 import { key } from '../../dp-engine/types'
+import { recordZeroOneKnapsack } from '../../../algorithms/knapsack/internal.ts'
+import type { KnapsackItem } from '../../../algorithms/knapsack/index.ts'
 
-export interface Item {
-  w: number
-  v: number
-}
-
-const NEG = -1e9
+export type Item = KnapsackItem
 
 function settled(vals: (number | null)[][]): Record<string, CellState> {
   const s: Record<string, CellState> = {}
@@ -18,6 +15,7 @@ function settled(vals: (number | null)[][]): Record<string, CellState> {
 /** 二维原型 01 背包：f[i][j] = max(f[i-1][j], f[i-1][j-w]+v) */
 export function knapsack2D(items: Item[], W: number): VizModel {
   const n = items.length
+  const run = recordZeroOneKnapsack(items, W)
   const f: (number | null)[][] = Array.from({ length: n + 1 }, () => Array<number | null>(W + 1).fill(null))
   for (let j = 0; j <= W; j++) f[0][j] = 0
   const snap = () => f.map((row) => row.slice())
@@ -30,36 +28,31 @@ export function knapsack2D(items: Item[], W: number): VizModel {
     formula: 'f[0][j] = 0',
   })
 
-  for (let i = 1; i <= n; i++) {
-    const { w, v } = items[i - 1]
-    for (let j = 0; j <= W; j++) {
-      const notTake = f[i - 1][j] as number
-      const canTake = j >= w
-      const take = canTake ? (f[i - 1][j - w] as number) + v : NEG
-      const best = Math.max(notTake, take)
-      f[i][j] = best
+  for (const event of run.events) {
+    const { itemIndex: i, capacity: j, item, notTake, take, best, takeBetter } = event
+    const { w, v } = item
+    const canTake = take !== null
+    f[i][j] = best
 
-      const states = settled(f)
-      const arrows: Arrow[] = []
-      const takeBetter = canTake && take > notTake
-      states[key(i - 1, j)] = 'source'
-      arrows.push({ from: { r: i - 1, c: j }, to: { r: i, c: j }, kind: takeBetter ? 'source' : 'chosen' })
-      if (canTake) {
-        states[key(i - 1, j - w)] = 'source'
-        arrows.push({ from: { r: i - 1, c: j - w }, to: { r: i, c: j }, kind: takeBetter ? 'chosen' : 'source' })
-      }
-      if (takeBetter) states[key(i - 1, j - w)] = 'chosen'
-      else states[key(i - 1, j)] = 'chosen'
-      states[key(i, j)] = 'current'
-
-      const caption = canTake
-        ? `物品 <b>${i}</b>（w=${w}, v=${v}）· 容量 <b>${j}</b>：不取 = f[${i - 1}][${j}] = <b>${notTake}</b>；取 = f[${i - 1}][${j - w}]+${v} = <b>${take}</b> → 取较大者 <b>${best}</b>。`
-        : `物品 <b>${i}</b>（w=${w}）· 容量 <b>${j}</b>：装不下（${j} &lt; ${w}），只能不取 = <b>${notTake}</b>。`
-      const formula = canTake
-        ? `f[${i}][${j}]=\\max(${notTake},\\ ${f[i - 1][j - w]}+${v})=${best}`
-        : `f[${i}][${j}]=f[${i - 1}][${j}]=${notTake}`
-      frames.push({ values: snap(), states, arrows, active: { r: i, c: j }, caption, formula })
+    const states = settled(f)
+    const arrows: Arrow[] = []
+    states[key(i - 1, j)] = 'source'
+    arrows.push({ from: { r: i - 1, c: j }, to: { r: i, c: j }, kind: takeBetter ? 'source' : 'chosen' })
+    if (canTake) {
+      states[key(i - 1, j - w)] = 'source'
+      arrows.push({ from: { r: i - 1, c: j - w }, to: { r: i, c: j }, kind: takeBetter ? 'chosen' : 'source' })
     }
+    if (takeBetter) states[key(i - 1, j - w)] = 'chosen'
+    else states[key(i - 1, j)] = 'chosen'
+    states[key(i, j)] = 'current'
+
+    const caption = canTake
+      ? `物品 <b>${i}</b>（w=${w}, v=${v}）· 容量 <b>${j}</b>：不取 = f[${i - 1}][${j}] = <b>${notTake}</b>；取 = f[${i - 1}][${j - w}]+${v} = <b>${take}</b> → 取较大者 <b>${best}</b>。`
+      : `物品 <b>${i}</b>（w=${w}）· 容量 <b>${j}</b>：装不下（${j} &lt; ${w}），只能不取 = <b>${notTake}</b>。`
+    const formula = canTake
+      ? `f[${i}][${j}]=\\max(${notTake},\\ ${(take as number) - v}+${v})=${best}`
+      : `f[${i}][${j}]=f[${i - 1}][${j}]=${notTake}`
+    frames.push({ values: snap(), states, arrows, active: { r: i, c: j }, caption, formula })
   }
 
   const fin = settled(f)
@@ -67,8 +60,8 @@ export function knapsack2D(items: Item[], W: number): VizModel {
   frames.push({
     values: snap(),
     states: fin,
-    caption: `答案在右下角 <b>f[${n}][${W}] = ${f[n][W]}</b>——考虑全部 ${n} 件、容量 ${W} 时的最大价值。`,
-    formula: `f[${n}][${W}]=${f[n][W]}`,
+    caption: `答案在右下角 <b>f[${n}][${W}] = ${run.result.value}</b>——考虑全部 ${n} 件、容量 ${W} 时的最大价值。`,
+    formula: `f[${n}][${W}]=${run.result.value}`,
   })
 
   return {
