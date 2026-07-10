@@ -135,17 +135,19 @@ export function executeTreeDominatingSet(
   }
 
   const guards = new Set<number>()
-  const pick = (node: number, needCover: boolean): void => {
+  type Requirement = 'free' | 'covered' | 'guard'
+  const pick = (node: number, requirement: Requirement): void => {
     const children = tree.children[node]
     let state: 0 | 1 | 2
-    if (needCover) state = d0[node] <= d1[node] ? 0 : 1
+    if (requirement === 'guard') state = 0
+    else if (requirement === 'covered') state = d0[node] <= d1[node] ? 0 : 1
     else {
       const minimum = Math.min(d0[node], d1[node], d2[node])
       state = minimum === d0[node] ? 0 : minimum === d1[node] ? 1 : 2
     }
     if (state === 0) {
       guards.add(node)
-      for (const child of children) pick(child, false)
+      for (const child of children) pick(child, 'free')
     } else if (state === 1) {
       let bestChild = -1
       let bestExtra = INF
@@ -156,10 +158,10 @@ export function executeTreeDominatingSet(
           bestChild = child
         }
       }
-      for (const child of children) pick(child, child !== bestChild)
-    } else for (const child of children) pick(child, true)
+      for (const child of children) pick(child, child === bestChild ? 'guard' : 'covered')
+    } else for (const child of children) pick(child, 'covered')
   }
-  pick(tree.root, true)
+  pick(tree.root, 'covered')
   return { d0, d1, d2, ans: Math.min(d0[tree.root], d1[tree.root]), guards }
 }
 
