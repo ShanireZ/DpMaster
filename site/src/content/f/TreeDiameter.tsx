@@ -1,5 +1,5 @@
 import { Link } from 'react-router-dom'
-import { ArrowLeft, ArrowRight, MousePointerClick } from 'lucide-react'
+import { MousePointerClick } from 'lucide-react'
 import { M, MB } from '../../components/ui/Math'
 import InfoBox from '../../components/ui/InfoBox'
 import CodeBlock from '../../components/ui/CodeBlock'
@@ -276,20 +276,6 @@ export default function TreeDiameter() {
         <Exercise pid="P1122" name="最大子树和（自测）" hint="独立写一遍：注意 f[u] 起手含 w[u]（可负），孩子块 max(0, f[c]) 才接，答案初值 -∞。" />
       </section>
 
-      <nav className="type-nav">
-        <Link to="/part/f/knapsack" className="prev">
-          <span className="dir">
-            <ArrowLeft size={15} style={{ verticalAlign: '-2px' }} /> 上一类型
-          </span>
-          <span className="nm">树上背包</span>
-        </Link>
-        <Link to="/part/f/cover" className="next">
-          <span className="dir">下一类型 →</span>
-          <span className="nm">
-            覆盖 / 支配 / 染色 <ArrowRight size={15} style={{ verticalAlign: '-2px' }} />
-          </span>
-        </Link>
-      </nav>
     </>
   )
 }

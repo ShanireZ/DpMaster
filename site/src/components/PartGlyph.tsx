@@ -1,4 +1,4 @@
-import type { PartId } from '../data/parts'
+import type { PartId } from '../data/catalog'
 
 /** 每个部分的几何母题字形——映射该 DP 的结构（容器/线/弧/网格/放射树/树/比特）。 */
 export default function PartGlyph({ id, size = 120 }: { id: PartId; size?: number }) {

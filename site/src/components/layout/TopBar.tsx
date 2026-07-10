@@ -1,7 +1,7 @@
 import { Link, useMatch } from 'react-router-dom'
 import { Menu, Sun, Moon, Search } from 'lucide-react'
 import { useTheme } from '../../theme/ThemeContext'
-import { getPart } from '../../data/parts'
+import { getPart } from '../../data/catalog'
 
 export default function TopBar({ onHamburger }: { onHamburger: () => void }) {
   const { theme, toggle } = useTheme()

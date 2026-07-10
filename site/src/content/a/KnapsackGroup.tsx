@@ -1,5 +1,5 @@
 import { Link } from 'react-router-dom'
-import { ArrowLeft, ArrowRight, MousePointerClick, Gamepad2 } from 'lucide-react'
+import { MousePointerClick, Gamepad2 } from 'lucide-react'
 import { M, MB } from '../../components/ui/Math'
 import InfoBox from '../../components/ui/InfoBox'
 import CodeBlock from '../../components/ui/CodeBlock'
@@ -302,20 +302,6 @@ export default function KnapsackGroup() {
         到 <Link to="/part/a" style={{ color: 'var(--accent-1)', fontWeight: 600 }}>A 部分页的「装包大师」</Link>挑物品时留意：若把清单按「同一栏里只能拿一件」重新分栏，你面对的就是分组背包——组内互斥，正是它区别于 01 背包的那一笔。
       </div>
 
-      <nav className="type-nav">
-        <Link to="/part/a/multiple">
-          <span className="dir">← 上一类型</span>
-          <span className="nm">
-            <ArrowLeft size={15} style={{ verticalAlign: '-2px' }} /> 多重背包
-          </span>
-        </Link>
-        <Link to="/part/a/mixed" className="next">
-          <span className="dir">下一类型 →</span>
-          <span className="nm">
-            混合背包 <ArrowRight size={15} style={{ verticalAlign: '-2px' }} />
-          </span>
-        </Link>
-      </nav>
     </>
   )
 }

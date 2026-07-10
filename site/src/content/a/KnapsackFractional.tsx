@@ -1,5 +1,5 @@
 import { Link } from 'react-router-dom'
-import { ArrowLeft, MousePointerClick } from 'lucide-react'
+import { MousePointerClick } from 'lucide-react'
 import { M, MB } from '../../components/ui/Math'
 import InfoBox from '../../components/ui/InfoBox'
 import CodeBlock from '../../components/ui/CodeBlock'
@@ -219,15 +219,6 @@ export default function KnapsackFractional() {
         </div>
       </section>
 
-      <nav className="type-nav">
-        <Link to="/part/a/variant">
-          <span className="dir">← 上一类型</span>
-          <span className="nm">
-            <ArrowLeft size={15} style={{ verticalAlign: '-2px' }} /> 背包综合变形
-          </span>
-        </Link>
-        <span />
-      </nav>
     </>
   )
 }

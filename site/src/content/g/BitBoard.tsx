@@ -1,5 +1,5 @@
 import { Link } from 'react-router-dom'
-import { ArrowRight, MousePointerClick, Gamepad2 } from 'lucide-react'
+import { MousePointerClick, Gamepad2 } from 'lucide-react'
 import { M, MB } from '../../components/ui/Math'
 import InfoBox from '../../components/ui/InfoBox'
 import CodeBlock from '../../components/ui/CodeBlock'
@@ -339,18 +339,6 @@ export default function BitBoard() {
         想亲手试试？到 <Link to="/part/g" style={{ color: 'var(--accent-1)', fontWeight: 600 }}>G 部分页的「棋盘布阵」</Link>手动放王，实时看位运算判定冲突，再点「看 DP 全部方案数」对照。
       </div>
 
-      <nav className="type-nav">
-        <Link to="/part/f/count" className="prev">
-          <span className="dir">← 上一类型</span>
-          <span className="nm">树形 DP · 方案数 / 距离统计</span>
-        </Link>
-        <Link to="/part/g/tsp" className="next">
-          <span className="dir">下一类型 →</span>
-          <span className="nm">
-            集合状压 / TSP <ArrowRight size={15} style={{ verticalAlign: '-2px' }} />
-          </span>
-        </Link>
-      </nav>
     </>
   )
 }

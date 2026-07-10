@@ -1,5 +1,5 @@
 import { Link } from 'react-router-dom'
-import { ArrowLeft, ArrowRight, MousePointerClick, Gamepad2 } from 'lucide-react'
+import { MousePointerClick, Gamepad2 } from 'lucide-react'
 import { M, MB } from '../../components/ui/Math'
 import InfoBox from '../../components/ui/InfoBox'
 import CodeBlock from '../../components/ui/CodeBlock'
@@ -336,20 +336,6 @@ for 长度 L = 2 … n:               // ★外层枚举区间长度，由短到
         想更直观地感受「端点配对如何向内收缩」？到 <Link to="/part/c" style={{ color: 'var(--accent-1)', fontWeight: 600 }}>C 部分页</Link>的互动里亲手挑一条回文子序列，再看 DP 给出的最优。
       </div>
 
-      <nav className="type-nav">
-        <Link to="/part/c/ring">
-          <span className="dir">← 上一类型</span>
-          <span className="nm">
-            <ArrowLeft size={15} style={{ verticalAlign: '-2px' }} /> 环形区间 DP
-          </span>
-        </Link>
-        <Link to="/part/c/tree" className="next">
-          <span className="dir">下一类型 →</span>
-          <span className="nm">
-            加分二叉树 <ArrowRight size={15} style={{ verticalAlign: '-2px' }} />
-          </span>
-        </Link>
-      </nav>
     </>
   )
 }

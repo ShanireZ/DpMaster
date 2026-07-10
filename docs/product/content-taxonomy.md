@@ -5,13 +5,12 @@ description: The current A-G family taxonomy and type inventory used by the live
 tags: [content, taxonomy, routing]
 timestamp: 2026-07-07T00:00:00+08:00
 source_paths:
-  - site/src/data/parts.ts
-  - site/src/content/registry.tsx
+  - site/src/data/catalog.ts
 ---
 
 # Authority
 
-The live taxonomy is `site/src/data/parts.ts`. Older planning documents used a different order where A was 线性 DP and B was 背包 DP. The implemented site has reversed that order: A is now 背包 DP and B is now 线性 DP. New documentation must use the implemented order below.
+The live taxonomy and route order are `site/src/data/catalog.ts`. Older planning documents used a different order where A was 线性 DP and B was 背包 DP. The implemented site has reversed that order: A is now 背包 DP and B is now 线性 DP. New documentation must use the implemented order below.
 
 # Families
 
@@ -58,4 +57,3 @@ The live taxonomy is `site/src/data/parts.ts`. Older planning documents used a d
 # Cross-Family Reuse
 
 Problem reuse is intentional. A reused problem should have one main teaching position and may appear elsewhere as a review, exercise, or cross-reference. The problem index may therefore contain more entries than unique Luogu IDs.
-

@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from 'react'
 import { useLocation } from 'react-router-dom'
 import { MessageSquarePlus, X, Send, Check, Loader2 } from 'lucide-react'
-import { getPart } from '../../data/parts'
+import { getPart } from '../../data/catalog'
 import './feedback.css'
 
 type Kind = '内容有误' | '显示异常' | '功能问题' | '建议' | '其他'
@@ -84,7 +84,7 @@ export default function FeedbackWidget() {
   const asText = () => {
     const p = payload()
     return [
-      `【DP 图谱 · 反馈】`,
+      `【DP大师 · 反馈】`,
       `类型：${p.kind}`,
       `页面：${p.page}（${p.path}）`,
       `描述：${p.description}`,

@@ -1,5 +1,5 @@
 import { Link } from 'react-router-dom'
-import { ArrowRight, MousePointerClick, Gamepad2 } from 'lucide-react'
+import { MousePointerClick, Gamepad2 } from 'lucide-react'
 import { M, MB } from '../../components/ui/Math'
 import InfoBox from '../../components/ui/InfoBox'
 import CodeBlock from '../../components/ui/CodeBlock'
@@ -291,15 +291,6 @@ export default function StoneMerge() {
         想更直观地感受「合并顺序如何改变总代价」？到 <Link to="/part/c" style={{ color: 'var(--accent-1)', fontWeight: 600 }}>C 部分页</Link>的互动里亲手挑一次合并顺序，再看 DP 给出的最优。
       </div>
 
-      <nav className="type-nav">
-        <span />
-        <Link to="/part/c/ring" className="next">
-          <span className="dir">下一类型 →</span>
-          <span className="nm">
-            环形区间 DP <ArrowRight size={15} style={{ verticalAlign: '-2px' }} />
-          </span>
-        </Link>
-      </nav>
     </>
   )
 }

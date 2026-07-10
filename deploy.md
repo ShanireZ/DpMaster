@@ -1,8 +1,8 @@
-# DpMaster 部署指南
+# DP大师部署指南
 
-本文面向需要把 DpMaster 发布到线上、配置站内反馈机器人、或排查部署问题的维护者。所有命令默认在 `site` 目录下执行。
+本文面向需要把 DP大师发布到线上、配置站内反馈机器人、或排查部署问题的维护者。所有命令默认在 `site` 目录下执行。
 
-DpMaster 是一个 React + Vite 静态站。生产部署采用双线路：
+DP大师是一个 React + Vite 静态站。生产部署采用双线路：
 
 - **Cloudflare Workers Static Assets**：主配置在 `site/wrangler.jsonc`，入口是 `site/worker.js`。
 - **Tencent EdgeOne Pages**：发布 `site/dist/`，构建后生成 EdgeOne 专用的 SPA 回退与反馈函数。
@@ -301,10 +301,10 @@ Invoke-RestMethod `
 2. 打开群设置。
 3. 找到 **机器人** 或 **智能群助手**。
 4. 添加 **自定义机器人**。
-5. 命名，例如 `DP 图谱反馈`。
+5. 命名，例如 `DP大师反馈`。
 6. 选择安全设置：
    - 推荐 **加签**：复制 `SEC...` 密钥，填入 `FEEDBACK_WEBHOOK_SECRET`。
-   - 简单测试可用 **自定义关键词**：关键词填 `反馈` 或 `DP 图谱`，此时不要配置 `FEEDBACK_WEBHOOK_SECRET`。
+   - 简单测试可用 **自定义关键词**：关键词填 `反馈` 或 `DP大师`，此时不要配置 `FEEDBACK_WEBHOOK_SECRET`。
 7. 复制 webhook URL，填入 Cloudflare 和 EdgeOne 的 `FEEDBACK_WEBHOOK_URL`。
 8. 两个平台都配置 `FEEDBACK_WEBHOOK_KIND=dingtalk`。
 
@@ -350,7 +350,7 @@ Invoke-RestMethod `
 | EdgeOne `/api/feedback` 返回 HTML      | catch-all 函数没有接住反馈分支，检查 `postbuild` 产物和 EdgeOne 函数日志。                          |
 | 端点返回 `{ "ok": true }` 但钉钉没消息 | 看平台日志中是否有 `[feedback] webhook non-2xx` 或 `webhook errcode`。                              |
 | 钉钉签名错误                           | `FEEDBACK_WEBHOOK_SECRET` 是否与机器人加签密钥一致。                                                |
-| 钉钉关键词错误                         | 关键词是否包含 `反馈` 或 `DP 图谱`。                                                                |
+| 钉钉关键词错误                         | 关键词是否包含 `反馈` 或 `DP大师`。                                                                 |
 | 收到企业微信格式或完全无消息           | `FEEDBACK_WEBHOOK_KIND` 是否漏配为 `dingtalk`。                                                     |
 
 ## 维护边界

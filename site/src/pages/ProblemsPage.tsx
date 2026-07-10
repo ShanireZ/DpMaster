@@ -2,7 +2,7 @@ import { useMemo, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { Search, ExternalLink } from 'lucide-react'
 import { PROBLEMS } from '../data/problems'
-import { PARTS } from '../data/parts'
+import { PARTS } from '../data/catalog'
 import './problems.css'
 
 const KINDS: { k: 'all' | 'example' | 'exercise'; label: string }[] = [
@@ -36,6 +36,7 @@ export default function ProblemsPage() {
   }, [part, kind, q])
 
   const exCount = PROBLEMS.filter((p) => p.kind === 'example').length
+  const uniqueCount = new Set(PROBLEMS.map((p) => p.pid)).size
   const readyParts = PARTS.filter((p) => p.types.some((t) => t.status === 'ready'))
 
   return (
@@ -44,7 +45,7 @@ export default function ProblemsPage() {
         <span className="problems-hero__eyebrow">题库</span>
         <h1>题目索引</h1>
         <p className="problems-hero__lead">
-          全站 {PROBLEMS.length} 道题（例题 {exCount} · 练习 {PROBLEMS.length - exCount}），全部洛谷原生。
+          全站 {PROBLEMS.length} 个学习条目（例题 {exCount} · 练习 {PROBLEMS.length - exCount} · 去重后 {uniqueCount} 道题），全部洛谷原生。
           点题号去洛谷提交，点类型进对应讲解。
         </p>
       </section>
@@ -86,7 +87,7 @@ export default function ProblemsPage() {
         </div>
       </div>
 
-      <div className="problems-count">{filtered.length} 道</div>
+      <div className="problems-count">{filtered.length} 个条目</div>
 
       <div className="problems-list">
         {filtered.map((p, i) => (

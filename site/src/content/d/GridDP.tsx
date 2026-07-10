@@ -1,6 +1,6 @@
 import type { CSSProperties } from 'react'
 import { Link } from 'react-router-dom'
-import { ArrowRight, MousePointerClick } from 'lucide-react'
+import { MousePointerClick } from 'lucide-react'
 import { M, MB } from '../../components/ui/Math'
 import InfoBox from '../../components/ui/InfoBox'
 import CodeBlock from '../../components/ui/CodeBlock'
@@ -393,15 +393,6 @@ answer = dp[最后一层][R-1][R-1]     # 两条路都到右下角`}
         </p>
       </section>
 
-      <nav className="type-nav">
-        <span />
-        <Link to="/part/d/matpow" className="next">
-          <span className="dir">下一类型 →</span>
-          <span className="nm">
-            矩阵快速幂加速 <ArrowRight size={15} style={{ verticalAlign: '-2px' }} />
-          </span>
-        </Link>
-      </nav>
     </>
   )
 }

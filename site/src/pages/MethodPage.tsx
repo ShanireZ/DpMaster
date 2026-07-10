@@ -4,7 +4,7 @@ import { ArrowRight, Sparkles } from 'lucide-react'
 import { M, MB } from '../components/ui/Math'
 import InfoBox from '../components/ui/InfoBox'
 import CodeBlock from '../components/ui/CodeBlock'
-import { PARTS } from '../data/parts'
+import { PARTS } from '../data/catalog'
 import './typepage.css'
 import './about.css'
 
@@ -40,7 +40,7 @@ export default function MethodPage() {
           <span className="typehead__code">
             <Sparkles size={14} />
           </span>
-          DP 图谱 · 总纲
+          DP大师 · 总纲
         </span>
         <h1>动态规划 · 通用方法论</h1>
         <p className="typehead__blurb">

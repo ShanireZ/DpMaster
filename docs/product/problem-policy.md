@@ -1,7 +1,7 @@
 ---
 type: Policy
 title: Luogu Problem Policy
-description: DpMaster only uses Luogu-native P/B problems and records caveats for thin or disputed pools.
+description: DP大师 only uses Luogu-native P/B problems and records caveats for thin or disputed pools.
 tags: [content, luogu, policy]
 timestamp: 2026-07-07T00:00:00+08:00
 source_paths:
@@ -20,10 +20,10 @@ Contest labels such as USACO, NOIP, NOI, POI, SCOI, or CSP do not by themselves 
 
 The current `site/src/data/problems.ts` index has:
 
-* 158 total problem slots.
+* 177 total problem slots.
 * 84 example slots.
-* 74 exercise slots.
-* 112 unique problem IDs.
+* 93 exercise slots.
+* 116 unique problem IDs.
 
 The index is derived from implemented content pages and should be updated whenever examples or exercises change.
 
@@ -32,7 +32,7 @@ The index is derived from implemented content pages and should be updated whenev
 Some concepts have thin native problem pools:
 
 * LCIS has no official P/B template currently used by the site; it is treated as a concept note in the LCS lesson rather than forced into the exercise list.
-* 打家劫舍 and common stock-buying names do not have exact Luogu-native counterparts; DpMaster teaches the same state-machine idea through native constrained-selection problems and P2569.
+* 打家劫舍 and common stock-buying names do not have exact Luogu-native counterparts; DP大师 teaches the same state-machine idea through native constrained-selection problems and P2569.
 * 分组 / 混合 / 依赖背包 and some interval/bitmask variants have narrower pools; reuse and explicit caveats are preferred over invented coverage.
 
 # Rejected Or Cautious Items
@@ -52,4 +52,3 @@ Historical notes also rejected `P2701`, but the current implemented D/Grid lesso
 # Difficulty Caveat
 
 Luogu difficulty labels can drift and are rendered client-side. Treat stored difficulty strings as helpful labels, not legal truth. Re-check difficulty during major content refreshes.
-

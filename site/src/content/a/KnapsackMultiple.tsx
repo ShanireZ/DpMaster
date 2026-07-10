@@ -1,5 +1,5 @@
 import { Link } from 'react-router-dom'
-import { ArrowLeft, ArrowRight, MousePointerClick, Gamepad2 } from 'lucide-react'
+import { MousePointerClick, Gamepad2 } from 'lucide-react'
 import { M, MB } from '../../components/ui/Math'
 import InfoBox from '../../components/ui/InfoBox'
 import CodeBlock from '../../components/ui/CodeBlock'
@@ -294,20 +294,6 @@ export default function KnapsackMultiple() {
         到 <Link to="/part/a" style={{ color: 'var(--accent-1)', fontWeight: 600 }}>A 部分页的「装包大师」</Link>时，把某件宝物想成「库存只有有限件、拿完就没」——这份「有限件」的斤斤计较，正是多重背包要拆包处理的核心。
       </div>
 
-      <nav className="type-nav">
-        <Link to="/part/a/complete">
-          <span className="dir">← 上一类型</span>
-          <span className="nm">
-            <ArrowLeft size={15} style={{ verticalAlign: '-2px' }} /> 完全背包
-          </span>
-        </Link>
-        <Link to="/part/a/group" className="next">
-          <span className="dir">下一类型 →</span>
-          <span className="nm">
-            分组背包 <ArrowRight size={15} style={{ verticalAlign: '-2px' }} />
-          </span>
-        </Link>
-      </nav>
     </>
   )
 }

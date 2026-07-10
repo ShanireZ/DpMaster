@@ -3,7 +3,7 @@ import type { CSSProperties } from 'react'
 import { ArrowRight, Sparkles } from 'lucide-react'
 import GeometryBackdrop from '../components/GeometryBackdrop'
 import PartGlyph from '../components/PartGlyph'
-import { PARTS } from '../data/parts'
+import { PARTS } from '../data/catalog'
 import './home.css'
 
 const SPAN: Record<string, string> = { a: 's6', b: 's6', c: 's4', d: 's4', e: 's4', f: 's6', g: 's6' }

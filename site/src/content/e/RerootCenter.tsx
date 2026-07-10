@@ -1,5 +1,5 @@
 import { Link } from 'react-router-dom'
-import { ArrowRight, ArrowLeft, MousePointerClick } from 'lucide-react'
+import { MousePointerClick } from 'lucide-react'
 import { M, MB } from '../../components/ui/Math'
 import InfoBox from '../../components/ui/InfoBox'
 import CodeBlock from '../../components/ui/CodeBlock'
@@ -303,20 +303,6 @@ export default function RerootCenter() {
         <Exercise pid="P1099" name="[NOIP2007 提高组] 树网的核" hint="自测：先按 F 部分求出直径与每点偏心距，再在直径上滑动窗口取长度≤s 的核。" />
       </section>
 
-      <nav className="type-nav">
-        <Link to="/part/e/inout" className="prev">
-          <span className="dir">
-            <ArrowLeft size={15} style={{ verticalAlign: '-2px' }} /> 上一类型
-          </span>
-          <span className="nm">子树内外合并</span>
-        </Link>
-        <Link to="/part/f/select" className="next">
-          <span className="dir">下一部分 →</span>
-          <span className="nm">
-            F 树形 DP · 选点 / 最大独立集 <ArrowRight size={15} style={{ verticalAlign: '-2px' }} />
-          </span>
-        </Link>
-      </nav>
     </>
   )
 }

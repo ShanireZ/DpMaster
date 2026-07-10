@@ -1,13 +1,24 @@
 {
-  "name": "site",
+  "name": "dp-master-site",
   "private": true,
   "version": "0.0.0",
   "type": "module",
+  "packageManager": "npm@11.13.0",
+  "engines": {
+    "node": ">=24 <25",
+    "npm": ">=11 <12"
+  },
   "scripts": {
     "dev": "vite",
+    "prebuild": "npm run content:generate",
     "build": "tsc -b && vite build",
     "postbuild": "node scripts/postbuild.mjs",
-    "lint": "oxlint",
+    "test": "node --test scripts/*.test.mjs",
+    "lint": "oxlint --deny-warnings",
+    "content:generate": "node scripts/generate-problems.mjs --write",
+    "check:content": "node scripts/generate-problems.mjs --check",
+    "check:assets": "node scripts/check-assets.mjs dist",
+    "verify": "npm run check:content && npm run test && npm run lint && npm run build && npm run check:assets",
     "preview": "vite preview",
     "deploy:cf": "wrangler deploy",
     "deploy:eo": "npx -y edgeone@1.6.11 pages deploy ./dist -n dpmaster -e production",
@@ -16,15 +27,10 @@
   "dependencies": {
     "@fontsource/jetbrains-mono": "^5.2.8",
     "@fontsource/space-grotesk": "^5.2.10",
-    "@gsap/react": "^2.1.2",
-    "@types/react-katex": "^3.0.4",
-    "gsap": "^3.15.0",
     "katex": "^0.17.0",
     "lucide-react": "^1.23.0",
-    "motion": "^12.42.2",
     "react": "^19.2.7",
     "react-dom": "^19.2.7",
-    "react-katex": "^3.1.0",
     "react-router-dom": "^7.18.1",
     "shiki": "^4.3.1"
   },

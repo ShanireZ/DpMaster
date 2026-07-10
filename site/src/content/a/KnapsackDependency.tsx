@@ -1,5 +1,5 @@
 import { Link } from 'react-router-dom'
-import { ArrowLeft, ArrowRight, MousePointerClick, Network } from 'lucide-react'
+import { MousePointerClick, Network } from 'lucide-react'
 import { M, MB } from '../../components/ui/Math'
 import InfoBox from '../../components/ui/InfoBox'
 import CodeBlock from '../../components/ui/CodeBlock'
@@ -267,20 +267,6 @@ export default function KnapsackDependency() {
         <Link to="/part/f" style={{ color: 'var(--accent-1)', fontWeight: 600 }}> F 部分的树上背包</Link>。两条线都从这页的「枚举组合」出发。
       </div>
 
-      <nav className="type-nav">
-        <Link to="/part/a/cost2d">
-          <span className="dir">← 上一类型</span>
-          <span className="nm">
-            <ArrowLeft size={15} style={{ verticalAlign: '-2px' }} /> 二维费用背包
-          </span>
-        </Link>
-        <Link to="/part/a/variant" className="next">
-          <span className="dir">下一类型 →</span>
-          <span className="nm">
-            背包综合变形 <ArrowRight size={15} style={{ verticalAlign: '-2px' }} />
-          </span>
-        </Link>
-      </nav>
     </>
   )
 }

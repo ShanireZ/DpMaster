@@ -1,5 +1,5 @@
 import { Link } from 'react-router-dom'
-import { MousePointerClick, Gamepad2, ArrowLeft } from 'lucide-react'
+import { MousePointerClick, Gamepad2 } from 'lucide-react'
 import { M, MB } from '../../components/ui/Math'
 import InfoBox from '../../components/ui/InfoBox'
 import CodeBlock from '../../components/ui/CodeBlock'
@@ -333,15 +333,6 @@ export default function MergeInterval() {
         想亲手体验「合并顺序如何改变结局」？到 <Link to="/part/c" style={{ color: 'var(--accent-1)', fontWeight: 600 }}>C 部分页</Link>的互动里试着自己决定每一步的取 / 并，再对照 DP 给出的最优。
       </div>
 
-      <nav className="type-nav">
-        <Link to="/part/c/tree">
-          <span className="dir">← 上一类型</span>
-          <span className="nm">
-            <ArrowLeft size={15} style={{ verticalAlign: '-2px' }} /> 加分二叉树型
-          </span>
-        </Link>
-        <span />
-      </nav>
     </>
   )
 }

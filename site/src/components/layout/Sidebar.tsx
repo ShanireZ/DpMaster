@@ -1,7 +1,7 @@
 import { Link, NavLink, useMatch } from 'react-router-dom'
 import type { CSSProperties } from 'react'
 import { Sparkles, Info, BookOpen, Library } from 'lucide-react'
-import { PARTS } from '../../data/parts'
+import { PARTS } from '../../data/catalog'
 
 export default function Sidebar({ onNavigate }: { onNavigate?: () => void }) {
   const match = useMatch('/part/:pid/*')
@@ -14,8 +14,8 @@ export default function Sidebar({ onNavigate }: { onNavigate?: () => void }) {
           <Sparkles size={18} color="var(--text-on-accent)" strokeWidth={2.2} />
         </span>
         <span>
-          <span className="brand__name grad-text-brand">DP 图谱</span>
-          <span className="brand__sub" style={{ display: 'block' }}>DP ATLAS</span>
+          <span className="brand__name grad-text-brand">DP大师</span>
+          <span className="brand__sub" style={{ display: 'block' }}>DP MASTER</span>
         </span>
       </Link>
 

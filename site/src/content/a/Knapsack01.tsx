@@ -1,5 +1,5 @@
 import { Link } from 'react-router-dom'
-import { ArrowRight, MousePointerClick, Gamepad2 } from 'lucide-react'
+import { MousePointerClick, Gamepad2 } from 'lucide-react'
 import { M, MB } from '../../components/ui/Math'
 import InfoBox from '../../components/ui/InfoBox'
 import CodeBlock from '../../components/ui/CodeBlock'
@@ -295,15 +295,6 @@ export default function Knapsack01() {
         <Exercise pid="P1466" name="[USACO2.2] 集合 Subset Sums" hint="求方案数：能否把 1..n 分成两个和相等的子集，f[j] 计数。" />
       </section>
 
-      <nav className="type-nav">
-        <span />
-        <Link to="/part/a/complete" className="next">
-          <span className="dir">下一类型 →</span>
-          <span className="nm">
-            完全背包 <ArrowRight size={15} style={{ verticalAlign: '-2px' }} />
-          </span>
-        </Link>
-      </nav>
     </>
   )
 }

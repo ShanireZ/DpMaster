@@ -1,5 +1,5 @@
 import { Link } from 'react-router-dom'
-import { ArrowLeft, ArrowRight, MousePointerClick, Gamepad2 } from 'lucide-react'
+import { MousePointerClick, Gamepad2 } from 'lucide-react'
 import { M, MB } from '../../components/ui/Math'
 import InfoBox from '../../components/ui/InfoBox'
 import CodeBlock from '../../components/ui/CodeBlock'
@@ -284,20 +284,6 @@ export default function KnapsackComplete() {
         回到 <Link to="/part/a" style={{ color: 'var(--accent-1)', fontWeight: 600 }}>A 部分页的「装包大师」</Link>时，不妨设想若同一件宝物可以无限件地装——完全背包正是把「每件只拿一次」的枷锁彻底松开的那一步。
       </div>
 
-      <nav className="type-nav">
-        <Link to="/part/a/01">
-          <span className="dir">← 上一类型</span>
-          <span className="nm">
-            <ArrowLeft size={15} style={{ verticalAlign: '-2px' }} /> 01 背包
-          </span>
-        </Link>
-        <Link to="/part/a/multiple" className="next">
-          <span className="dir">下一类型 →</span>
-          <span className="nm">
-            多重背包 <ArrowRight size={15} style={{ verticalAlign: '-2px' }} />
-          </span>
-        </Link>
-      </nav>
     </>
   )
 }

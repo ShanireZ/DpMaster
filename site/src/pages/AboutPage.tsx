@@ -2,7 +2,7 @@ import { Link } from 'react-router-dom'
 import type { CSSProperties } from 'react'
 import { SlidersHorizontal, Gamepad2, PanelLeft, SunMoon, Sparkles, ArrowRight } from 'lucide-react'
 import GeometryBackdrop from '../components/GeometryBackdrop'
-import { PARTS } from '../data/parts'
+import { PARTS } from '../data/catalog'
 import './about.css'
 
 const USE = [
@@ -45,7 +45,7 @@ export default function AboutPage() {
           <span className="grad-text-brand">一格一格讲清楚</span>
         </h1>
         <p className="about-hero__lead">
-          DP 图谱是一个动态规划交互式教程：七大家族、每个类型都配可改值的演示动画与互动小游戏，
+          DP大师是一个动态规划交互式教程：七大家族、每个类型都配可改值的演示动画与互动小游戏，
           让状态、转移与无后效性在你眼前一格一格地长出来。例题全部取自洛谷原生题库。
         </p>
       </section>
