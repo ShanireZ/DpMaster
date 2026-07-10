@@ -1,7 +1,8 @@
 import { useMemo, useState } from 'react'
 import { Minus, Plus, X } from 'lucide-react'
-import { buildScoreTree, layoutScoreTree } from './scoreTreeSolver'
+import { layoutScoreTree } from './scoreTreeSolver'
 import type { TreeNode } from './scoreTreeSolver'
+import { solveScoreTree } from '../../../algorithms/score-tree/index.ts'
 import '../knapsack/knapsack-demo.css'
 import './score-tree-build.css'
 
@@ -51,7 +52,7 @@ export default function ScoreTreeBuildDemo() {
   const [scores, setScores] = useState<number[]>([5, 7, 1, 2, 10])
   const [sel, setSel] = useState<number | null>(null) // 选中的节点 id
 
-  const res = useMemo(() => buildScoreTree(scores), [scores])
+  const res = useMemo(() => solveScoreTree(scores), [scores])
   const { nodes, maxDepth } = useMemo(() => layoutScoreTree(res), [res])
 
   // 节点 id → 节点对象，便于取选中子树

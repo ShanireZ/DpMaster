@@ -1,6 +1,10 @@
 import { useMemo, useState } from 'react'
 import { PartyPopper, Sparkles, Shuffle, Trophy, Volume2, VolumeX } from 'lucide-react'
-import { buildTree, layoutTree, solveIndepSet } from '../demos/treedp/treedpSolver'
+import {
+  buildRootedTree,
+  layoutRootedTree,
+  solveTreeIndependentSet,
+} from '../../algorithms/tree-dp/index.ts'
 import { playGameTone } from './runtime/audio'
 import { browserRandom, randomInt } from './runtime/random'
 import { useRoundStats } from './runtime/useRoundStats'
@@ -53,9 +57,9 @@ export default function TreePartyGame() {
   const [muted, setMuted] = useState(false)
   const round = useRoundStats()
 
-  const tree = useMemo(() => buildTree(game.parent, game.weight), [game])
-  const layout = useMemo(() => layoutTree(tree), [tree])
-  const opt = useMemo(() => solveIndepSet(tree), [tree])
+  const tree = useMemo(() => buildRootedTree(game.parent, game.weight), [game])
+  const layout = useMemo(() => layoutRootedTree(tree), [tree])
+  const opt = useMemo(() => solveTreeIndependentSet(tree), [tree])
 
   // 玩家当前是否违规：存在一对被选中的直接上下级
   const conflictPairs = useMemo(() => {
