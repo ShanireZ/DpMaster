@@ -3,9 +3,14 @@ import { readFile } from 'node:fs/promises'
 import test from 'node:test'
 
 const src = new URL('../src/', import.meta.url)
+const site = new URL('../', import.meta.url)
 
 async function source(path) {
   return readFile(new URL(path, src), 'utf8')
+}
+
+async function siteFile(path) {
+  return readFile(new URL(path, site), 'utf8')
 }
 
 test('Shell owns skip navigation, the main target, and route announcements', async () => {
@@ -26,6 +31,42 @@ test('Shell focuses main only after pathname changes', async () => {
   assert.match(
     shell,
     /const changed = previousPath\.current !== location\.pathname[\s\S]*previousPath\.current = location\.pathname[\s\S]*setMobileOpen\(false\)[\s\S]*window\.scrollTo\(\{ top: 0 \}\)[\s\S]*if \(changed\) mainRef\.current\?\.focus\(\{ preventScroll: true \}\)/,
+  )
+})
+
+test('browser verification starts a strict fresh production preview', async () => {
+  const config = await siteFile('playwright.config.ts')
+  assert.match(
+    config,
+    /command:\s*'npm run preview -- --host 127\.0\.0\.1 --port 4173 --strictPort'/,
+  )
+  assert.match(config, /reuseExistingServer:\s*false/)
+})
+
+test('client navigation reuses the complete route assertion contract', async () => {
+  const browser = await siteFile('tests/browser/routes.spec.ts')
+  const helper = browser.match(/async function assertRoute[\s\S]*?\n}\n\nfor \(const route/)
+  assert.ok(helper, 'expected one shared route assertion helper')
+  for (const contract of [
+    /toHaveTitle/,
+    /meta\[name="description"\]/,
+    /link\[rel="canonical"\]/,
+    /meta\[property="og:type"\]/,
+    /locator\('h1'\)/,
+    /route-announcer/,
+    /aria-current/,
+    /expect\(browserErrors\)\.toEqual\(\[\]\)/,
+  ]) {
+    assert.match(helper[0], contract)
+  }
+  assert.match(
+    browser,
+    /await familyLink\.click\(\)[\s\S]*await assertRoute\(page, routeByPath\('\/part\/a'\), browserErrors\)/,
+  )
+  assert.equal(
+    (browser.match(/await expect\(main\)\.toBeVisible\(\)\n\s*await expect\(main\)\.not\.toBeFocused\(\)/g) || [])
+      .length,
+    2,
   )
 })
 
