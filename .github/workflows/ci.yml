@@ -32,9 +32,11 @@ jobs:
       - name: Install locked dependencies
         run: npm ci
 
-      - name: Verify content, tests, lint, build, and assets
+      - name: Install Chromium for browser verification
+        run: npx playwright install --with-deps chromium
+
+      - name: Verify content, tests, lint, build, browser routes, and assets
         run: npm run verify
 
       - name: Ensure generated content is committed
         run: git diff --exit-code -- src/data/problems.ts
-

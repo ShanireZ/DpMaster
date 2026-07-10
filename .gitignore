@@ -8,6 +8,11 @@ dist-ssr/
 # vite cache
 .vite/
 
+# browser test output
+test-results/
+playwright-report/
+blob-report/
+
 # local env / logs
 *.local
 *.log
