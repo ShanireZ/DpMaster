@@ -1,6 +1,7 @@
 import { useMemo, useState } from 'react'
 import { Minus, Plus, X, Shuffle } from 'lucide-react'
 import DPViz from '../../dp-engine/DPViz'
+import { solveLinearFsm } from '../../../algorithms/linear-fsm/index.ts'
 import { fsmPickTable } from './fsmSolver'
 import '../knapsack/knapsack-demo.css'
 
@@ -59,10 +60,7 @@ export default function StateMachineDemo() {
   const [a, setA] = useState<number[]>(PRESETS[0].a)
 
   const model = useMemo(() => fsmPickTable(a), [a])
-  const ans = useMemo(() => {
-    const last = model.frames[model.frames.length - 1].values
-    return Math.max(last[0][a.length] ?? 0, last[1][a.length] ?? 0)
-  }, [model, a])
+  const ans = useMemo(() => solveLinearFsm(a).value, [a])
 
   const modelKey = `fsm-${a.join('_')}`
 

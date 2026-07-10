@@ -1,6 +1,7 @@
 import { useMemo, useState } from 'react'
 import { Minus, Plus } from 'lucide-react'
 import DPViz from '../../dp-engine/DPViz'
+import { solveStairCount } from '../../../algorithms/linear-count/index.ts'
 import { stairCount } from './countSolver'
 import '../knapsack/knapsack-demo.css'
 
@@ -41,7 +42,7 @@ export default function StairCountDemo() {
   const [n, setN] = useState(5)
 
   const model = useMemo(() => stairCount(n), [n])
-  const answer = model.frames[model.frames.length - 1].values[0][n] ?? 0
+  const answer = useMemo(() => solveStairCount(n).count, [n])
 
   const modelKey = `stair-${n}`
 
