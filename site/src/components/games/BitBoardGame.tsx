@@ -1,6 +1,7 @@
 import { useMemo, useState } from 'react'
 import { Grid3x3, Sigma, RotateCcw, Trophy, Volume2, VolumeX } from 'lucide-react'
 import { countKings } from '../demos/bitmask/boardSolver'
+import { playGameTone } from './runtime/audio'
 import './game-bitboard.css'
 
 type Difficulty = 'easy' | 'medium' | 'hard'
@@ -18,26 +19,6 @@ const DIFFS: Record<Difficulty, DiffSpec> = {
   hard: { label: '困难', N: 5, K: 6 },
 }
 const DIFF_ORDER: Difficulty[] = ['easy', 'medium', 'hard']
-
-let ac: AudioContext | null = null
-function blip(freq: number, dur = 0.09, type: OscillatorType = 'triangle') {
-  try {
-    ac = ac || new (window.AudioContext || (window as unknown as { webkitAudioContext: typeof AudioContext }).webkitAudioContext)()
-    const o = ac.createOscillator()
-    const g = ac.createGain()
-    o.type = type
-    o.frequency.value = freq
-    g.gain.setValueAtTime(0.0001, ac.currentTime)
-    g.gain.exponentialRampToValueAtTime(0.1, ac.currentTime + 0.01)
-    g.gain.exponentialRampToValueAtTime(0.0001, ac.currentTime + dur)
-    o.connect(g)
-    g.connect(ac.destination)
-    o.start()
-    o.stop(ac.currentTime + dur)
-  } catch {
-    /* ignore */
-  }
-}
 
 // 王 (r,c) 是否与 (r2,c2) 相邻（含斜角）——即两格在 8 邻域内。
 function adjacent(r: number, c: number, r2: number, c2: number): boolean {
@@ -115,12 +96,10 @@ export default function BitBoardGame() {
     const nowWin = wouldWinAfter(nx)
     if (nowWin && !wasWin) {
       setSolved((n) => n + 1)
-      if (!muted) {
-        blip(659, 0.1)
-        setTimeout(() => blip(988, 0.16), 90)
-      }
-    } else if (!muted) {
-      blip(placing ? 480 + r * 40 : 300, 0.07)
+      playGameTone({ frequency: 659, duration: 0.1 }, muted)
+      setTimeout(() => playGameTone({ frequency: 988, duration: 0.16 }, muted), 90)
+    } else {
+      playGameTone({ frequency: placing ? 480 + r * 40 : 300, duration: 0.07 }, muted)
     }
     setWasWin(nowWin)
   }
@@ -129,22 +108,20 @@ export default function BitBoardGame() {
     if (d === difficulty) return
     setDifficulty(d)
     resetBoard(DIFFS[d])
-    if (!muted) blip(420, 0.06)
+    playGameTone({ frequency: 420, duration: 0.06 }, muted)
   }
 
   const clear = () => {
     resetBoard(DIFFS[difficulty])
-    if (!muted) blip(360, 0.06)
+    playGameTone({ frequency: 360, duration: 0.06 }, muted)
   }
 
   const reveal = () => {
     const total = countKings(N, K)
     setTotalShown(total)
     setRevealed(true)
-    if (!muted) {
-      blip(523, 0.12)
-      setTimeout(() => blip(784, 0.16), 110)
-    }
+    playGameTone({ frequency: 523, duration: 0.12 }, muted)
+    setTimeout(() => playGameTone({ frequency: 784, duration: 0.16 }, muted), 110)
   }
 
   let feedback = `在 ${N}×${N} 棋盘上放 ${K} 个王，两两不能相邻（含斜角）。点格子放 / 取。`

@@ -1,6 +1,9 @@
 import { useMemo, useState } from 'react'
 import { Package, Sparkles, Shuffle, Trophy, Volume2, VolumeX } from 'lucide-react'
 import { solveZeroOneKnapsack } from '../../algorithms/knapsack/index.ts'
+import { playGameTone } from './runtime/audio'
+import { browserRandom, randomInt } from './runtime/random'
+import { useRoundStats } from './runtime/useRoundStats'
 import './game.css'
 
 interface GItem {
@@ -47,32 +50,12 @@ function solveGreedy(items: GItem[], cap: number): { value: number; pick: boolea
 function makeGame(difficulty: Difficulty): { items: GItem[]; cap: number } {
   const d = DIFFS[difficulty]
   const items = Array.from({ length: d.count }, () => ({
-    w: d.wMin + Math.floor(Math.random() * d.wRange),
-    v: d.vMin + Math.floor(Math.random() * d.vRange),
+    w: randomInt(browserRandom, d.wMin, d.wMin + d.wRange - 1),
+    v: randomInt(browserRandom, d.vMin, d.vMin + d.vRange - 1),
   }))
   const totalW = items.reduce((s, it) => s + it.w, 0)
   const cap = Math.max(6, Math.round(totalW * d.capRatio))
   return { items, cap }
-}
-
-let ac: AudioContext | null = null
-function blip(freq: number, dur = 0.09, type: OscillatorType = 'triangle') {
-  try {
-    ac = ac || new (window.AudioContext || (window as unknown as { webkitAudioContext: typeof AudioContext }).webkitAudioContext)()
-    const o = ac.createOscillator()
-    const g = ac.createGain()
-    o.type = type
-    o.frequency.value = freq
-    g.gain.setValueAtTime(0.0001, ac.currentTime)
-    g.gain.exponentialRampToValueAtTime(0.1, ac.currentTime + 0.01)
-    g.gain.exponentialRampToValueAtTime(0.0001, ac.currentTime + dur)
-    o.connect(g)
-    g.connect(ac.destination)
-    o.start()
-    o.stop(ac.currentTime + dur)
-  } catch {
-    /* ignore */
-  }
 }
 
 export default function PackMasterGame() {
@@ -81,10 +64,7 @@ export default function PackMasterGame() {
   const [sel, setSel] = useState<boolean[]>(() => game.items.map(() => false))
   const [revealed, setRevealed] = useState(false)
   const [muted, setMuted] = useState(false)
-  const [played, setPlayed] = useState(0)
-  const [matched, setMatched] = useState(0)
-  // 本局是否已计入战绩（同一局重复点「看 DP 最优」不重复计数）
-  const [countedThisRound, setCountedThisRound] = useState(false)
+  const round = useRoundStats()
 
   const opt = useMemo(() => solveZeroOneKnapsack(game.items, game.cap), [game])
   const greedy = useMemo(() => solveGreedy(game.items, game.cap), [game])
@@ -95,24 +75,19 @@ export default function PackMasterGame() {
   const greedyBeaten = greedy.value < opt.value
 
   const toggle = (i: number) => {
-    if (!muted) blip(440 + i * 55)
+    playGameTone({ frequency: 440 + i * 55 }, muted)
     setSel((s) => s.map((x, k) => (k === i ? !x : x)))
     setRevealed(false)
   }
   const reveal = () => {
     setRevealed(true)
     const w = !over && curV === opt.value
-    // 每局仅在首次揭示时计入战绩
-    if (!countedThisRound) {
-      setCountedThisRound(true)
-      setPlayed((n) => n + 1)
-      if (w) setMatched((n) => n + 1)
-    }
-    if (!muted) {
-      if (w) {
-        blip(523, 0.12)
-        setTimeout(() => blip(784, 0.16), 110)
-      } else blip(300, 0.1, 'sine')
+    round.record(w)
+    if (w) {
+      playGameTone({ frequency: 523, duration: 0.12 }, muted)
+      setTimeout(() => playGameTone({ frequency: 784, duration: 0.16 }, muted), 110)
+    } else {
+      playGameTone({ frequency: 300, duration: 0.1, type: 'sine' }, muted)
     }
   }
   const shuffle = () => {
@@ -120,8 +95,8 @@ export default function PackMasterGame() {
     setGame(g)
     setSel(g.items.map(() => false))
     setRevealed(false)
-    setCountedThisRound(false)
-    if (!muted) blip(360, 0.06)
+    round.start()
+    playGameTone({ frequency: 360, duration: 0.06 }, muted)
   }
   const pickDiff = (d: Difficulty) => {
     if (d === difficulty) return
@@ -130,8 +105,8 @@ export default function PackMasterGame() {
     setGame(g)
     setSel(g.items.map(() => false))
     setRevealed(false)
-    setCountedThisRound(false)
-    if (!muted) blip(420, 0.06)
+    round.start()
+    playGameTone({ frequency: 420, duration: 0.06 }, muted)
   }
 
   let feedback = '点物品放进背包，凑出你认为最大的总价值，再点「看 DP 最优」对照。'
@@ -241,7 +216,7 @@ export default function PackMasterGame() {
             </button>
           </div>
           <div className="game__stats">
-            已玩 {played} 局 · 追平 DP {matched} 次
+            已玩 {round.stats.played} 局 · 追平 DP {round.stats.matched} 次
           </div>
         </div>
       </div>

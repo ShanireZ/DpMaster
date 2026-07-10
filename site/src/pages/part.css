@@ -46,6 +46,11 @@ a.typerow:hover { background: var(--surface-2); }
 .typerow__arrow { color: var(--text-3); }
 a.typerow:hover .typerow__arrow { color: var(--text-1); }
 
+.partgame {
+  margin-top: var(--sp-8);
+  scroll-margin-top: var(--sp-6);
+}
+
 /* 小节标题（部分页「互动游戏」区用；与 typepage.css 同款，避免依赖 lazy 加载的 typepage chunk） */
 .section-title {
   display: flex; align-items: center; gap: var(--sp-3);

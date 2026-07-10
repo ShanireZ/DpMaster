@@ -11,6 +11,7 @@ source_paths:
   - site/src/algorithms/
   - site/src/lib/highlighter.ts
   - site/src/components/ui/Math.tsx
+  - site/src/components/games/runtime/
 ---
 
 # Stack
@@ -42,6 +43,7 @@ The manifest intentionally keeps only dependencies imported by the current sourc
 | `site/src/components/demos/` | Editable teaching Adapters that project domain events into visual traces. |
 | `site/src/components/dp-engine/` | Shared visualization engine. |
 | `site/src/components/games/` | One game per family; games consume public result Interfaces instead of teaching frames. |
+| `site/src/components/games/runtime/` | Shared deterministic random source, round statistics, lazy audio, and viewport gate for the seven games. |
 | `site/functions/` | Shared feedback endpoint core and optional CF Pages wrapper. |
 | `site/worker.js` | Current Cloudflare Workers entry. |
 | `site/scripts/postbuild.mjs` | EdgeOne SPA fallback and feedback edge function generator. |
@@ -50,11 +52,23 @@ The manifest intentionally keeps only dependencies imported by the current sourc
 
 `App.tsx` uses `BrowserRouter` and lazy routes. `site/src/data/catalog.ts` owns literal lazy imports for every lesson and family game, so opening one lesson or family should not eagerly load unrelated lessons or games.
 
+Family pages wrap the catalog-owned lazy game in `DeferredGame`. Its one-way `IntersectionObserver` gate starts rendering about 400 px before the game reaches the viewport; there is no manual load path, and browsers without IntersectionObserver render immediately. Creating a lazy React element does not invoke its dynamic import until the gate renders it, so the game JS/CSS chunks stay off the initial family-page request when the section is not yet near.
+
 Problem metadata is extracted from lesson JSX by `site/scripts/generate-problems.mjs`. Run `npm run content:generate` after changing `ExampleCard` or `Exercise`; `npm run check:content` rejects drift.
 
 For migrated algorithms, public callers import only `site/src/algorithms/<domain>/index.ts`. The adjacent internal Module owns the sole transition loop and can emit UI-neutral domain events. Teaching code may record those events and adapt them to `VizModel`; games and ordinary readouts must not import internal Modules or recover answers from the last frame.
 
 Deep links require hosting support. See root [deploy.md](../../deploy.md) for the Cloudflare and EdgeOne contracts.
+
+# Game Runtime
+
+Game identities, titles, and dynamic imports remain exclusively in `catalog.ts`; the runtime is infrastructure, not another registry. The seven games share:
+
+* `browserRandom` and `randomInt` for bounded generation; `createSeededRandom` makes mechanics reproducible in executable checks.
+* `useRoundStats` for duplicate-safe played/matched totals. A reveal records at most once until shuffle, difficulty change, or reset starts the next round.
+* `playGameTone` for best-effort Web Audio. One `AudioContext` is created only after an unmuted interaction and reused; unsupported or blocked audio never affects game correctness.
+
+Game rules, difficulty tables, visuals, and win conditions stay local to each game.
 
 # Formula And Code Rendering
 

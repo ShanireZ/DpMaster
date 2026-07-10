@@ -1,6 +1,9 @@
 import { useMemo, useState } from 'react'
 import { PartyPopper, Sparkles, Shuffle, Trophy, Volume2, VolumeX } from 'lucide-react'
 import { buildTree, layoutTree, solveIndepSet } from '../demos/treedp/treedpSolver'
+import { playGameTone } from './runtime/audio'
+import { browserRandom, randomInt } from './runtime/random'
+import { useRoundStats } from './runtime/useRoundStats'
 import './game-treeparty.css'
 
 type Difficulty = 'easy' | 'medium' | 'hard'
@@ -33,36 +36,13 @@ function makeGame(d: DiffSpec): GameState {
     // 候选父亲：孩子数未满
     const cand: number[] = []
     for (let j = 0; j < i; j++) if (childCount[j] < d.maxChildren) cand.push(j)
-    const fa = cand[Math.floor(Math.random() * cand.length)]
+    const fa = cand[randomInt(browserRandom, 0, cand.length - 1)]
     parent.push(fa)
     childCount[fa]++
     childCount.push(0)
   }
-  const weight = Array.from({ length: d.count }, () => d.wMin + Math.floor(Math.random() * d.wRange))
+  const weight = Array.from({ length: d.count }, () => randomInt(browserRandom, d.wMin, d.wMin + d.wRange - 1))
   return { parent, weight }
-}
-
-let ac: AudioContext | null = null
-function blip(freq: number, dur = 0.09, type: OscillatorType = 'triangle') {
-  try {
-    ac =
-      ac ||
-      new (window.AudioContext ||
-        (window as unknown as { webkitAudioContext: typeof AudioContext }).webkitAudioContext)()
-    const o = ac.createOscillator()
-    const g = ac.createGain()
-    o.type = type
-    o.frequency.value = freq
-    g.gain.setValueAtTime(0.0001, ac.currentTime)
-    g.gain.exponentialRampToValueAtTime(0.1, ac.currentTime + 0.01)
-    g.gain.exponentialRampToValueAtTime(0.0001, ac.currentTime + dur)
-    o.connect(g)
-    g.connect(ac.destination)
-    o.start()
-    o.stop(ac.currentTime + dur)
-  } catch {
-    /* ignore */
-  }
 }
 
 export default function TreePartyGame() {
@@ -71,9 +51,7 @@ export default function TreePartyGame() {
   const [sel, setSel] = useState<boolean[]>(() => game.weight.map(() => false))
   const [revealed, setRevealed] = useState(false)
   const [muted, setMuted] = useState(false)
-  const [played, setPlayed] = useState(0)
-  const [matched, setMatched] = useState(0)
-  const [counted, setCounted] = useState(false)
+  const round = useRoundStats()
 
   const tree = useMemo(() => buildTree(game.parent, game.weight), [game])
   const layout = useMemo(() => layoutTree(tree), [tree])
@@ -101,23 +79,19 @@ export default function TreePartyGame() {
   const win = valid && revealed && curJoy === opt.ans
 
   const toggle = (i: number) => {
-    if (!muted) blip(430 + i * 40)
+    playGameTone({ frequency: 430 + i * 40 }, muted)
     setSel((s) => s.map((x, k) => (k === i ? !x : x)))
     setRevealed(false)
   }
   const reveal = () => {
     setRevealed(true)
     const w = valid && curJoy === opt.ans
-    if (!counted) {
-      setCounted(true)
-      setPlayed((n) => n + 1)
-      if (w) setMatched((n) => n + 1)
-    }
-    if (!muted) {
-      if (w) {
-        blip(523, 0.12)
-        setTimeout(() => blip(784, 0.16), 110)
-      } else blip(300, 0.1, 'sine')
+    round.record(w)
+    if (w) {
+      playGameTone({ frequency: 523, duration: 0.12 }, muted)
+      setTimeout(() => playGameTone({ frequency: 784, duration: 0.16 }, muted), 110)
+    } else {
+      playGameTone({ frequency: 300, duration: 0.1, type: 'sine' }, muted)
     }
   }
   const newGame = (d: Difficulty) => {
@@ -125,8 +99,8 @@ export default function TreePartyGame() {
     setGame(g)
     setSel(g.weight.map(() => false))
     setRevealed(false)
-    setCounted(false)
-    if (!muted) blip(360, 0.06)
+    round.start()
+    playGameTone({ frequency: 360, duration: 0.06 }, muted)
   }
   const shuffle = () => newGame(difficulty)
   const pickDiff = (d: Difficulty) => {
@@ -292,7 +266,7 @@ export default function TreePartyGame() {
             </button>
           </div>
           <div className="tpg__stats">
-            已玩 {played} 局 · 追平 DP {matched} 次
+            已玩 {round.stats.played} 局 · 追平 DP {round.stats.matched} 次
           </div>
         </div>
       </div>

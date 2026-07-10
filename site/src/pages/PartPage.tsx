@@ -3,6 +3,7 @@ import { Link, useParams } from 'react-router-dom'
 import { ArrowRight } from 'lucide-react'
 import GeometryBackdrop from '../components/GeometryBackdrop'
 import PartGlyph from '../components/PartGlyph'
+import { DeferredGame } from '../components/games/runtime/DeferredGame'
 import { getPart } from '../data/catalog'
 import './part.css'
 
@@ -71,11 +72,13 @@ export default function PartPage() {
         })}
       </div>
 
-      <section style={{ marginTop: 'var(--sp-8)' }}>
+      <section className="partgame">
         <h2 className="section-title">本部分 · 互动游戏</h2>
-        <Suspense fallback={<div style={{ minHeight: 240 }} aria-busy="true" />}>
-          <Game />
-        </Suspense>
+        <DeferredGame label={`${part.game.title}互动游戏`}>
+          <Suspense fallback={<div className="deferred-game__loading" aria-busy="true" />}>
+            <Game />
+          </Suspense>
+        </DeferredGame>
       </section>
     </div>
   )
