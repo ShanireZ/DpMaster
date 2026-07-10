@@ -19,9 +19,48 @@ import { solveLis } from '../src/algorithms/lis/index.ts'
 import { recordLis } from '../src/algorithms/lis/internal.ts'
 import { solveStoneMerge } from '../src/algorithms/stone-merge/index.ts'
 import { recordStoneMerge } from '../src/algorithms/stone-merge/internal.ts'
+import { solveMaxSubarray, solveMinSubarray } from '../src/algorithms/max-subarray/index.ts'
+import { executeSubarray, recordSubarray } from '../src/algorithms/max-subarray/internal.ts'
+import { solveIntegerPartition, solveStairCount } from '../src/algorithms/linear-count/index.ts'
+import {
+  executeIntegerPartition,
+  executeStairCount,
+  recordIntegerPartition,
+  recordStairCount,
+} from '../src/algorithms/linear-count/internal.ts'
+import { solveEditDistance } from '../src/algorithms/edit-distance/index.ts'
+import { executeEditDistance, recordEditDistance } from '../src/algorithms/edit-distance/internal.ts'
+import { solveLcs } from '../src/algorithms/lcs/index.ts'
+import { executeLcs, recordLcs } from '../src/algorithms/lcs/internal.ts'
+import { solveTwoPath } from '../src/algorithms/two-path/index.ts'
+import { executeTwoPath, recordTwoPath } from '../src/algorithms/two-path/internal.ts'
+import { solveGridPathCount, solveTrianglePath } from '../src/algorithms/grid-path/index.ts'
+import {
+  executeGridPathCount,
+  executeTrianglePath,
+  recordGridPathCount,
+  recordTrianglePath,
+} from '../src/algorithms/grid-path/internal.ts'
+import { solveMaxSquare } from '../src/algorithms/max-square/index.ts'
+import { executeMaxSquare, recordMaxSquare } from '../src/algorithms/max-square/internal.ts'
+import { solveLinearFsm, solveStockFsm } from '../src/algorithms/linear-fsm/index.ts'
+import {
+  executeLinearFsm,
+  executeStockFsm,
+  recordLinearFsm,
+  recordStockFsm,
+} from '../src/algorithms/linear-fsm/internal.ts'
 import { knapsack2D } from '../src/components/demos/knapsack/solvers.ts'
 import { lisNaive } from '../src/components/demos/lis/lisSolver.ts'
 import { stoneMerge } from '../src/components/demos/interval/stoneSolver.ts'
+import { kadane, minSegViz } from '../src/components/demos/linear/maxsegSolver.ts'
+import { integerPartition, stairCount } from '../src/components/demos/linear/countSolver.ts'
+import { edit2D } from '../src/components/demos/grid/editSolver.ts'
+import { lcs2D } from '../src/components/demos/grid/lcsSolver.ts'
+import { twoPath2D } from '../src/components/demos/grid/twoPathSolver.ts'
+import { gridCount2D, triangle2D } from '../src/components/demos/grid/pathSolver.ts'
+import { maxSquare2D } from '../src/components/demos/grid/maxSquareSolver.ts'
+import { fsmPickTable, stockStates } from '../src/components/demos/fsm/fsmSolver.ts'
 import { buildTree as buildRerootTree, bruteDistSum, rerootDistSum } from '../src/components/demos/reroot/rerootSolver.ts'
 import { buildTree as buildRootedTree, solveIndepSet } from '../src/components/demos/treedp/treedpSolver.ts'
 
@@ -167,6 +206,176 @@ function bruteStone(values, objective) {
     return answer
   }
   return values.length < 2 ? 0 : visit(0, values.length - 1)
+}
+
+function bruteSubarray(values, objective) {
+  if (values.length === 0) return { sum: 0, start: null, end: null }
+  let sum = objective === 'max' ? -Infinity : Infinity
+  let start = 0
+  let end = 0
+  for (let left = 0; left < values.length; left++) {
+    let candidate = 0
+    for (let right = left; right < values.length; right++) {
+      candidate += values[right]
+      const better = objective === 'max' ? candidate > sum : candidate < sum
+      if (better) ({ sum, start, end } = { sum: candidate, start: left, end: right })
+    }
+  }
+  return { sum, start, end }
+}
+
+function bruteStairCount(step) {
+  if (step < 2) return 1
+  return bruteStairCount(step - 1) + bruteStairCount(step - 2)
+}
+
+function bruteIntegerPartition(total) {
+  const visit = (remaining, maximum) => {
+    if (remaining === 0) return 1
+    if (remaining < 0 || maximum === 0) return 0
+    return visit(remaining, maximum - 1) + visit(remaining - maximum, maximum)
+  }
+  return visit(total, total)
+}
+
+function bruteEditDistance(a, b) {
+  const memo = new Map()
+  const visit = (i, j) => {
+    if (i === a.length) return b.length - j
+    if (j === b.length) return a.length - i
+    const key = `${i},${j}`
+    if (memo.has(key)) return memo.get(key)
+    const answer = a[i] === b[j]
+      ? visit(i + 1, j + 1)
+      : 1 + Math.min(visit(i + 1, j), visit(i, j + 1), visit(i + 1, j + 1))
+    memo.set(key, answer)
+    return answer
+  }
+  return visit(0, 0)
+}
+
+function bruteLcs(a, b) {
+  let longest = ''
+  for (let mask = 0; mask < 1 << a.length; mask++) {
+    let candidate = ''
+    for (let index = 0; index < a.length; index++) {
+      if ((mask & (1 << index)) !== 0) candidate += a[index]
+    }
+    let cursor = 0
+    for (const char of b) if (char === candidate[cursor]) cursor++
+    if (cursor === candidate.length && candidate.length > longest.length) longest = candidate
+  }
+  return longest.length
+}
+
+function enumerateGridPaths(rows, cols) {
+  const paths = []
+  const visit = (row, col, path) => {
+    const next = [...path, [row, col]]
+    if (row === rows - 1 && col === cols - 1) {
+      paths.push(next)
+      return
+    }
+    if (row + 1 < rows) visit(row + 1, col, next)
+    if (col + 1 < cols) visit(row, col + 1, next)
+  }
+  visit(0, 0, [])
+  return paths
+}
+
+function bruteTwoPath(grid) {
+  const paths = enumerateGridPaths(grid.length, grid[0].length)
+  let best = -Infinity
+  for (const first of paths) {
+    for (const second of paths) {
+      const cells = new Set([...first, ...second].map(([row, col]) => `${row},${col}`))
+      let value = 0
+      for (const cell of cells) {
+        const [row, col] = cell.split(',').map(Number)
+        value += grid[row][col]
+      }
+      best = Math.max(best, value)
+    }
+  }
+  return best
+}
+
+function bruteTrianglePath(triangle) {
+  const visit = (row, col) => row === triangle.length - 1
+    ? triangle[row][col]
+    : triangle[row][col] + Math.max(visit(row + 1, col), visit(row + 1, col + 1))
+  return visit(0, 0)
+}
+
+function bruteGridPathCount(rows, cols, blocked) {
+  const visit = (row, col) => {
+    if (row > rows || col > cols || blocked.has(`${row},${col}`)) return 0
+    if (row === rows && col === cols) return 1
+    return visit(row + 1, col) + visit(row, col + 1)
+  }
+  return visit(1, 1)
+}
+
+function bruteMaxSquare(grid) {
+  let side = 0
+  for (let top = 0; top < grid.length; top++) {
+    for (let left = 0; left < grid[0].length; left++) {
+      for (let size = 1; top + size <= grid.length && left + size <= grid[0].length; size++) {
+        let allOne = true
+        for (let row = top; row < top + size; row++) {
+          for (let col = left; col < left + size; col++) allOne &&= grid[row][col] === 1
+        }
+        if (allOne) side = Math.max(side, size)
+      }
+    }
+  }
+  return side
+}
+
+function bruteLinearFsm(values) {
+  let best = 0
+  for (let mask = 0; mask < 1 << values.length; mask++) {
+    let valid = true
+    let value = 0
+    for (let index = 0; index < values.length; index++) {
+      if ((mask & (1 << index)) === 0) continue
+      if (index > 0 && (mask & (1 << (index - 1))) !== 0) {
+        valid = false
+        break
+      }
+      value += values[index]
+    }
+    if (valid) best = Math.max(best, value)
+  }
+  return best
+}
+
+function bruteStockFsm(prices, cooldown) {
+  const memo = new Map()
+  const visit = (day, holding, frozen) => {
+    if (day === prices.length) return holding ? -Infinity : 0
+    const key = `${day},${holding},${frozen}`
+    if (memo.has(key)) return memo.get(key)
+    let best = visit(day + 1, holding, false)
+    if (holding) best = Math.max(best, prices[day] + visit(day + 1, false, cooldown))
+    else if (!frozen) best = Math.max(best, -prices[day] + visit(day + 1, true, false))
+    memo.set(key, best)
+    return best
+  }
+  return visit(0, false, false)
+}
+
+function assertEventSnapshots(execute) {
+  const events = []
+  const snapshots = []
+  const result = execute((event) => {
+    events.push(event)
+    snapshots.push(structuredClone(event))
+  })
+  assert.ok(events.length > 0)
+  assert.deepEqual(events, snapshots)
+  for (let index = 1; index < events.length; index++) assert.notEqual(events[index - 1], events[index])
+  return result
 }
 
 function assertTeachingModel(model) {
