@@ -2,6 +2,7 @@ import { lazy, Suspense } from 'react'
 import { BrowserRouter, Routes, Route } from 'react-router-dom'
 import { ThemeProvider } from '../theme/ThemeContext'
 import Shell from '../components/layout/Shell'
+import { RouteMeta } from '../components/seo/RouteMeta'
 
 const Home = lazy(() => import('../pages/Home'))
 const PartPage = lazy(() => import('../pages/PartPage'))
@@ -15,6 +16,7 @@ export default function App() {
   return (
     <ThemeProvider>
       <BrowserRouter>
+        <RouteMeta />
         <Suspense fallback={<div style={{ minHeight: '60vh' }} />}>
           <Routes>
             <Route element={<Shell />}>

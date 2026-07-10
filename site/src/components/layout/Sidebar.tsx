@@ -1,4 +1,4 @@
-import { Link, NavLink, useMatch } from 'react-router-dom'
+import { NavLink, useMatch } from 'react-router-dom'
 import type { CSSProperties } from 'react'
 import { Sparkles, Info, BookOpen, Library } from 'lucide-react'
 import { PARTS } from '../../data/catalog'
@@ -9,7 +9,7 @@ export default function Sidebar({ onNavigate }: { onNavigate?: () => void }) {
 
   return (
     <nav className="sidebar-inner" aria-label="主导航">
-      <Link to="/" className="brand" onClick={onNavigate}>
+      <NavLink to="/" end className="brand" onClick={onNavigate}>
         <span className="brand__mark">
           <Sparkles size={18} color="var(--text-on-accent)" strokeWidth={2.2} />
         </span>
@@ -17,14 +17,15 @@ export default function Sidebar({ onNavigate }: { onNavigate?: () => void }) {
           <span className="brand__name grad-text-brand">DP大师</span>
           <span className="brand__sub" style={{ display: 'block' }}>DP MASTER</span>
         </span>
-      </Link>
+      </NavLink>
 
       {PARTS.map((p) => {
         const open = p.id === activePid
         return (
           <div className="nav-group" key={p.id}>
-            <Link
+            <NavLink
               to={`/part/${p.id}`}
+              end
               className={`nav-part${open ? ' active open' : ''}`}
               onClick={onNavigate}
             >
@@ -35,7 +36,7 @@ export default function Sidebar({ onNavigate }: { onNavigate?: () => void }) {
                 {p.code}
               </span>
               <span className="nav-part__title">{p.title}</span>
-            </Link>
+            </NavLink>
 
             {open && (
               <div className="nav-types">

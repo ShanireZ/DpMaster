@@ -18,7 +18,7 @@ Run from `site/`:
 npm run verify
 ```
 
-`npm run verify` checks generated content, runs Node tests and zero-warning lint, builds with TypeScript/Vite, writes EdgeOne fallback artifacts, and enforces the asset budget.
+`npm run verify` checks generated content and SEO artifacts, runs Node tests and zero-warning lint, builds with TypeScript/Vite, writes EdgeOne fallback artifacts, and enforces the asset budget.
 
 Algorithm verification runs directly on Node 24's TypeScript stripping support and includes:
 
@@ -30,6 +30,20 @@ Algorithm verification runs directly on Node 24's TypeScript stripping support a
 * a brand contract that rejects legacy product-facing names.
 
 Pure TypeScript Modules imported by Node tests must use explicit `.ts` extensions for their runtime relative imports.
+
+# SEO And Accessibility Checks
+
+`npm run check:seo` verifies that route metadata remains complete and that `robots.txt` and the 48-URL sitemap match the catalog. When routes or lesson readiness change, run `npm run seo:generate` and review the generated URL set before committing it.
+
+For browser-facing changes, check at least the home page, one family, one completed lesson, and one static page. Confirm:
+
+* Each route has the expected title, description, canonical URL, Open Graph URL/type, and exactly one `h1`.
+* Completed lesson titles follow `课程名 · 家族名 · DP大师` and use Open Graph type `article`.
+* Sidebar and breadcrumb current-page semantics follow navigation.
+* The first keyboard target is the skip link and activating it focuses `#main-content`.
+* The mobile navigation exposes `aria-expanded`, references `#site-sidebar`, and has a keyboard-operable close scrim.
+* With `prefers-reduced-motion: reduce`, smooth scrolling is disabled and transitions/animations are reduced without hiding content.
+* The browser console reports no errors or warnings.
 
 # Documentation Checks
 

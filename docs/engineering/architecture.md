@@ -12,6 +12,9 @@ source_paths:
   - site/src/lib/highlighter.ts
   - site/src/components/ui/Math.tsx
   - site/src/components/games/runtime/
+  - site/src/lib/pageMeta.ts
+  - site/src/components/seo/RouteMeta.tsx
+  - site/scripts/generate-seo.mjs
 ---
 
 # Stack
@@ -44,6 +47,8 @@ The manifest intentionally keeps only dependencies imported by the current sourc
 | `site/src/components/dp-engine/` | Shared visualization engine. |
 | `site/src/components/games/` | One game per family; games consume public result Interfaces instead of teaching frames. |
 | `site/src/components/games/runtime/` | Shared deterministic random source, round statistics, lazy audio, and viewport gate for the seven games. |
+| `site/src/lib/pageMeta.ts` | Pure route metadata authority for titles, descriptions, canonical URLs, and Open Graph values. |
+| `site/src/components/seo/RouteMeta.tsx` | Applies route metadata to the live document head after client navigation. |
 | `site/functions/` | Shared feedback endpoint core and optional CF Pages wrapper. |
 | `site/worker.js` | Current Cloudflare Workers entry. |
 | `site/scripts/postbuild.mjs` | EdgeOne SPA fallback and feedback edge function generator. |
@@ -59,6 +64,14 @@ Problem metadata is extracted from lesson JSX by `site/scripts/generate-problems
 For migrated algorithms, public callers import only `site/src/algorithms/<domain>/index.ts`. The adjacent internal Module owns the sole transition loop and can emit UI-neutral domain events. Teaching code may record those events and adapt them to `VizModel`; games and ordinary readouts must not import internal Modules or recover answers from the last frame.
 
 Deep links require hosting support. See root [deploy.md](../../deploy.md) for the Cloudflare and EdgeOne contracts.
+
+# SEO And Accessibility
+
+`pageMeta.ts` is the shared route metadata authority. `RouteMeta` updates the document title, description, canonical URL, and Open Graph tags after every client-side navigation. `index.html` provides a complete homepage fallback for clients that do not execute JavaScript.
+
+`site/scripts/generate-seo.mjs` derives public discovery files from the same catalog. It currently writes 48 canonical URLs to `public/sitemap.xml`: the home page, seven family pages, 37 completed lessons, and the method, problem-index, and about pages. `public/robots.txt` allows indexing and advertises that sitemap. `npm run check:seo` rejects metadata or generated-file drift.
+
+The shell owns cross-route accessibility behavior: a keyboard-visible skip link targets the focusable `main`, navigation uses current-page semantics, the mobile drawer exposes expanded/controlled state and a real close button, and a polite status region announces route changes. Global reduced-motion styles keep content visible while shortening transitions and animations.
 
 # Game Runtime
 
