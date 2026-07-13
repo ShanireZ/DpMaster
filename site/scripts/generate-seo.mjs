@@ -54,7 +54,7 @@ if (write) {
   for (const [url, expected] of outputs) {
     let actual = ''
     try {
-      actual = readFileSync(url, 'utf8')
+      actual = readFileSync(url, 'utf8').replace(/\r\n/g, '\n')
     } catch {
       // 统一按“生成产物缺失”报告，不暴露平台差异的异常格式。
     }

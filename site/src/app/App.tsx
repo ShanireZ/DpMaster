@@ -1,6 +1,7 @@
 import { lazy, Suspense } from 'react'
 import { BrowserRouter, Routes, Route } from 'react-router-dom'
 import { ThemeProvider } from '../theme/ThemeContext'
+import ErrorBoundary from '../components/layout/ErrorBoundary'
 import Shell from '../components/layout/Shell'
 import { RouteMeta } from '../components/seo/RouteMeta'
 
@@ -17,7 +18,8 @@ export default function App() {
     <ThemeProvider>
       <BrowserRouter>
         <RouteMeta />
-        <Suspense fallback={<div style={{ minHeight: '60vh' }} />}>
+        <ErrorBoundary>
+          <Suspense fallback={<div style={{ minHeight: '60vh' }} />}>
           <Routes>
             <Route element={<Shell />}>
               <Route path="/" element={<Home />} />
@@ -29,7 +31,8 @@ export default function App() {
               <Route path="*" element={<NotFound />} />
             </Route>
           </Routes>
-        </Suspense>
+          </Suspense>
+        </ErrorBoundary>
       </BrowserRouter>
     </ThemeProvider>
   )

@@ -1,0 +1,8 @@
+# 生成物与测试规范文件强制 LF 行尾。
+# 修复 Windows(autocrlf) 上 npm run verify 误报 stale / 测试挂红的问题：
+# generate-*.mjs 用 \n(LF) 拼字符串做逐字节比对，而 Windows 检出的文件是 CRLF，
+# 导致 check:content / check:seo 永远报 stale、accessibility-contract 测试 #4/#69 失败。
+site/src/data/problems.ts text eol=lf
+site/public/sitemap.xml text eol=lf
+site/public/robots.txt text eol=lf
+site/tests/browser/routes.spec.ts text eol=lf
