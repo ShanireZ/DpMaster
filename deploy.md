@@ -12,7 +12,7 @@ DP大师是一个 React + Vite 静态站。生产部署采用双线路：
 ## 一页流程
 
 ```bash
-npm install
+npm ci        # 按 lockfile 精确安装（需要 Node.js ≥ 24、npm ≥ 11）
 npm run lint
 npm run build
 ```
@@ -49,7 +49,7 @@ npm run deploy:eo
 
 需要准备：
 
-- Node.js 与 npm。仓库使用 `package-lock.json`，推荐用 npm。
+- Node.js ≥ 24 与 npm ≥ 11。仓库使用 `package-lock.json` 锁版，`packageManager` 固定为 npm 11（见 `site/package.json` 的 `engines`），推荐用 npm。
 - Cloudflare 账号，已允许 Wrangler 发布 Workers。
 - 腾讯云 EdgeOne 账号，已允许 EdgeOne Pages 发布。
 - 如果需要站内反馈，准备一个钉钉群自定义机器人 webhook，或按后文规划迁移到钉钉应用机器人。
@@ -65,7 +65,7 @@ npm run deploy:eo
 ## 本地构建
 
 ```bash
-npm install
+npm ci        # 按 lockfile 精确安装（需要 Node.js ≥ 24、npm ≥ 11）
 npm run lint
 npm run build
 ```
