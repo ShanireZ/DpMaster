@@ -1,6 +1,6 @@
 # AGENTS.md — DP大师
 
-> 继承工作区总规则：[`D:\WorkSpace\agents.md`](../agents.md)。本文件只记录 DP大师 的项目级约束。
+> 继承工作区总规则：[`../AGENTS.md`](../AGENTS.md)。本文件只记录 DP大师 的项目级约束。
 
 ## Project identity
 
@@ -28,7 +28,13 @@ npm run build
 npm run verify
 ```
 
-`npm run verify` 是完整本地 gate：内容一致性、Node 测试、零 warning lint、TypeScript/Vite 构建和资产预算。
+`npm run verify` 是完整本地 gate：内容与 SEO 一致性、Node 内容测试、React 组件测试、零 warning lint、TypeScript/Vite 构建、Playwright 浏览器路由检查和资产预算。
+
+## Public README & license
+
+- 根目录 `README.md` 是公开入口；badge 必须遵循 [`../badgestd.md`](../badgestd.md)，并从 `site/package.json`、`site/src/data/catalog.ts` 和 `deploy.md` 的当前事实取值。
+- `LICENSE` 提供 GNU GPL v3 正文，但没有机器可读的 `only` / `or-later` 声明；README、badge 和新增文档统一使用通用 `GPL-3.0`，不要猜测具体 SPDX variant。
+- README 的 `lessons` 数量来自 catalog；课程变更后先运行 `npm run content:generate`，再同步 README/OKF 文档中的数量与状态。
 
 ## Change rules
 
@@ -36,4 +42,3 @@ npm run verify
 - 正文题目变化后提交同步生成的 `problems.ts`，并更新涉及数量的 README/OKF 文档。
 - 保持课程正文按课程独立分包；家族游戏也必须 lazy-load。
 - 核心路由、内容语料、部署标识变化时同步更新对应文档和测试。
-

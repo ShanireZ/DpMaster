@@ -1,11 +1,11 @@
 # DP大师
 
 [![License: GPL-3.0](https://img.shields.io/badge/license-GPL--3.0-blue.svg?style=flat-square)](LICENSE)
-![React 19](https://img.shields.io/badge/React-19-61DAFB.svg?style=flat-square&logo=react&logoColor=white)
+![React 19](https://img.shields.io/badge/React-19-61DAFB.svg?style=flat-square&logo=react&logoColor=black)
 ![Vite 8](https://img.shields.io/badge/Vite-8-646CFF.svg?style=flat-square&logo=vite&logoColor=white)
 ![TypeScript 6](https://img.shields.io/badge/TypeScript-6-3178C6.svg?style=flat-square&logo=typescript&logoColor=white)
+[![Deploy: Cloudflare + EdgeOne](https://img.shields.io/badge/deploy-Cloudflare%20%2B%20EdgeOne-success.svg?style=flat-square)](https://dp.betaoi.cc)
 ![Lessons](https://img.shields.io/badge/lessons-37%2F37%20ready-success.svg?style=flat-square)
-![Deploy](https://img.shields.io/badge/deploy-Cloudflare%20%2B%20EdgeOne-orange.svg?style=flat-square)
 
 DP大师是一个面向 C++ 算法学习者的动态规划交互式学习网站。把常见 DP 模型整理成可浏览的学习体系：知识点精讲、可改值演示、小游戏、手算过程、C++ 代码和洛谷练习路径放在同一套静态站里。
 
@@ -120,6 +120,6 @@ DpMaster/
 
 第一次部署请从 [deploy.md](deploy.md) 开始。里面包含 Cloudflare 端操作、EdgeOne 端操作、钉钉群机器人配置、单聊机器人限制说明、验收命令和常见排障。
 
-## 许可证
+## License
 
 本项目采用 [GNU General Public License v3.0](LICENSE) 发布。
