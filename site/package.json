@@ -26,7 +26,7 @@
     "verify": "npm run check:content && npm run check:seo && npm run test && npm run test:unit && npm run lint && npm run build && npm run test:browser && npm run check:assets",
     "preview": "vite preview",
     "deploy:cf": "wrangler deploy",
-    "deploy:eo": "npx -y edgeone@1.6.11 pages deploy ./dist -n dpmaster -e production",
+    "deploy:eo": "npx -y edgeone@1.6.11 makers deploy ./dist -n dpmaster -e production",
     "deploy": "npm run build && npm run deploy:cf && npm run deploy:eo"
   },
   "dependencies": {

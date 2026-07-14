@@ -208,10 +208,12 @@ npx wrangler tail dpmaster
 当前 EdgeOne 发布命令是：
 
 ```bash
-edgeone pages deploy ./dist -n dpmaster -e production
+edgeone makers deploy ./dist -n dpmaster -e production
 ```
 
 因此 EdgeOne Pages 项目名必须是 `dpmaster`，环境是 `production`。
+
+> EdgeOne 已把 “Pages” 品牌更名为 “Makers”，CLI 相应把 `pages` 子命令改为 `makers`，参数完全一致。旧的 `edgeone pages deploy` 仍可用（官方称过渡期内两者等价、现阶段不会下线），只会打印弃用提示；这里改用 `makers` 以消除警告并跟随官方推荐方向。
 
 ### 首次发布到 EdgeOne
 
