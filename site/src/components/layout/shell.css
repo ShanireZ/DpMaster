@@ -49,6 +49,12 @@
   z-index: var(--z-nav);
 }
 
+.sidebar-inner {
+  display: flex;
+  flex-direction: column;
+  min-height: 100%;
+}
+
 .brand {
   display: flex;
   align-items: center;
@@ -112,6 +118,52 @@ a.nav-type.active { color: var(--text-1); border-left-color: var(--accent-2); ba
 .nav-type__tag {
   margin-left: auto; font-size: 10px; color: var(--text-3);
   border: 1px solid var(--border); border-radius: 4px; padding: 0 5px;
+}
+
+.sidebar-records {
+  display: grid;
+  gap: 7px;
+  margin-top: auto;
+  padding: var(--sp-5) var(--sp-3) var(--sp-1);
+  color: var(--text-3);
+  font-size: 11px;
+  line-height: 1.4;
+}
+.sidebar-records__intro {
+  display: grid;
+  gap: 4px;
+  margin-bottom: var(--sp-2);
+  white-space: nowrap;
+}
+.sidebar-records__motto { color: var(--text-2); }
+.sidebar-records__copyright {
+  font-family: var(--font-display);
+  font-size: 9px;
+  letter-spacing: -0.02em;
+}
+.sidebar-record {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-2);
+  min-width: 0;
+  color: inherit;
+  white-space: nowrap;
+}
+.sidebar-record__icon {
+  width: 18px;
+  height: 18px;
+  flex: none;
+  object-fit: contain;
+}
+.sidebar-record--icp {
+  padding-left: calc(18px + var(--sp-2));
+  transition: color var(--t-fast);
+}
+.sidebar-record--icp:hover { color: var(--text-2); }
+.sidebar-record--icp:focus-visible {
+  color: var(--text-1);
+  outline: 2px solid var(--accent-2);
+  outline-offset: 3px;
 }
 
 /* ---------------- Main / TopBar ---------------- */
