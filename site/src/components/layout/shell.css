@@ -128,10 +128,12 @@ a.nav-type.active { color: var(--text-1); border-left-color: var(--accent-2); ba
   color: var(--text-3);
   font-size: 11px;
   line-height: 1.4;
+  text-align: center;
 }
 .sidebar-records__intro {
   display: grid;
   gap: 4px;
+  justify-items: center;
   margin-bottom: var(--sp-2);
   white-space: nowrap;
 }
@@ -145,6 +147,7 @@ a.nav-type.active { color: var(--text-1); border-left-color: var(--accent-2); ba
   display: flex;
   align-items: center;
   gap: var(--sp-2);
+  justify-content: center;
   min-width: 0;
   color: inherit;
   white-space: nowrap;
@@ -156,7 +159,6 @@ a.nav-type.active { color: var(--text-1); border-left-color: var(--accent-2); ba
   object-fit: contain;
 }
 .sidebar-record--icp {
-  padding-left: calc(18px + var(--sp-2));
   transition: color var(--t-fast);
 }
 .sidebar-record--icp:hover { color: var(--text-2); }
