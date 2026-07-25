@@ -33,31 +33,33 @@ export default function TopBar({
         {mobileOpen ? <X size={18} /> : <Menu size={18} />}
       </button>
 
-      <nav className="crumbs" aria-label="面包屑">
-        <NavLink to="/" end>首页</NavLink>
-        {part && (
-          <>
-            <span className="sep">/</span>
-            {type ? (
-              <Link to={`/part/${part.id}`}>{part.title}</Link>
-            ) : (
-              <span className="cur" aria-current="page">{part.title}</span>
-            )}
-          </>
-        )}
-        {type && (
-          <>
-            <span className="sep">/</span>
-            <span className="cur" aria-current="page">{type.title}</span>
-          </>
-        )}
-        {!part && location.pathname !== '/' && (
-          <>
-            <span className="sep">/</span>
-            <span className="cur" aria-current="page">{currentLabel}</span>
-          </>
-        )}
-      </nav>
+      {!isHome && (
+        <nav className="crumbs" aria-label="面包屑">
+          <NavLink to="/" end>首页</NavLink>
+          {part && (
+            <>
+              <span className="sep">/</span>
+              {type ? (
+                <Link to={`/part/${part.id}`}>{part.title}</Link>
+              ) : (
+                <span className="cur" aria-current="page">{part.title}</span>
+              )}
+            </>
+          )}
+          {type && (
+            <>
+              <span className="sep">/</span>
+              <span className="cur" aria-current="page">{type.title}</span>
+            </>
+          )}
+          {!part && (
+            <>
+              <span className="sep">/</span>
+              <span className="cur" aria-current="page">{currentLabel}</span>
+            </>
+          )}
+        </nav>
+      )}
 
       <div className="topbar__spacer" />
 
