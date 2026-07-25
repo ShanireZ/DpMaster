@@ -18,9 +18,7 @@ Run from `site/`:
 npm run verify
 ```
 
-`npm run verify` checks generated content and SEO artifacts, runs Node tests and zero-warning lint, builds with TypeScript/Vite, writes EdgeOne fallback artifacts, runs Chromium against that production `dist` through `vite preview`, and enforces the asset budget.
-
-The current closure gate contains 133 Node tests and nine Chromium tests.
+`npm run verify` checks generated content and discovery artifacts, runs Node tests and zero-warning lint, builds and prerenders both regional targets, writes the EdgeOne API/404 Adapter, runs Chromium against the international production target through the strict custom preview server, and enforces the asset budget on both regional asset directories.
 
 To rerun only the browser smoke suite after a production build:
 
@@ -45,16 +43,18 @@ Pure TypeScript Modules imported by Node tests must use explicit `.ts` extension
 
 # SEO And Accessibility Checks
 
-`npm run check:seo` verifies that route metadata remains complete and that `robots.txt` and the 48-URL sitemap match the catalog. When routes or lesson readiness change, run `npm run seo:generate` and review the generated URL set before committing it.
+`npm run check:seo` verifies the 48-path catalog, route metadata, the checked-in international sitemap/robots baseline, real `llms.txt`, and 48-entry route summaries. It also checks the source contracts for dual-region outputs, React prerender/hydration, host-aware metadata, and real 404 handling. When routes or lesson readiness change, run `npm run seo:generate` and review all four generated files before committing them.
 
-The browser gate runs nine Chromium tests against the built production `dist` through a strict, non-reused `vite preview` server. Seven route tests directly open `/`, `/part/a`, `/part/a/01`, `/method`, and `/part/g/plug`, then exercise live client navigation and keyboard focus. They check HTTP route status where applicable, title/description/canonical/Open Graph metadata, one visible `h1`, route announcements, current-page semantics, initial-load focus, changed-route focus, and skip-link focus. Every one of the seven route tests also requires zero console errors and zero uncaught page errors.
+The browser gate runs Chromium against built `dist/cloudflare` through a strict, non-reused custom preview server. Route tests directly open `/`, `/part/a`, `/part/a/01`, `/method`, and `/part/g/plug`, then exercise live client navigation and keyboard focus. They check HTTP status, prerendered HTML, hydration without errors, title/description/abstract/canonical/hreflang/Open Graph/JSON-LD metadata, one visible `h1`, route announcements, current-page semantics, initial-load focus, changed-route focus, and skip-link focus. An unknown path must return 404 with `noindex,nofollow`, no canonical, and the themed not-found heading.
 
 Two game tests cover the catalog-owned lazy boundary and shared runtime contracts. Pack must keep its chunk absent before the near-viewport gate, auto-load without a manual control, replay the currently displayed seed into the identical round with cleared interaction state, and preserve exact played/matched totals across replay, shuffle, difficulty, and reveal. BitBoard must suppress duplicate completion counts and rearm after clear. These tests do not provide arbitrary-seed entry or pixel-regression coverage.
 
 For browser-facing changes, keep those automated samples representative and manually inspect additional affected routes when needed. Confirm:
 
-* Each route has the expected title, description, canonical URL, Open Graph URL/type, and exactly one `h1`.
+* Each route has the expected title, description, abstract, host-local canonical, three hreflang links, Open Graph URL/type, structured-data graph, and exactly one `h1`.
 * Completed lesson titles follow `课程名 · 家族名 · DP大师` and use Open Graph type `article`.
+* The `.cc` HTML/sitemap/robots/llms files use `https://dp.betaoi.cc`; the `.cn` equivalents use `https://dp.betaoi.cn`.
+* An unknown URL returns HTTP 404, has `noindex,nofollow`, and has no canonical or hreflang.
 * Sidebar and breadcrumb current-page semantics follow navigation.
 * Initial page load does not steal focus; later keyboard route navigation focuses `#main-content` without scrolling, and activating the first-target skip link focuses the same element.
 * The mobile navigation exposes `aria-expanded`, references `#site-sidebar`, and has a keyboard-operable close scrim.
@@ -91,8 +91,11 @@ When changing lesson content:
 
 Deployment checks live in root [deploy.md](../../deploy.md). At minimum after deployment:
 
-* Open a normal route and a direct deep link.
+* Open a normal route and a direct deep link on both domains.
+* Confirm each domain self-canonicalizes and links to both regional variants.
+* Request a made-up path and confirm HTTP 404 plus `noindex,nofollow`.
 * Submit a feedback test.
+* Confirm `POST /api/analytics` returns 204 for a valid same-origin event and inspect the platform log.
 * Confirm the receipt is `ok: true`, `status: logged`, and includes a `requestId`.
 * Check Cloudflare or EdgeOne logs for the matching `feedback_received` event.
 * If webhook variables are configured, check the matching `feedback_webhook` status and DingTalk delivery separately; forwarding failure does not change the browser's received state.

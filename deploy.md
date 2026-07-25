@@ -2,12 +2,12 @@
 
 本文面向需要把 DP大师发布到线上、配置站内反馈机器人、或排查部署问题的维护者。所有命令默认在 `site` 目录下执行。
 
-DP大师是一个 React + Vite 静态站。生产部署采用双线路：
+DP大师是一个 React + Vite 预渲染静态站。生产采用区域双站：
 
-- **Cloudflare Workers Static Assets**：主配置在 `site/wrangler.jsonc`，入口是 `site/worker.js`。
-- **Tencent EdgeOne Pages**：发布 `site/dist/`，构建后生成 EdgeOne 专用的 SPA 回退与反馈函数。
+- **国际站 `https://dp.betaoi.cc`**：发布 `site/dist/cloudflare/` 到 Cloudflare Workers Static Assets，入口是 `site/worker.js`。
+- **国内站 `https://dp.betaoi.cn`**：发布 `site/dist/edgeone/` 到 Tencent EdgeOne Pages/Makers，并生成 EdgeOne 专用的 API 与真实 404 函数。
 
-站内反馈统一走同源 `POST /api/feedback`。如果配置了 webhook，它会把反馈转发到钉钉群机器人或其他 webhook 机器人。
+两个产物都包含 48 个预渲染公开路由、React 水合、区域 canonical/sitemap/robots/llms.txt、互指 hreflang 和 JSON-LD。站内反馈统一走同源 `POST /api/feedback`；有限的页面与反馈统计事件走同源 `POST /api/analytics`。
 
 ## 一页流程
 
@@ -70,16 +70,24 @@ npm run lint
 npm run build
 ```
 
-构建输出在 `site/dist/`，该目录不入仓库。`npm run build` 会执行：
+构建输出在 `site/dist/cloudflare/` 与 `site/dist/edgeone/`，`dist/` 不入仓库。`npm run build` 会执行：
 
 1. `tsc -b`
-2. `vite build`
-3. `postbuild`
+2. 为国际站和国内站分别执行 Vite 客户端构建。
+3. 在隔离的 production Node 进程中用 React 19 `prerender()` 渲染 48 个公开路由。
+4. 为每个区域写入自有 canonical、sitemap、robots、`llms.txt`、`route-summaries.json` 与 `404.html`。
+5. 生成 EdgeOne catch-all Adapter。
 
 `postbuild` 由 `site/scripts/postbuild.mjs` 提供，会额外生成：
 
-- `dist/404.html`：EdgeOne 深链安全网。
-- `dist/edge-functions/[[default]].js`：EdgeOne catch-all 函数，负责 `/api/feedback` 和 SPA 回退。
+- `dist/edgeone/edge-functions/[[default]].js`：负责 `/api/feedback`、`/api/analytics`，以及未知路径的 HTTP 404。
+
+本地分别预览：
+
+```bash
+npm run preview
+npm run preview -- --region china --port 4174
+```
 
 ## Cloudflare 部署
 
@@ -87,10 +95,11 @@ npm run build
 
 | 文件                               | 作用                                                             |
 | ---------------------------------- | ---------------------------------------------------------------- |
-| `site/wrangler.jsonc`              | Worker 名称、入口、静态资源目录、SPA 回退配置。                  |
-| `site/worker.js`                   | 接住 `/api/feedback`，其余请求交给 `env.ASSETS.fetch(request)`。 |
-| `site/functions/_feedback-core.js` | 反馈处理核心，与 EdgeOne 共用。                                  |
-| `site/dist/`                       | Vite 构建产物。                                                  |
+| `site/wrangler.jsonc`              | Worker 名称、入口、国际站静态资源目录与 404 配置。               |
+| `site/worker.js`                    | 接住反馈与统计 API，其余请求交给 `env.ASSETS.fetch(request)`。 |
+| `site/functions/_feedback-core.js` | 反馈处理核心，与 EdgeOne 共用。                                |
+| `site/functions/_analytics-core.js`| 第一方统计事件核心，与 EdgeOne 共用。                          |
+| `site/dist/cloudflare/`            | `.cc` 国际站预渲染产物。                                      |
 
 当前 Cloudflare Worker 名称是 `dpmaster`。`wrangler.jsonc` 中的关键配置是：
 
@@ -99,14 +108,15 @@ npm run build
   "name": "dpmaster",
   "main": "worker.js",
   "assets": {
-    "directory": "./dist/",
+    "directory": "./dist/cloudflare/",
     "binding": "ASSETS",
-    "not_found_handling": "single-page-application"
+    "html_handling": "drop-trailing-slash",
+    "not_found_handling": "404-page"
   }
 }
 ```
 
-`single-page-application` 会让未命中静态资源的导航请求回到 `index.html` 并返回 HTTP 200。`/api/feedback` 是客户端 fetch 请求，会进入 `worker.js`。
+已知路由直接命中预渲染 HTML。未知静态路径由 `404-page` 返回 `404.html` 与 HTTP 404；`/api/feedback` 和 `/api/analytics` 进入 `worker.js`。
 
 ### 首次发布到 Cloudflare
 
@@ -121,14 +131,14 @@ npm run deploy:cf
 1. 打开 **Workers & Pages**。
 2. 选择 Worker `dpmaster`。
 3. 进入 **Settings**。
-4. 确认 Worker 已部署，静态资源绑定来自 `./dist/`，入口脚本是 `worker.js`。
+4. 确认 Worker 已部署，静态资源绑定来自 `./dist/cloudflare/`，入口脚本是 `worker.js`。
 
 如果需要绑定自定义域名：
 
 1. 打开 `dpmaster` Worker。
 2. 进入 **Settings** -> **Domains & Routes**。
 3. 添加 `workers.dev` 路由、Custom Domain，或按 Cloudflare 当前控制台提示添加 Route。
-4. 等待证书与 DNS 生效后再做深链测试。
+4. 绑定 `dp.betaoi.cc`，等待证书与 DNS 生效后再做深链测试。
 
 ### Cloudflare 配置反馈变量
 
@@ -159,7 +169,7 @@ npx wrangler secret put FEEDBACK_WEBHOOK_SECRET
 深链：
 
 ```bash
-curl.exe -I https://<cloudflare-domain>/part/a/01
+curl.exe -I https://dp.betaoi.cc/part/a/01
 ```
 
 期望状态码是 200。
@@ -177,7 +187,7 @@ $body = @{
 
 Invoke-RestMethod `
   -Method Post `
-  -Uri "https://<cloudflare-domain>/api/feedback" `
+  -Uri "https://dp.betaoi.cc/api/feedback" `
   -ContentType "application/json" `
   -Body $body
 ```
@@ -201,14 +211,15 @@ npx wrangler tail dpmaster
 | 文件                               | 作用                                               |
 | ---------------------------------- | -------------------------------------------------- |
 | `site/package.json`                | `deploy:eo` 命令固定发布到 `dpmaster` production。 |
-| `site/scripts/postbuild.mjs`       | 生成 `404.html` 和 EdgeOne catch-all 函数。        |
-| `site/functions/_feedback-core.js` | 构建期内联进 EdgeOne 函数。                        |
-| `site/dist/`                       | EdgeOne Pages 发布目录。                           |
+| `site/scripts/postbuild.mjs`        | 生成 EdgeOne API 与真实 404 catch-all 函数。 |
+| `site/functions/_feedback-core.js` | 构建期内联进 EdgeOne 函数。                  |
+| `site/functions/_analytics-core.js`| 构建期内联进 EdgeOne 函数。                  |
+| `site/dist/edgeone/`               | `.cn` 国内站预渲染发布目录。                |
 
 当前 EdgeOne 发布命令是：
 
 ```bash
-edgeone makers deploy ./dist -n dpmaster -e production
+edgeone makers deploy ./dist/edgeone -n dpmaster -e production
 ```
 
 因此 EdgeOne Pages 项目名必须是 `dpmaster`，环境是 `production`。
@@ -223,14 +234,14 @@ npm run build
 npm run deploy:eo
 ```
 
-如果控制台还没有 `dpmaster` 项目，先在 EdgeOne Pages/Makers 控制台创建同名项目，或按 CLI 提示创建。项目创建后，保持发布目录为 `dist/`。
+如果控制台还没有 `dpmaster` 项目，先在 EdgeOne Pages/Makers 控制台创建同名项目，或按 CLI 提示创建。项目创建后，保持发布目录为 `dist/edgeone/`。
 
 如果需要绑定自定义域名：
 
 1. 打开腾讯云 EdgeOne 控制台。
 2. 进入 Pages 项目 `dpmaster`。
 3. 找到自定义域名或域名管理入口。
-4. 按控制台提示完成 CNAME/DNS 和 HTTPS 证书配置。
+4. 绑定 `dp.betaoi.cn`，按控制台提示完成腾讯云 DNS/CNAME 和 HTTPS 证书配置。
 5. 域名生效后做深链和反馈测试。
 
 ### EdgeOne 配置反馈变量
@@ -256,10 +267,10 @@ EdgeOne 变量保存后需要部署才会生效。只保存不部署，线上函
 深链：
 
 ```bash
-curl.exe -I https://<edgeone-domain>/part/a/01
+curl.exe -I https://dp.betaoi.cn/part/a/01
 ```
 
-理想结果是 HTTP 200。如果返回 404 但页面内容仍能进入 SPA，说明落到了 `404.html` 安全网，功能可用但状态码不理想，需要继续检查 `dist/edge-functions/[[default]].js` 是否被平台识别。
+已登记的 48 个路由必须返回 HTTP 200。任意未登记路径必须返回 HTTP 404，并包含 `noindex,nofollow`；若未知路径返回 200，说明平台仍在使用旧 SPA 回退规则，需要检查 `dist/edgeone/edge-functions/[[default]].js` 是否已发布并生效。
 
 反馈：
 
@@ -274,7 +285,7 @@ $body = @{
 
 Invoke-RestMethod `
   -Method Post `
-  -Uri "https://<edgeone-domain>/api/feedback" `
+  -Uri "https://dp.betaoi.cn/api/feedback" `
   -ContentType "application/json" `
   -Body $body
 ```
@@ -284,6 +295,58 @@ Invoke-RestMethod `
 - HTTP 响应的 `ok` 为 `true`、`status` 为 `logged`，并带有 `requestId`。
 - EdgeOne 函数日志出现结构化的 `feedback_received` 记录。
 - 配置 Webhook 时，日志还有同一 `requestId` 的 `feedback_webhook` 状态；钉钉目标群应收到消息。
+
+## Sitemap 与搜索平台提交
+
+构建会把区域 sitemap 写进各自发布目录，线上地址固定为：
+
+- 国际站：`https://dp.betaoi.cc/sitemap.xml`
+- 国内站：`https://dp.betaoi.cn/sitemap.xml`
+
+两份 sitemap 都列出同一组 48 个页面，但 `<loc>` 使用当前区域域名，并为每个 URL 输出 `zh-Hans`、`zh-CN` 与 `x-default` 互指。不要把 `.cc` sitemap 文件复制覆盖 `.cn` 产物。
+
+首次上线和 URL 集合变化后分别提交：
+
+1. Google Search Console：验证两个域名资源，国际站提交 `.cc/sitemap.xml`，国内站提交 `.cn/sitemap.xml`。
+2. Bing Webmaster Tools：验证两个站点并提交各自 sitemap；可从 Search Console 导入已验证资源。
+3. 百度搜索资源平台：重点验证 `dp.betaoi.cn` 并提交 `.cn/sitemap.xml`；如也验证 `.cc`，仍提交该主机自己的 sitemap。
+
+同时确认以下文件可匿名访问且返回 200：
+
+- `/robots.txt`
+- `/sitemap.xml`
+- `/llms.txt`
+- `/route-summaries.json`
+
+## 区域统计
+
+前端只调用统一的 `trackAnalyticsEvent`。当前允许的事件是 `page_view`、`feedback_opened`、`feedback_submitted`、`feedback_succeeded`、`feedback_failed`。
+
+- 国际站 Provider 只在真实 `dp.betaoi.cc` 主机动态加载 Cloudflare Web Analytics beacon，使用 token `c113fb69d7e84d38a645c5160f6f1bda`；localhost、预览域名和国内站不会加载。
+- 国内站 Provider 不加载 Cloudflare 或其他境外统计脚本。EdgeOne 控制台的访问日志/数据分析负责请求、地域、状态码和性能观察；React 路由与反馈漏斗事件发送到同源 `/api/analytics`。
+- 两个 Provider 都把有限事件写到同源 `/api/analytics`，成功返回 204。接收器拒绝跨站请求、未知事件、未知 Provider、非 JSON 和过大请求；只记录裁剪后的路径、标题及少量原始类型元数据，不读取反馈内容、联系方式、Cookie 或账号标识。
+- 统计失败由客户端静默降级，不影响课程、小游戏、导航或反馈提交。
+
+同源冒烟测试：
+
+```powershell
+$event = @{
+  provider = "cloudflare"
+  event = "page_view"
+  path = "/"
+  title = "DP大师"
+  metadata = @{ region = "international" }
+  ts = (Get-Date).ToString("o")
+} | ConvertTo-Json
+
+Invoke-WebRequest `
+  -Method Post `
+  -Uri "https://dp.betaoi.cc/api/analytics" `
+  -ContentType "application/json" `
+  -Body $event
+```
+
+国内站测试时把 URL 换成 `.cn`，并把 `provider` 改成 `tencent-edgeone`。期望 HTTP 204，并在相应平台日志中看到 `analytics_event`。
 
 ## 钉钉反馈机器人
 
@@ -356,10 +419,13 @@ Invoke-RestMethod `
 
 | 现象                                   | 优先检查                                                                                            |
 | -------------------------------------- | --------------------------------------------------------------------------------------------------- |
-| Cloudflare 深链返回 404                | `wrangler.jsonc` 是否保留 `assets.not_found_handling = "single-page-application"`，是否已重新部署。 |
+| 已登记的 Cloudflare 深链返回 404       | 是否发布了 `dist/cloudflare/`，该路径的预渲染 `.html` 是否存在，`html_handling` 是否仍为 `drop-trailing-slash`。 |
 | Cloudflare `/api/feedback` 返回 HTML   | 请求方法是否是 `POST`，URL 是否真的指向 `/api/feedback`，Worker 是否是最新版本。                    |
-| EdgeOne 深链返回 404 但页面能打开      | 说明 `404.html` 安全网生效，继续检查 `edge-functions/[[default]].js` 是否发布。                     |
+| 未知路径返回 200                       | 平台仍在用旧 SPA 回退；Cloudflare 应使用 `404-page`，EdgeOne 应发布新的 catch-all。                  |
+| EdgeOne 已登记深链返回 404             | 是否发布了 `dist/edgeone/`，并检查对应的预渲染 `.html` 是否存在。                                  |
 | EdgeOne `/api/feedback` 返回 HTML      | catch-all 函数没有接住反馈分支，检查 `postbuild` 产物和 EdgeOne 函数日志。                          |
+| `/api/analytics` 返回 403              | 请求带了非本站 `Origin`；统计端点只允许同源浏览器请求。                                            |
+| `.cn` 页面 canonical 指向 `.cc`        | 错把 `dist/cloudflare/` 发布到了 EdgeOne；应重新发布 `dist/edgeone/`。                              |
 | 端点返回 `status: "logged"` 但钉钉没消息 | 用 `requestId` 查找 `feedback_webhook`，检查其 `http_error` / `business_error` / `network_error` 状态。              |
 | 端点返回 429                         | 同一来源在 30 分钟窗口已提交 10 条；按 `Retry-After` 等待，或核对平台限流规则。                       |
 | 钉钉签名错误                           | `FEEDBACK_WEBHOOK_SECRET` 是否与机器人加签密钥一致。                                                |
@@ -369,7 +435,7 @@ Invoke-RestMethod `
 ## 维护边界
 
 - `site/wrangler.jsonc` 是 Cloudflare 部署合同，应随仓库维护。
-- `site/dist/`、`.env`、`.dev.vars`、CLI 登录缓存和平台 token 不入仓库。
+- `site/dist/`（含两个区域子目录）、`.env`、`.dev.vars`、CLI 登录缓存和平台 token 不入仓库。
 - 如果更改 Cloudflare Worker 名称，同步更新 `site/wrangler.jsonc` 的 `name`。
 - 如果更改 EdgeOne Pages 项目名，同步更新 `site/package.json` 的 `deploy:eo` 命令。
 - 如果修改反馈字段或响应格式，同步更新本文件的“反馈接口合同”。
@@ -377,9 +443,11 @@ Invoke-RestMethod `
 
 ## 官方参考
 
-- [Cloudflare Workers Static Assets SPA](https://developers.cloudflare.com/workers/static-assets/routing/single-page-application/)
+- [Cloudflare Workers Static Assets routing](https://developers.cloudflare.com/workers/static-assets/routing/)
 - [Cloudflare Workers Secrets](https://developers.cloudflare.com/workers/configuration/secrets/)
 - [Cloudflare Workers Environment Variables](https://developers.cloudflare.com/workers/configuration/environment-variables/)
+- [Tencent EdgeOne Data Analysis](https://intl.cloud.tencent.com/document/product/1145/56978)
+- [Tencent EdgeOne Custom Statistics](https://intl.cloud.tencent.com/zh/document/product/1145/67226)
 - [Tencent EdgeOne Environment Variable and Secret](https://www.tencentcloud.com/document/product/1145/62764)
 - [钉钉聊天机器人概述](https://open-dingtalk.github.io/developerpedia/docs/learn/bot/overview/)
 - [钉钉群自定义机器人](https://open-dingtalk.github.io/developerpedia/docs/learn/bot/webhook/overview/)
