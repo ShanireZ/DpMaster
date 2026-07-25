@@ -316,10 +316,19 @@ test('desktop sidebar aligns nested lessons and remembers its compact rail state
   await expect(brand).toContainText('DP Master')
   await expect(page.getByText('<DP Master>', { exact: true })).toHaveCount(0)
 
+  const brandPosition = await brand.boundingBox()
+  const familyCodePosition = await page.locator(
+    '.nav-part.active .nav-part__code',
+  ).boundingBox()
   const parentTitle = await page.locator('.nav-part.active .nav-part__title').boundingBox()
   const childTitle = await page.locator('.nav-type.active .nav-type__label').boundingBox()
+  expect(brandPosition).not.toBeNull()
+  expect(familyCodePosition).not.toBeNull()
   expect(parentTitle).not.toBeNull()
   expect(childTitle).not.toBeNull()
+  expect(
+    Math.abs((brandPosition?.x ?? 0) - (familyCodePosition?.x ?? 0)),
+  ).toBeLessThanOrEqual(1)
   expect(Math.abs((parentTitle?.x ?? 0) - (childTitle?.x ?? 0))).toBeLessThanOrEqual(1)
 
   const expandedWidth = (await sidebar.boundingBox())?.width ?? 0

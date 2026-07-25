@@ -44,7 +44,7 @@ export default function Sidebar({ onNavigate }: { onNavigate?: () => void }) {
                   className="nav-part__badge"
                   style={{ ['--nav-family']: `var(--${p.id}-1)` } as CSSProperties}
                 >
-                  {p.code}
+                  <span className="nav-part__code">{p.code}</span>
                 </span>
                 <span className="nav-part__title">{p.title}</span>
               </NavLink>

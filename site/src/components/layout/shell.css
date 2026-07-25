@@ -64,7 +64,11 @@
 .brand {
   display: flex;
   align-items: center;
-  padding: var(--sp-3) var(--nav-pad-x) var(--sp-7);
+  padding:
+    var(--sp-3)
+    var(--nav-pad-x)
+    var(--sp-7)
+    calc(var(--nav-pad-x) + 10px);
   overflow: hidden;
 }
 .brand__wordmark {
