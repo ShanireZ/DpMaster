@@ -30,6 +30,8 @@ test('feedback client reads the JSON receipt and presents rate limits clearly', 
   assert.match(text, /res\.status === 429/)
   assert.match(text, /提交太频繁，请稍后再试/)
   assert.match(text, /result\?\.ok/)
+  assert.match(text, /result\.status !== ['"]delivered['"]/)
+  assert.match(text, /requestId/)
 })
 
 test('feedback status changes are announced without exposing forwarding state', async () => {
@@ -38,4 +40,12 @@ test('feedback status changes are announced without exposing forwarding state', 
   assert.match(text, /role="alert"/)
   assert.match(text, /已收到，谢谢你/)
   assert.doesNotMatch(text, /result\?\.forwarded/)
+})
+
+test('diagnostic fields require an explicit opt-in and link to privacy details', async () => {
+  const text = await source()
+  assert.match(text, /includeDiagnostics/)
+  assert.match(text, /type="checkbox"/)
+  assert.match(text, /默认不收集/)
+  assert.match(text, /\/about#privacy/)
 })

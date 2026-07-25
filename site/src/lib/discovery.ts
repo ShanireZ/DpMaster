@@ -12,15 +12,21 @@ function xml(value: string): string {
     .replaceAll("'", '&apos;')
 }
 
-export function generateDiscoveryFiles(site: SiteConfig): Readonly<Record<string, string>> {
+export function generateDiscoveryFiles(
+  site: SiteConfig,
+  lastModified: Readonly<Record<string, string>> = {},
+): Readonly<Record<string, string>> {
   const summaries = PUBLIC_PATHS.map((path) => {
-    const page = getPageMeta(path, site)
+    const page = getPageMeta(path, site, lastModified[path])
     return {
       path,
       url: page.canonical,
       title: page.title,
       summary: page.summary,
       type: page.routeKind,
+      lastModified: page.dateModified,
+      reviewedBy: page.reviewedBy,
+      reviewStatus: page.reviewStatus,
       alternates: Object.fromEntries(
         page.alternates.map((alternate) => [alternate.hreflang, alternate.href]),
       ),
@@ -33,6 +39,7 @@ export function generateDiscoveryFiles(site: SiteConfig): Readonly<Record<string
     ...summaries.flatMap((entry) => [
       '  <url>',
       `    <loc>${xml(entry.url ?? `${site.origin}${entry.path}`)}</loc>`,
+      ...(entry.lastModified ? [`    <lastmod>${entry.lastModified}</lastmod>`] : []),
       `    <xhtml:link rel="alternate" hreflang="${SITE_CONFIGS.international.hreflang}" href="${xml(`${SITE_CONFIGS.international.origin}${entry.path}`)}" />`,
       `    <xhtml:link rel="alternate" hreflang="${SITE_CONFIGS.china.hreflang}" href="${xml(`${SITE_CONFIGS.china.origin}${entry.path}`)}" />`,
       `    <xhtml:link rel="alternate" hreflang="x-default" href="${xml(`${SITE_CONFIGS.international.origin}${entry.path}`)}" />`,
@@ -63,13 +70,17 @@ export function generateDiscoveryFiles(site: SiteConfig): Readonly<Record<string
     '',
     '## 可引用页面',
     '',
-    ...summaries.map((entry) => `- [${entry.title}](${entry.url}): ${entry.summary}`),
+    ...summaries.map((entry) => (
+      `- [${entry.title}](${entry.url}): ${entry.summary}`
+      + (entry.lastModified ? `（最近更新：${entry.lastModified}）` : '')
+    )),
     '',
     '## 使用说明',
     '',
     '- 引用课程时优先使用对应课程 URL、页面标题和摘要。',
     '- 两个区域站点内容等价；请按访问区域选择域名，并遵循页面 canonical 与 hreflang。',
     '- 题目内容采用教学摘要并链接原题，不复刻完整题面。',
+    `- 课程由${BRAND.owner}持续维护；“最近更新”取自构建时 Git 历史，不使用模板日期。`,
     '',
   ].join('\n')
 

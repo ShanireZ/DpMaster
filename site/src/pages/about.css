@@ -204,6 +204,18 @@
   font-size: 14px;
   color: var(--text-3);
 }
+.about-policy {
+  scroll-margin-top: calc(var(--topbar-h) + var(--sp-5));
+}
+.about-policy > p {
+  max-width: 72ch;
+  color: var(--text-2);
+  font-size: 14.5px;
+  line-height: 1.8;
+}
+.about-policy > p + p {
+  margin-top: var(--sp-3);
+}
 
 /* ---------- CTA ---------- */
 .about-cta {

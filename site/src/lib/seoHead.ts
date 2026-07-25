@@ -1,6 +1,9 @@
 import { BRAND, SITE_CONFIGS } from '../config/site.ts'
 import type { SiteConfig } from '../config/site.ts'
 import type { PageMeta } from './pageMeta.ts'
+import { getPart } from '../data/catalog.ts'
+
+const OG_IMAGE_PATH = '/og/dpmaster-social.jpg'
 
 export const ROUTE_HEAD_START = '<!-- dp-route-head:start -->'
 export const ROUTE_HEAD_END = '<!-- dp-route-head:end -->'
@@ -27,6 +30,7 @@ export function structuredDataForPage(page: PageMeta, site: SiteConfig): object 
       '@id': publisherId,
       name: BRAND.owner,
       url: site.origin,
+      logo: `${site.origin}/favicon.svg`,
       brand: { '@type': 'Brand', name: BRAND.name },
     },
     {
@@ -42,9 +46,9 @@ export function structuredDataForPage(page: PageMeta, site: SiteConfig): object 
 
   if (page.indexable && page.canonical) {
     const pageId = `${page.canonical}#webpage`
-    const pageType =
+    const pageType: string | string[] =
       page.routeKind === 'lesson'
-        ? 'Course'
+        ? ['Course', 'LearningResource', 'TechArticle']
         : page.routeKind === 'family'
           ? 'CollectionPage'
           : 'WebPage'
@@ -59,7 +63,37 @@ export function structuredDataForPage(page: PageMeta, site: SiteConfig): object 
       isPartOf: { '@id': websiteId },
       provider: page.routeKind === 'lesson' ? { '@id': publisherId } : undefined,
       publisher: { '@id': publisherId },
+      learningResourceType: page.routeKind === 'lesson' ? '课程讲解' : undefined,
+      educationalLevel: page.routeKind === 'lesson' ? '算法竞赛学习者' : undefined,
+      teaches: page.teaches.length > 0 ? page.teaches : undefined,
+      dateModified: page.dateModified,
+      reviewedBy: page.reviewedBy ? {
+        '@type': 'Organization',
+        name: page.reviewedBy,
+      } : undefined,
+      image: `${site.origin}${OG_IMAGE_PATH}`,
     })
+
+    if (page.routeKind === 'family') {
+      const partId = page.path.match(/^\/part\/([a-g])$/)?.[1]
+      const part = partId ? getPart(partId) : undefined
+      if (part) {
+        graph.push({
+          '@type': 'ItemList',
+          '@id': `${page.canonical}#courses`,
+          name: `${part.title}课程目录`,
+          numberOfItems: part.types.filter((type) => type.status === 'ready').length,
+          itemListElement: part.types
+            .filter((type) => type.status === 'ready')
+            .map((type, index) => ({
+              '@type': 'ListItem',
+              position: index + 1,
+              name: type.title,
+              url: `${site.origin}/part/${part.id}/${type.slug}`,
+            })),
+        })
+      }
+    }
 
     if (page.breadcrumbs.length > 1) {
       graph.push({
@@ -106,9 +140,17 @@ export function renderRouteHead(page: PageMeta, site: SiteConfig): string {
     `    <meta property="og:type" content="${page.ogType}" />`,
     `    <meta property="og:site_name" content="${BRAND.name}" />`,
     `    <meta property="og:locale" content="zh_CN" />`,
-    '    <meta name="twitter:card" content="summary" />',
+    `    <meta property="og:image" content="${site.origin}${OG_IMAGE_PATH}" />`,
+    '    <meta property="og:image:width" content="1200" />',
+    '    <meta property="og:image:height" content="630" />',
+    `    <meta property="og:image:alt" content="${BRAND.name}动态规划状态空间与信标视觉" />`,
+    ...(page.dateModified && page.ogType === 'article'
+      ? [`    <meta property="article:modified_time" content="${page.dateModified}" />`]
+      : []),
+    '    <meta name="twitter:card" content="summary_large_image" />',
     `    <meta name="twitter:title" content="${escapeHtml(page.title)}" />`,
     `    <meta name="twitter:description" content="${escapeHtml(page.description)}" />`,
+    `    <meta name="twitter:image" content="${site.origin}${OG_IMAGE_PATH}" />`,
     `    <script id="dp-structured-data" type="application/ld+json">${jsonForHtml(structuredDataForPage(page, site))}</script>`,
     ROUTE_HEAD_END,
   )

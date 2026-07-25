@@ -1,19 +1,69 @@
 import { mkdirSync, readFileSync, rmSync, writeFileSync } from 'node:fs'
 import { dirname, join } from 'node:path'
 import { pathToFileURL } from 'node:url'
+import { JSDOM } from 'jsdom'
 import { getSiteConfig } from '../src/config/site.ts'
 import { generateDiscoveryFiles } from '../src/lib/discovery.ts'
 import { getPageMeta } from '../src/lib/pageMeta.ts'
 import { PUBLIC_PATHS } from '../src/lib/publicRoutes.ts'
 import { renderRouteHead, replaceRouteHead } from '../src/lib/seoHead.ts'
-import { renderRouteCssLinks } from './route-assets.mjs'
+import { renderRouteAssetLinks } from './route-assets.mjs'
+
+export function settleSuspenseMarkup(markup) {
+  if (!markup.includes('<!--$?-->')) return markup
+  const fragment = JSDOM.fragment(markup)
+
+  while (true) {
+    const template = [...fragment.querySelectorAll('template[id^="B:"]')][0]
+    if (!template) break
+
+    const segmentId = template.id.replace(/^B:/, 'S:')
+    const segment = [...fragment.querySelectorAll('[id]')]
+      .find((element) => element.id === segmentId)
+    const start = template.previousSibling
+    let end = template.nextSibling
+    while (!(end?.nodeType === 8 && end.nodeValue === '/$')) end = end?.nextSibling
+
+    if (!segment || start?.nodeType !== 8 || start.nodeValue !== '$?' || !end) {
+      throw new Error(`Unable to settle React Suspense segment ${template.id}`)
+    }
+
+    start.nodeValue = '$'
+    let fallbackNode = template
+    while (fallbackNode !== end) {
+      const next = fallbackNode.nextSibling
+      fallbackNode.remove()
+      fallbackNode = next
+    }
+    while (segment.firstChild) {
+      end.parentNode.insertBefore(segment.firstChild, end)
+    }
+    segment.remove()
+  }
+
+  fragment.querySelectorAll('script').forEach((script) => script.remove())
+  const container = fragment.ownerDocument.createElement('div')
+  container.append(fragment)
+  const settled = container.innerHTML
+  if (settled.includes('<!--$?-->') || /\sid="(?:B|S):/.test(settled)) {
+    throw new Error('React prerender left an unsettled Suspense segment')
+  }
+  return settled
+}
 
 function documentForRoute(template, routeMarkup, routeHead, routeCss) {
   const withHead = replaceRouteHead(template, routeHead)
   const root = '<div id="root"></div>'
   if (!withHead.includes(root)) throw new Error('Built index.html is missing the empty root')
-  const withCss = routeCss
-    ? withHead.replace('</head>', `${routeCss}\n  </head>`)
+  const missingAssets = routeCss
+    .split('\n')
+    .filter((line) => {
+      const href = line.match(/\shref="([^"]+)"/)?.[1]
+      return !href || !withHead.includes(`href="${href}"`)
+    })
+    .join('\n')
+  const withCss = missingAssets
+    ? withHead.replace('</head>', `${missingAssets}\n  </head>`)
     : withHead
   return withCss.replace(root, `<div id="root">${routeMarkup}</div>`)
 }
@@ -38,6 +88,7 @@ export async function prerenderRegion(region, outDir, serverEntry) {
   const indexPath = join(outDir, 'index.html')
   const manifestPath = join(outDir, '.vite', 'manifest.json')
   const template = readFileSync(indexPath, 'utf8')
+    .replace('<html lang="zh-CN">', `<html lang="${site.language}">`)
   const manifest = JSON.parse(readFileSync(manifestPath, 'utf8'))
   const { renderRoute } = await import(
     `${pathToFileURL(serverEntry).href}?region=${region}&time=${Date.now()}`
@@ -45,7 +96,7 @@ export async function prerenderRegion(region, outDir, serverEntry) {
 
   for (const path of PUBLIC_PATHS) {
     const page = getPageMeta(path, site)
-    const markup = await renderRoute(path)
+    const markup = settleSuspenseMarkup(await renderRoute(path))
     writeRouteVariants(
       outDir,
       path,
@@ -53,21 +104,21 @@ export async function prerenderRegion(region, outDir, serverEntry) {
         template,
         markup,
         renderRouteHead(page, site),
-        renderRouteCssLinks(manifest, path),
+        renderRouteAssetLinks(manifest, path),
       ),
     )
   }
 
   const notFoundPath = '/__dp-not-found__'
   const notFound = getPageMeta(notFoundPath, site)
-  const notFoundMarkup = await renderRoute(notFoundPath)
+  const notFoundMarkup = settleSuspenseMarkup(await renderRoute(notFoundPath))
   writeHtml(
     join(outDir, '404.html'),
     documentForRoute(
       template,
       notFoundMarkup,
       renderRouteHead(notFound, site),
-      renderRouteCssLinks(manifest, notFoundPath),
+      renderRouteAssetLinks(manifest, notFoundPath),
     ),
   )
 

@@ -25,16 +25,19 @@ test('Cloudflare worker keeps the feedback route method-safe', async () => {
 })
 
 test('Pages adapter delegates POST and supports OPTIONS', async () => {
+  const originalFetch = globalThis.fetch
+  globalThis.fetch = async () => new Response('{}', { status: 200 })
   const post = await onRequestPost({
     request: new Request('https://dp.betaoi.cc/api/feedback', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ kind: '内容有误', description: '有效反馈内容' }),
     }),
-    env: {},
+    env: { FEEDBACK_WEBHOOK_URL: 'https://hooks.example.test' },
   })
+  globalThis.fetch = originalFetch
   assert.equal(post.status, 200)
-  assert.equal((await post.json()).status, 'logged')
+  assert.equal((await post.json()).status, 'delivered')
   assert.equal((await onRequestOptions()).status, 204)
 })
 

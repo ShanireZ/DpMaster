@@ -176,6 +176,46 @@
   box-shadow: 0 0 0 3px color-mix(in srgb, var(--accent-1) 22%, transparent);
 }
 
+.fbw__privacy {
+  display: grid;
+  gap: 8px;
+  padding: 11px 12px;
+  border-top: 1px solid var(--border);
+  border-bottom: 1px solid var(--border);
+}
+.fbw__diagnostics {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  color: var(--text-1);
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+}
+.fbw__diagnostics input {
+  width: 17px;
+  height: 17px;
+  flex: 0 0 auto;
+  margin-top: 2px;
+  accent-color: var(--accent-1);
+}
+.fbw__diagnostics span {
+  display: grid;
+  gap: 2px;
+}
+.fbw__diagnostics small,
+.fbw__privacy p {
+  color: var(--text-3);
+  font-size: 12px;
+  font-weight: 400;
+  line-height: 1.55;
+}
+.fbw__privacy a {
+  color: var(--accent-1);
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+
 .fbw__error {
   font-size: 13px;
   color: var(--text-2);
@@ -268,6 +308,14 @@
   font-size: 13.5px;
   color: var(--text-2);
   max-width: 32ch;
+}
+.fbw__receipt {
+  color: var(--text-3);
+  font-size: 12px;
+}
+.fbw__receipt code {
+  color: var(--text-2);
+  user-select: all;
 }
 .fbw__done .fbw__btn {
   margin-top: var(--sp-3);

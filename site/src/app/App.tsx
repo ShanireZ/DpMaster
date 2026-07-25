@@ -1,55 +1,65 @@
-import { lazy, Suspense } from 'react'
-import { BrowserRouter, MemoryRouter, Routes, Route } from 'react-router-dom'
+import { Suspense } from 'react'
+import { BrowserRouter, Routes, Route } from 'react-router-dom'
 import { ThemeProvider } from '../theme/ThemeContext'
 import ErrorBoundary from '../components/layout/ErrorBoundary'
 import Shell from '../components/layout/Shell'
 import { RouteMeta } from '../components/seo/RouteMeta'
 import { AnalyticsRouteTracker } from '../analytics/AnalyticsRouteTracker'
+import { AnalyticsRuntime } from '../analytics/AnalyticsRuntime'
+import { LearningProgressProvider } from '../learning/LearningProgressContext'
+import { StaticLessonContentProvider } from './StaticLessonContentContext.tsx'
+import type { StaticLessonContents } from './StaticLessonContent.ts'
+import { CLIENT_ROUTE_VIEWS, type RouteViews } from './routeViews.ts'
 
-const Home = lazy(() => import('../pages/Home'))
-const PartPage = lazy(() => import('../pages/PartPage'))
-const TypePage = lazy(() => import('../pages/TypePage'))
-const NotFound = lazy(() => import('../pages/NotFound'))
-const AboutPage = lazy(() => import('../pages/AboutPage'))
-const MethodPage = lazy(() => import('../pages/MethodPage'))
-const ProblemsPage = lazy(() => import('../pages/ProblemsPage'))
+export function AppContent({ views = CLIENT_ROUTE_VIEWS }: { views?: RouteViews }) {
+  const {
+    Home: HomeView,
+    PartPage: PartPageView,
+    TypePage: TypePageView,
+    NotFound: NotFoundView,
+    AboutPage: AboutPageView,
+    MethodPage: MethodPageView,
+    ProblemsPage: ProblemsPageView,
+  } = views
 
-function AppContent() {
   return (
     <ThemeProvider>
-      <RouteMeta />
-      <AnalyticsRouteTracker />
-      <ErrorBoundary>
-        <Suspense fallback={<div style={{ minHeight: '60vh' }} />}>
-          <Routes>
-            <Route element={<Shell />}>
-              <Route path="/" element={<Home />} />
-              <Route path="/part/:pid" element={<PartPage />} />
-              <Route path="/part/:pid/:slug" element={<TypePage />} />
-              <Route path="/method" element={<MethodPage />} />
-              <Route path="/problems" element={<ProblemsPage />} />
-              <Route path="/about" element={<AboutPage />} />
-              <Route path="*" element={<NotFound />} />
-            </Route>
-          </Routes>
-        </Suspense>
-      </ErrorBoundary>
+      <LearningProgressProvider>
+        <RouteMeta />
+        <AnalyticsRouteTracker />
+        <AnalyticsRuntime />
+        <ErrorBoundary>
+          <Suspense fallback={<div style={{ minHeight: '60vh' }} />}>
+            <Routes>
+              <Route element={<Shell />}>
+                <Route path="/" element={<HomeView />} />
+                <Route path="/part/:pid" element={<PartPageView />} />
+                <Route path="/part/:pid/:slug" element={<TypePageView />} />
+                <Route path="/method" element={<MethodPageView />} />
+                <Route path="/problems" element={<ProblemsPageView />} />
+                <Route path="/about" element={<AboutPageView />} />
+                <Route path="*" element={<NotFoundView />} />
+              </Route>
+            </Routes>
+          </Suspense>
+        </ErrorBoundary>
+      </LearningProgressProvider>
     </ThemeProvider>
   )
 }
 
-export default function App() {
+export default function App({
+  initialLessonContents = {},
+  views,
+}: {
+  initialLessonContents?: StaticLessonContents
+  views?: RouteViews
+}) {
   return (
     <BrowserRouter>
-      <AppContent />
+      <StaticLessonContentProvider contents={initialLessonContents}>
+        <AppContent views={views} />
+      </StaticLessonContentProvider>
     </BrowserRouter>
-  )
-}
-
-export function StaticApp({ url }: { url: string }) {
-  return (
-    <MemoryRouter initialEntries={[url]}>
-      <AppContent />
-    </MemoryRouter>
   )
 }

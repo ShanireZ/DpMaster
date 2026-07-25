@@ -119,16 +119,52 @@ a.nav-type.active { color: var(--text-1); border-left-color: var(--accent-2); ba
   margin-left: auto; font-size: 10px; color: var(--text-3);
   border: 1px solid var(--border); border-radius: 4px; padding: 0 5px;
 }
+.nav-type__progress {
+  width: 14px;
+  height: 14px;
+  flex: 0 0 auto;
+  display: grid;
+  place-items: center;
+  color: var(--viz-chosen);
+}
 
 .sidebar-records {
   display: grid;
   gap: 7px;
-  margin-top: auto;
+  margin-top: 0;
   padding: var(--sp-5) var(--sp-3) var(--sp-1);
   color: var(--text-3);
   font-size: 11px;
   line-height: 1.4;
   text-align: center;
+}
+.sidebar-progress {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  gap: 6px var(--sp-2);
+  margin-top: auto;
+  padding: var(--sp-5) var(--sp-3) var(--sp-2);
+  color: var(--text-3);
+  font-size: 11px;
+}
+.sidebar-progress strong {
+  color: var(--text-2);
+  font-family: var(--font-mono);
+  font-weight: 500;
+}
+.sidebar-progress__track {
+  grid-column: 1 / -1;
+  height: 3px;
+  overflow: hidden;
+  border-radius: var(--r-full);
+  background: var(--surface-3);
+}
+.sidebar-progress__track > span {
+  display: block;
+  height: 100%;
+  border-radius: inherit;
+  background: var(--grad-brand);
+  transition: width var(--t-med) var(--ease-out);
 }
 .sidebar-records__intro {
   display: grid;

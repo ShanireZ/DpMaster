@@ -40,10 +40,11 @@ DP大师是一个面向 C++ 算法学习者的动态规划交互式学习网站�
 
 - **可改值的 DP 演示**：改输入后重新求解，逐步播放表格、树、网格或 bitmask 状态。
 - **家族小游戏**：装包大师、LIS 接龙、合并石子、幂次加速器、换根巡礼、舞会邀请、棋盘布阵。
-- **题目索引**：按家族、类型、难度和例题/练习关系组织洛谷题目。
+- **题目索引**：按家族、类型、难度和例题/练习关系组织洛谷题目，分页、搜索和筛选状态写入 URL，可刷新和分享。
+- **课程进度**：课程目录、阅读定位和版本化本地完成进度，无需账号或数据库。
 - **静态优先**：不需要后端数据库，构建产物可以直接发布到边缘静态托管。
 - **反馈入口**：站内 `POST /api/feedback` 可转发到钉钉等 webhook 机器人。
-- **区域统计**：同一统计抽象层在国际站加载 Cloudflare Web Analytics，在国内站使用 EdgeOne 访问日志，并把有限的页面/反馈事件写入同源 `POST /api/analytics`。
+- **区域统计**：同一统计抽象层采集 Web Vitals、路由、学习与反馈事件；国际站写入 Cloudflare Analytics Engine，国内站写入 EdgeOne 结构化日志，并在各自平台建立事件看板。
 
 ## 技术栈
 
@@ -113,6 +114,7 @@ DpMaster/
 - [洛谷题目策略](docs/product/problem-policy.md)
 - [工程架构](docs/engineering/architecture.md)
 - [验证流程](docs/operations/verification.md)
+- [统计与告警](docs/operations/analytics.md)
 
 部署、平台环境变量、钉钉反馈机器人和上线验收见 [deploy.md](deploy.md)。
 

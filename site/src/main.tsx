@@ -14,13 +14,32 @@ import './styles/tokens.css'
 import './styles/global.css'
 
 import App from './app/App'
+import { loadInitialRouteViews } from './app/routeViews.ts'
+import { getLesson } from './data/catalog.ts'
+import type { StaticLessonContents } from './app/StaticLessonContent.ts'
 
 const container = document.getElementById('root')
 if (!container) throw new Error('Missing #root container')
 
+async function loadInitialLessonContents(pathname: string): Promise<StaticLessonContents> {
+  const match = pathname.match(/^\/part\/([a-g])\/([^/]+)$/)
+  if (!match) return {}
+  const lesson = getLesson(match[1], match[2])
+  if (!lesson) return {}
+  const module = await lesson.type.loadContent()
+  return { [lesson.path]: module.default }
+}
+
+const [views, initialLessonContents] = container.hasChildNodes()
+  ? await Promise.all([
+      loadInitialRouteViews(window.location.pathname),
+      loadInitialLessonContents(window.location.pathname),
+    ])
+  : [undefined, {}]
+
 const application = (
   <StrictMode>
-    <App />
+    <App views={views} initialLessonContents={initialLessonContents} />
   </StrictMode>
 )
 

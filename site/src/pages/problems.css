@@ -109,6 +109,8 @@
   background: var(--surface-2);
   border: 1px solid var(--border);
   transition: border-color var(--t-fast), transform var(--t-fast);
+  content-visibility: auto;
+  contain-intrinsic-size: auto 58px;
 }
 .prob:hover {
   border-color: var(--border-strong);
@@ -175,6 +177,53 @@
   font-size: 15px;
 }
 
+.problems-pagination {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--sp-3);
+  margin-top: var(--sp-6);
+  padding-top: var(--sp-4);
+  border-top: 1px solid var(--border);
+}
+.problems-pagination > button,
+.problems-pagination__item button {
+  min-width: 40px;
+  height: 38px;
+  padding: 0 12px;
+  border: 1px solid var(--border);
+  border-radius: var(--r-2);
+  background: var(--surface-1);
+  color: var(--text-2);
+  font-size: 13px;
+  font-weight: 600;
+}
+.problems-pagination button:hover:not(:disabled) {
+  border-color: var(--border-strong);
+  color: var(--text-1);
+  background: var(--surface-2);
+}
+.problems-pagination button:disabled {
+  opacity: 0.42;
+  cursor: not-allowed;
+}
+.problems-pagination__pages {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+}
+.problems-pagination__item {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  color: var(--text-3);
+}
+.problems-pagination__item button.current {
+  color: var(--text-on-accent);
+  background: var(--grad-brand);
+  border-color: transparent;
+}
+
 /* ---------- 响应式：窄屏堆叠 ---------- */
 @media (max-width: 760px) {
   .prob {
@@ -190,4 +239,7 @@
   .prob__name { grid-area: name; white-space: normal; }
   .prob__diff { grid-area: meta; justify-self: start; }
   .prob__type { grid-area: meta; justify-self: start; margin-left: 76px; }
+  .problems-pagination__pages {
+    display: none;
+  }
 }

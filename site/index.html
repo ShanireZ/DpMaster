@@ -5,6 +5,16 @@
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <meta name="theme-color" content="#0b0a09" />
+    <script>
+      try {
+        var dpTheme = localStorage.getItem('dp-master-theme') === 'light' ? 'light' : 'dark';
+        document.documentElement.dataset.theme = dpTheme;
+        document.querySelector('meta[name="theme-color"]').content =
+          dpTheme === 'light' ? '#f4f1ea' : '#0b0a09';
+      } catch {}
+      var dpPart = location.pathname.match(/^\/part\/([a-g])(?:\/|$)/);
+      if (dpPart) document.documentElement.dataset.part = dpPart[1];
+    </script>
     <!-- dp-route-head:start -->
     <title>DP大师 · 动态规划交互式教程</title>
     <meta name="description" content="DP大师是一套面向算法学习者的动态规划交互式教程，通过精讲、逐帧可视化、题目索引和小游戏掌握 DP。" />
@@ -20,9 +30,14 @@
     <meta property="og:type" content="website" />
     <meta property="og:site_name" content="DP大师" />
     <meta property="og:locale" content="zh_CN" />
-    <meta name="twitter:card" content="summary" />
+    <meta property="og:image" content="https://dp.betaoi.cc/og/dpmaster-social.jpg" />
+    <meta property="og:image:width" content="1200" />
+    <meta property="og:image:height" content="630" />
+    <meta property="og:image:alt" content="DP大师动态规划状态空间与信标视觉" />
+    <meta name="twitter:card" content="summary_large_image" />
     <meta name="twitter:title" content="DP大师 · 动态规划交互式教程" />
     <meta name="twitter:description" content="DP大师是一套面向算法学习者的动态规划交互式教程，通过精讲、逐帧可视化、题目索引和小游戏掌握 DP。" />
+    <meta name="twitter:image" content="https://dp.betaoi.cc/og/dpmaster-social.jpg" />
     <script id="dp-structured-data" type="application/ld+json">
       {
         "@context": "https://schema.org",

@@ -3,11 +3,20 @@ import { fileURLToPath } from 'node:url'
 import { getSiteConfig } from '../src/config/site.ts'
 import { generateDiscoveryFiles } from '../src/lib/discovery.ts'
 import { PUBLIC_PATHS } from '../src/lib/publicRoutes.ts'
+import {
+  collectRouteLastModified,
+  renderRouteLastModifiedModule,
+} from './last-modified.mjs'
 
-const files = generateDiscoveryFiles(getSiteConfig('international'))
+const lastModified = collectRouteLastModified()
+const files = generateDiscoveryFiles(getSiteConfig('international'), lastModified)
 const outputs = Object.entries(files).map(([name, content]) => [
   new URL(`../public/${name}`, import.meta.url),
   content,
+])
+outputs.push([
+  new URL('../src/data/routeLastModified.ts', import.meta.url),
+  renderRouteLastModifiedModule(lastModified),
 ])
 
 const write = process.argv.includes('--write')

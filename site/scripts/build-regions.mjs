@@ -1,6 +1,6 @@
 import { existsSync, rmSync } from 'node:fs'
 import { join, resolve } from 'node:path'
-import { spawn } from 'node:child_process'
+import { spawn, spawnSync } from 'node:child_process'
 import { build } from 'vite'
 
 const regions = [
@@ -35,6 +35,10 @@ function runPrerender(region, outDir, serverEntry) {
 }
 
 process.env.NODE_ENV = 'production'
+const revision = spawnSync('git', ['rev-parse', '--short=12', 'HEAD'], {
+  encoding: 'utf8',
+})
+process.env.VITE_BUILD_ID = revision.status === 0 ? revision.stdout.trim() : 'unknown'
 rmSync(resolve('dist'), { recursive: true, force: true })
 
 for (const region of regions) {

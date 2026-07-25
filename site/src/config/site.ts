@@ -12,7 +12,7 @@ export interface SiteConfig {
   region: SiteRegion
   origin: string
   hostname: string
-  language: 'zh-CN'
+  language: 'zh-Hans' | 'zh-CN'
   hreflang: 'zh-Hans' | 'zh-CN'
   analytics: {
     provider: AnalyticsProviderKind
@@ -26,7 +26,7 @@ export const SITE_CONFIGS: Readonly<Record<SiteRegion, SiteConfig>> = Object.fre
     region: 'international',
     origin: 'https://dp.betaoi.cc',
     hostname: 'dp.betaoi.cc',
-    language: 'zh-CN',
+    language: 'zh-Hans',
     hreflang: 'zh-Hans',
     analytics: {
       provider: 'cloudflare',

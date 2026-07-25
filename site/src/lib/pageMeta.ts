@@ -1,6 +1,8 @@
 import { BRAND, SITE_CONFIGS, SITE_ORIGIN, getRuntimeSiteConfig } from '../config/site.ts'
 import type { SiteConfig } from '../config/site.ts'
 import { getLesson, getPart } from '../data/catalog.ts'
+import { getLessonEditorial } from '../data/editorial.ts'
+import { ROUTE_LAST_MODIFIED } from '../data/routeLastModified.ts'
 
 export { SITE_ORIGIN }
 
@@ -20,6 +22,10 @@ export interface PageMeta {
   routeKind: 'home' | 'family' | 'lesson' | 'static' | 'not-found'
   indexable: boolean
   breadcrumbs: ReadonlyArray<BreadcrumbItem>
+  dateModified?: string
+  teaches: ReadonlyArray<string>
+  reviewedBy?: string
+  reviewStatus?: string
 }
 
 const HOME_DESCRIPTION =
@@ -83,24 +89,36 @@ function meta(
   routeKind: PageMeta['routeKind'],
   breadcrumbs: PageMeta['breadcrumbs'],
   ogType: PageMeta['ogType'] = 'website',
+  options: {
+    summary?: string
+    teaches?: ReadonlyArray<string>
+    reviewedBy?: string
+    reviewStatus?: string
+    dateModified?: string
+  } = {},
 ): PageMeta {
   return {
     path,
     title,
     description,
-    summary: description,
+    summary: options.summary ?? description,
     canonical: href(site.origin, path),
     alternates: alternates(path),
     ogType,
     routeKind,
     indexable: true,
     breadcrumbs,
+    dateModified: options.dateModified ?? ROUTE_LAST_MODIFIED[path],
+    teaches: options.teaches ?? [],
+    reviewedBy: options.reviewedBy,
+    reviewStatus: options.reviewStatus,
   }
 }
 
 export function getPageMeta(
   pathname: string,
   site: SiteConfig = getRuntimeSiteConfig(),
+  lastModified?: string,
 ): PageMeta {
   const path = normalizePathname(pathname)
   if (path === '/') {
@@ -111,15 +129,26 @@ export function getPageMeta(
       HOME_DESCRIPTION,
       'home',
       [{ name: '首页', path: '/' }],
+      'website',
+      { dateModified: lastModified },
     )
   }
 
   const staticMeta = STATIC_META[path]
   if (staticMeta) {
-    return meta(site, path, staticMeta.title, staticMeta.description, 'static', [
-      { name: '首页', path: '/' },
-      { name: staticMeta.breadcrumb, path },
-    ])
+    return meta(
+      site,
+      path,
+      staticMeta.title,
+      staticMeta.description,
+      'static',
+      [
+        { name: '首页', path: '/' },
+        { name: staticMeta.breadcrumb, path },
+      ],
+      'website',
+      { dateModified: lastModified },
+    )
   }
 
   const familyMatch = path.match(/^\/part\/([^/]+)$/)
@@ -136,6 +165,13 @@ export function getPageMeta(
           { name: '首页', path: '/' },
           { name: part.title, path },
         ],
+        'website',
+        {
+          summary:
+            `${part.title}学习路径以“${part.tagline}”为主线，串联 ${part.types.length} 门课程的状态模型、转移顺序、可视化验证与配套题目。`,
+          teaches: part.types.map((type) => type.title),
+          dateModified: lastModified,
+        },
       )
     }
   }
@@ -144,6 +180,7 @@ export function getPageMeta(
   if (lessonMatch) {
     const lesson = getLesson(lessonMatch[1], lessonMatch[2])
     if (lesson?.type.status === 'ready') {
+      const editorial = getLessonEditorial(lesson)
       return meta(
         site,
         path,
@@ -156,6 +193,13 @@ export function getPageMeta(
           { name: lesson.type.title, path },
         ],
         'article',
+        {
+          summary: editorial.summary,
+          teaches: editorial.outcomes,
+          reviewedBy: editorial.reviewedBy,
+          reviewStatus: editorial.reviewStatus,
+          dateModified: lastModified,
+        },
       )
     }
   }
@@ -171,5 +215,6 @@ export function getPageMeta(
     routeKind: 'not-found',
     indexable: false,
     breadcrumbs: [{ name: '页面未找到', path }],
+    teaches: [],
   }
 }

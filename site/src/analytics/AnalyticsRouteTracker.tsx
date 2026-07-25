@@ -17,6 +17,13 @@ export function AnalyticsRouteTracker() {
       path: page.path,
       title: page.title,
     })
+    if (!page.indexable) {
+      trackAnalyticsEvent({
+        event: 'route_not_found',
+        path: location.pathname,
+        title: page.title,
+      })
+    }
   }, [location.pathname])
 
   return null

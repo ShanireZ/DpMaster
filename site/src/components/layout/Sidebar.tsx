@@ -1,12 +1,18 @@
 import { NavLink, useMatch } from 'react-router-dom'
 import type { CSSProperties } from 'react'
-import { Sparkles, Info, BookOpen, Library } from 'lucide-react'
+import { Sparkles, Info, BookOpen, Library, Check } from 'lucide-react'
 import { PARTS } from '../../data/catalog'
 import { BRAND } from '../../config/site.ts'
+import { useLearningProgress } from '../../learning/LearningProgressContext'
 
 export default function Sidebar({ onNavigate }: { onNavigate?: () => void }) {
   const match = useMatch('/part/:pid/*')
   const activePid = match?.params.pid
+  const { completed } = useLearningProgress()
+  const lessonTotal = PARTS.reduce(
+    (total, part) => total + part.types.filter((type) => type.status === 'ready').length,
+    0,
+  )
 
   return (
     <div className="sidebar-inner">
@@ -52,7 +58,10 @@ export default function Sidebar({ onNavigate }: { onNavigate?: () => void }) {
                         className={({ isActive }) => `nav-type${isActive ? ' active' : ''}`}
                         onClick={onNavigate}
                       >
-                        {t.title}
+                        <span className="nav-type__progress" aria-hidden="true">
+                          {completed.includes(`/part/${p.id}/${t.slug}`) && <Check size={12} />}
+                        </span>
+                        <span>{t.title}</span>
                       </NavLink>
                     ) : (
                       <span key={t.slug} className="nav-type planned">
@@ -108,6 +117,14 @@ export default function Sidebar({ onNavigate }: { onNavigate?: () => void }) {
           <span className="nav-part__title">关于 · 如何使用</span>
         </NavLink>
       </nav>
+
+      <div className="sidebar-progress" aria-label={`课程进度 ${completed.length} / ${lessonTotal}`}>
+        <span>课程进度</span>
+        <strong>{completed.length} / {lessonTotal}</strong>
+        <span className="sidebar-progress__track" aria-hidden="true">
+          <span style={{ width: `${(completed.length / lessonTotal) * 100}%` }} />
+        </span>
+      </div>
 
       <footer className="sidebar-records" aria-label="备案信息">
         <div className="sidebar-records__intro">

@@ -1,4 +1,5 @@
 import { Component, type ErrorInfo, type ReactNode } from 'react'
+import { trackAnalyticsEvent } from '../../analytics/index.ts'
 import './ErrorBoundary.css'
 
 interface ErrorBoundaryProps {
@@ -20,6 +21,15 @@ export default class ErrorBoundary extends Component<ErrorBoundaryProps, ErrorBo
 
   componentDidCatch(error: Error, info: ErrorInfo): void {
     console.error('[DP大师] 路由渲染出错：', error, info.componentStack)
+    trackAnalyticsEvent({
+      event: 'client_error',
+      path: window.location.pathname,
+      metadata: {
+        source: 'react_boundary',
+        message: error.message.slice(0, 160),
+        component: (info.componentStack || '').trim().slice(0, 160),
+      },
+    })
   }
 
   private readonly mainRef = (node: HTMLElement | null): void => {

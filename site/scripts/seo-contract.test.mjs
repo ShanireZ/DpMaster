@@ -48,7 +48,8 @@ test('both regions use host-aware canonical and equivalent hreflang alternates',
         },
       ])
       assert.ok(meta.description.length >= 30)
-      assert.equal(meta.summary, meta.description)
+      assert.ok(meta.summary.length >= 30)
+      assert.match(meta.dateModified, /^\d{4}-\d{2}-\d{2}$/)
     }
   }
 })
@@ -137,6 +138,8 @@ test('discovery files expose the 48 approved URLs and real summaries', async () 
   assert.match(robots, /Sitemap: https:\/\/dp\.betaoi\.cc\/sitemap\.xml/)
   assert.equal(routeSummaries.routes.length, 48)
   assert.equal(routeSummaries.brand, 'DP大师')
+  assert.ok(routeSummaries.routes.every((route) => /^\d{4}-\d{2}-\d{2}$/.test(route.lastModified)))
+  assert.equal((sitemap.match(/<lastmod>/g) || []).length, 48)
   assert.equal(
     (llms.match(/^- \[[^\]]+\]\(https:\/\/dp\.betaoi\.cc/gm) || []).length,
     48,
@@ -144,6 +147,7 @@ test('discovery files expose the 48 approved URLs and real summaries', async () 
   assert.match(llms, /## 可引用页面/)
   assert.match(generator, /\.\.\/src\/lib\/publicRoutes\.ts/)
   assert.match(generator, /generateDiscoveryFiles/)
+  assert.match(generator, /collectRouteLastModified/)
   assert.match(publicRoutes, /\.\.\/data\/catalog\.ts/)
   assert.equal(packageJson.scripts['check:seo'], 'node scripts/generate-seo.mjs --check')
   assert.match(packageJson.scripts.prebuild, /seo:generate/)
@@ -167,6 +171,7 @@ test('static HTML gives crawlers complete homepage metadata before React runs', 
   assert.match(html, /"@graph"/)
   assert.match(html, /"@type":\s*"WebSite"/)
   assert.match(html, /"url":\s*"https:\/\/dp\.betaoi\.cc\/"/)
+  assert.match(html, /og\/dpmaster-social\.jpg/)
 })
 
 test('build contracts provide two region outputs, SSR prerendering, hydration, and real 404s', async () => {

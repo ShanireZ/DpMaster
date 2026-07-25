@@ -50,7 +50,14 @@ describe('<FeedbackWidget>', () => {
   it('shows the success state after a successful submit', async () => {
     vi.stubGlobal(
       'fetch',
-      vi.fn().mockResolvedValue({ ok: true, json: async () => ({ ok: true }) }),
+      vi.fn().mockResolvedValue({
+        ok: true,
+        json: async () => ({
+          ok: true,
+          status: 'delivered',
+          requestId: 'feedback-test-receipt',
+        }),
+      }),
     )
     renderWidget('/part/a/knapsack01')
     fireEvent.click(screen.getByRole('button', { name: '反馈问题或建议' }))
@@ -59,6 +66,19 @@ describe('<FeedbackWidget>', () => {
 
     await waitFor(() => {
       expect(screen.getByText('已收到，谢谢你！')).toBeInTheDocument()
+      expect(screen.getByText('feedback-test-receipt')).toBeInTheDocument()
     })
+  })
+
+  it('keeps diagnostics opt-in and explains the submitted fields', () => {
+    renderWidget()
+    fireEvent.click(screen.getByRole('button', { name: '反馈问题或建议' }))
+
+    const diagnostics = screen.getByRole('checkbox', { name: /附带设备诊断信息/ })
+    expect(diagnostics).not.toBeChecked()
+    expect(screen.getByRole('link', { name: '隐私与反馈说明' })).toHaveAttribute(
+      'href',
+      '/about#privacy',
+    )
   })
 })

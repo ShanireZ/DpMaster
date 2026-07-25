@@ -84,22 +84,17 @@ test('validates kind and field lengths', async () => {
   assert.equal((await tooLong.json()).error, 'description_too_long')
 })
 
-test('returns logged receipt when webhook is not configured', async () => {
+test('fails visibly when the delivery webhook is not configured', async () => {
   const { value, logs } = runtime()
   const response = await feedback.handleFeedback(request(), {}, value)
-  assert.equal(response.status, 200)
-  assert.deepEqual(await response.json(), {
-    ok: true,
-    status: 'logged',
-    forwarded: false,
-    requestId: 'feedback-test-id',
-  })
+  assert.equal(response.status, 503)
+  assert.equal((await response.json()).error, 'delivery_unavailable')
   assert.equal(logs.length, 1)
   assert.equal(logs[0].requestId, 'feedback-test-id')
   assert.equal(logs[0].webhook.status, 'not_configured')
 })
 
-test('reports webhook success without changing logged semantics', async () => {
+test('only returns success after the webhook confirms delivery', async () => {
   const { value } = runtime({ fetch: async () => new Response('{}', { status: 200 }) })
   const response = await feedback.handleFeedback(
     request(),
@@ -108,21 +103,21 @@ test('reports webhook success without changing logged semantics', async () => {
   )
   assert.deepEqual(await response.json(), {
     ok: true,
-    status: 'logged',
+    status: 'delivered',
     forwarded: true,
     requestId: 'feedback-test-id',
   })
 })
 
-test('keeps success when webhook returns non-2xx', async () => {
+test('returns a retryable failure when the webhook returns non-2xx', async () => {
   const { value, logs } = runtime({ fetch: async () => new Response('failed', { status: 503 }) })
   const response = await feedback.handleFeedback(
     request(),
     { FEEDBACK_WEBHOOK_URL: 'https://hooks.example.test' },
     value,
   )
-  assert.equal(response.status, 200)
-  assert.equal((await response.json()).forwarded, false)
+  assert.equal(response.status, 502)
+  assert.equal((await response.json()).error, 'delivery_failed')
   assert.equal(logs.at(-1).webhook.status, 'http_error')
   assert.equal(logs.at(-1).webhook.code, 503)
 })
@@ -143,12 +138,23 @@ test('limits one source to ten requests in a rolling thirty-minute window', () =
 test('returns 429 and Retry-After for request eleven', async () => {
   assert.equal(typeof feedback.createFeedbackLimiter, 'function')
   const limiter = feedback.createFeedbackLimiter({ limit: 10, windowMs: 1_800_000 })
-  const { value } = runtime({ limiter })
+  const { value } = runtime({
+    limiter,
+    fetch: async () => new Response('{}', { status: 200 }),
+  })
   for (let index = 0; index < 10; index++) {
-    const accepted = await feedback.handleFeedback(request(), {}, value)
+    const accepted = await feedback.handleFeedback(
+      request(),
+      { FEEDBACK_WEBHOOK_URL: 'https://hooks.example.test' },
+      value,
+    )
     assert.equal(accepted.status, 200)
   }
-  const blocked = await feedback.handleFeedback(request(), {}, value)
+  const blocked = await feedback.handleFeedback(
+    request(),
+    { FEEDBACK_WEBHOOK_URL: 'https://hooks.example.test' },
+    value,
+  )
   assert.equal(blocked.status, 429)
   assert.ok(Number(blocked.headers.get('Retry-After')) >= 1)
   assert.equal((await blocked.json()).error, 'rate_limited')
