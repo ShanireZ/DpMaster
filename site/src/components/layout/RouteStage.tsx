@@ -9,14 +9,14 @@ export default function RouteStage() {
   const reduceMotion = useReducedMotion()
 
   return (
-    <AnimatePresence initial={false} mode="wait">
+    <AnimatePresence initial={false} mode="popLayout">
       <motion.div
         className="route-stage"
         key={location.pathname}
-        initial={reduceMotion ? false : { opacity: 0, y: 18 }}
+        initial={reduceMotion ? false : { opacity: 0.94, y: 10 }}
         animate={{ opacity: 1, y: 0 }}
-        exit={reduceMotion ? { opacity: 1 } : { opacity: 0, y: -12 }}
-        transition={reduceMotion ? { duration: 0 } : { duration: 0.34, ease: routeEase }}
+        exit={reduceMotion ? { opacity: 1 } : { opacity: 0.94, y: -6 }}
+        transition={reduceMotion ? { duration: 0 } : { duration: 0.24, ease: routeEase }}
       >
         {outlet}
       </motion.div>

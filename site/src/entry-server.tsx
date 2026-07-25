@@ -1,12 +1,24 @@
 import { StrictMode } from 'react'
 import { prerender } from 'react-dom/static'
 import { StaticApp } from './app/StaticApp.tsx'
+import type { StaticLessonContents } from './app/StaticLessonContent.ts'
+import { getLesson } from './data/catalog.ts'
+
+async function loadLessonContents(pathname: string): Promise<StaticLessonContents> {
+  const match = pathname.match(/^\/part\/([a-g])\/([^/]+)$/)
+  if (!match) return {}
+  const lesson = getLesson(match[1], match[2])
+  if (!lesson) return {}
+  const module = await lesson.type.loadContent()
+  return { [lesson.path]: module.default }
+}
 
 export async function renderRoute(pathname: string): Promise<string> {
   const errors: unknown[] = []
+  const lessonContents = await loadLessonContents(pathname)
   const { prelude } = await prerender(
     <StrictMode>
-      <StaticApp url={pathname} />
+      <StaticApp url={pathname} lessonContents={lessonContents} />
     </StrictMode>,
     {
       onError(error) {

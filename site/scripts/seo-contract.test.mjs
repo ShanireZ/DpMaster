@@ -84,9 +84,9 @@ test('unknown routes are explicitly non-indexable and have no canonical alternat
 })
 
 test('RouteMeta owns every dynamic SEO tag including JSON-LD and noindex', async () => {
-  const [adapter, app] = await Promise.all([
+  const [adapter, appContent] = await Promise.all([
     siteSource('src/components/seo/RouteMeta.tsx'),
-    siteSource('src/app/App.tsx'),
+    siteSource('src/app/AppContent.tsx'),
   ])
 
   assert.match(adapter, /useLocation\(\)/)
@@ -110,8 +110,8 @@ test('RouteMeta owns every dynamic SEO tag including JSON-LD and noindex', async
   assert.match(adapter, /application\/ld\+json/)
   assert.match(adapter, /hreflang/)
   assert.match(adapter, /rel\s*=\s*['"]canonical['"]/)
-  assert.match(app, /<RouteMeta \/>/)
-  assert.equal((app.match(/<RouteMeta \/>/g) || []).length, 1)
+  assert.match(appContent, /<RouteMeta \/>/)
+  assert.equal((appContent.match(/<RouteMeta \/>/g) || []).length, 1)
 })
 
 test('discovery files expose the 48 approved URLs and real summaries', async () => {
