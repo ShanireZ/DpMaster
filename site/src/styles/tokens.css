@@ -52,6 +52,8 @@
   --viz-chosen: #93c06b;    /* 被选/最优 · 绿 */
   --viz-settled: #57524b;   /* 已确定 */
   --viz-invalid: #e07e7e;   /* 非法/越界 · 陶红 */
+  --viz-chosen-border: rgba(147, 192, 107, 0.4);
+  --viz-invalid-border: rgba(224, 126, 126, 0.4);
   --viz-cell: #171310;
   --viz-cell-2: #201b17;
 

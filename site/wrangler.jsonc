@@ -22,7 +22,8 @@
 	// Worker 入口：先接同源 API，其余交回 env.ASSETS（见 worker.js）。
 	"main": "worker.js",
 	"vars": {
-		"FEEDBACK_WEBHOOK_KIND": "dingtalk"
+		"FEEDBACK_WEBHOOK_KIND": "dingtalk",
+		"ALERT_WEBHOOK_KIND": "dingtalk"
 	},
 	// Webhook URL / secret 在 Cloudflare Dashboard 配置；部署时保留这些变量。
 	"keep_vars": true,

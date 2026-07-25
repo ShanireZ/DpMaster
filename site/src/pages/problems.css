@@ -34,6 +34,7 @@
   top: calc(var(--topbar-h) + var(--sp-3));
   z-index: 5;
   background: color-mix(in srgb, var(--canvas) 88%, transparent);
+  -webkit-backdrop-filter: blur(8px);
   backdrop-filter: blur(8px);
   padding: var(--sp-3) 0;
 }

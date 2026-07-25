@@ -38,7 +38,7 @@
 .typehead__complete:hover { color: var(--text-1); background: var(--surface-2); }
 .typehead__complete.is-complete {
   color: var(--viz-chosen);
-  border-color: color-mix(in srgb, var(--viz-chosen) 38%, transparent);
+  border-color: var(--viz-chosen-border);
 }
 .typehead__blurb { color: var(--text-2); font-size: 16px; margin-top: var(--sp-2); }
 .lesson-abstract {
@@ -70,11 +70,21 @@
   list-style: none;
 }
 .lesson-abstract li {
+  position: relative;
   padding-left: 12px;
-  border-left: 2px solid color-mix(in srgb, var(--accent-1) 45%, var(--border));
   color: var(--text-2);
   font-size: 12.5px;
   line-height: 1.55;
+}
+.lesson-abstract li::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: 0;
+  width: 2px;
+  background: var(--accent-1);
+  opacity: 0.45;
 }
 .lesson-abstract footer {
   display: flex;
@@ -164,7 +174,7 @@
 .infobox p { font-size: 14.5px; color: var(--text-2); margin: 0; }
 .infobox--warn { border-color: color-mix(in srgb, var(--viz-invalid) 45%, transparent); background: color-mix(in srgb, var(--viz-invalid) 8%, var(--surface-2)); }
 .infobox--warn .infobox__icon { color: var(--viz-invalid); }
-.infobox--key { border-color: color-mix(in srgb, var(--viz-chosen) 40%, transparent); background: color-mix(in srgb, var(--viz-chosen) 8%, var(--surface-2)); }
+.infobox--key { border-color: var(--viz-chosen-border); background: color-mix(in srgb, var(--viz-chosen) 8%, var(--surface-2)); }
 .infobox--key .infobox__icon { color: var(--viz-chosen); }
 
 /* ---- 例题 ---- */
