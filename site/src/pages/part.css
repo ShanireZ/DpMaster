@@ -41,7 +41,7 @@ a.typerow:hover { background: var(--surface-2); }
   font-size: 12px; padding: 4px 10px; border-radius: var(--r-full);
   display: inline-flex; align-items: center; gap: 6px;
 }
-.badge-status.ready { color: var(--viz-chosen); border: 1px solid color-mix(in srgb, var(--viz-chosen) 40%, transparent); }
+.badge-status.ready { color: var(--viz-chosen); border: 1px solid var(--viz-chosen-border); }
 .badge-status.planned { color: var(--text-3); border: 1px solid var(--border); }
 .typerow__arrow { color: var(--text-3); }
 a.typerow:hover .typerow__arrow { color: var(--text-1); }

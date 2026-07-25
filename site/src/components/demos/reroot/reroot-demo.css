@@ -253,7 +253,7 @@
   color: var(--accent-1);
 }
 .rr__split-card.tot {
-  border-color: color-mix(in srgb, var(--viz-chosen) 40%, transparent);
+  border-color: var(--viz-chosen-border);
 }
 .rr__split-card.tot .v {
   color: var(--viz-chosen);

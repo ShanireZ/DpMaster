@@ -222,7 +222,7 @@
   padding: 10px 12px;
   border-radius: var(--r-2);
   background: color-mix(in srgb, var(--viz-invalid) 9%, var(--surface-2));
-  border: 1px solid color-mix(in srgb, var(--viz-invalid) 40%, transparent);
+  border: 1px solid var(--viz-invalid-border);
 }
 .fbw__link {
   color: var(--accent-1);
@@ -297,7 +297,7 @@
   place-items: center;
   color: var(--viz-chosen);
   background: color-mix(in srgb, var(--viz-chosen) 14%, var(--surface-2));
-  border: 1px solid color-mix(in srgb, var(--viz-chosen) 40%, transparent);
+  border: 1px solid var(--viz-chosen-border);
 }
 .fbw__done-title {
   font-family: var(--font-display);
@@ -315,6 +315,7 @@
 }
 .fbw__receipt code {
   color: var(--text-2);
+  -webkit-user-select: all;
   user-select: all;
 }
 .fbw__done .fbw__btn {
