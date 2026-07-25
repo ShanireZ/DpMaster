@@ -1,4 +1,4 @@
-import { mkdirSync, readFileSync, writeFileSync } from 'node:fs'
+import { mkdirSync, readFileSync, rmSync, writeFileSync } from 'node:fs'
 import { dirname, join } from 'node:path'
 import { pathToFileURL } from 'node:url'
 import { getSiteConfig } from '../src/config/site.ts'
@@ -6,12 +6,16 @@ import { generateDiscoveryFiles } from '../src/lib/discovery.ts'
 import { getPageMeta } from '../src/lib/pageMeta.ts'
 import { PUBLIC_PATHS } from '../src/lib/publicRoutes.ts'
 import { renderRouteHead, replaceRouteHead } from '../src/lib/seoHead.ts'
+import { renderRouteCssLinks } from './route-assets.mjs'
 
-function documentForRoute(template, routeMarkup, routeHead) {
+function documentForRoute(template, routeMarkup, routeHead, routeCss) {
   const withHead = replaceRouteHead(template, routeHead)
   const root = '<div id="root"></div>'
   if (!withHead.includes(root)) throw new Error('Built index.html is missing the empty root')
-  return withHead.replace(root, `<div id="root">${routeMarkup}</div>`)
+  const withCss = routeCss
+    ? withHead.replace('</head>', `${routeCss}\n  </head>`)
+    : withHead
+  return withCss.replace(root, `<div id="root">${routeMarkup}</div>`)
 }
 
 function writeHtml(path, content) {
@@ -32,7 +36,9 @@ function writeRouteVariants(outDir, path, content) {
 export async function prerenderRegion(region, outDir, serverEntry) {
   const site = getSiteConfig(region)
   const indexPath = join(outDir, 'index.html')
+  const manifestPath = join(outDir, '.vite', 'manifest.json')
   const template = readFileSync(indexPath, 'utf8')
+  const manifest = JSON.parse(readFileSync(manifestPath, 'utf8'))
   const { renderRoute } = await import(
     `${pathToFileURL(serverEntry).href}?region=${region}&time=${Date.now()}`
   )
@@ -43,7 +49,12 @@ export async function prerenderRegion(region, outDir, serverEntry) {
     writeRouteVariants(
       outDir,
       path,
-      documentForRoute(template, markup, renderRouteHead(page, site)),
+      documentForRoute(
+        template,
+        markup,
+        renderRouteHead(page, site),
+        renderRouteCssLinks(manifest, path),
+      ),
     )
   }
 
@@ -52,12 +63,18 @@ export async function prerenderRegion(region, outDir, serverEntry) {
   const notFoundMarkup = await renderRoute(notFoundPath)
   writeHtml(
     join(outDir, '404.html'),
-    documentForRoute(template, notFoundMarkup, renderRouteHead(notFound, site)),
+    documentForRoute(
+      template,
+      notFoundMarkup,
+      renderRouteHead(notFound, site),
+      renderRouteCssLinks(manifest, notFoundPath),
+    ),
   )
 
   for (const [name, content] of Object.entries(generateDiscoveryFiles(site))) {
     writeFileSync(join(outDir, name), content, 'utf8')
   }
+  rmSync(join(outDir, '.vite'), { recursive: true, force: true })
   console.log(
     `[prerender] ${region}: ${PUBLIC_PATHS.length} routes hydrated + real 404 + discovery files`,
   )

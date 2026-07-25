@@ -11,6 +11,7 @@ export default defineConfig(() => {
       'process.env.NODE_ENV': JSON.stringify('production'),
     },
     build: {
+      manifest: true,
       chunkSizeWarningLimit: 760,
     },
     server: {
