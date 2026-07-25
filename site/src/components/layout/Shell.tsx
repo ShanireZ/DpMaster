@@ -1,7 +1,8 @@
 import { useEffect, useRef, useState } from 'react'
-import { Outlet, useLocation, useMatch } from 'react-router-dom'
+import { useLocation, useMatch } from 'react-router-dom'
 import Sidebar from './Sidebar'
 import TopBar from './TopBar'
+import RouteStage from './RouteStage'
 import FeedbackWidget from '../feedback/FeedbackWidget'
 import { getPageMeta } from '../../lib/pageMeta.ts'
 import './shell.css'
@@ -50,7 +51,7 @@ export default function Shell() {
         <div className="main">
           <TopBar onHamburger={() => setMobileOpen((open) => !open)} mobileOpen={mobileOpen} />
           <main id="main-content" ref={mainRef} className="content" tabIndex={-1}>
-            <Outlet />
+            <RouteStage />
           </main>
         </div>
         <p className="route-announcer" role="status" aria-live="polite" aria-atomic="true">

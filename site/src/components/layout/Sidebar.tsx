@@ -1,5 +1,6 @@
-import { NavLink, useMatch } from 'react-router-dom'
 import type { CSSProperties } from 'react'
+import { AnimatePresence, motion, useReducedMotion } from 'motion/react'
+import { NavLink, useMatch } from 'react-router-dom'
 import { Info, BookOpen, Library, Check } from 'lucide-react'
 import { PARTS } from '../../data/catalog'
 import { BRAND } from '../../config/site.ts'
@@ -9,10 +10,7 @@ export default function Sidebar({ onNavigate }: { onNavigate?: () => void }) {
   const match = useMatch('/part/:pid/*')
   const activePid = match?.params.pid
   const { completed } = useLearningProgress()
-  const lessonTotal = PARTS.reduce(
-    (total, part) => total + part.types.filter((type) => type.status === 'ready').length,
-    0,
-  )
+  const reduceMotion = useReducedMotion()
 
   return (
     <div className="sidebar-inner">
@@ -30,7 +28,12 @@ export default function Sidebar({ onNavigate }: { onNavigate?: () => void }) {
         {PARTS.map((p) => {
           const open = p.id === activePid
           return (
-            <div className="nav-group" key={p.id}>
+            <motion.div
+              className="nav-group"
+              key={p.id}
+              layout="position"
+              transition={reduceMotion ? { duration: 0 } : { type: 'spring', stiffness: 420, damping: 38 }}
+            >
               <NavLink
                 to={`/part/${p.id}`}
                 end
@@ -46,31 +49,39 @@ export default function Sidebar({ onNavigate }: { onNavigate?: () => void }) {
                 <span className="nav-part__title">{p.title}</span>
               </NavLink>
 
-              {open && (
-                <div className="nav-types">
-                  {p.types.map((t) =>
-                    t.status === 'ready' ? (
-                      <NavLink
-                        key={t.slug}
-                        to={`/part/${p.id}/${t.slug}`}
-                        className={({ isActive }) => `nav-type${isActive ? ' active' : ''}`}
-                        onClick={onNavigate}
-                      >
-                        <span className="nav-type__progress" aria-hidden="true">
-                          {completed.includes(`/part/${p.id}/${t.slug}`) && <Check size={12} />}
+              <AnimatePresence initial={false}>
+                {open && (
+                  <motion.div
+                    className="nav-types"
+                    initial={reduceMotion ? false : { height: 0, opacity: 0, y: -8 }}
+                    animate={{ height: 'auto', opacity: 1, y: 0 }}
+                    exit={reduceMotion ? { height: 0 } : { height: 0, opacity: 0, y: -6 }}
+                    transition={reduceMotion ? { duration: 0 } : { duration: 0.28, ease: [0.16, 1, 0.3, 1] }}
+                  >
+                    {p.types.map((t) =>
+                      t.status === 'ready' ? (
+                        <NavLink
+                          key={t.slug}
+                          to={`/part/${p.id}/${t.slug}`}
+                          className={({ isActive }) => `nav-type${isActive ? ' active' : ''}`}
+                          onClick={onNavigate}
+                        >
+                          <span className="nav-type__progress" aria-hidden="true">
+                            {completed.includes(`/part/${p.id}/${t.slug}`) && <Check size={12} />}
+                          </span>
+                          <span>{t.title}</span>
+                        </NavLink>
+                      ) : (
+                        <span key={t.slug} className="nav-type planned">
+                          {t.title}
+                          <span className="nav-type__tag">待建</span>
                         </span>
-                        <span>{t.title}</span>
-                      </NavLink>
-                    ) : (
-                      <span key={t.slug} className="nav-type planned">
-                        {t.title}
-                        <span className="nav-type__tag">待建</span>
-                      </span>
-                    ),
-                  )}
-                </div>
-              )}
-            </div>
+                      ),
+                    )}
+                  </motion.div>
+                )}
+              </AnimatePresence>
+            </motion.div>
           )
         })}
 
@@ -115,11 +126,6 @@ export default function Sidebar({ onNavigate }: { onNavigate?: () => void }) {
           <span className="nav-part__title">关于 · 如何使用</span>
         </NavLink>
       </nav>
-
-      <div className="sidebar-progress" aria-label={`课程进度 ${completed.length} / ${lessonTotal}`}>
-        <span>学习进度</span>
-        <strong>{completed.length} / {lessonTotal}</strong>
-      </div>
 
       <footer className="sidebar-records" aria-label="备案信息">
         <div className="sidebar-records__intro">

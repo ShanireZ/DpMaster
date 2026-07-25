@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom'
 import type { CSSProperties } from 'react'
 import { ArrowRight, ArrowUpRight } from 'lucide-react'
 import PartGlyph from '../components/PartGlyph'
+import Magnet from '../components/motion/Magnet'
 import { PARTS } from '../data/catalog'
 import HomeMotionController from './HomeMotionController'
 import './home.css'
@@ -25,13 +26,6 @@ export default function Home() {
           fetchPriority="high"
         />
         <div className="home-hero__shade" aria-hidden="true" />
-        <div className="home-hero__recurrence" aria-hidden="true">
-          <span data-home-state>dp[i-v]</span>
-          <span data-home-state>+</span>
-          <span data-home-state>w</span>
-          <span data-home-state>=</span>
-          <span data-home-state>dp[i]</span>
-        </div>
         <div className="home-hero__frame">
           <div className="home-hero__content">
             <p className="home-hero__eyebrow">动态规划交互式教程</p>
@@ -47,9 +41,11 @@ export default function Home() {
               从状态定义到模型迁移，用可改值演示和手算过程建立直觉。
             </p>
             <div className="home-hero__actions">
-              <Link to="/part/a/01" className="home-hero__primary">
-                从 01 背包开始 <ArrowRight size={18} />
-              </Link>
+              <Magnet className="home-hero__magnet">
+                <Link to="/part/a/01" className="home-hero__primary">
+                  从 01 背包开始 <ArrowRight size={18} />
+                </Link>
+              </Magnet>
               <Link to="/method" className="home-hero__secondary">
                 先读方法论 <ArrowUpRight size={16} />
               </Link>

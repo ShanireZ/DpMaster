@@ -121,7 +121,13 @@
 .nav-part__chev { margin-left: auto; color: var(--text-3); transition: transform var(--t-fast); }
 .nav-part.open .nav-part__chev { transform: rotate(90deg); }
 
-.nav-types { margin: 0 0 var(--sp-3) 45px; display: flex; flex-direction: column; gap: 1px; }
+.nav-types {
+  margin: 0 0 var(--sp-3) 45px;
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+  overflow: hidden;
+}
 .nav-type {
   font-size: 13px;
   color: var(--text-3);
@@ -149,28 +155,12 @@ a.nav-type.active { color: var(--text-1); border-left-color: var(--accent-2); }
 .sidebar-records {
   display: grid;
   gap: 7px;
-  margin-top: 0;
+  margin-top: auto;
   padding: var(--sp-5) var(--sp-3) var(--sp-1);
   color: var(--text-3);
   font-size: 11px;
   line-height: 1.4;
   text-align: center;
-}
-.sidebar-progress {
-  display: flex;
-  align-items: baseline;
-  justify-content: space-between;
-  gap: var(--sp-2);
-  margin-top: auto;
-  padding: var(--sp-6) var(--sp-3) var(--sp-2);
-  color: var(--text-3);
-  font-size: 11px;
-}
-.sidebar-progress strong {
-  color: var(--accent-1);
-  font-family: var(--font-mono);
-  font-size: 12px;
-  font-weight: 650;
 }
 .sidebar-records__intro {
   display: grid;
@@ -299,6 +289,7 @@ a.nav-type.active { color: var(--text-1); border-left-color: var(--accent-2); }
 }
 
 .content { --content-px: var(--sp-6); padding: var(--sp-7) var(--content-px) var(--sp-9); }
+.route-stage { min-height: 100%; }
 .content--wide { max-width: none; }
 
 /* 汉堡按钮默认隐藏 */

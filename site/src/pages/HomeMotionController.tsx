@@ -23,17 +23,8 @@ export default function HomeMotionController({ rootRef }: HomeMotionControllerPr
       const media = gsap.matchMedia()
       const context = gsap.context(() => {
         const topbar = document.querySelector('.topbar--home')
-        if (topbar) {
-          ScrollTrigger.create({
-            trigger: '.state-atlas',
-            start: 'top top',
-            end: 'bottom bottom',
-            toggleClass: {
-              targets: topbar,
-              className: 'topbar--atlas',
-            },
-          })
-        }
+        const showAtlasTopbar = () => topbar?.classList.add('topbar--atlas')
+        const showHeroTopbar = () => topbar?.classList.remove('topbar--atlas')
 
         media.add(
           {
@@ -46,7 +37,17 @@ export default function HomeMotionController({ rootRef }: HomeMotionControllerPr
               desktop: boolean
             }
 
-            if (!motionAllowed) return
+            if (!motionAllowed) {
+              ScrollTrigger.create({
+                trigger: '.state-atlas',
+                start: 'top top',
+                end: 'bottom top',
+                onEnter: showAtlasTopbar,
+                onEnterBack: showAtlasTopbar,
+                onLeaveBack: showHeroTopbar,
+              })
+              return
+            }
             root.classList.add('home--gsap')
 
             const intro = gsap.timeline({
@@ -59,16 +60,6 @@ export default function HomeMotionController({ rootRef }: HomeMotionControllerPr
               .from('[data-home-line]', { yPercent: 112, stagger: 0.1 }, 0.2)
               .from('.home-hero__lead', { y: 24, autoAlpha: 0 }, 0.48)
               .from('.home-hero__actions', { y: 20, autoAlpha: 0 }, 0.58)
-              .from(
-                '[data-home-state]',
-                {
-                  autoAlpha: 0,
-                  y: 10,
-                  stagger: 0.07,
-                  duration: 0.48,
-                },
-                0.68,
-              )
 
             gsap.to('.home-hero__image', {
               scale: 1.14,
@@ -110,6 +101,9 @@ export default function HomeMotionController({ rootRef }: HomeMotionControllerPr
                   pin: true,
                   scrub: 1,
                   invalidateOnRefresh: true,
+                  onEnter: showAtlasTopbar,
+                  onEnterBack: showAtlasTopbar,
+                  onLeaveBack: showHeroTopbar,
                 },
               })
 
@@ -142,6 +136,15 @@ export default function HomeMotionController({ rootRef }: HomeMotionControllerPr
                   },
                 })
               })
+            } else {
+              ScrollTrigger.create({
+                trigger: '.state-atlas',
+                start: 'top top',
+                end: 'bottom top',
+                onEnter: showAtlasTopbar,
+                onEnterBack: showAtlasTopbar,
+                onLeaveBack: showHeroTopbar,
+              })
             }
           },
         )
@@ -149,6 +152,7 @@ export default function HomeMotionController({ rootRef }: HomeMotionControllerPr
 
       cleanup = () => {
         root.classList.remove('home--gsap')
+        document.querySelector('.topbar--home')?.classList.remove('topbar--atlas')
         media.revert()
         context.revert()
       }
