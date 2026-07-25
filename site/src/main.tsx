@@ -1,5 +1,5 @@
 import { StrictMode } from 'react'
-import { createRoot } from 'react-dom/client'
+import { createRoot, hydrateRoot } from 'react-dom/client'
 
 // 自托管字体
 import '@fontsource/space-grotesk/latin-400.css'
@@ -15,8 +15,21 @@ import './styles/global.css'
 
 import App from './app/App'
 
-createRoot(document.getElementById('root')!).render(
+const container = document.getElementById('root')
+if (!container) throw new Error('Missing #root container')
+
+const application = (
   <StrictMode>
     <App />
-  </StrictMode>,
+  </StrictMode>
 )
+
+if (container.hasChildNodes()) {
+  hydrateRoot(container, application, {
+    onRecoverableError(error) {
+      console.error('[DP大师] React 水合发生可恢复错误：', error)
+    },
+  })
+} else {
+  createRoot(container).render(application)
+}

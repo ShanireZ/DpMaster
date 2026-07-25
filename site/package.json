@@ -11,7 +11,7 @@
   "scripts": {
     "dev": "vite",
     "prebuild": "npm run content:generate && npm run seo:generate",
-    "build": "tsc -b && vite build",
+    "build": "tsc -b && node scripts/build-regions.mjs",
     "postbuild": "node scripts/postbuild.mjs",
     "test": "node --test scripts/*.test.mjs",
     "test:unit": "vitest run",
@@ -21,12 +21,12 @@
     "seo:generate": "node scripts/generate-seo.mjs --write",
     "check:content": "node scripts/generate-problems.mjs --check",
     "check:seo": "node scripts/generate-seo.mjs --check",
-    "check:assets": "node scripts/check-assets.mjs dist",
+    "check:assets": "node scripts/check-assets.mjs dist/cloudflare/assets && node scripts/check-assets.mjs dist/edgeone/assets",
     "test:browser": "playwright test",
     "verify": "npm run check:content && npm run check:seo && npm run test && npm run test:unit && npm run lint && npm run build && npm run test:browser && npm run check:assets",
-    "preview": "vite preview",
+    "preview": "node scripts/preview.mjs",
     "deploy:cf": "wrangler deploy",
-    "deploy:eo": "npx -y edgeone@1.6.11 makers deploy ./dist -n dpmaster -e production",
+    "deploy:eo": "npx -y edgeone@1.6.11 makers deploy ./dist/edgeone -n dpmaster -e production",
     "deploy": "npm run build && npm run deploy:cf && npm run deploy:eo"
   },
   "dependencies": {

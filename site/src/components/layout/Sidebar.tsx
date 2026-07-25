@@ -2,6 +2,7 @@ import { NavLink, useMatch } from 'react-router-dom'
 import type { CSSProperties } from 'react'
 import { Sparkles, Info, BookOpen, Library } from 'lucide-react'
 import { PARTS } from '../../data/catalog'
+import { BRAND } from '../../config/site.ts'
 
 export default function Sidebar({ onNavigate }: { onNavigate?: () => void }) {
   const match = useMatch('/part/:pid/*')
@@ -15,8 +16,10 @@ export default function Sidebar({ onNavigate }: { onNavigate?: () => void }) {
             <Sparkles size={18} color="var(--text-on-accent)" strokeWidth={2.2} />
           </span>
           <span>
-            <span className="brand__name grad-text-brand">DP大师</span>
-            <span className="brand__sub" style={{ display: 'block' }}>DP MASTER</span>
+            <span className="brand__name grad-text-brand">{BRAND.name}</span>
+            <span className="brand__sub" style={{ display: 'block' }}>
+              动态规划教程
+            </span>
           </span>
         </NavLink>
 
@@ -108,9 +111,9 @@ export default function Sidebar({ onNavigate }: { onNavigate?: () => void }) {
 
       <footer className="sidebar-records" aria-label="备案信息">
         <div className="sidebar-records__intro">
-          <p className="sidebar-records__motto">在算法的海洋中，我就是你的信标</p>
+          <p className="sidebar-records__motto">{BRAND.slogan}</p>
           <p className="sidebar-records__copyright">
-            © 2026 AzureL蔚澜算法. All rights reserved.
+            © 2026 {BRAND.owner}. All rights reserved.
           </p>
         </div>
         <div className="sidebar-record">

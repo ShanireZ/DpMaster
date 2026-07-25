@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from 'react'
 import { useLocation } from 'react-router-dom'
 import { MessageSquarePlus, X, Send, Check, Loader2 } from 'lucide-react'
 import { getPart } from '../../data/catalog'
+import { trackAnalyticsEvent } from '../../analytics/index.ts'
 import './feedback.css'
 
 type Kind = '内容有误' | '显示异常' | '功能问题' | '建议' | '其他'
@@ -133,6 +134,11 @@ export default function FeedbackWidget() {
     }
     setStatus('sending')
     setErrorMessage('')
+    trackAnalyticsEvent({
+      event: 'feedback_submitted',
+      path: location.pathname,
+      metadata: { kind },
+    })
     try {
       const res = await fetch('/api/feedback', {
         method: 'POST',
@@ -152,13 +158,28 @@ export default function FeedbackWidget() {
             : result?.message || '提交没成功，请检查网络后再试。',
         )
         setStatus('error')
+        trackAnalyticsEvent({
+          event: 'feedback_failed',
+          path: location.pathname,
+          metadata: { status: res.status },
+        })
         return
       }
       setStatus('ok')
+      trackAnalyticsEvent({
+        event: 'feedback_succeeded',
+        path: location.pathname,
+        metadata: { kind },
+      })
     } catch {
       // 后端未接通/网络失败：降级为「复制反馈」，让用户仍能把内容交出去
       setErrorMessage('提交没成功，请检查网络后再试。')
       setStatus('error')
+      trackAnalyticsEvent({
+        event: 'feedback_failed',
+        path: location.pathname,
+        metadata: { status: 'network' },
+      })
     }
   }
 
@@ -177,7 +198,10 @@ export default function FeedbackWidget() {
       <button
         ref={triggerRef}
         className="fbw__fab"
-        onClick={() => setOpen(true)}
+        onClick={() => {
+          setOpen(true)
+          trackAnalyticsEvent({ event: 'feedback_opened', path: location.pathname })
+        }}
         aria-label="反馈问题或建议"
         title="反馈 / 报错"
       >
