@@ -1,86 +1,94 @@
-// 构建后处理：为纯静态 SPA（react-router BrowserRouter / history 模式）生成
-// 深链回退产物，让 /part/a/knapsack-01 这类路径直接访问或刷新时也能进入 SPA。
-//
-// 两家托管机制不同，这里两手都备好：
-//   - Cloudflare Workers：靠 wrangler.jsonc 的 assets.not_found_handling
-//     = "single-page-application"（返回 index.html + HTTP 200）。本脚本产物对它无副作用。
-//   - EdgeOne Pages：平台不支持 edgeone.json 的 rewrites 做 SPA 回退，因此：
-//       (1) 生成 dist/404.html（复制自 index.html）——安全网，未命中路径返回它（状态码 404）。
-//       (2) 生成 dist/edge-functions/[[default]].js——catch-all Edge Function，把未命中
-//           静态资源的路径回退到 SPA 入口并返回 HTTP 200（优于 404 状态）。EdgeOne 规则
-//           「静态资源优先于函数」，故 /assets/* 等真实文件不会进入本函数。
-//           ⚠️ EdgeOne 官方未记载此用法，需部署后实测；若未生效则自动回落到 (1) 的 404.html，
-//           页面功能不受影响，仅状态码差异。
+// 区域构建后的平台 Adapter：
+// - Cloudflare 直接使用 dist/cloudflare 与 wrangler 的 404-page。
+// - EdgeOne 使用 dist/edgeone，并生成一个 catch-all Edge Function：
+//   /api/feedback 与 /api/analytics 进入同源 API；其余静态未命中请求返回真实 404。
 
-import { existsSync, mkdirSync, readFileSync, writeFileSync, copyFileSync } from 'node:fs'
+import { existsSync, mkdirSync, readFileSync, writeFileSync } from 'node:fs'
 import { fileURLToPath } from 'node:url'
 import { join } from 'node:path'
 
-const distDir = fileURLToPath(new URL('../dist/', import.meta.url))
-const indexPath = join(distDir, 'index.html')
+const edgeOneDir = fileURLToPath(new URL('../dist/edgeone/', import.meta.url))
+const notFoundPath = join(edgeOneDir, '404.html')
 
-if (!existsSync(indexPath)) {
-  console.error('[postbuild] 未找到 dist/index.html，跳过深链回退产物生成')
-  process.exit(0)
+if (!existsSync(notFoundPath)) {
+  console.error('[postbuild] 未找到 dist/edgeone/404.html，无法生成 EdgeOne Adapter')
+  process.exit(1)
 }
 
-const html = readFileSync(indexPath, 'utf8')
+function inlineModule(relativeUrl, returnName) {
+  const source = readFileSync(fileURLToPath(new URL(relativeUrl, import.meta.url)), 'utf8')
+    .replace(/^export /gm, '')
+  return `(() => {\n${source}\nreturn { ${returnName} }\n})()`
+}
 
-// (1) 404.html —— EdgeOne 安全网
-copyFileSync(indexPath, join(distDir, '404.html'))
-console.log('[postbuild] 已生成 dist/404.html（EdgeOne 深链安全网 · 404 状态）')
-
-// (2) Edge Function catch-all —— 一身两职：
-//     (a) POST /api/feedback → 反馈端点（复用 functions/_feedback-core.js 的逻辑，构建期内联，
-//         单一事实来源，与 CF Worker 同一份代码）。
-//     (b) 其余未命中静态资源的路径 → SPA 入口 + HTTP 200，交给 react-router 的 path="*"。
-//     用「一个 catch-all 内按路径分支」而非「多文件路由」，避免依赖 EdgeOne 未记载的路由优先级；
-//     反馈分支独立捕获异常并返回 JSON 500，避免 API 故障被误包装为 SPA HTML 200。
-//     HTML 内联注入，避免运行时 fetch/asset 依赖；每次构建随 index.html 的 hash 引用自动刷新。
-const coreSrc = readFileSync(
-  fileURLToPath(new URL('../functions/_feedback-core.js', import.meta.url)),
-  'utf8',
-).replace(/^export /gm, '')
-
-const fnDir = join(distDir, 'edge-functions')
-mkdirSync(fnDir, { recursive: true })
-const feedbackInternalBody = JSON.stringify({
+const feedbackModule = inlineModule('../functions/_feedback-core.js', 'handleFeedback')
+const analyticsModule = inlineModule('../functions/_analytics-core.js', 'handleAnalytics')
+const notFoundHtml = readFileSync(notFoundPath, 'utf8')
+const internalBody = JSON.stringify({
   ok: false,
   error: 'internal',
-  message: '反馈服务暂时不可用',
+  message: '服务暂时不可用',
 })
-const fnSource =
-  '// 自动生成，请勿手改（源见 site/scripts/postbuild.mjs + site/functions/_feedback-core.js）。\n' +
-  '// EdgeOne Pages Edge Function（catch-all）：POST /api/feedback 走反馈端点，其余回退 SPA 入口。\n\n' +
-  coreSrc +
-  '\n\n' +
-  'const HTML = ' +
-  JSON.stringify(html) +
-  '\n\n' +
-  'export default async function onRequest(context) {\n' +
-  '  const request = context && context.request\n' +
-  "  if (request && new URL(request.url).pathname === '/api/feedback') {\n" +
-  '    try {\n' +
-  '      const env = (context && context.env) || {}\n' +
-  "      if (request.method === 'POST') return await handleFeedback(request, env)\n" +
-  "      if (request.method === 'OPTIONS') return new Response(null, { status: 204 })\n" +
-  "      return new Response('Method Not Allowed', { status: 405, headers: { Allow: 'POST' } })\n" +
-  '    } catch (error) {\n' +
-  '      console.error(\'[feedback] edge handler failed\', error)\n' +
-  '      return new Response(' +
-  JSON.stringify(feedbackInternalBody) +
-  ', {\n' +
-  '        status: 500,\n' +
-  "        headers: { 'content-type': 'application/json; charset=utf-8' },\n" +
-  '      })\n' +
-  '    }\n' +
-  '  }\n' +
-  '  return new Response(HTML, {\n' +
-  '    status: 200,\n' +
-  "    headers: { 'content-type': 'text/html; charset=utf-8', 'cache-control': 'no-store' },\n" +
-  '  })\n' +
-  '}\n'
-writeFileSync(join(fnDir, '[[default]].js'), fnSource)
+
+const fnDir = join(edgeOneDir, 'edge-functions')
+mkdirSync(fnDir, { recursive: true })
+const fnSource = `// 自动生成，请勿手改（源见 scripts/postbuild.mjs 与 functions/_*-core.js）。
+const feedback = ${feedbackModule}
+const analytics = ${analyticsModule}
+const NOT_FOUND_HTML = ${JSON.stringify(notFoundHtml)}
+
+function internalError(label, error) {
+  console.error(label, error)
+  return new Response(${JSON.stringify(internalBody)}, {
+    status: 500,
+    headers: { 'content-type': 'application/json; charset=utf-8' },
+  })
+}
+
+export default async function onRequest(context) {
+  const request = context && context.request
+  if (!request) {
+    return new Response(NOT_FOUND_HTML, {
+      status: 404,
+      headers: { 'content-type': 'text/html; charset=utf-8' },
+    })
+  }
+
+  const pathname = new URL(request.url).pathname
+  if (pathname === '/api/feedback') {
+    try {
+      if (request.method === 'POST') {
+        return await feedback.handleFeedback(request, (context && context.env) || {})
+      }
+      if (request.method === 'OPTIONS') return new Response(null, { status: 204 })
+      return new Response('Method Not Allowed', { status: 405, headers: { Allow: 'POST' } })
+    } catch (error) {
+      return internalError('[feedback] edge handler failed', error)
+    }
+  }
+
+  if (pathname === '/api/analytics') {
+    try {
+      if (request.method === 'POST') return await analytics.handleAnalytics(request)
+      if (request.method === 'OPTIONS') return new Response(null, { status: 204 })
+      return new Response('Method Not Allowed', { status: 405, headers: { Allow: 'POST' } })
+    } catch (error) {
+      return internalError('[analytics] edge handler failed', error)
+    }
+  }
+
+  return new Response(NOT_FOUND_HTML, {
+    status: 404,
+    headers: {
+      'content-type': 'text/html; charset=utf-8',
+      'cache-control': 'no-store',
+      'x-robots-tag': 'noindex, nofollow',
+    },
+  })
+}
+`
+
+writeFileSync(join(fnDir, '[[default]].js'), fnSource, 'utf8')
 console.log(
-  '[postbuild] 已生成 dist/edge-functions/[[default]].js（EdgeOne 深链兜底 + POST /api/feedback 反馈端点 · 需部署实测）',
+  '[postbuild] EdgeOne Adapter 已生成：反馈 + 区域统计 + 未知路径真实 404',
 )

@@ -1,6 +1,8 @@
 import { useEffect, useMemo } from 'react'
 import { useLocation } from 'react-router-dom'
+import { BRAND, getRuntimeSiteConfig } from '../../config/site.ts'
 import { getPageMeta } from '../../lib/pageMeta.ts'
+import { structuredDataForPage } from '../../lib/seoHead.ts'
 
 function upsertMeta(attribute: 'name' | 'property', key: string, content: string): void {
   let element = document.head.querySelector<HTMLMetaElement>(`meta[${attribute}="${key}"]`)
@@ -12,30 +14,68 @@ function upsertMeta(attribute: 'name' | 'property', key: string, content: string
   element.content = content
 }
 
-function upsertCanonical(href: string): void {
-  let element = document.head.querySelector<HTMLLinkElement>('link[rel="canonical"]')
-  if (!element) {
-    element = document.createElement('link')
-    element.rel = 'canonical'
+function syncCanonical(href: string | null): void {
+  const existing = document.head.querySelector<HTMLLinkElement>('link[rel="canonical"]')
+  if (!href) {
+    existing?.remove()
+    return
+  }
+  const element = existing ?? document.createElement('link')
+  element.rel = 'canonical'
+  element.href = href
+  if (!existing) document.head.append(element)
+}
+
+function syncAlternates(alternates: ReadonlyArray<{ hreflang: string; href: string }>): void {
+  document.head
+    .querySelectorAll<HTMLLinkElement>('link[rel="alternate"][hreflang]')
+    .forEach((element) => element.remove())
+  for (const alternate of alternates) {
+    const element = document.createElement('link')
+    element.rel = 'alternate'
+    element.hreflang = alternate.hreflang
+    element.href = alternate.href
     document.head.append(element)
   }
-  element.href = href
+}
+
+function syncStructuredData(value: object): void {
+  let element = document.head.querySelector<HTMLScriptElement>('#dp-structured-data')
+  if (!element) {
+    element = document.createElement('script')
+    element.id = 'dp-structured-data'
+    element.type = 'application/ld+json'
+    document.head.append(element)
+  }
+  element.textContent = JSON.stringify(value)
 }
 
 export function RouteMeta() {
   const location = useLocation()
-  const page = useMemo(() => getPageMeta(location.pathname), [location.pathname])
+  const site = useMemo(() => getRuntimeSiteConfig(), [])
+  const page = useMemo(
+    () => getPageMeta(location.pathname, site),
+    [location.pathname, site],
+  )
 
   useEffect(() => {
     document.title = page.title
     upsertMeta('name', 'description', page.description)
-    upsertCanonical(page.canonical)
+    upsertMeta('name', 'abstract', page.summary)
+    upsertMeta('name', 'robots', page.indexable ? 'index,follow' : 'noindex,nofollow')
+    syncCanonical(page.canonical)
+    syncAlternates(page.alternates)
     upsertMeta('property', 'og:title', page.title)
     upsertMeta('property', 'og:description', page.description)
-    upsertMeta('property', 'og:url', page.canonical)
+    upsertMeta('property', 'og:url', page.canonical ?? `${site.origin}${page.path}`)
     upsertMeta('property', 'og:type', page.ogType)
-    upsertMeta('property', 'og:site_name', 'DP大师')
-  }, [page])
+    upsertMeta('property', 'og:site_name', BRAND.name)
+    upsertMeta('property', 'og:locale', 'zh_CN')
+    upsertMeta('name', 'twitter:card', 'summary')
+    upsertMeta('name', 'twitter:title', page.title)
+    upsertMeta('name', 'twitter:description', page.description)
+    syncStructuredData(structuredDataForPage(page, site))
+  }, [page, site])
 
   return null
 }

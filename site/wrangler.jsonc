@@ -39,11 +39,11 @@
 		}
 	},
 	"assets": {
-		"directory": "./dist/",
+		"directory": "./dist/cloudflare/",
 		// 让 Worker 能通过 env.ASSETS.fetch() 取静态资源 / 触发 SPA 回退。
 		"binding": "ASSETS",
-		// 未命中任何静态文件时，回退到 /index.html 并返回 HTTP 200，
-		// 交给 react-router 处理客户端路由（深链/刷新不再 404）。
-		"not_found_handling": "single-page-application"
+		// 已知路由由预渲染的 .html 文件直出；未知路径返回 404.html + HTTP 404。
+		"html_handling": "drop-trailing-slash",
+		"not_found_handling": "404-page"
 	}
 }

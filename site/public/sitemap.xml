@@ -1,51 +1,291 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
-  <url><loc>https://dp.betaoi.cc/</loc></url>
-  <url><loc>https://dp.betaoi.cc/part/a</loc></url>
-  <url><loc>https://dp.betaoi.cc/part/b</loc></url>
-  <url><loc>https://dp.betaoi.cc/part/c</loc></url>
-  <url><loc>https://dp.betaoi.cc/part/d</loc></url>
-  <url><loc>https://dp.betaoi.cc/part/e</loc></url>
-  <url><loc>https://dp.betaoi.cc/part/f</loc></url>
-  <url><loc>https://dp.betaoi.cc/part/g</loc></url>
-  <url><loc>https://dp.betaoi.cc/part/a/01</loc></url>
-  <url><loc>https://dp.betaoi.cc/part/a/complete</loc></url>
-  <url><loc>https://dp.betaoi.cc/part/a/multiple</loc></url>
-  <url><loc>https://dp.betaoi.cc/part/a/group</loc></url>
-  <url><loc>https://dp.betaoi.cc/part/a/mixed</loc></url>
-  <url><loc>https://dp.betaoi.cc/part/a/cost2d</loc></url>
-  <url><loc>https://dp.betaoi.cc/part/a/dep</loc></url>
-  <url><loc>https://dp.betaoi.cc/part/a/variant</loc></url>
-  <url><loc>https://dp.betaoi.cc/part/a/fractional</loc></url>
-  <url><loc>https://dp.betaoi.cc/part/b/path</loc></url>
-  <url><loc>https://dp.betaoi.cc/part/b/maxseg</loc></url>
-  <url><loc>https://dp.betaoi.cc/part/b/lis</loc></url>
-  <url><loc>https://dp.betaoi.cc/part/b/lcs</loc></url>
-  <url><loc>https://dp.betaoi.cc/part/b/edit</loc></url>
-  <url><loc>https://dp.betaoi.cc/part/b/fsm</loc></url>
-  <url><loc>https://dp.betaoi.cc/part/b/count</loc></url>
-  <url><loc>https://dp.betaoi.cc/part/c/stone</loc></url>
-  <url><loc>https://dp.betaoi.cc/part/c/ring</loc></url>
-  <url><loc>https://dp.betaoi.cc/part/c/palindrome</loc></url>
-  <url><loc>https://dp.betaoi.cc/part/c/tree</loc></url>
-  <url><loc>https://dp.betaoi.cc/part/c/merge</loc></url>
-  <url><loc>https://dp.betaoi.cc/part/d/grid</loc></url>
-  <url><loc>https://dp.betaoi.cc/part/d/matpow</loc></url>
-  <url><loc>https://dp.betaoi.cc/part/e/basic</loc></url>
-  <url><loc>https://dp.betaoi.cc/part/e/distsum</loc></url>
-  <url><loc>https://dp.betaoi.cc/part/e/inout</loc></url>
-  <url><loc>https://dp.betaoi.cc/part/e/center</loc></url>
-  <url><loc>https://dp.betaoi.cc/part/f/select</loc></url>
-  <url><loc>https://dp.betaoi.cc/part/f/knapsack</loc></url>
-  <url><loc>https://dp.betaoi.cc/part/f/diameter</loc></url>
-  <url><loc>https://dp.betaoi.cc/part/f/cover</loc></url>
-  <url><loc>https://dp.betaoi.cc/part/f/count</loc></url>
-  <url><loc>https://dp.betaoi.cc/part/g/board</loc></url>
-  <url><loc>https://dp.betaoi.cc/part/g/tsp</loc></url>
-  <url><loc>https://dp.betaoi.cc/part/g/cover</loc></url>
-  <url><loc>https://dp.betaoi.cc/part/g/subset</loc></url>
-  <url><loc>https://dp.betaoi.cc/part/g/plug</loc></url>
-  <url><loc>https://dp.betaoi.cc/method</loc></url>
-  <url><loc>https://dp.betaoi.cc/problems</loc></url>
-  <url><loc>https://dp.betaoi.cc/about</loc></url>
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9" xmlns:xhtml="http://www.w3.org/1999/xhtml">
+  <url>
+    <loc>https://dp.betaoi.cc/</loc>
+    <xhtml:link rel="alternate" hreflang="zh-Hans" href="https://dp.betaoi.cc/" />
+    <xhtml:link rel="alternate" hreflang="zh-CN" href="https://dp.betaoi.cn/" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://dp.betaoi.cc/" />
+  </url>
+  <url>
+    <loc>https://dp.betaoi.cc/part/a</loc>
+    <xhtml:link rel="alternate" hreflang="zh-Hans" href="https://dp.betaoi.cc/part/a" />
+    <xhtml:link rel="alternate" hreflang="zh-CN" href="https://dp.betaoi.cn/part/a" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://dp.betaoi.cc/part/a" />
+  </url>
+  <url>
+    <loc>https://dp.betaoi.cc/part/b</loc>
+    <xhtml:link rel="alternate" hreflang="zh-Hans" href="https://dp.betaoi.cc/part/b" />
+    <xhtml:link rel="alternate" hreflang="zh-CN" href="https://dp.betaoi.cn/part/b" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://dp.betaoi.cc/part/b" />
+  </url>
+  <url>
+    <loc>https://dp.betaoi.cc/part/c</loc>
+    <xhtml:link rel="alternate" hreflang="zh-Hans" href="https://dp.betaoi.cc/part/c" />
+    <xhtml:link rel="alternate" hreflang="zh-CN" href="https://dp.betaoi.cn/part/c" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://dp.betaoi.cc/part/c" />
+  </url>
+  <url>
+    <loc>https://dp.betaoi.cc/part/d</loc>
+    <xhtml:link rel="alternate" hreflang="zh-Hans" href="https://dp.betaoi.cc/part/d" />
+    <xhtml:link rel="alternate" hreflang="zh-CN" href="https://dp.betaoi.cn/part/d" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://dp.betaoi.cc/part/d" />
+  </url>
+  <url>
+    <loc>https://dp.betaoi.cc/part/e</loc>
+    <xhtml:link rel="alternate" hreflang="zh-Hans" href="https://dp.betaoi.cc/part/e" />
+    <xhtml:link rel="alternate" hreflang="zh-CN" href="https://dp.betaoi.cn/part/e" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://dp.betaoi.cc/part/e" />
+  </url>
+  <url>
+    <loc>https://dp.betaoi.cc/part/f</loc>
+    <xhtml:link rel="alternate" hreflang="zh-Hans" href="https://dp.betaoi.cc/part/f" />
+    <xhtml:link rel="alternate" hreflang="zh-CN" href="https://dp.betaoi.cn/part/f" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://dp.betaoi.cc/part/f" />
+  </url>
+  <url>
+    <loc>https://dp.betaoi.cc/part/g</loc>
+    <xhtml:link rel="alternate" hreflang="zh-Hans" href="https://dp.betaoi.cc/part/g" />
+    <xhtml:link rel="alternate" hreflang="zh-CN" href="https://dp.betaoi.cn/part/g" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://dp.betaoi.cc/part/g" />
+  </url>
+  <url>
+    <loc>https://dp.betaoi.cc/part/a/01</loc>
+    <xhtml:link rel="alternate" hreflang="zh-Hans" href="https://dp.betaoi.cc/part/a/01" />
+    <xhtml:link rel="alternate" hreflang="zh-CN" href="https://dp.betaoi.cn/part/a/01" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://dp.betaoi.cc/part/a/01" />
+  </url>
+  <url>
+    <loc>https://dp.betaoi.cc/part/a/complete</loc>
+    <xhtml:link rel="alternate" hreflang="zh-Hans" href="https://dp.betaoi.cc/part/a/complete" />
+    <xhtml:link rel="alternate" hreflang="zh-CN" href="https://dp.betaoi.cn/part/a/complete" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://dp.betaoi.cc/part/a/complete" />
+  </url>
+  <url>
+    <loc>https://dp.betaoi.cc/part/a/multiple</loc>
+    <xhtml:link rel="alternate" hreflang="zh-Hans" href="https://dp.betaoi.cc/part/a/multiple" />
+    <xhtml:link rel="alternate" hreflang="zh-CN" href="https://dp.betaoi.cn/part/a/multiple" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://dp.betaoi.cc/part/a/multiple" />
+  </url>
+  <url>
+    <loc>https://dp.betaoi.cc/part/a/group</loc>
+    <xhtml:link rel="alternate" hreflang="zh-Hans" href="https://dp.betaoi.cc/part/a/group" />
+    <xhtml:link rel="alternate" hreflang="zh-CN" href="https://dp.betaoi.cn/part/a/group" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://dp.betaoi.cc/part/a/group" />
+  </url>
+  <url>
+    <loc>https://dp.betaoi.cc/part/a/mixed</loc>
+    <xhtml:link rel="alternate" hreflang="zh-Hans" href="https://dp.betaoi.cc/part/a/mixed" />
+    <xhtml:link rel="alternate" hreflang="zh-CN" href="https://dp.betaoi.cn/part/a/mixed" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://dp.betaoi.cc/part/a/mixed" />
+  </url>
+  <url>
+    <loc>https://dp.betaoi.cc/part/a/cost2d</loc>
+    <xhtml:link rel="alternate" hreflang="zh-Hans" href="https://dp.betaoi.cc/part/a/cost2d" />
+    <xhtml:link rel="alternate" hreflang="zh-CN" href="https://dp.betaoi.cn/part/a/cost2d" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://dp.betaoi.cc/part/a/cost2d" />
+  </url>
+  <url>
+    <loc>https://dp.betaoi.cc/part/a/dep</loc>
+    <xhtml:link rel="alternate" hreflang="zh-Hans" href="https://dp.betaoi.cc/part/a/dep" />
+    <xhtml:link rel="alternate" hreflang="zh-CN" href="https://dp.betaoi.cn/part/a/dep" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://dp.betaoi.cc/part/a/dep" />
+  </url>
+  <url>
+    <loc>https://dp.betaoi.cc/part/a/variant</loc>
+    <xhtml:link rel="alternate" hreflang="zh-Hans" href="https://dp.betaoi.cc/part/a/variant" />
+    <xhtml:link rel="alternate" hreflang="zh-CN" href="https://dp.betaoi.cn/part/a/variant" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://dp.betaoi.cc/part/a/variant" />
+  </url>
+  <url>
+    <loc>https://dp.betaoi.cc/part/a/fractional</loc>
+    <xhtml:link rel="alternate" hreflang="zh-Hans" href="https://dp.betaoi.cc/part/a/fractional" />
+    <xhtml:link rel="alternate" hreflang="zh-CN" href="https://dp.betaoi.cn/part/a/fractional" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://dp.betaoi.cc/part/a/fractional" />
+  </url>
+  <url>
+    <loc>https://dp.betaoi.cc/part/b/path</loc>
+    <xhtml:link rel="alternate" hreflang="zh-Hans" href="https://dp.betaoi.cc/part/b/path" />
+    <xhtml:link rel="alternate" hreflang="zh-CN" href="https://dp.betaoi.cn/part/b/path" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://dp.betaoi.cc/part/b/path" />
+  </url>
+  <url>
+    <loc>https://dp.betaoi.cc/part/b/maxseg</loc>
+    <xhtml:link rel="alternate" hreflang="zh-Hans" href="https://dp.betaoi.cc/part/b/maxseg" />
+    <xhtml:link rel="alternate" hreflang="zh-CN" href="https://dp.betaoi.cn/part/b/maxseg" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://dp.betaoi.cc/part/b/maxseg" />
+  </url>
+  <url>
+    <loc>https://dp.betaoi.cc/part/b/lis</loc>
+    <xhtml:link rel="alternate" hreflang="zh-Hans" href="https://dp.betaoi.cc/part/b/lis" />
+    <xhtml:link rel="alternate" hreflang="zh-CN" href="https://dp.betaoi.cn/part/b/lis" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://dp.betaoi.cc/part/b/lis" />
+  </url>
+  <url>
+    <loc>https://dp.betaoi.cc/part/b/lcs</loc>
+    <xhtml:link rel="alternate" hreflang="zh-Hans" href="https://dp.betaoi.cc/part/b/lcs" />
+    <xhtml:link rel="alternate" hreflang="zh-CN" href="https://dp.betaoi.cn/part/b/lcs" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://dp.betaoi.cc/part/b/lcs" />
+  </url>
+  <url>
+    <loc>https://dp.betaoi.cc/part/b/edit</loc>
+    <xhtml:link rel="alternate" hreflang="zh-Hans" href="https://dp.betaoi.cc/part/b/edit" />
+    <xhtml:link rel="alternate" hreflang="zh-CN" href="https://dp.betaoi.cn/part/b/edit" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://dp.betaoi.cc/part/b/edit" />
+  </url>
+  <url>
+    <loc>https://dp.betaoi.cc/part/b/fsm</loc>
+    <xhtml:link rel="alternate" hreflang="zh-Hans" href="https://dp.betaoi.cc/part/b/fsm" />
+    <xhtml:link rel="alternate" hreflang="zh-CN" href="https://dp.betaoi.cn/part/b/fsm" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://dp.betaoi.cc/part/b/fsm" />
+  </url>
+  <url>
+    <loc>https://dp.betaoi.cc/part/b/count</loc>
+    <xhtml:link rel="alternate" hreflang="zh-Hans" href="https://dp.betaoi.cc/part/b/count" />
+    <xhtml:link rel="alternate" hreflang="zh-CN" href="https://dp.betaoi.cn/part/b/count" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://dp.betaoi.cc/part/b/count" />
+  </url>
+  <url>
+    <loc>https://dp.betaoi.cc/part/c/stone</loc>
+    <xhtml:link rel="alternate" hreflang="zh-Hans" href="https://dp.betaoi.cc/part/c/stone" />
+    <xhtml:link rel="alternate" hreflang="zh-CN" href="https://dp.betaoi.cn/part/c/stone" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://dp.betaoi.cc/part/c/stone" />
+  </url>
+  <url>
+    <loc>https://dp.betaoi.cc/part/c/ring</loc>
+    <xhtml:link rel="alternate" hreflang="zh-Hans" href="https://dp.betaoi.cc/part/c/ring" />
+    <xhtml:link rel="alternate" hreflang="zh-CN" href="https://dp.betaoi.cn/part/c/ring" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://dp.betaoi.cc/part/c/ring" />
+  </url>
+  <url>
+    <loc>https://dp.betaoi.cc/part/c/palindrome</loc>
+    <xhtml:link rel="alternate" hreflang="zh-Hans" href="https://dp.betaoi.cc/part/c/palindrome" />
+    <xhtml:link rel="alternate" hreflang="zh-CN" href="https://dp.betaoi.cn/part/c/palindrome" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://dp.betaoi.cc/part/c/palindrome" />
+  </url>
+  <url>
+    <loc>https://dp.betaoi.cc/part/c/tree</loc>
+    <xhtml:link rel="alternate" hreflang="zh-Hans" href="https://dp.betaoi.cc/part/c/tree" />
+    <xhtml:link rel="alternate" hreflang="zh-CN" href="https://dp.betaoi.cn/part/c/tree" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://dp.betaoi.cc/part/c/tree" />
+  </url>
+  <url>
+    <loc>https://dp.betaoi.cc/part/c/merge</loc>
+    <xhtml:link rel="alternate" hreflang="zh-Hans" href="https://dp.betaoi.cc/part/c/merge" />
+    <xhtml:link rel="alternate" hreflang="zh-CN" href="https://dp.betaoi.cn/part/c/merge" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://dp.betaoi.cc/part/c/merge" />
+  </url>
+  <url>
+    <loc>https://dp.betaoi.cc/part/d/grid</loc>
+    <xhtml:link rel="alternate" hreflang="zh-Hans" href="https://dp.betaoi.cc/part/d/grid" />
+    <xhtml:link rel="alternate" hreflang="zh-CN" href="https://dp.betaoi.cn/part/d/grid" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://dp.betaoi.cc/part/d/grid" />
+  </url>
+  <url>
+    <loc>https://dp.betaoi.cc/part/d/matpow</loc>
+    <xhtml:link rel="alternate" hreflang="zh-Hans" href="https://dp.betaoi.cc/part/d/matpow" />
+    <xhtml:link rel="alternate" hreflang="zh-CN" href="https://dp.betaoi.cn/part/d/matpow" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://dp.betaoi.cc/part/d/matpow" />
+  </url>
+  <url>
+    <loc>https://dp.betaoi.cc/part/e/basic</loc>
+    <xhtml:link rel="alternate" hreflang="zh-Hans" href="https://dp.betaoi.cc/part/e/basic" />
+    <xhtml:link rel="alternate" hreflang="zh-CN" href="https://dp.betaoi.cn/part/e/basic" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://dp.betaoi.cc/part/e/basic" />
+  </url>
+  <url>
+    <loc>https://dp.betaoi.cc/part/e/distsum</loc>
+    <xhtml:link rel="alternate" hreflang="zh-Hans" href="https://dp.betaoi.cc/part/e/distsum" />
+    <xhtml:link rel="alternate" hreflang="zh-CN" href="https://dp.betaoi.cn/part/e/distsum" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://dp.betaoi.cc/part/e/distsum" />
+  </url>
+  <url>
+    <loc>https://dp.betaoi.cc/part/e/inout</loc>
+    <xhtml:link rel="alternate" hreflang="zh-Hans" href="https://dp.betaoi.cc/part/e/inout" />
+    <xhtml:link rel="alternate" hreflang="zh-CN" href="https://dp.betaoi.cn/part/e/inout" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://dp.betaoi.cc/part/e/inout" />
+  </url>
+  <url>
+    <loc>https://dp.betaoi.cc/part/e/center</loc>
+    <xhtml:link rel="alternate" hreflang="zh-Hans" href="https://dp.betaoi.cc/part/e/center" />
+    <xhtml:link rel="alternate" hreflang="zh-CN" href="https://dp.betaoi.cn/part/e/center" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://dp.betaoi.cc/part/e/center" />
+  </url>
+  <url>
+    <loc>https://dp.betaoi.cc/part/f/select</loc>
+    <xhtml:link rel="alternate" hreflang="zh-Hans" href="https://dp.betaoi.cc/part/f/select" />
+    <xhtml:link rel="alternate" hreflang="zh-CN" href="https://dp.betaoi.cn/part/f/select" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://dp.betaoi.cc/part/f/select" />
+  </url>
+  <url>
+    <loc>https://dp.betaoi.cc/part/f/knapsack</loc>
+    <xhtml:link rel="alternate" hreflang="zh-Hans" href="https://dp.betaoi.cc/part/f/knapsack" />
+    <xhtml:link rel="alternate" hreflang="zh-CN" href="https://dp.betaoi.cn/part/f/knapsack" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://dp.betaoi.cc/part/f/knapsack" />
+  </url>
+  <url>
+    <loc>https://dp.betaoi.cc/part/f/diameter</loc>
+    <xhtml:link rel="alternate" hreflang="zh-Hans" href="https://dp.betaoi.cc/part/f/diameter" />
+    <xhtml:link rel="alternate" hreflang="zh-CN" href="https://dp.betaoi.cn/part/f/diameter" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://dp.betaoi.cc/part/f/diameter" />
+  </url>
+  <url>
+    <loc>https://dp.betaoi.cc/part/f/cover</loc>
+    <xhtml:link rel="alternate" hreflang="zh-Hans" href="https://dp.betaoi.cc/part/f/cover" />
+    <xhtml:link rel="alternate" hreflang="zh-CN" href="https://dp.betaoi.cn/part/f/cover" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://dp.betaoi.cc/part/f/cover" />
+  </url>
+  <url>
+    <loc>https://dp.betaoi.cc/part/f/count</loc>
+    <xhtml:link rel="alternate" hreflang="zh-Hans" href="https://dp.betaoi.cc/part/f/count" />
+    <xhtml:link rel="alternate" hreflang="zh-CN" href="https://dp.betaoi.cn/part/f/count" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://dp.betaoi.cc/part/f/count" />
+  </url>
+  <url>
+    <loc>https://dp.betaoi.cc/part/g/board</loc>
+    <xhtml:link rel="alternate" hreflang="zh-Hans" href="https://dp.betaoi.cc/part/g/board" />
+    <xhtml:link rel="alternate" hreflang="zh-CN" href="https://dp.betaoi.cn/part/g/board" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://dp.betaoi.cc/part/g/board" />
+  </url>
+  <url>
+    <loc>https://dp.betaoi.cc/part/g/tsp</loc>
+    <xhtml:link rel="alternate" hreflang="zh-Hans" href="https://dp.betaoi.cc/part/g/tsp" />
+    <xhtml:link rel="alternate" hreflang="zh-CN" href="https://dp.betaoi.cn/part/g/tsp" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://dp.betaoi.cc/part/g/tsp" />
+  </url>
+  <url>
+    <loc>https://dp.betaoi.cc/part/g/cover</loc>
+    <xhtml:link rel="alternate" hreflang="zh-Hans" href="https://dp.betaoi.cc/part/g/cover" />
+    <xhtml:link rel="alternate" hreflang="zh-CN" href="https://dp.betaoi.cn/part/g/cover" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://dp.betaoi.cc/part/g/cover" />
+  </url>
+  <url>
+    <loc>https://dp.betaoi.cc/part/g/subset</loc>
+    <xhtml:link rel="alternate" hreflang="zh-Hans" href="https://dp.betaoi.cc/part/g/subset" />
+    <xhtml:link rel="alternate" hreflang="zh-CN" href="https://dp.betaoi.cn/part/g/subset" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://dp.betaoi.cc/part/g/subset" />
+  </url>
+  <url>
+    <loc>https://dp.betaoi.cc/part/g/plug</loc>
+    <xhtml:link rel="alternate" hreflang="zh-Hans" href="https://dp.betaoi.cc/part/g/plug" />
+    <xhtml:link rel="alternate" hreflang="zh-CN" href="https://dp.betaoi.cn/part/g/plug" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://dp.betaoi.cc/part/g/plug" />
+  </url>
+  <url>
+    <loc>https://dp.betaoi.cc/method</loc>
+    <xhtml:link rel="alternate" hreflang="zh-Hans" href="https://dp.betaoi.cc/method" />
+    <xhtml:link rel="alternate" hreflang="zh-CN" href="https://dp.betaoi.cn/method" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://dp.betaoi.cc/method" />
+  </url>
+  <url>
+    <loc>https://dp.betaoi.cc/problems</loc>
+    <xhtml:link rel="alternate" hreflang="zh-Hans" href="https://dp.betaoi.cc/problems" />
+    <xhtml:link rel="alternate" hreflang="zh-CN" href="https://dp.betaoi.cn/problems" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://dp.betaoi.cc/problems" />
+  </url>
+  <url>
+    <loc>https://dp.betaoi.cc/about</loc>
+    <xhtml:link rel="alternate" hreflang="zh-Hans" href="https://dp.betaoi.cc/about" />
+    <xhtml:link rel="alternate" hreflang="zh-CN" href="https://dp.betaoi.cn/about" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://dp.betaoi.cc/about" />
+  </url>
 </urlset>
