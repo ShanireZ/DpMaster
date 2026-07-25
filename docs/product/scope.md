@@ -34,7 +34,9 @@ The current app routes are:
 
 Invalid family/type routes and unregistered content should fall through to `NotFound`.
 
-All seven family pages and all 37 completed lesson pages are public and indexable. Lesson titles follow `课程名 · 家族名 · DP大师`; every public route has a canonical URL, description, and Open Graph metadata. The complete discovery surface is published through `robots.txt` and a generated 48-URL sitemap.
+All seven family pages and all 37 completed lesson pages are public and indexable. Together with the home and three static pages, the build prerenders 48 HTML routes and hydrates them in the browser, so games, feedback, and client navigation remain interactive. Lesson titles follow `课程名 · 家族名 · DP大师`.
+
+The international Cloudflare build uses `https://dp.betaoi.cc`; the China EdgeOne build uses `https://dp.betaoi.cn`. Each public page canonicalizes to its current host and publishes reciprocal `zh-Hans`, `zh-CN`, and `x-default` alternates, route summaries, Open Graph metadata, Course/CollectionPage/WebPage JSON-LD, and Breadcrumb JSON-LD where applicable. Each region has its own sitemap, robots file, `llms.txt`, and machine-readable route summaries. Unknown paths use the themed `NotFound` page with an HTTP 404 response, `noindex,nofollow`, and no canonical.
 
 # Learning Surface
 

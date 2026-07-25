@@ -5,8 +5,9 @@
 ## Project identity
 
 - 产品与文档显示名是 **DP大师**。
-- 为兼容现有发布链路，保留目录名 `DpMaster`、GitHub 仓库 `ShanireZ/DpMaster`、Cloudflare/EdgeOne 项目名 `dpmaster` 和域名 `dp.betaoi.cc`；不要把显示名改动机械扩散到这些标识。
+- 为兼容现有发布链路，保留目录名 `DpMaster`、GitHub 仓库 `ShanireZ/DpMaster`、Cloudflare/EdgeOne 项目名 `dpmaster`；国际站 `dp.betaoi.cc` 发布到 Cloudflare，国内站 `dp.betaoi.cn` 发布到 Tencent EdgeOne，不要把显示名改动机械扩散到这些标识。
 - 站点是 `site/` 下的静态 React/Vite 应用，不引入账号、数据库或在线评测后端。
+- `npm run build` 必须保持两个区域产物：`site/dist/cloudflare/` 与 `site/dist/edgeone/`。两个产物共享课程功能，但 canonical、sitemap、robots、llms.txt 与统计 Provider 必须按区域生成。
 
 ## Source of truth
 

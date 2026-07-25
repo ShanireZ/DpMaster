@@ -1,7 +1,7 @@
 {
 	// Cloudflare Workers 静态资源托管（路子 A：Workers Static Assets）+ 一个极薄 Worker。
-	// 静态文件由资源绑定直出（不进 Worker）；只有 /api/feedback 这类未命中文件的请求才进
-	// worker.js，用来接反馈端点，其余回退 SPA。文档：
+	// 静态文件由资源绑定直出；/api/feedback 与 /api/analytics 由 worker.js 接住，
+	// 其余已知路由直出预渲染 HTML，未知路径返回 404.html + HTTP 404。文档：
 	//   https://developers.cloudflare.com/workers/static-assets/binding/
 	"$schema": "node_modules/wrangler/config-schema.json",
 	"name": "dpmaster",
@@ -19,7 +19,7 @@
 		}
 	],
 	"compatibility_date": "2026-07-06",
-	// Worker 入口：先接 /api/feedback，其余交回 env.ASSETS（见 worker.js）。
+	// Worker 入口：先接同源 API，其余交回 env.ASSETS（见 worker.js）。
 	"main": "worker.js",
 	"vars": {
 		"FEEDBACK_WEBHOOK_KIND": "dingtalk"
@@ -40,7 +40,7 @@
 	},
 	"assets": {
 		"directory": "./dist/cloudflare/",
-		// 让 Worker 能通过 env.ASSETS.fetch() 取静态资源 / 触发 SPA 回退。
+		// 让 Worker 能通过 env.ASSETS.fetch() 取静态资源和 404 页面。
 		"binding": "ASSETS",
 		// 已知路由由预渲染的 .html 文件直出；未知路径返回 404.html + HTTP 404。
 		"html_handling": "drop-trailing-slash",

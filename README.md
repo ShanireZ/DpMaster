@@ -20,8 +20,9 @@ DP大师是一个面向 C++ 算法学习者的动态规划交互式学习网站�
 - 37 个类型页已注册并标记为 `ready`。
 - 7 个家族小游戏已接入。
 - 题目索引包含 177 个题目槽位，其中 116 个唯一洛谷题号。
-- 站点是静态 React 应用，不依赖数据库、登录系统或在线评测后端。
-- 生产部署支持 Cloudflare Workers Static Assets 与 Tencent EdgeOne Pages 双线路。
+- 站点是预渲染静态 React 应用：48 个公开路由先生成 HTML，再由 React 水合；小游戏、反馈和站内导航仍保持交互。
+- 国际站为 <https://dp.betaoi.cc>（Cloudflare），国内站为 <https://dp.betaoi.cn>（Tencent EdgeOne）。
+- 两站提供 host-aware canonical、互指 hreflang、课程/Breadcrumb JSON-LD、可引用摘要、`llms.txt` 和真实 HTTP 404。
 
 ## 覆盖内容
 
@@ -42,6 +43,7 @@ DP大师是一个面向 C++ 算法学习者的动态规划交互式学习网站�
 - **题目索引**：按家族、类型、难度和例题/练习关系组织洛谷题目。
 - **静态优先**：不需要后端数据库，构建产物可以直接发布到边缘静态托管。
 - **反馈入口**：站内 `POST /api/feedback` 可转发到钉钉等 webhook 机器人。
+- **区域统计**：同一统计抽象层在国际站加载 Cloudflare Web Analytics，在国内站使用 EdgeOne 访问日志，并把有限的页面/反馈事件写入同源 `POST /api/analytics`。
 
 ## 技术栈
 
@@ -51,7 +53,8 @@ DP大师是一个面向 C++ 算法学习者的动态规划交互式学习网站�
 | 内容渲染 | KaTeX 公式渲染, Shiki C++ 高亮                                      |
 | UI       | CSS 分层样式, Lucide React 图标, 自托管字体包                       |
 | 部署     | Cloudflare Workers Static Assets, Tencent EdgeOne Pages             |
-| 反馈     | Cloudflare Worker / EdgeOne Edge Function 共用的 Fetch API 处理核心 |
+| SEO      | 48 路由预渲染、canonical/hreflang、JSON-LD、sitemap、llms.txt      |
+| 边缘 API | Cloudflare Worker / EdgeOne Edge Function 共用的反馈与统计处理核心  |
 
 ## 本地运行
 
@@ -70,7 +73,7 @@ npm run dev
 | `npm run test`     | 运行课程目录、题目语料与资产预算合同测试（node --test）。 |
 | `npm run test:unit`| 运行 React 组件级单测（Vitest + Testing Library）。    |
 | `npm run lint`     | 运行零 warning 的 Oxlint。                              |
-| `npm run build`    | TypeScript 检查并构建到 `site/dist/`。                  |
+| `npm run build`    | 构建并预渲染到 `site/dist/cloudflare/` 与 `site/dist/edgeone/`。 |
 | `npm run verify`   | 内容/SEO 检查、测试、组件单测、lint、构建与资产预算。   |
 | `npm run preview`  | 本地预览构建产物。                                      |
 | `npm run deploy`   | 构建一次，然后依次发布 Cloudflare 和 EdgeOne。          |
@@ -89,10 +92,12 @@ DpMaster/
    │  ├─ content/           # 课程正文，也是题目语料来源
    │  ├─ data/catalog.ts    # 家族、课程、正文与游戏的统一目录
    │  ├─ data/problems.ts   # 由正文自动生成的题目索引
+   │  ├─ analytics/         # 区域统计抽象层与 Provider
+   │  ├─ config/site.ts     # 双域名、区域、品牌与统计配置
    │  ├─ pages/             # 首页、家族页、类型页、方法页、题单页、关于页
    │  └─ styles/            # 全局样式与设计 token
-   ├─ functions/            # 反馈端点核心与可选 Pages Functions 包装
-   ├─ scripts/postbuild.mjs # EdgeOne 回退产物生成
+   ├─ functions/            # 反馈与第一方统计端点核心
+   ├─ scripts/              # 双区域构建、预渲染、发现文件与 EdgeOne Adapter
    ├─ worker.js             # Cloudflare Workers 入口
    └─ wrangler.jsonc        # Cloudflare Workers Static Assets 配置
 ```
