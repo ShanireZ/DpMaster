@@ -291,7 +291,8 @@ test('lesson outline and versioned local progress remain available after reload'
   const complete = page.getByRole('button', { name: '标为学完' })
   await complete.click()
   await expect(page.getByRole('button', { name: '已学完' })).toBeVisible()
-  await expect(page.locator('.sidebar-progress')).toContainText('1 / 37')
+  await expect(page.locator('.nav-type.active .nav-type__progress svg')).toBeVisible()
+  await expect(page.getByText('学习进度', { exact: true })).toHaveCount(0)
 
   const stored = await page.evaluate(() => localStorage.getItem('dp-master-progress:v1'))
   expect(stored).toContain('/part/a/01')

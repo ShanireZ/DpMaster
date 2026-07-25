@@ -97,6 +97,11 @@
   flex-wrap: wrap;
 }
 
+.home-hero__magnet,
+.react-bits-magnet__body {
+  display: inline-flex;
+}
+
 .home-hero__primary,
 .home-hero__secondary {
   display: inline-flex;
@@ -144,25 +149,6 @@
 
 .home-hero__secondary:active {
   transform: translateY(1px);
-}
-
-.home-hero__recurrence {
-  position: absolute;
-  left: clamp(var(--sp-7), 7vw, var(--sp-10));
-  bottom: 12%;
-  display: flex;
-  align-items: baseline;
-  gap: clamp(7px, 1vw, 14px);
-  color: rgba(240, 235, 227, 0.26);
-  font-family: var(--font-mono);
-  font-size: clamp(11px, 1vw, 15px);
-  letter-spacing: -0.03em;
-}
-
-.home-hero__recurrence span:first-child,
-.home-hero__recurrence span:last-child {
-  color: rgba(229, 173, 79, 0.76);
-  font-size: 1.18em;
 }
 
 /* ---------------- 状态图谱：桌面横向叙事，移动端纵向展开 ---------------- */
@@ -445,10 +431,6 @@
 
   .home-hero h1 {
     font-size: clamp(43px, 13vw, 66px);
-  }
-
-  .home-hero__recurrence {
-    display: none;
   }
 
   .state-atlas__intro {
