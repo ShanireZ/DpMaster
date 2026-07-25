@@ -1,6 +1,6 @@
 import { NavLink, useMatch } from 'react-router-dom'
 import type { CSSProperties } from 'react'
-import { Sparkles, Info, BookOpen, Library, Check } from 'lucide-react'
+import { Info, BookOpen, Library, Check } from 'lucide-react'
 import { PARTS } from '../../data/catalog'
 import { BRAND } from '../../config/site.ts'
 import { useLearningProgress } from '../../learning/LearningProgressContext'
@@ -18,11 +18,9 @@ export default function Sidebar({ onNavigate }: { onNavigate?: () => void }) {
     <div className="sidebar-inner">
       <nav className="sidebar-nav" aria-label="主导航">
         <NavLink to="/" end className="brand" onClick={onNavigate}>
-          <span className="brand__mark">
-            <Sparkles size={18} color="var(--text-on-accent)" strokeWidth={2.2} />
-          </span>
+          <span className="brand__mark" aria-hidden="true">DP</span>
           <span>
-            <span className="brand__name grad-text-brand">{BRAND.name}</span>
+            <span className="brand__name">{BRAND.name}</span>
             <span className="brand__sub" style={{ display: 'block' }}>
               动态规划教程
             </span>
@@ -41,7 +39,7 @@ export default function Sidebar({ onNavigate }: { onNavigate?: () => void }) {
               >
                 <span
                   className="nav-part__badge"
-                  style={{ ['--pg']: `var(--grad-${p.id})` } as CSSProperties}
+                  style={{ ['--nav-family']: `var(--${p.id}-1)` } as CSSProperties}
                 >
                   {p.code}
                 </span>
@@ -84,7 +82,7 @@ export default function Sidebar({ onNavigate }: { onNavigate?: () => void }) {
         >
           <span
             className="nav-part__badge"
-            style={{ ['--pg']: 'var(--grad-brand)' } as CSSProperties}
+            style={{ ['--nav-family']: 'var(--accent-1)' } as CSSProperties}
           >
             <BookOpen size={15} />
           </span>
@@ -97,7 +95,7 @@ export default function Sidebar({ onNavigate }: { onNavigate?: () => void }) {
         >
           <span
             className="nav-part__badge"
-            style={{ ['--pg']: 'var(--grad-brand)' } as CSSProperties}
+            style={{ ['--nav-family']: 'var(--accent-1)' } as CSSProperties}
           >
             <Library size={15} />
           </span>
@@ -110,7 +108,7 @@ export default function Sidebar({ onNavigate }: { onNavigate?: () => void }) {
         >
           <span
             className="nav-part__badge"
-            style={{ ['--pg']: 'var(--grad-brand)' } as CSSProperties}
+            style={{ ['--nav-family']: 'var(--accent-1)' } as CSSProperties}
           >
             <Info size={15} />
           </span>
@@ -119,11 +117,8 @@ export default function Sidebar({ onNavigate }: { onNavigate?: () => void }) {
       </nav>
 
       <div className="sidebar-progress" aria-label={`课程进度 ${completed.length} / ${lessonTotal}`}>
-        <span>课程进度</span>
+        <span>学习进度</span>
         <strong>{completed.length} / {lessonTotal}</strong>
-        <span className="sidebar-progress__track" aria-hidden="true">
-          <span style={{ width: `${(completed.length / lessonTotal) * 100}%` }} />
-        </span>
       </div>
 
       <footer className="sidebar-records" aria-label="备案信息">

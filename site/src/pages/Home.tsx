@@ -1,76 +1,109 @@
+import { useRef } from 'react'
 import { Link } from 'react-router-dom'
 import type { CSSProperties } from 'react'
-import { ArrowRight, Sparkles } from 'lucide-react'
-import GeometryBackdrop from '../components/GeometryBackdrop'
+import { ArrowRight, ArrowUpRight } from 'lucide-react'
 import PartGlyph from '../components/PartGlyph'
 import { PARTS } from '../data/catalog'
+import HomeMotionController from './HomeMotionController'
 import './home.css'
 
-const SPAN: Record<string, string> = { a: 's6', b: 's6', c: 's4', d: 's4', e: 's4', f: 's6', g: 's6' }
-
 export default function Home() {
+  const rootRef = useRef<HTMLDivElement>(null)
+  const lessonTotal = PARTS.reduce((total, part) => total + part.types.length, 0)
+
   return (
-    <div>
-      <section className="hero">
-        <GeometryBackdrop variant="hero" />
-        <span className="hero__eyebrow">
-          <Sparkles size={14} /> 动态规划 · 交互式教程
-        </span>
-        <h1>
-          把 DP 变成<br />
-          <span className="grad-text-brand">看得见的推演</span>
-        </h1>
-        <p className="hero__lead">
-          七大 DP 家族，每个类型都配可改值的演示动画与互动小游戏——状态、转移、无后效性，
-          在你眼前一格一格地长出来。例题全部取自洛谷原生题库。
-        </p>
-        <div className="hero__cta">
-          <Link to="/part/a/01" className="btn btn--primary">
-            从 01 背包开始 <ArrowRight size={18} />
-          </Link>
-          <Link to="/method" className="btn btn--ghost">
-            先读方法论
-          </Link>
+    <div ref={rootRef} className="home">
+      <HomeMotionController rootRef={rootRef} />
+
+      <section className="home-hero" aria-labelledby="home-hero-title">
+        <img
+          className="home-hero__image"
+          src="/og/dpmaster-social.jpg"
+          alt=""
+          width="1200"
+          height="630"
+          fetchPriority="high"
+        />
+        <div className="home-hero__shade" aria-hidden="true" />
+        <div className="home-hero__recurrence" aria-hidden="true">
+          <span data-home-state>dp[i-v]</span>
+          <span data-home-state>+</span>
+          <span data-home-state>w</span>
+          <span data-home-state>=</span>
+          <span data-home-state>dp[i]</span>
+        </div>
+        <div className="home-hero__frame">
+          <div className="home-hero__content">
+            <p className="home-hero__eyebrow">动态规划交互式教程</p>
+            <h1 id="home-hero-title">
+              <span className="home-hero__line">
+                <span data-home-line>把 DP 变成</span>
+              </span>
+              <span className="home-hero__line">
+                <span data-home-line>看得见的推演</span>
+              </span>
+            </h1>
+            <p className="home-hero__lead">
+              从状态定义到模型迁移，用可改值演示和手算过程建立直觉。
+            </p>
+            <div className="home-hero__actions">
+              <Link to="/part/a/01" className="home-hero__primary">
+                从 01 背包开始 <ArrowRight size={18} />
+              </Link>
+              <Link to="/method" className="home-hero__secondary">
+                先读方法论 <ArrowUpRight size={16} />
+              </Link>
+            </div>
+          </div>
         </div>
       </section>
 
-      <section className="panorama">
-        <div className="panorama__head">
-          <h2>
-            七大 <span className="grad-text-brand">DP 家族</span>
-          </h2>
-          <p>点击任一家族，进入它的类型、演示与题库。</p>
-        </div>
+      <section className="state-atlas" aria-labelledby="state-atlas-title">
+        <div className="state-atlas__track">
+          <div className="state-atlas__intro">
+            <h2 id="state-atlas-title">
+              七种
+              <span>状态空间</span>
+            </h2>
+            <p>
+              {lessonTotal} 门课程沿七个 DP 家族展开，从状态含义进入，沿转移路径抵达答案。
+            </p>
+          </div>
 
-        <div className="bento">
-          {PARTS.map((p) => {
-            const ready = p.types.filter((t) => t.status === 'ready').length
-            return (
-              <Link
-                key={p.id}
-                to={`/part/${p.id}`}
-                className={`ptile ${SPAN[p.id]}`}
+          <ol className="family-scenes">
+            {PARTS.map((part) => (
+              <li
+                className="family-scene"
+                key={part.id}
                 style={
                   {
-                    '--tile-grad': `var(--grad-${p.id})`,
-                    '--tile-c1': `var(--${p.id}-1)`,
+                    '--family-color': `var(--${part.id}-1)`,
+                    '--family-gradient': `var(--grad-${part.id})`,
                   } as CSSProperties
                 }
               >
-                <div className="ptile__glyph">
-                  <PartGlyph id={p.id} size={150} />
-                </div>
-                <span className="ptile__code">{p.code}</span>
-                <h3 className="ptile__title">{p.title}</h3>
-                <p className="ptile__motif">{p.motif}</p>
-                <div className="ptile__meta">
-                  <span className="ptile__dot" />
-                  {p.types.length} 个类型
-                  {ready > 0 && <span>· {ready} 个已上线</span>}
-                </div>
-              </Link>
-            )
-          })}
+                <Link
+                  to={`/part/${part.id}`}
+                  className="family-scene__link"
+                  aria-label={`进入${part.title}，共 ${part.types.length} 个类型`}
+                >
+                  <span className="family-scene__code" aria-hidden="true">{part.code}</span>
+                  <span className="family-scene__ghost" aria-hidden="true">{part.code}</span>
+                  <span className="family-scene__glyph" aria-hidden="true">
+                    <PartGlyph id={part.id} size={240} />
+                  </span>
+                  <span className="family-scene__copy">
+                    <span className="family-scene__meta">{part.types.length} 个类型</span>
+                    <h3>{part.title}</h3>
+                    <span className="family-scene__tagline">{part.tagline}</span>
+                    <span className="family-scene__action">
+                      进入这一族 <ArrowUpRight size={20} />
+                    </span>
+                  </span>
+                </Link>
+              </li>
+            ))}
+          </ol>
         </div>
       </section>
     </div>

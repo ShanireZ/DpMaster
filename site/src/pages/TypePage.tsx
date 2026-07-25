@@ -153,7 +153,6 @@ export default function TypePage() {
 
   return (
     <div className="typepage-layout">
-      <div className="lesson-scroll-progress" aria-hidden="true" />
       <article className="typepage" ref={articleRef}>
         <header className="typehead">
           <span className="typehead__eyebrow">
