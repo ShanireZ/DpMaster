@@ -21,6 +21,16 @@ test('shallow content and game registries are deleted', () => {
   assert.equal(existsSync(join(siteDir, 'src', 'data', 'parts.ts')), false)
 })
 
+test('SSR reuses catalog loaders without creating an eager duplicate lesson graph', () => {
+  const staticApp = readFileSync(join(siteDir, 'src', 'app', 'StaticApp.tsx'), 'utf8')
+  const appContent = readFileSync(join(siteDir, 'src', 'app', 'AppContent.tsx'), 'utf8')
+  const entryServer = readFileSync(join(siteDir, 'src', 'entry-server.tsx'), 'utf8')
+
+  assert.doesNotMatch(staticApp, /import\.meta\.glob/)
+  assert.doesNotMatch(appContent, /CLIENT_ROUTE_VIEWS/)
+  assert.match(entryServer, /lesson\.type\.loadContent\(\)/)
+})
+
 test('lesson navigation is owned by TypePage instead of lesson JSX', () => {
   const contentRoot = join(siteDir, 'src', 'content')
   const lessonFiles = readdirSync(contentRoot, { recursive: true })

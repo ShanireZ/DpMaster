@@ -50,16 +50,6 @@ export default function HomeMotionController({ rootRef }: HomeMotionControllerPr
             }
             root.classList.add('home--gsap')
 
-            const intro = gsap.timeline({
-              defaults: { duration: 0.9, ease: 'power3.out' },
-            })
-
-            intro
-              .from('.home-hero__image', { scale: 1.09, autoAlpha: 0.42, duration: 1.5 })
-              .from('[data-home-line]', { yPercent: 112, stagger: 0.1 }, 0.18)
-              .from('.home-hero__lead', { y: 24, autoAlpha: 0 }, 0.48)
-              .from('.home-hero__actions', { y: 20, autoAlpha: 0 }, 0.58)
-
             gsap.to('.home-hero__image', {
               scale: 1.14,
               yPercent: 4,

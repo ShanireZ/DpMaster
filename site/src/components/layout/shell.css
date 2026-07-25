@@ -45,6 +45,7 @@
   top: 0;
   align-self: start;
   height: 100vh;
+  overflow-x: hidden;
   overflow-y: auto;
   padding: var(--sp-4) 10px;
   background: color-mix(in srgb, var(--surface-1) 94%, transparent);
@@ -64,6 +65,8 @@
 .brand {
   display: flex;
   align-items: center;
+  height: 110px;
+  flex: none;
   padding:
     var(--sp-3)
     var(--nav-pad-x)
@@ -74,6 +77,14 @@
 .brand__wordmark {
   display: block;
   min-width: 0;
+}
+.brand__compact {
+  display: none;
+  color: var(--accent-1);
+  font-family: var(--font-mono);
+  font-size: 13px;
+  font-weight: 700;
+  letter-spacing: -0.04em;
 }
 .brand__name { color: var(--text-1); font-family: var(--font-display); font-weight: 700; font-size: 18px; letter-spacing: -0.04em; }
 .brand__sub {
@@ -351,8 +362,13 @@ a.nav-type.active::before { opacity: 1; transform: scaleY(1); }
   background: var(--surface-2);
 }
 
-.content { --content-px: var(--sp-6); padding: var(--sp-7) var(--content-px) var(--sp-9); }
+.content {
+  --content-px: var(--sp-6);
+  --content-pb: var(--sp-9);
+  padding: var(--sp-7) var(--content-px) var(--content-pb);
+}
 .route-stage { min-height: 100%; }
+.route-view-loading { min-height: 60vh; }
 .content--wide { max-width: none; }
 
 /* 汉堡按钮默认隐藏 */
@@ -374,10 +390,16 @@ a.nav-type.active::before { opacity: 1; transform: scaleY(1); }
   }
 
   .shell--sidebar-collapsed .brand {
-    height: 0;
-    padding: 0;
-    opacity: 0;
-    pointer-events: none;
+    justify-content: center;
+    padding-inline: 0;
+  }
+
+  .shell--sidebar-collapsed .brand__wordmark {
+    display: none;
+  }
+
+  .shell--sidebar-collapsed .brand__compact {
+    display: block;
   }
 
   .shell--sidebar-collapsed .nav-part {
@@ -392,9 +414,19 @@ a.nav-type.active::before { opacity: 1; transform: scaleY(1); }
 
   .shell--sidebar-collapsed .nav-part__title,
   .shell--sidebar-collapsed .nav-part::after,
-  .shell--sidebar-collapsed .nav-types,
   .shell--sidebar-collapsed .sidebar-records {
     display: none;
+  }
+
+  .shell--sidebar-collapsed .nav-types {
+    width: calc(
+      var(--sidebar-w) - 20px
+      - var(--nav-pad-x) - var(--nav-pad-x)
+      - var(--nav-badge-w) - var(--nav-gap)
+    );
+    visibility: hidden;
+    opacity: 0;
+    pointer-events: none;
   }
 
   .shell--sidebar-collapsed .nav-part__badge {
@@ -430,7 +462,11 @@ a.nav-type.active::before { opacity: 1; transform: scaleY(1); }
     opacity: 0;
     pointer-events: none;
   }
-  .content { --content-px: var(--sp-4); padding: var(--sp-6) var(--content-px) var(--sp-8); }
+  .content {
+    --content-px: var(--sp-4);
+    --content-pb: var(--sp-8);
+    padding: var(--sp-6) var(--content-px) var(--content-pb);
+  }
 }
 
 @media (prefers-reduced-motion: reduce) {

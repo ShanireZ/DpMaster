@@ -332,12 +332,24 @@ test('desktop sidebar aligns nested lessons and remembers its compact rail state
   expect(Math.abs((parentTitle?.x ?? 0) - (childTitle?.x ?? 0))).toBeLessThanOrEqual(1)
 
   const expandedWidth = (await sidebar.boundingBox())?.width ?? 0
+  const familyYBefore = await page.locator('.nav-part__code').evaluateAll((codes) =>
+    codes.map((code) => code.getBoundingClientRect().y),
+  )
   await page.getByRole('button', { name: '收起侧栏' }).click()
   await expect(page.locator('.shell')).toHaveClass(/shell--sidebar-collapsed/)
   await expect(page.getByRole('button', { name: '展开侧栏' })).toBeVisible()
+  await expect(page.locator('.brand__compact')).toHaveText('DP')
+  await expect(page.locator('.brand__compact')).toBeVisible()
   await expect
     .poll(async () => (await sidebar.boundingBox())?.width ?? expandedWidth)
     .toBeLessThan(expandedWidth)
+  const familyYAfter = await page.locator('.nav-part__code').evaluateAll((codes) =>
+    codes.map((code) => code.getBoundingClientRect().y),
+  )
+  expect(familyYAfter).toHaveLength(familyYBefore.length)
+  familyYAfter.forEach((y, index) => {
+    expect(Math.abs(y - familyYBefore[index])).toBeLessThanOrEqual(1)
+  })
   await expect.poll(() => page.evaluate(
     () => localStorage.getItem('dp-master-sidebar-collapsed:v1'),
   )).toBe('true')
@@ -346,4 +358,66 @@ test('desktop sidebar aligns nested lessons and remembers its compact rail state
   await expect(page.locator('.shell')).toHaveClass(/shell--sidebar-collapsed/)
   await page.getByRole('button', { name: '展开侧栏' }).click()
   await expect(page.locator('.shell')).not.toHaveClass(/shell--sidebar-collapsed/)
+})
+
+test('home starts its entrance on the first styled frame and cancels trailing content padding', async ({
+  page,
+}) => {
+  await page.setViewportSize({ width: 1440, height: 900 })
+  await page.goto('/')
+
+  await expect(page.locator('.home-hero')).toBeVisible()
+  await expect(page.locator('.home')).toHaveClass(/home--gsap/)
+  const firstFrameContract = await page.evaluate(() => {
+    const image = document.querySelector<HTMLElement>('.home-hero__image')
+    const line = document.querySelector<HTMLElement>('[data-home-line]')
+    const home = document.querySelector<HTMLElement>('.home')
+    const content = document.querySelector<HTMLElement>('.content')
+    const hero = document.querySelector<HTMLElement>('.home-hero')
+    const atlas = document.querySelector<HTMLElement>('.state-atlas')
+    const track = document.querySelector<HTMLElement>('.state-atlas__track')
+    if (!image || !line || !home || !content || !hero || !atlas || !track) return null
+    return {
+      imageAnimation: getComputedStyle(image).animationName,
+      lineAnimation: getComputedStyle(line).animationName,
+      homeMarginBottom: Number.parseFloat(getComputedStyle(home).marginBottom),
+      contentPaddingBottom: Number.parseFloat(getComputedStyle(content).paddingBottom),
+      maximumScroll: document.documentElement.scrollHeight - window.innerHeight,
+      atlasScrollEnd: hero.offsetHeight + track.scrollWidth - atlas.clientWidth,
+    }
+  })
+
+  expect(firstFrameContract).not.toBeNull()
+  expect(firstFrameContract?.imageAnimation).toBe('home-hero-image-intro')
+  expect(firstFrameContract?.lineAnimation).toBe('home-hero-copy-intro')
+  expect(
+    Math.abs(
+      (firstFrameContract?.homeMarginBottom ?? 0)
+      + (firstFrameContract?.contentPaddingBottom ?? 0),
+    ),
+  ).toBeLessThanOrEqual(1)
+  expect(
+    Math.abs(
+      (firstFrameContract?.maximumScroll ?? 0)
+      - (firstFrameContract?.atlasScrollEnd ?? 0),
+    ),
+  ).toBeLessThanOrEqual(2)
+})
+
+test('first client-side route change keeps the application shell mounted', async ({ page }) => {
+  await page.setViewportSize({ width: 1440, height: 900 })
+  await page.goto('/')
+  await page.evaluate(() => {
+    const monitor = new MutationObserver(() => {
+      if (!document.querySelector('.shell')) {
+        document.documentElement.dataset.shellWasMissing = 'true'
+      }
+    })
+    monitor.observe(document.body, { childList: true, subtree: true })
+  })
+
+  await page.getByRole('link', { name: /从背包 DP 开始/ }).click()
+  await expect(page).toHaveURL(/\/part\/a$/)
+  await expect(page.locator('.partcover')).toBeVisible()
+  expect(await page.locator('html').getAttribute('data-shell-was-missing')).toBeNull()
 })

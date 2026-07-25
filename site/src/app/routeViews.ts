@@ -20,18 +20,8 @@ const PAGE_LOADERS = {
   ProblemsPage: () => import('../pages/ProblemsPage'),
 }
 
-export const CLIENT_ROUTE_VIEWS: RouteViews = {
-  Home: lazy(PAGE_LOADERS.Home),
-  PartPage: lazy(PAGE_LOADERS.PartPage),
-  TypePage: lazy(PAGE_LOADERS.TypePage),
-  NotFound: lazy(PAGE_LOADERS.NotFound),
-  AboutPage: lazy(PAGE_LOADERS.AboutPage),
-  MethodPage: lazy(PAGE_LOADERS.MethodPage),
-  ProblemsPage: lazy(PAGE_LOADERS.ProblemsPage),
-}
-
-export async function loadInitialRouteViews(pathname: string): Promise<RouteViews> {
-  const key: keyof RouteViews = pathname === '/'
+function getRouteViewKey(pathname: string): keyof RouteViews {
+  return pathname === '/'
     ? 'Home'
     : /^\/part\/[a-g]\/[^/]+$/.test(pathname)
       ? 'TypePage'
@@ -44,6 +34,24 @@ export async function loadInitialRouteViews(pathname: string): Promise<RouteView
             : pathname === '/about'
               ? 'AboutPage'
               : 'NotFound'
+}
+
+export const CLIENT_ROUTE_VIEWS: RouteViews = {
+  Home: lazy(PAGE_LOADERS.Home),
+  PartPage: lazy(PAGE_LOADERS.PartPage),
+  TypePage: lazy(PAGE_LOADERS.TypePage),
+  NotFound: lazy(PAGE_LOADERS.NotFound),
+  AboutPage: lazy(PAGE_LOADERS.AboutPage),
+  MethodPage: lazy(PAGE_LOADERS.MethodPage),
+  ProblemsPage: lazy(PAGE_LOADERS.ProblemsPage),
+}
+
+export async function loadInitialRouteViews(pathname: string): Promise<RouteViews> {
+  const key = getRouteViewKey(pathname)
   const module = await PAGE_LOADERS[key]()
   return { ...CLIENT_ROUTE_VIEWS, [key]: module.default }
+}
+
+export async function preloadRouteViews() {
+  await Promise.all(Object.values(PAGE_LOADERS).map((load) => load()))
 }

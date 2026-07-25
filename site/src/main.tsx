@@ -14,7 +14,7 @@ import './styles/tokens.css'
 import './styles/global.css'
 
 import App from './app/App'
-import { loadInitialRouteViews } from './app/routeViews.ts'
+import { loadInitialRouteViews, preloadRouteViews } from './app/routeViews.ts'
 import { getLesson } from './data/catalog.ts'
 import type { StaticLessonContents } from './app/StaticLessonContent.ts'
 
@@ -52,3 +52,6 @@ if (container.hasChildNodes()) {
 } else {
   createRoot(container).render(application)
 }
+
+// 路由页本身很小；水合完成后尽早预取，首次站内跳转不再把整个布局换成空白占位。
+void preloadRouteViews()

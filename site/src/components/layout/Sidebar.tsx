@@ -22,17 +22,13 @@ export default function Sidebar({ onNavigate }: { onNavigate?: () => void }) {
               DP Master
             </span>
           </span>
+          <span className="brand__compact" aria-hidden="true">DP</span>
         </NavLink>
 
         {PARTS.map((p) => {
           const open = p.id === activePid
           return (
-            <motion.div
-              className="nav-group"
-              key={p.id}
-              layout="position"
-              transition={reduceMotion ? { duration: 0 } : { type: 'spring', stiffness: 420, damping: 38 }}
-            >
+            <div className="nav-group" key={p.id}>
               <NavLink
                 to={`/part/${p.id}`}
                 end
@@ -81,7 +77,7 @@ export default function Sidebar({ onNavigate }: { onNavigate?: () => void }) {
                   </motion.div>
                 )}
               </AnimatePresence>
-            </motion.div>
+            </div>
           )
         })}
 
