@@ -1,5 +1,5 @@
 import { Link, NavLink, useLocation, useMatch } from 'react-router-dom'
-import { Menu, Sun, Moon, Search } from 'lucide-react'
+import { Menu, Moon, Search, Sun, X } from 'lucide-react'
 import { useTheme } from '../../theme/ThemeContext'
 import { getPart } from '../../data/catalog'
 import { getPageMeta } from '../../lib/pageMeta.ts'
@@ -22,15 +22,15 @@ export default function TopBar({
   const isHome = location.pathname === '/'
 
   return (
-    <header className={`topbar${isHome ? ' topbar--home' : ''}`}>
+    <header className={`topbar${isHome ? ' topbar--home' : ''}${mobileOpen ? ' topbar--menu-open' : ''}`}>
       <button
         className="icon-btn hamburger"
         onClick={onHamburger}
-        aria-label="打开导航"
+        aria-label={mobileOpen ? '关闭导航' : '打开导航'}
         aria-expanded={mobileOpen}
         aria-controls="site-sidebar"
       >
-        <Menu size={18} />
+        {mobileOpen ? <X size={18} /> : <Menu size={18} />}
       </button>
 
       <nav className="crumbs" aria-label="面包屑">

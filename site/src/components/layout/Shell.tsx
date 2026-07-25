@@ -48,7 +48,7 @@ export default function Shell() {
           tabIndex={mobileOpen ? 0 : -1}
         />
         <div className="main">
-          <TopBar onHamburger={() => setMobileOpen(true)} mobileOpen={mobileOpen} />
+          <TopBar onHamburger={() => setMobileOpen((open) => !open)} mobileOpen={mobileOpen} />
           <main id="main-content" ref={mainRef} className="content" tabIndex={-1}>
             <Outlet />
           </main>
