@@ -128,9 +128,13 @@ async function assertRoute(
   await expect(
     page.locator(`nav[aria-label="主导航"] a[href="${route.path}"]`),
   ).toHaveAttribute('aria-current', 'page')
-  await expect(
-    page.locator('nav[aria-label="面包屑"] [aria-current="page"]'),
-  ).toHaveText(route.currentLabel)
+  if (route.path === '/') {
+    await expect(page.locator('nav[aria-label="面包屑"]')).toHaveCount(0)
+  } else {
+    await expect(
+      page.locator('nav[aria-label="面包屑"] [aria-current="page"]'),
+    ).toHaveText(route.currentLabel)
+  }
   expect(browserErrors).toEqual([])
 }
 
@@ -298,4 +302,39 @@ test('lesson outline and versioned local progress remain available after reload'
   expect(stored).toContain('/part/a/01')
   await page.reload()
   await expect(page.getByRole('button', { name: '已学完' })).toBeVisible()
+})
+
+test('desktop sidebar aligns nested lessons and remembers its compact rail state', async ({
+  page,
+}) => {
+  await page.setViewportSize({ width: 1440, height: 900 })
+  await page.goto('/part/a/01')
+
+  const sidebar = page.locator('#site-sidebar')
+  const brand = page.locator('.brand__wordmark')
+  await expect(brand).toContainText('DP大师')
+  await expect(brand).toContainText('DP Master')
+  await expect(page.getByText('<DP Master>', { exact: true })).toHaveCount(0)
+
+  const parentTitle = await page.locator('.nav-part.active .nav-part__title').boundingBox()
+  const childTitle = await page.locator('.nav-type.active .nav-type__label').boundingBox()
+  expect(parentTitle).not.toBeNull()
+  expect(childTitle).not.toBeNull()
+  expect(Math.abs((parentTitle?.x ?? 0) - (childTitle?.x ?? 0))).toBeLessThanOrEqual(1)
+
+  const expandedWidth = (await sidebar.boundingBox())?.width ?? 0
+  await page.getByRole('button', { name: '收起侧栏' }).click()
+  await expect(page.locator('.shell')).toHaveClass(/shell--sidebar-collapsed/)
+  await expect(page.getByRole('button', { name: '展开侧栏' })).toBeVisible()
+  await expect
+    .poll(async () => (await sidebar.boundingBox())?.width ?? expandedWidth)
+    .toBeLessThan(expandedWidth)
+  await expect.poll(() => page.evaluate(
+    () => localStorage.getItem('dp-master-sidebar-collapsed:v1'),
+  )).toBe('true')
+
+  await page.reload()
+  await expect(page.locator('.shell')).toHaveClass(/shell--sidebar-collapsed/)
+  await page.getByRole('button', { name: '展开侧栏' }).click()
+  await expect(page.locator('.shell')).not.toHaveClass(/shell--sidebar-collapsed/)
 })

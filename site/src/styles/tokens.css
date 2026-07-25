@@ -78,7 +78,7 @@
                  0 16px 44px -16px color-mix(in srgb, var(--accent-1) 40%, transparent);
 
   /* ---------- 布局 ---------- */
-  --sidebar-w: 268px;
+  --sidebar-w: 232px;
   --topbar-h: 62px;
   /* 正文阅读行宽：★用 em/rem 而非 ch——ch 按拉丁 "0" 字宽(≈0.55em)标定，
      66ch 在中文正文里只有 ~36 汉字/行，偏窄；46rem≈45 汉字/行，舒展且守易读上限。 */

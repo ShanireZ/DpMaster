@@ -28,7 +28,6 @@ export default function Home() {
         <div className="home-hero__shade" aria-hidden="true" />
         <div className="home-hero__frame">
           <div className="home-hero__content">
-            <p className="home-hero__eyebrow">动态规划交互式教程</p>
             <h1 id="home-hero-title">
               <span className="home-hero__line">
                 <span data-home-line>把 DP 变成</span>

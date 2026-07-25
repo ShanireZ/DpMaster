@@ -16,10 +16,10 @@ export default function Sidebar({ onNavigate }: { onNavigate?: () => void }) {
     <div className="sidebar-inner">
       <nav className="sidebar-nav" aria-label="主导航">
         <NavLink to="/" end className="brand" onClick={onNavigate}>
-          <span>
+          <span className="brand__wordmark">
             <span className="brand__name">{BRAND.name}</span>
-            <span className="brand__sub" style={{ display: 'block' }}>
-              {'<DP Master>'}
+            <span className="brand__sub">
+              DP Master
             </span>
           </span>
         </NavLink>
@@ -38,6 +38,7 @@ export default function Sidebar({ onNavigate }: { onNavigate?: () => void }) {
                 end
                 className={`nav-part${open ? ' active open' : ''}`}
                 onClick={onNavigate}
+                title={p.title}
               >
                 <span
                   className="nav-part__badge"
@@ -65,14 +66,14 @@ export default function Sidebar({ onNavigate }: { onNavigate?: () => void }) {
                           className={({ isActive }) => `nav-type${isActive ? ' active' : ''}`}
                           onClick={onNavigate}
                         >
+                          <span className="nav-type__label">{t.title}</span>
                           <span className="nav-type__progress" aria-hidden="true">
                             {completed.includes(`/part/${p.id}/${t.slug}`) && <Check size={12} />}
                           </span>
-                          <span>{t.title}</span>
                         </NavLink>
                       ) : (
                         <span key={t.slug} className="nav-type planned">
-                          {t.title}
+                          <span className="nav-type__label">{t.title}</span>
                           <span className="nav-type__tag">待建</span>
                         </span>
                       ),
@@ -89,6 +90,7 @@ export default function Sidebar({ onNavigate }: { onNavigate?: () => void }) {
           className={({ isActive }) => `nav-part${isActive ? ' active' : ''}`}
           onClick={onNavigate}
           style={{ marginTop: 'var(--sp-4)' }}
+          title="通用方法论"
         >
           <span
             className="nav-part__badge"
@@ -102,6 +104,7 @@ export default function Sidebar({ onNavigate }: { onNavigate?: () => void }) {
           to="/problems"
           className={({ isActive }) => `nav-part${isActive ? ' active' : ''}`}
           onClick={onNavigate}
+          title="题目索引"
         >
           <span
             className="nav-part__badge"
@@ -115,6 +118,7 @@ export default function Sidebar({ onNavigate }: { onNavigate?: () => void }) {
           to="/about"
           className={({ isActive }) => `nav-part${isActive ? ' active' : ''}`}
           onClick={onNavigate}
+          title="关于 · 如何使用"
         >
           <span
             className="nav-part__badge"

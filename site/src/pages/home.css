@@ -50,14 +50,6 @@
   max-width: 720px;
 }
 
-.home-hero__eyebrow {
-  margin-bottom: var(--sp-5);
-  color: rgba(236, 231, 222, 0.68);
-  font-family: var(--font-mono);
-  font-size: 12px;
-  letter-spacing: 0.14em;
-}
-
 .home-hero h1 {
   color: #f0ebe3;
   font-size: clamp(48px, 4.9vw, 78px);
