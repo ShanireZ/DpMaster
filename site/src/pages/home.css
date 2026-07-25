@@ -102,10 +102,7 @@
 }
 
 @keyframes home-hero-image-intro {
-  from {
-    opacity: 0.42;
-    transform: scale(1.09);
-  }
+  from { opacity: 0.42; }
 }
 
 @keyframes home-hero-copy-intro {
