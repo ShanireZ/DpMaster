@@ -58,21 +58,16 @@
 .brand {
   display: flex;
   align-items: center;
-  gap: var(--sp-3);
   padding: var(--sp-3) var(--sp-3) var(--sp-7);
 }
-.brand__mark {
-  width: 36px;
-  display: block;
-  color: var(--accent-1);
-  font-family: var(--font-mono);
-  font-size: 15px;
-  font-weight: 800;
-  letter-spacing: -0.12em;
-  flex: none;
-}
 .brand__name { color: var(--text-1); font-family: var(--font-display); font-weight: 700; font-size: 18px; letter-spacing: -0.04em; }
-.brand__sub { font-size: 11px; color: var(--text-3); letter-spacing: 0.12em; text-transform: uppercase; }
+.brand__sub {
+  margin-top: 2px;
+  color: var(--text-3);
+  font-family: var(--font-mono);
+  font-size: 11px;
+  letter-spacing: 0.04em;
+}
 
 .nav-group { margin-bottom: 2px; }
 
@@ -239,27 +234,12 @@ a.nav-type.active { color: var(--text-1); border-left-color: var(--accent-2); }
 .icon-btn:hover { color: var(--text-1); background: var(--surface-2); transform: translateY(-1px); }
 .icon-btn:active { transform: translateY(0) scale(0.96); }
 
-.searchhint {
-  display: flex; align-items: center; gap: 8px;
-  height: 38px; padding: 0 var(--sp-2);
-  border-bottom: 1px solid transparent;
-  color: var(--text-3); font-size: 13px;
-  text-decoration: none;
-  transition: color var(--t-fast), border-color var(--t-fast), transform var(--t-fast);
-}
-.searchhint:hover { color: var(--text-1); border-color: var(--accent-1); transform: translateY(-1px); }
-.searchhint kbd {
-  font-size: 11px; padding: 1px 6px; border-radius: 4px;
-  background: var(--surface-3); border: 1px solid var(--border);
-}
 .topbar--home .crumbs,
 .topbar--home .crumbs a,
-.topbar--home .searchhint,
 .topbar--home .icon-btn {
   color: rgba(240, 235, 227, 0.78);
 }
 .topbar--home .crumbs a:hover,
-.topbar--home .searchhint:hover,
 .topbar--home .icon-btn:hover {
   color: #f0ebe3;
 }
@@ -275,12 +255,10 @@ a.nav-type.active { color: var(--text-1); border-left-color: var(--accent-2); }
 }
 .topbar--home.topbar--atlas .crumbs,
 .topbar--home.topbar--atlas .crumbs a,
-.topbar--home.topbar--atlas .searchhint,
 .topbar--home.topbar--atlas .icon-btn {
   color: var(--text-3);
 }
 .topbar--home.topbar--atlas .crumbs a:hover,
-.topbar--home.topbar--atlas .searchhint:hover,
 .topbar--home.topbar--atlas .icon-btn:hover {
   color: var(--text-1);
 }
@@ -321,7 +299,6 @@ a.nav-type.active { color: var(--text-1); border-left-color: var(--accent-2); }
   .topbar--home { left: 0; }
   .topbar--menu-open .crumbs,
   .topbar--menu-open .topbar__spacer,
-  .topbar--menu-open .searchhint,
   .topbar--menu-open > .icon-btn:not(.hamburger) {
     opacity: 0;
     pointer-events: none;

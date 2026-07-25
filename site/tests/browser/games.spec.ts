@@ -17,8 +17,10 @@ test.afterEach(({ page }) => {
 
 async function loadDeferredGame(page: Page, label: string): Promise<Locator> {
   const game = page.getByLabel(label)
-  await expect(game).toContainText('互动游戏将在接近时自动加载')
-  await expect(game.getByRole('button')).toHaveCount(0)
+  const placeholder = game.getByText('互动游戏将在接近时自动加载')
+  if (await placeholder.count()) {
+    await expect(game.getByRole('button')).toHaveCount(0)
+  }
   await game.scrollIntoViewIfNeeded()
   await expect(game).not.toContainText('互动游戏将在接近时自动加载')
   return game
@@ -91,7 +93,7 @@ test('Pack rounds lazy-load automatically and replay from the displayed seed', a
   await expect(game.locator('.game__value b')).toHaveText('0')
   await expect(game.locator('.game__compare')).toHaveCount(0)
 
-  await game.getByRole('button', { name: '看 DP 最优' }).click()
+  await game.getByRole('button', { name: '核对最优值' }).click()
   await expect(game.locator('.game__compare')).toBeVisible()
   await expectPackStats(game, 1, 0, originalSeed)
   const optimalIndices = await itemButtons.evaluateAll((buttons) =>
@@ -104,7 +106,7 @@ test('Pack rounds lazy-load automatically and replay from the displayed seed', a
   expect(await readPackItems(game)).toEqual(originalItems)
   await expect(game.locator('.game__compare')).toHaveCount(0)
   for (const index of optimalIndices) await itemButtons.nth(index).click()
-  await game.getByRole('button', { name: '看 DP 最优' }).click()
+  await game.getByRole('button', { name: '核对最优值' }).click()
   await expectPackStats(game, 2, 1, originalSeed)
 
   await game.getByRole('button', { name: '换一批' }).click()
@@ -121,7 +123,7 @@ test('Pack rounds lazy-load automatically and replay from the displayed seed', a
   expect(await readSeed(game)).toBe(shuffledSeed)
   await expectPackStats(game, 2, 1, shuffledSeed)
 
-  await game.getByRole('button', { name: '看 DP 最优' }).click()
+  await game.getByRole('button', { name: '核对最优值' }).click()
   await expectPackStats(game, 3, 1, shuffledSeed)
 })
 

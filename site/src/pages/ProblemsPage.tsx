@@ -1,6 +1,7 @@
 import { useDeferredValue, useEffect, useMemo, useRef } from 'react'
 import { Link, useSearchParams } from 'react-router-dom'
 import { Search, ExternalLink } from 'lucide-react'
+import AnimatedContent from '../components/motion/AnimatedContent'
 import { PROBLEMS } from '../data/problems'
 import { PARTS } from '../data/catalog'
 import { trackAnalyticsEvent } from '../analytics/index.ts'
@@ -85,14 +86,16 @@ export default function ProblemsPage() {
 
   return (
     <div className="problems">
-      <section className="problems-hero">
-        <span className="problems-hero__eyebrow">题库</span>
-        <h1>题目索引</h1>
-        <p className="problems-hero__lead">
-          全站 {PROBLEMS.length} 个学习条目（例题 {exCount} · 练习 {PROBLEMS.length - exCount} · 去重后 {uniqueCount} 道题），全部洛谷原生。
-          点题号去洛谷提交，点类型进对应讲解。
-        </p>
-      </section>
+      <AnimatedContent>
+        <section className="problems-hero">
+          <span className="problems-hero__eyebrow">题库</span>
+          <h1>题目索引</h1>
+          <p className="problems-hero__lead">
+            全站 {PROBLEMS.length} 个学习条目（例题 {exCount} · 练习 {PROBLEMS.length - exCount} · 去重后 {uniqueCount} 道题），全部洛谷原生。
+            点题号去洛谷提交，点类型进对应讲解。
+          </p>
+        </section>
+      </AnimatedContent>
 
       <div className="problems-toolbar">
         <label className="problems-search">
@@ -136,9 +139,14 @@ export default function ProblemsPage() {
         {filtered.length > PAGE_SIZE && ` · 第 ${page} / ${totalPages} 页`}
       </div>
 
-      <div className="problems-list">
-        {visible.map((p, i) => (
-          <div className="prob" key={`${p.pid}-${p.part}-${p.slug}-${i}`}>
+      <AnimatedContent
+        key={`${part}-${kind}-${deferredQ}-${page}`}
+        distance={10}
+        delay={0.02}
+      >
+        <div className="problems-list">
+          {visible.map((p, i) => (
+            <div className="prob" key={`${p.pid}-${p.part}-${p.slug}-${i}`}>
             <a
               className="prob__pid"
               href={`https://www.luogu.com.cn/problem/${p.pid}`}
@@ -164,10 +172,11 @@ export default function ProblemsPage() {
             <span className={`prob__kind prob__kind--${p.kind}`}>
               {p.kind === 'example' ? '例题' : '练习'}
             </span>
-          </div>
-        ))}
-        {filtered.length === 0 && <div className="problems-empty">没有匹配的题目。</div>}
-      </div>
+            </div>
+          ))}
+          {filtered.length === 0 && <div className="problems-empty">没有匹配的题目。</div>}
+        </div>
+      </AnimatedContent>
 
       {filtered.length > PAGE_SIZE && (
         <nav className="problems-pagination" aria-label="题库分页">

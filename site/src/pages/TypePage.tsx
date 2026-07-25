@@ -5,6 +5,7 @@ import { getLesson, getLessonNeighbors } from '../data/catalog'
 import { getLessonEditorial } from '../data/editorial.ts'
 import { ROUTE_LAST_MODIFIED } from '../data/routeLastModified.ts'
 import { trackAnalyticsEvent } from '../analytics/index.ts'
+import AnimatedContent from '../components/motion/AnimatedContent'
 import { useLearningProgress } from '../learning/LearningProgressContext'
 import { useStaticLessonContents } from '../app/StaticLessonContent.ts'
 import './typepage.css'
@@ -154,7 +155,8 @@ export default function TypePage() {
   return (
     <div className="typepage-layout">
       <article className="typepage" ref={articleRef}>
-        <header className="typehead">
+        <AnimatedContent>
+          <header className="typehead">
           <span className="typehead__eyebrow">
             <span className="typehead__code">{part.code}</span>
             {part.title}
@@ -201,7 +203,8 @@ export default function TypePage() {
             <summary><ListTree size={15} /> 本课目录 · {outline.length} 节</summary>
             <OutlineLinks items={outline} activeId={activeId} />
           </details>
-        </header>
+          </header>
+        </AnimatedContent>
 
         {StaticBody ? (
           <>
@@ -214,7 +217,8 @@ export default function TypePage() {
             <div ref={completionRef} className="lesson-completion-marker" aria-hidden="true" />
           </Suspense>
         )}
-        <nav className="type-nav" aria-label="课程导航">
+        <AnimatedContent distance={12}>
+          <nav className="type-nav" aria-label="课程导航">
         {neighbors.previous ? (
           <Link to={neighbors.previous.path}>
             <span className="dir">← 上一类型</span>
@@ -237,7 +241,8 @@ export default function TypePage() {
             <span className="nm">题目索引</span>
           </Link>
         )}
-        </nav>
+          </nav>
+        </AnimatedContent>
       </article>
       <aside className="lesson-outline lesson-outline--desktop" aria-label="本课目录">
         <p className="lesson-outline__label"><ListTree size={14} /> 本课目录</p>

@@ -85,6 +85,7 @@ export default function PackMasterGame() {
   const curV = game.items.reduce((s, it, i) => s + (sel[i] ? it.v : 0), 0)
   const over = curW > game.cap
   const win = !over && revealed && curV === opt.value
+  const sameAsReference = sel.every((picked, index) => picked === opt.pick[index])
   const greedyBeaten = greedy.value < opt.value
 
   const toggle = (i: number) => {
@@ -113,16 +114,18 @@ export default function PackMasterGame() {
     playGameTone({ frequency: 420, duration: 0.06 }, muted)
   }
 
-  let feedback = '点物品放进背包，凑出你认为最大的总价值，再点「看 DP 最优」对照。'
+  let feedback = '点物品放进背包，凑出你认为最大的总价值，再核对最优值。'
   let fbClass = ''
   if (over) {
     feedback = `超重了！当前 ${curW} > 容量 ${game.cap}，先卸下点东西。`
     fbClass = 'over'
   } else if (win) {
-    feedback = `🎉 完美！你和 DP 一样，找到了最优解 ${opt.value}。`
+    feedback = sameAsReference
+      ? `正确！你找到了一组价值为 ${opt.value} 的最优取法。`
+      : `正确！你找到了另一组价值同为 ${opt.value} 的最优取法，不必和星标方案相同。`
     fbClass = 'win'
   } else if (revealed) {
-    feedback = `DP 最优是 ${opt.value}，你现在 ${curV}，还差 ${opt.value - curV}。带 ★ 的是一种最优取法。`
+    feedback = `最优价值是 ${opt.value}，你现在 ${curV}，还差 ${opt.value - curV}。星标方案只是参考最优解之一。`
   }
 
   return (
@@ -209,6 +212,9 @@ export default function PackMasterGame() {
               {greedyBeaten && (
                 <div className="game__compare-tip">贪心不是最优——这正是要用 DP 的原因。</div>
               )}
+              <div className="game__compare-tip">
+                星标只展示参考最优解之一。系统按容量合法性和总价值判定，不要求你的选法与星标一致。
+              </div>
             </div>
           )}
           <div className="game__actions">
@@ -216,7 +222,7 @@ export default function PackMasterGame() {
               <Shuffle size={16} /> 换一批
             </button>
             <button className="gbtn gbtn--primary" onClick={reveal}>
-              <Trophy size={16} /> 看 DP 最优
+              <Trophy size={16} /> 核对最优值
             </button>
           </div>
           <div className="game__stats">

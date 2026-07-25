@@ -92,7 +92,8 @@
 .home-hero__actions {
   display: flex;
   align-items: center;
-  gap: var(--sp-5);
+  column-gap: clamp(var(--sp-7), 4vw, var(--sp-9));
+  row-gap: var(--sp-5);
   margin-top: var(--sp-6);
   flex-wrap: wrap;
 }
@@ -482,7 +483,7 @@
   .home-hero__actions {
     align-items: flex-start;
     flex-direction: column;
-    gap: var(--sp-3);
+    gap: var(--sp-5);
   }
 
   .home-hero__primary {

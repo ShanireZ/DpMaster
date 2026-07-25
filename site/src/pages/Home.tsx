@@ -42,8 +42,8 @@ export default function Home() {
             </p>
             <div className="home-hero__actions">
               <Magnet className="home-hero__magnet">
-                <Link to="/part/a/01" className="home-hero__primary">
-                  从 01 背包开始 <ArrowRight size={18} />
+                <Link to="/part/a" className="home-hero__primary">
+                  从背包 DP 开始 <ArrowRight size={18} />
                 </Link>
               </Magnet>
               <Link to="/method" className="home-hero__secondary">

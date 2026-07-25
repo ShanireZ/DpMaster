@@ -64,6 +64,7 @@ export default function LISChainGame() {
   const dp = useMemo(() => solveLis(seq), [seq])
   const you = chainLen(selOrder)
   const win = revealed && you === dp.length && you > 0
+  const sameAsReference = dp.pick.every((picked, index) => picked === selOrder.includes(index))
 
   // 每个下标的选中序号（1-based）；未选为 0。用于卡片上标「链序」。
   const rank = useMemo(() => {
@@ -126,16 +127,18 @@ export default function LISChainGame() {
   }
 
   let feedback =
-    '从左到右依次点数字，接出一条尽量长的严格上升子序列（后一个要比前一个大），再点「看 DP 最优」对照。'
+    '从左到右依次点数字，接出一条尽量长的严格上升子序列（后一个要比前一个大），再核对最长长度。'
   let fbClass = ''
   if (win) {
-    feedback = `🎉 完美！你接出的长度 ${you}，和 DP 求得的最长上升子序列一样长。`
+    feedback = sameAsReference
+      ? `正确！你接出了一条长度为 ${you} 的最长上升子序列。`
+      : `正确！你接出了另一条长度同为 ${you} 的最长上升子序列，不必和星标方案相同。`
     fbClass = 'win'
   } else if (revealed) {
     feedback =
       you < dp.length
-        ? `DP 最长是 ${dp.length}，你接出了 ${you}，还差 ${dp.length - you}。带 ★ 的是一种最优接法。`
-        : `DP 最长是 ${dp.length}。带 ★ 的是一种最优接法。`
+        ? `最长长度是 ${dp.length}，你接出了 ${you}，还差 ${dp.length - you}。星标方案只是参考最长链之一。`
+        : `最长长度是 ${dp.length}。星标方案只是参考最长链之一。`
   } else if (selOrder.length) {
     feedback = `已接 ${you} 个：${selOrder.map((i) => seq[i]).join(' → ')}。还能往后接更大的数吗？`
   }
@@ -231,6 +234,9 @@ export default function LISChainGame() {
                   贪心「能接就接」常常不是最长——此刻接哪个，取决于后面还剩什么，这正是要用 DP 的原因。
                 </div>
               )}
+              <div className="game__compare-tip">
+                星标只展示参考最长链之一。系统按原下标顺序、严格递增和链长度判定。
+              </div>
             </div>
           )}
           <div className="game__actions">
@@ -238,7 +244,7 @@ export default function LISChainGame() {
               <RotateCcw size={16} /> 重接
             </button>
             <button className="gbtn gbtn--primary" onClick={reveal}>
-              <Trophy size={16} /> 看 DP 最优
+              <Trophy size={16} /> 核对最长长度
             </button>
           </div>
           <div className="game__actions">
