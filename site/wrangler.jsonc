@@ -41,7 +41,7 @@
 	"analytics_engine_datasets": [
 		{
 			"binding": "ANALYTICS",
-			"dataset": "dpmaster_events"
+			"dataset": "dpmaster"
 		}
 	],
 	"assets": {
