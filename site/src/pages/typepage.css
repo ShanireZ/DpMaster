@@ -301,22 +301,6 @@
 }
 .lesson-outline--mobile { display: none; }
 .lesson-completion-marker { height: 1px; }
-.lesson-scroll-progress {
-  position: fixed;
-  top: var(--topbar-h);
-  left: var(--sidebar-w);
-  right: 0;
-  z-index: calc(var(--z-nav) + 1);
-  height: 2px;
-  transform: scaleX(0);
-  transform-origin: left;
-  background: var(--grad-accent);
-  animation: lesson-reading-progress linear;
-  animation-timeline: scroll(root block);
-}
-@keyframes lesson-reading-progress {
-  to { transform: scaleX(1); }
-}
 
 @media (max-width: 1280px) {
   .typepage-layout { display: block; }
@@ -338,9 +322,6 @@
     cursor: pointer;
   }
   .lesson-outline--mobile ol { padding-bottom: var(--sp-3); }
-}
-@media (max-width: 1024px) {
-  .lesson-scroll-progress { left: 0; }
 }
 @media (max-width: 640px) {
   .typehead__titleline { align-items: flex-start; }

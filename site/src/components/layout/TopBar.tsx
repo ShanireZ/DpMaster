@@ -19,9 +19,10 @@ export default function TopBar({
   const part = pid ? getPart(pid) : undefined
   const type = part && slug ? part.types.find((t) => t.slug === slug) : undefined
   const currentLabel = getPageMeta(location.pathname).title.split(' · ')[0]
+  const isHome = location.pathname === '/'
 
   return (
-    <header className="topbar">
+    <header className={`topbar${isHome ? ' topbar--home' : ''}`}>
       <button
         className="icon-btn hamburger"
         onClick={onHamburger}
