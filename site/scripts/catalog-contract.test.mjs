@@ -11,7 +11,7 @@ test('one catalog owns every lesson and game implementation', () => {
   assert.equal(existsSync(catalogPath), true, 'src/data/catalog.ts must exist')
   const catalog = existsSync(catalogPath) ? readFileSync(catalogPath, 'utf8') : ''
 
-  assert.equal((catalog.match(/import\('\.\.\/content\//g) ?? []).length, 37)
+  assert.equal((catalog.match(/lessonContent\('\.\.\/content\//g) ?? []).length, 37)
   assert.equal((catalog.match(/import\('\.\.\/components\/games\//g) ?? []).length, 7)
 })
 

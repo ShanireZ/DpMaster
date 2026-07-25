@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from 'react'
-import { useLocation } from 'react-router-dom'
+import { Link, useLocation } from 'react-router-dom'
 import { MessageSquarePlus, X, Send, Check, Loader2 } from 'lucide-react'
 import { getPart } from '../../data/catalog'
 import { trackAnalyticsEvent } from '../../analytics/index.ts'
@@ -32,8 +32,10 @@ export default function FeedbackWidget() {
   const [desc, setDesc] = useState('')
   const [steps, setSteps] = useState('')
   const [contact, setContact] = useState('')
+  const [includeDiagnostics, setIncludeDiagnostics] = useState(false)
   const [status, setStatus] = useState<Status>('idle')
   const [errorMessage, setErrorMessage] = useState('')
+  const [receiptId, setReceiptId] = useState('')
   const [copied, setCopied] = useState(false)
   const [page, setPage] = useState('')
   const triggerRef = useRef<HTMLButtonElement>(null)
@@ -82,8 +84,10 @@ export default function FeedbackWidget() {
     setDesc('')
     setSteps('')
     setContact('')
+    setIncludeDiagnostics(false)
     setStatus('idle')
     setErrorMessage('')
+    setReceiptId('')
     setCopied(false)
   }
   const close = () => {
@@ -104,10 +108,11 @@ export default function FeedbackWidget() {
     description: desc.trim(),
     steps: steps.trim(),
     contact: contact.trim(),
-    url: typeof window !== 'undefined' ? window.location.href : '',
-    ua: typeof navigator !== 'undefined' ? navigator.userAgent : '',
-    viewport:
-      typeof window !== 'undefined' ? `${window.innerWidth}×${window.innerHeight}` : '',
+    url: includeDiagnostics && typeof window !== 'undefined' ? window.location.href : '',
+    ua: includeDiagnostics && typeof navigator !== 'undefined' ? navigator.userAgent : '',
+    viewport: includeDiagnostics && typeof window !== 'undefined'
+      ? `${window.innerWidth}×${window.innerHeight}`
+      : '',
     ts: new Date().toISOString(),
   })
 
@@ -120,7 +125,7 @@ export default function FeedbackWidget() {
       `描述：${p.description}`,
       p.steps && `复现/期望：${p.steps}`,
       p.contact && `联系方式：${p.contact}`,
-      `环境：${p.viewport} · ${p.ua}`,
+      p.viewport && `环境：${p.viewport} · ${p.ua}`,
       `时间：${p.ts}`,
     ]
       .filter(Boolean)
@@ -145,13 +150,18 @@ export default function FeedbackWidget() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(payload()),
       })
-      let result: { ok?: boolean; message?: string } | null = null
+      let result: {
+        ok?: boolean
+        status?: string
+        message?: string
+        requestId?: string
+      } | null = null
       try {
         result = await res.json()
       } catch {
         result = null
       }
-      if (!res.ok || !result?.ok) {
+      if (!res.ok || !result?.ok || result.status !== 'delivered') {
         setErrorMessage(
           res.status === 429
             ? '提交太频繁，请稍后再试。'
@@ -165,6 +175,7 @@ export default function FeedbackWidget() {
         })
         return
       }
+      setReceiptId(result.requestId || '')
       setStatus('ok')
       trackAnalyticsEvent({
         event: 'feedback_succeeded',
@@ -234,7 +245,12 @@ export default function FeedbackWidget() {
                   <Check size={26} />
                 </span>
                 <p className="fbw__done-title">已收到，谢谢你！</p>
-                <p className="fbw__done-sub">你的反馈会帮这份教程变得更准、更好。</p>
+                <p className="fbw__done-sub">反馈已送达维护通道，我们会据此复核和改进。</p>
+                {receiptId && (
+                  <p className="fbw__receipt">
+                    回执编号 <code>{receiptId}</code>
+                  </p>
+                )}
                 <button ref={doneRef} className="fbw__btn fbw__btn--primary" onClick={close}>
                   完成
                 </button>
@@ -308,6 +324,24 @@ export default function FeedbackWidget() {
                     placeholder="邮箱 / QQ / 微信，可留空匿名"
                     maxLength={120}
                   />
+                </div>
+
+                <div className="fbw__privacy">
+                  <label className="fbw__diagnostics">
+                    <input
+                      type="checkbox"
+                      checked={includeDiagnostics}
+                      onChange={(event) => setIncludeDiagnostics(event.target.checked)}
+                    />
+                    <span>
+                      附带设备诊断信息
+                      <small>当前完整网址、浏览器标识和视口尺寸，默认不收集。</small>
+                    </span>
+                  </label>
+                  <p>
+                    页面名称和路径会随反馈提交；联系方式可留空匿名。详见{' '}
+                    <Link to="/about#privacy" onClick={close}>隐私与反馈说明</Link>。
+                  </p>
                 </div>
 
                 {status === 'error' && (

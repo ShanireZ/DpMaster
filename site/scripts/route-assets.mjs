@@ -23,7 +23,7 @@ function contentModuleMap() {
     if (partMatch) partId = partMatch[1]
 
     const lessonMatch = line.match(
-      /\bslug:\s*'([^']+)'.*?\bstatus:\s*'ready'.*?\bimport\('(\.\.\/content\/[^']+)'\)/,
+      /\bslug:\s*'([^']+)'.*?\bstatus:\s*'ready'.*?\blessonContent\('(\.\.\/content\/[^']+)\.tsx'\s*,/,
     )
     if (!lessonMatch || !partId) continue
 
@@ -80,8 +80,26 @@ export function routeCssFiles(manifest, pathname) {
   return [...css]
 }
 
+export function routeModuleFiles(manifest, pathname) {
+  const files = new Set()
+  for (const moduleId of routeModuleIds(pathname)) {
+    const chunk = manifest[moduleId]
+    if (!chunk) throw new Error(`Vite manifest is missing route module ${moduleId}`)
+    files.add(chunk.file)
+    for (const imported of importedChunks(manifest, moduleId)) files.add(imported.file)
+  }
+  return [...files]
+}
+
 export function renderRouteCssLinks(manifest, pathname) {
   return routeCssFiles(manifest, pathname)
     .map((file) => `    <link rel="stylesheet" crossorigin href="/${file}" data-dp-route-css />`)
     .join('\n')
+}
+
+export function renderRouteAssetLinks(manifest, pathname) {
+  const modules = routeModuleFiles(manifest, pathname)
+    .map((file) => `    <link rel="modulepreload" crossorigin href="/${file}" data-dp-route-module />`)
+  const css = renderRouteCssLinks(manifest, pathname)
+  return [...modules, css].filter(Boolean).join('\n')
 }

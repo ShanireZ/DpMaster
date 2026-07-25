@@ -1,0 +1,49 @@
+import { lazy, type ComponentType } from 'react'
+
+export interface RouteViews {
+  Home: ComponentType
+  PartPage: ComponentType
+  TypePage: ComponentType
+  NotFound: ComponentType
+  AboutPage: ComponentType
+  MethodPage: ComponentType
+  ProblemsPage: ComponentType
+}
+
+const PAGE_LOADERS = {
+  Home: () => import('../pages/Home'),
+  PartPage: () => import('../pages/PartPage'),
+  TypePage: () => import('../pages/TypePage'),
+  NotFound: () => import('../pages/NotFound'),
+  AboutPage: () => import('../pages/AboutPage'),
+  MethodPage: () => import('../pages/MethodPage'),
+  ProblemsPage: () => import('../pages/ProblemsPage'),
+}
+
+export const CLIENT_ROUTE_VIEWS: RouteViews = {
+  Home: lazy(PAGE_LOADERS.Home),
+  PartPage: lazy(PAGE_LOADERS.PartPage),
+  TypePage: lazy(PAGE_LOADERS.TypePage),
+  NotFound: lazy(PAGE_LOADERS.NotFound),
+  AboutPage: lazy(PAGE_LOADERS.AboutPage),
+  MethodPage: lazy(PAGE_LOADERS.MethodPage),
+  ProblemsPage: lazy(PAGE_LOADERS.ProblemsPage),
+}
+
+export async function loadInitialRouteViews(pathname: string): Promise<RouteViews> {
+  const key: keyof RouteViews = pathname === '/'
+    ? 'Home'
+    : /^\/part\/[a-g]\/[^/]+$/.test(pathname)
+      ? 'TypePage'
+      : /^\/part\/[a-g]$/.test(pathname)
+        ? 'PartPage'
+        : pathname === '/method'
+          ? 'MethodPage'
+          : pathname === '/problems'
+            ? 'ProblemsPage'
+            : pathname === '/about'
+              ? 'AboutPage'
+              : 'NotFound'
+  const module = await PAGE_LOADERS[key]()
+  return { ...CLIENT_ROUTE_VIEWS, [key]: module.default }
+}

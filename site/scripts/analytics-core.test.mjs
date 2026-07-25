@@ -17,6 +17,7 @@ function request(body, options = {}) {
 
 test('analytics accepts a bounded first-party event without personal identifiers', async () => {
   const entries = []
+  const points = []
   const response = await handleAnalytics(
     request({
       provider: 'cloudflare',
@@ -26,7 +27,10 @@ test('analytics accepts a bounded first-party event without personal identifiers
       metadata: { region: 'international', ignored: { email: 'never logged' } },
       ts: '2026-07-25T00:00:00.000Z',
     }),
-    { log: (entry) => entries.push(entry) },
+    {
+      log: (entry) => entries.push(entry),
+      write: (entry) => points.push(entry),
+    },
   )
 
   assert.equal(response.status, 204)
@@ -34,6 +38,26 @@ test('analytics accepts a bounded first-party event without personal identifiers
   assert.deepEqual(entries[0].metadata, { region: 'international' })
   assert.equal(entries[0].provider, 'cloudflare')
   assert.equal(entries[0].name, 'page_view')
+  assert.equal(points.length, 1)
+})
+
+test('analytics preserves bounded numeric Web Vitals metadata', async () => {
+  const entries = []
+  const response = await handleAnalytics(
+    request({
+      provider: 'cloudflare',
+      event: 'web_vital',
+      path: '/part/a/01',
+      title: '01 背包',
+      metadata: { name: 'LCP', value: 1480.25, delta: 120.5, rating: 'good' },
+      ts: '2026-07-25T00:00:00.000Z',
+    }),
+    { log: (entry) => entries.push(entry) },
+  )
+
+  assert.equal(response.status, 204)
+  assert.equal(entries[0].metadata.value, 1480.25)
+  assert.equal(entries[0].metadata.name, 'LCP')
 })
 
 test('analytics rejects cross-origin and unsupported provider or event values', async () => {

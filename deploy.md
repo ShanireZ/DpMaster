@@ -58,6 +58,8 @@ npm run deploy:eo
 
 - `FEEDBACK_WEBHOOK_URL`
 - `FEEDBACK_WEBHOOK_SECRET`
+- `ALERT_WEBHOOK_URL`
+- `ALERT_WEBHOOK_SECRET`
 - Cloudflare API token
 - 腾讯云 SecretId / SecretKey
 - 本地 `.env`、`.dev.vars`、认证缓存或 CLI 登录缓存
@@ -154,6 +156,9 @@ npm run deploy:cf
 | `FEEDBACK_WEBHOOK_URL`    | Secret |           是 | 钉钉 webhook 完整 URL，包含 `access_token`。 |
 | `FEEDBACK_WEBHOOK_KIND`   | Text   |           是 | 钉钉填 `dingtalk`。                          |
 | `FEEDBACK_WEBHOOK_SECRET` | Secret | 加签模式必填 | 钉钉机器人加签密钥，通常以 `SEC` 开头。      |
+| `ALERT_WEBHOOK_URL`       | Secret |           否 | 前端错误与反馈送达失败的独立告警机器人。    |
+| `ALERT_WEBHOOK_KIND`      | Text   |           否 | 告警机器人类型，默认沿用反馈类型。           |
+| `ALERT_WEBHOOK_SECRET`    | Secret | 加签模式选填 | 告警机器人的签名密钥。                       |
 
 CLI 设置 Secret：
 
@@ -194,7 +199,7 @@ Invoke-RestMethod `
 
 验收标准：
 
-- HTTP 响应的 `ok` 为 `true`、`status` 为 `logged`，并带有 `requestId`。
+- HTTP 响应的 `ok` 为 `true`、`status` 为 `delivered`，并带有 `requestId`。
 - Cloudflare 日志出现结构化的 `feedback_received` 记录。
 - 配置 Webhook 时，日志还有同一 `requestId` 的 `feedback_webhook` 状态；钉钉目标群应收到消息。
 
@@ -259,6 +264,9 @@ EdgeOne 的变量要配置到生产环境的边缘函数运行时。控制台入
 | `FEEDBACK_WEBHOOK_URL`    | Secret |           是 | 钉钉 webhook 完整 URL，包含 `access_token`。 |
 | `FEEDBACK_WEBHOOK_KIND`   | String |           是 | 钉钉填 `dingtalk`。                          |
 | `FEEDBACK_WEBHOOK_SECRET` | Secret | 加签模式必填 | 钉钉机器人加签密钥。                         |
+| `ALERT_WEBHOOK_URL`       | Secret |           否 | 前端错误与反馈送达失败的独立告警机器人。     |
+| `ALERT_WEBHOOK_KIND`      | String |           否 | 告警机器人类型，默认沿用反馈类型。           |
+| `ALERT_WEBHOOK_SECRET`    | Secret | 加签模式选填 | 告警机器人的签名密钥。                       |
 
 EdgeOne 变量保存后需要部署才会生效。只保存不部署，线上函数可能仍读不到变量。
 
@@ -292,7 +300,7 @@ Invoke-RestMethod `
 
 验收标准：
 
-- HTTP 响应的 `ok` 为 `true`、`status` 为 `logged`，并带有 `requestId`。
+- HTTP 响应的 `ok` 为 `true`、`status` 为 `delivered`，并带有 `requestId`。
 - EdgeOne 函数日志出现结构化的 `feedback_received` 记录。
 - 配置 Webhook 时，日志还有同一 `requestId` 的 `feedback_webhook` 状态；钉钉目标群应收到消息。
 
@@ -389,9 +397,9 @@ Invoke-WebRequest `
 | `description` | 必填         | trim 后至少 4 个字符                                   |
 | `steps`       | 选填         | 复现步骤或期望                                         |
 | `contact`     | 选填         | 用户自愿留下的联系方式                                 |
-| `url`         | 前端附带     | 当前完整 URL，后端当前不使用                           |
-| `ua`          | 前端自动生成 | User-Agent                                             |
-| `viewport`    | 前端自动生成 | 视口尺寸                                               |
+| `url`         | 用户选择     | 勾选诊断信息后附带当前完整 URL                         |
+| `ua`          | 用户选择     | 勾选诊断信息后附带 User-Agent                         |
+| `viewport`    | 用户选择     | 勾选诊断信息后附带视口尺寸                             |
 | `ts`          | 前端自动生成 | ISO 时间                                               |
 
 字段长度上限与前端表单一致：`description` 2000、`steps` 1000、`contact` 120；请求整体不得超过 16 KB。类型必须是表中的五种之一，浏览器请求必须同源并使用 `application/json`。
@@ -407,9 +415,11 @@ Invoke-WebRequest `
 | JSON 过大                  |  413 | `error: "too_large"`                                         |
 | 同一来源 30 分钟内第 11 条     |  429 | `error: "rate_limited"`，并带 `Retry-After`                 |
 | 结构化日志写入失败            |  500 | `error: "log_failed"`                                        |
-| 日志已写入                  |  200 | `{ "ok": true, "status": "logged", "forwarded": …, "requestId": … }` |
+| Webhook 确认送达            |  200 | `{ "ok": true, "status": "delivered", "forwarded": true, "requestId": … }` |
+| Webhook 未配置              |  503 | `error: "delivery_unavailable"`                       |
+| Webhook 转发失败            |  502 | `error: "delivery_failed"`                            |
 
-合法请求会先输出一条 `[feedback]` 结构化日志，其中 `event=feedback_received`。这条日志写入后就视为“已收到”；Webhook 是尽力转发，未配置或转发失败都不会把浏览器的成功态改成失败。配置 Webhook 时，第二条 `event=feedback_webhook` 日志会记录 `forwarded`、`http_error`、`business_error` 或 `network_error`。日志不输出 Webhook URL 和签名密钥。
+合法请求会先输出一条 `[feedback]` 结构化日志，其中 `event=feedback_received`。只有 Webhook 返回成功且业务码通过时，浏览器才收到 `status: delivered` 和回执编号；未配置或转发失败会明确返回 503/502。第二条 `event=feedback_webhook` 日志会记录 `forwarded`、`http_error`、`business_error` 或 `network_error`。日志不输出 Webhook URL 和签名密钥。
 
 ### 限流边界
 
@@ -426,7 +436,7 @@ Invoke-WebRequest `
 | EdgeOne `/api/feedback` 返回 HTML      | catch-all 函数没有接住反馈分支，检查 `postbuild` 产物和 EdgeOne 函数日志。                          |
 | `/api/analytics` 返回 403              | 请求带了非本站 `Origin`；统计端点只允许同源浏览器请求。                                            |
 | `.cn` 页面 canonical 指向 `.cc`        | 错把 `dist/cloudflare/` 发布到了 EdgeOne；应重新发布 `dist/edgeone/`。                              |
-| 端点返回 `status: "logged"` 但钉钉没消息 | 用 `requestId` 查找 `feedback_webhook`，检查其 `http_error` / `business_error` / `network_error` 状态。              |
+| 端点返回 502 / 503                   | 检查生产环境的 `FEEDBACK_WEBHOOK_URL`，再按 `requestId` 查 `feedback_delivery_failed` / `feedback_delivery_unavailable`。 |
 | 端点返回 429                         | 同一来源在 30 分钟窗口已提交 10 条；按 `Retry-After` 等待，或核对平台限流规则。                       |
 | 钉钉签名错误                           | `FEEDBACK_WEBHOOK_SECRET` 是否与机器人加签密钥一致。                                                |
 | 钉钉关键词错误                         | 关键词是否包含 `反馈` 或 `DP大师`。                                                                 |

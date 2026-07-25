@@ -122,6 +122,22 @@ export default function AboutPage() {
         <p className="about-feedback">有建议或发现错误？点右下角的反馈按钮告诉我们。</p>
       </section>
 
+      <section className="about-block about-policy" id="privacy">
+        <h2 className="about-block__title">隐私与反馈说明</h2>
+        <p>
+          反馈表单只在你主动提交时发送数据。必需字段包括反馈类型、当前页面名称与路径、具体描述和提交时间；
+          复现步骤与联系方式均可留空。完整网址、浏览器标识和视口尺寸属于诊断信息，默认关闭，只有你勾选后才会附带。
+        </p>
+        <p>
+          提交成功仅在维护通道确认接收后显示，并提供回执编号；通道不可用时页面会明确提示失败，不会把“仅写入日志”冒充送达。
+          Web Vitals 与使用事件只记录页面路径、事件类别和性能数值，不采集姓名、联系方式或输入内容。
+        </p>
+        <p>
+          反馈内容用于定位错误、回复建议和改进课程。运行日志的保存期限由部署平台配置，维护策略应设为不超过 30 天；
+          需要删除曾提交的联系方式时，可在新反馈中附上原回执编号提出请求。
+        </p>
+      </section>
+
       <div className="about-cta">
         <Link to="/" className="about-btn about-btn--primary">
           回首页

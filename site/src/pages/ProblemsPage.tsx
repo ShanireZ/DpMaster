@@ -1,9 +1,12 @@
-import { useMemo, useState } from 'react'
-import { Link } from 'react-router-dom'
+import { useDeferredValue, useEffect, useMemo, useRef } from 'react'
+import { Link, useSearchParams } from 'react-router-dom'
 import { Search, ExternalLink } from 'lucide-react'
 import { PROBLEMS } from '../data/problems'
 import { PARTS } from '../data/catalog'
+import { trackAnalyticsEvent } from '../analytics/index.ts'
 import './problems.css'
+
+const PAGE_SIZE = 30
 
 const KINDS: { k: 'all' | 'example' | 'exercise'; label: string }[] = [
   { k: 'all', label: '全部' },
@@ -21,19 +24,60 @@ function diffTier(d: string): string {
 }
 
 export default function ProblemsPage() {
-  const [part, setPart] = useState<string>('all')
-  const [kind, setKind] = useState<'all' | 'example' | 'exercise'>('all')
-  const [q, setQ] = useState('')
+  const [searchParams, setSearchParams] = useSearchParams()
+  const requestedPart = searchParams.get('part') || 'all'
+  const part = requestedPart === 'all' || PARTS.some((item) => item.id === requestedPart)
+    ? requestedPart
+    : 'all'
+  const requestedKind = searchParams.get('kind')
+  const kind: 'all' | 'example' | 'exercise' =
+    requestedKind === 'example' || requestedKind === 'exercise' ? requestedKind : 'all'
+  const q = (searchParams.get('q') || '').slice(0, 80)
+  const deferredQ = useDeferredValue(q)
+  const lastSearchEvent = useRef('')
+
+  const updateParams = (
+    changes: Record<string, string>,
+    options: { resetPage?: boolean } = { resetPage: true },
+  ) => {
+    const next = new URLSearchParams(searchParams)
+    for (const [key, value] of Object.entries(changes)) {
+      if (!value || value === 'all' || (key === 'page' && value === '1')) next.delete(key)
+      else next.set(key, value)
+    }
+    if (options.resetPage !== false) next.delete('page')
+    setSearchParams(next, { replace: true })
+  }
 
   const filtered = useMemo(() => {
-    const query = q.trim().toLowerCase()
+    const query = deferredQ.trim().toLowerCase()
     return PROBLEMS.filter((p) => {
       if (part !== 'all' && p.part !== part) return false
       if (kind !== 'all' && p.kind !== kind) return false
       if (query && !`${p.pid} ${p.name} ${p.typeTitle}`.toLowerCase().includes(query)) return false
       return true
     })
-  }, [part, kind, q])
+  }, [part, kind, deferredQ])
+
+  const totalPages = Math.max(1, Math.ceil(filtered.length / PAGE_SIZE))
+  const requestedPage = Number.parseInt(searchParams.get('page') || '1', 10)
+  const page = Number.isFinite(requestedPage)
+    ? Math.min(Math.max(requestedPage, 1), totalPages)
+    : 1
+  const visible = filtered.slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE)
+  const pageNumbers = Array.from({ length: totalPages }, (_, index) => index + 1)
+    .filter((value) => value === 1 || value === totalPages || Math.abs(value - page) <= 2)
+
+  useEffect(() => {
+    const search = deferredQ.trim()
+    if (search.length < 2 || lastSearchEvent.current === search) return
+    lastSearchEvent.current = search
+    trackAnalyticsEvent({
+      event: filtered.length === 0 ? 'search_no_result' : 'search_used',
+      path: '/problems',
+      metadata: { queryLength: search.length, results: filtered.length },
+    })
+  }, [deferredQ, filtered.length])
 
   const exCount = PROBLEMS.filter((p) => p.kind === 'example').length
   const uniqueCount = new Set(PROBLEMS.map((p) => p.pid)).size
@@ -55,20 +99,20 @@ export default function ProblemsPage() {
           <Search size={16} />
           <input
             value={q}
-            onChange={(e) => setQ(e.target.value)}
+            onChange={(e) => updateParams({ q: e.target.value })}
             placeholder="搜题号 / 题名 / 类型…"
             aria-label="搜索题目"
           />
         </label>
         <div className="problems-chips">
-          <button className={`chip${part === 'all' ? ' on' : ''}`} onClick={() => setPart('all')}>
+          <button className={`chip${part === 'all' ? ' on' : ''}`} onClick={() => updateParams({ part: 'all' })}>
             全部家族
           </button>
           {readyParts.map((p) => (
             <button
               key={p.id}
               className={`chip${part === p.id ? ' on' : ''}`}
-              onClick={() => setPart(p.id)}
+              onClick={() => updateParams({ part: p.id })}
             >
               {p.code} · {p.title}
             </button>
@@ -79,7 +123,7 @@ export default function ProblemsPage() {
             <button
               key={k.k}
               className={`chip${kind === k.k ? ' on' : ''}`}
-              onClick={() => setKind(k.k)}
+              onClick={() => updateParams({ kind: k.k })}
             >
               {k.label}
             </button>
@@ -87,16 +131,24 @@ export default function ProblemsPage() {
         </div>
       </div>
 
-      <div className="problems-count">{filtered.length} 个条目</div>
+      <div className="problems-count" role="status">
+        {filtered.length} 个条目
+        {filtered.length > PAGE_SIZE && ` · 第 ${page} / ${totalPages} 页`}
+      </div>
 
       <div className="problems-list">
-        {filtered.map((p, i) => (
+        {visible.map((p, i) => (
           <div className="prob" key={`${p.pid}-${p.part}-${p.slug}-${i}`}>
             <a
               className="prob__pid"
               href={`https://www.luogu.com.cn/problem/${p.pid}`}
               target="_blank"
               rel="noreferrer"
+              onClick={() => trackAnalyticsEvent({
+                event: 'problem_outbound',
+                path: '/problems',
+                metadata: { problem: p.pid, part: p.part },
+              })}
             >
               {p.pid} <ExternalLink size={12} />
             </a>
@@ -116,6 +168,43 @@ export default function ProblemsPage() {
         ))}
         {filtered.length === 0 && <div className="problems-empty">没有匹配的题目。</div>}
       </div>
+
+      {filtered.length > PAGE_SIZE && (
+        <nav className="problems-pagination" aria-label="题库分页">
+          <button
+            type="button"
+            disabled={page === 1}
+            onClick={() => updateParams({ page: String(page - 1) }, { resetPage: false })}
+          >
+            上一页
+          </button>
+          <div className="problems-pagination__pages">
+            {pageNumbers.map((value, index) => {
+              const previous = pageNumbers[index - 1]
+              return (
+                <span key={value} className="problems-pagination__item">
+                  {previous && value - previous > 1 && <span aria-hidden="true">…</span>}
+                  <button
+                    type="button"
+                    className={value === page ? 'current' : ''}
+                    aria-current={value === page ? 'page' : undefined}
+                    onClick={() => updateParams({ page: String(value) }, { resetPage: false })}
+                  >
+                    {value}
+                  </button>
+                </span>
+              )
+            })}
+          </div>
+          <button
+            type="button"
+            disabled={page === totalPages}
+            onClick={() => updateParams({ page: String(page + 1) }, { resetPage: false })}
+          >
+            下一页
+          </button>
+        </nav>
+      )}
     </div>
   )
 }

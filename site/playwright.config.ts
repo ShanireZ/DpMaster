@@ -11,7 +11,7 @@ export default defineConfig({
     trace: 'retain-on-failure',
   },
   webServer: {
-    command: 'npm run preview -- --host 127.0.0.1 --port 4173 --strictPort',
+    command: 'node scripts/preview.mjs --host 127.0.0.1 --port 4173 --strictPort',
     url: baseURL,
     reuseExistingServer: false,
   },

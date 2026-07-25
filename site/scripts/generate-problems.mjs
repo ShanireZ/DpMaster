@@ -54,34 +54,35 @@ function collectLessons() {
     for (const typeNode of typesNode.elements) {
       if (!ts.isObjectLiteralExpression(typeNode)) continue
       const slug = literalText(objectProperty(typeNode, 'slug'), 'type.slug')
-      const contentPath = importTarget(objectProperty(typeNode, 'content'))
-      if (!contentPath) throw new Error(`Missing content import for ${part}/${slug}`)
+      const contentPath = lessonContentTarget(typeNode)
+      if (!contentPath) throw new Error(`Missing lesson content source for ${part}/${slug}`)
       lessons.set(`${part}/${slug}`, {
         part,
         partTitle,
         slug,
         typeTitle: literalText(objectProperty(typeNode, 'title'), 'type.title'),
-        sourcePath: resolve(dirname(catalogPath), `${contentPath}.tsx`),
+        sourcePath: resolve(dirname(catalogPath), contentPath),
       })
     }
   }
   return lessons
 }
 
-function importTarget(node) {
+function lessonContentTarget(object) {
   let target = null
   function visit(current) {
     if (
       ts.isCallExpression(current) &&
-      current.expression.kind === ts.SyntaxKind.ImportKeyword &&
-      current.arguments.length === 1
+      ts.isIdentifier(current.expression) &&
+      current.expression.text === 'lessonContent' &&
+      current.arguments.length >= 1
     ) {
-      target = literalText(current.arguments[0], 'lazy import')
+      target = literalText(current.arguments[0], 'lesson content source')
       return
     }
     ts.forEachChild(current, visit)
   }
-  visit(node)
+  visit(object)
   return target
 }
 

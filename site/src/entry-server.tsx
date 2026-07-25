@@ -1,6 +1,6 @@
 import { StrictMode } from 'react'
 import { prerender } from 'react-dom/static'
-import { StaticApp } from './app/App.tsx'
+import { StaticApp } from './app/StaticApp.tsx'
 
 export async function renderRoute(pathname: string): Promise<string> {
   const errors: unknown[] = []

@@ -38,7 +38,7 @@ test('browser verification starts a strict fresh production preview', async () =
   const config = await siteFile('playwright.config.ts')
   assert.match(
     config,
-    /command:\s*'npm run preview -- --host 127\.0\.0\.1 --port 4173 --strictPort'/,
+    /command:\s*'node scripts\/preview\.mjs --host 127\.0\.0\.1 --port 4173 --strictPort'/,
   )
   assert.match(config, /reuseExistingServer:\s*false/)
 })

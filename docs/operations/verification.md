@@ -43,9 +43,9 @@ Pure TypeScript Modules imported by Node tests must use explicit `.ts` extension
 
 # SEO And Accessibility Checks
 
-`npm run check:seo` verifies the 48-path catalog, route metadata, the checked-in international sitemap/robots baseline, real `llms.txt`, and 48-entry route summaries. It also checks the source contracts for dual-region outputs, React prerender/hydration, host-aware metadata, and real 404 handling. When routes or lesson readiness change, run `npm run seo:generate` and review all four generated files before committing them.
+`npm run check:seo` verifies the 48-path catalog, route metadata, the checked-in international sitemap/robots baseline, real `llms.txt`, 48-entry route summaries, and Git-derived `lastmod` data. It also checks the source contracts for dual-region outputs, React prerender/hydration, route CSS injection, host-aware metadata, and real 404 handling. When routes, lesson readiness, or route-owned source files change, run `npm run seo:generate` and review the generated files before committing them.
 
-The browser gate runs Chromium against built `dist/cloudflare` through a strict, non-reused custom preview server. Route tests directly open `/`, `/part/a`, `/part/a/01`, `/method`, and `/part/g/plug`, then exercise live client navigation and keyboard focus. They check HTTP status, prerendered HTML, hydration without errors, title/description/abstract/canonical/hreflang/Open Graph/JSON-LD metadata, one visible `h1`, route announcements, current-page semantics, initial-load focus, changed-route focus, and skip-link focus. An unknown path must return 404 with `noindex,nofollow`, no canonical, and the themed not-found heading.
+The browser gate runs Chromium against built `dist/cloudflare` through a strict, non-reused custom preview server. Route tests directly open `/`, `/part/a`, `/part/a/01`, `/method`, and `/part/g/plug`, then exercise live client navigation and keyboard focus. They check HTTP status, prerendered HTML, absence of pending streamed-Suspense placeholders, route CSS at first paint, hydration without errors, CLS below `0.05`, title/description/abstract/canonical/hreflang/Open Graph/JSON-LD metadata, one visible `h1`, route announcements, current-page semantics, initial-load focus, changed-route focus, and skip-link focus. An unknown path must return 404 with `noindex,nofollow`, no canonical, and the themed not-found heading.
 
 Two game tests cover the catalog-owned lazy boundary and shared runtime contracts. Pack must keep its chunk absent before the near-viewport gate, auto-load without a manual control, replay the currently displayed seed into the identical round with cleared interaction state, and preserve exact played/matched totals across replay, shuffle, difficulty, and reveal. BitBoard must suppress duplicate completion counts and rearm after clear. These tests do not provide arbitrary-seed entry or pixel-regression coverage.
 
@@ -96,7 +96,7 @@ Deployment checks live in root [deploy.md](../../deploy.md). At minimum after de
 * Request a made-up path and confirm HTTP 404 plus `noindex,nofollow`.
 * Submit a feedback test.
 * Confirm `POST /api/analytics` returns 204 for a valid same-origin event and inspect the platform log.
-* Confirm the receipt is `ok: true`, `status: logged`, and includes a `requestId`.
+* Confirm the receipt is `ok: true`, `status: delivered`, and includes a `requestId`.
 * Check Cloudflare or EdgeOne logs for the matching `feedback_received` event.
-* If webhook variables are configured, check the matching `feedback_webhook` status and DingTalk delivery separately; forwarding failure does not change the browser's received state.
+* Check the matching `feedback_webhook` status and destination message. Missing configuration or forwarding failure must return 503/502 and must not show a successful browser receipt.
 * For a rate-limit smoke test, use a disposable source and confirm request 11 inside 30 minutes returns 429 with `Retry-After`. The built-in limiter is per edge instance; configure the same policy at platform level when global enforcement is required.

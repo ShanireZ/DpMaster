@@ -22,7 +22,7 @@ export default function CodeBlock({
   useEffect(() => {
     let alive = true
     let idleHandle: number | undefined
-    let timeoutHandle: number | undefined
+    let timeoutHandle: ReturnType<typeof setTimeout> | undefined
     let observer: IntersectionObserver | undefined
 
     const highlight = () => {
@@ -41,7 +41,7 @@ export default function CodeBlock({
       if ('requestIdleCallback' in window) {
         idleHandle = window.requestIdleCallback(run, { timeout: 1200 })
       } else {
-        timeoutHandle = window.setTimeout(run, 80)
+        timeoutHandle = globalThis.setTimeout(run, 80)
       }
     }
 
@@ -66,7 +66,7 @@ export default function CodeBlock({
       if (idleHandle !== undefined && 'cancelIdleCallback' in window) {
         window.cancelIdleCallback(idleHandle)
       }
-      if (timeoutHandle !== undefined) window.clearTimeout(timeoutHandle)
+      if (timeoutHandle !== undefined) globalThis.clearTimeout(timeoutHandle)
     }
   }, [src, lang])
 

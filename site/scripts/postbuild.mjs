@@ -15,14 +15,24 @@ if (!existsSync(notFoundPath)) {
   process.exit(1)
 }
 
-function inlineModule(relativeUrl, returnName) {
+function inlineModule(relativeUrl, returnNames, prelude = '') {
   const source = readFileSync(fileURLToPath(new URL(relativeUrl, import.meta.url)), 'utf8')
+    .replace(/^import .*_webhook-core\.js['"]\r?\n/gm, '')
     .replace(/^export /gm, '')
-  return `(() => {\n${source}\nreturn { ${returnName} }\n})()`
+  return `(() => {\n${prelude}\n${source}\nreturn { ${returnNames.join(', ')} }\n})()`
 }
 
-const feedbackModule = inlineModule('../functions/_feedback-core.js', 'handleFeedback')
-const analyticsModule = inlineModule('../functions/_analytics-core.js', 'handleAnalytics')
+const webhookModule = inlineModule('../functions/_webhook-core.js', ['clip', 'forwardWebhook'])
+const feedbackModule = inlineModule(
+  '../functions/_feedback-core.js',
+  ['handleFeedback'],
+  'const { clip, forwardWebhook } = webhook',
+)
+const analyticsModule = inlineModule(
+  '../functions/_analytics-core.js',
+  ['handleAnalytics'],
+  'const { forwardWebhook } = webhook',
+)
 const notFoundHtml = readFileSync(notFoundPath, 'utf8')
 const internalBody = JSON.stringify({
   ok: false,
@@ -33,6 +43,7 @@ const internalBody = JSON.stringify({
 const fnDir = join(edgeOneDir, 'edge-functions')
 mkdirSync(fnDir, { recursive: true })
 const fnSource = `// 自动生成，请勿手改（源见 scripts/postbuild.mjs 与 functions/_*-core.js）。
+const webhook = ${webhookModule}
 const feedback = ${feedbackModule}
 const analytics = ${analyticsModule}
 const NOT_FOUND_HTML = ${JSON.stringify(notFoundHtml)}
@@ -69,7 +80,14 @@ export default async function onRequest(context) {
 
   if (pathname === '/api/analytics') {
     try {
-      if (request.method === 'POST') return await analytics.handleAnalytics(request)
+      if (request.method === 'POST') {
+        return await analytics.handleAnalytics(request, {
+          env: (context && context.env) || {},
+          waitUntil: context && typeof context.waitUntil === 'function'
+            ? context.waitUntil.bind(context)
+            : undefined,
+        })
+      }
       if (request.method === 'OPTIONS') return new Response(null, { status: 204 })
       return new Response('Method Not Allowed', { status: 405, headers: { Allow: 'POST' } })
     } catch (error) {

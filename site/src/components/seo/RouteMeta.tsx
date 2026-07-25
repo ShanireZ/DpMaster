@@ -71,9 +71,21 @@ export function RouteMeta() {
     upsertMeta('property', 'og:type', page.ogType)
     upsertMeta('property', 'og:site_name', BRAND.name)
     upsertMeta('property', 'og:locale', 'zh_CN')
-    upsertMeta('name', 'twitter:card', 'summary')
+    upsertMeta('property', 'og:image', `${site.origin}/og/dpmaster-social.jpg`)
+    upsertMeta('property', 'og:image:width', '1200')
+    upsertMeta('property', 'og:image:height', '630')
+    upsertMeta('property', 'og:image:alt', `${BRAND.name}动态规划状态空间与信标视觉`)
+    if (page.dateModified && page.ogType === 'article') {
+      upsertMeta('property', 'article:modified_time', page.dateModified)
+    } else {
+      document.head
+        .querySelector<HTMLMetaElement>('meta[property="article:modified_time"]')
+        ?.remove()
+    }
+    upsertMeta('name', 'twitter:card', 'summary_large_image')
     upsertMeta('name', 'twitter:title', page.title)
     upsertMeta('name', 'twitter:description', page.description)
+    upsertMeta('name', 'twitter:image', `${site.origin}/og/dpmaster-social.jpg`)
     syncStructuredData(structuredDataForPage(page, site))
   }, [page, site])
 

@@ -25,9 +25,14 @@ export function ThemeProvider({ children }: { children: ReactNode }) {
         /* ignore */
       }
       if (saved === 'light') setTheme('light')
+      else document.documentElement.dataset.theme = 'dark'
       return
     }
     document.documentElement.dataset.theme = theme
+    document.querySelector<HTMLMetaElement>('meta[name="theme-color"]')?.setAttribute(
+      'content',
+      theme === 'light' ? '#f4f1ea' : '#0b0a09',
+    )
     try {
       localStorage.setItem(KEY, theme)
     } catch {

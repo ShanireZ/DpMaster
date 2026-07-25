@@ -7,6 +7,14 @@ export type AnalyticsEventName =
   | 'feedback_submitted'
   | 'feedback_succeeded'
   | 'feedback_failed'
+  | 'web_vital'
+  | 'lesson_started'
+  | 'lesson_completed'
+  | 'problem_outbound'
+  | 'search_used'
+  | 'search_no_result'
+  | 'client_error'
+  | 'route_not_found'
 
 export interface AnalyticsEvent {
   event: AnalyticsEventName
@@ -26,12 +34,17 @@ function sendFirstPartyEvent(
   endpoint: string,
   event: AnalyticsEvent,
 ): void {
+  const site = getRuntimeSiteConfig()
   const body = JSON.stringify({
     provider,
     event: event.event,
     path: event.path,
     title: event.title ?? '',
-    metadata: event.metadata ?? {},
+    metadata: {
+      region: site.region,
+      build: import.meta.env.VITE_BUILD_ID || 'local',
+      ...(event.metadata ?? {}),
+    },
     ts: new Date().toISOString(),
   })
 

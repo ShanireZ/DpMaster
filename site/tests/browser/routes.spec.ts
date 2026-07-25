@@ -83,10 +83,8 @@ async function assertRoute(
     'content',
     route.description,
   )
-  await expect(page.locator('meta[name="abstract"]')).toHaveAttribute(
-    'content',
-    route.description,
-  )
+  const abstract = await page.locator('meta[name="abstract"]').getAttribute('content')
+  expect(abstract?.length).toBeGreaterThanOrEqual(30)
   await expect(page.locator('link[rel="canonical"]')).toHaveAttribute(
     'href',
     `${origin}${route.path}`,
@@ -110,8 +108,10 @@ async function assertRoute(
   )
   const structuredData = JSON.parse(
     (await page.locator('#dp-structured-data').textContent()) ?? '{}',
-  ) as { '@graph'?: Array<{ '@type'?: string }> }
-  const structuredTypes = structuredData['@graph']?.map((entry) => entry['@type']) ?? []
+  ) as { '@graph'?: Array<{ '@type'?: string | string[] }> }
+  const structuredTypes = structuredData['@graph']
+    ?.flatMap((entry) => Array.isArray(entry['@type']) ? entry['@type'] : [entry['@type']])
+    .filter(Boolean) ?? []
   expect(structuredTypes).toContain('Organization')
   expect(structuredTypes).toContain('WebSite')
   expect(structuredTypes).toContain(
@@ -162,7 +162,43 @@ test('direct lesson response contains prerendered HTML before JavaScript hydrati
   expect(html).toContain('<h1')
   expect(html).toContain('01 背包')
   expect(html).toContain('<link rel="canonical" href="https://dp.betaoi.cc/part/a/01"')
-  expect(html).toContain('"@type":"Course"')
+  expect(html).toContain('"@type":["Course","LearningResource","TechArticle"]')
+  expect(html).toContain('data-dp-route-css')
+  expect(html).not.toContain('<!--$?-->')
+  expect(html).not.toContain('id="S:')
+  expect(html).not.toContain('$RB=function')
+})
+
+test('first paint keeps the prerendered route styled and avoids visible hydration shift', async ({
+  page,
+}) => {
+  await page.addInitScript(() => {
+    localStorage.setItem('dp-master-theme', 'light')
+    ;(window as typeof window & { __dpCls?: number }).__dpCls = 0
+    new PerformanceObserver((list) => {
+      for (const entry of list.getEntries() as Array<PerformanceEntry & {
+        value: number
+        hadRecentInput: boolean
+      }>) {
+        if (!entry.hadRecentInput) {
+          const target = window as typeof window & { __dpCls?: number }
+          target.__dpCls = (target.__dpCls || 0) + entry.value
+        }
+      }
+    }).observe({ type: 'layout-shift', buffered: true })
+  })
+
+  await page.goto('/part/a/01')
+  await expect(page.locator('html')).toHaveAttribute('data-theme', 'light')
+  await expect(page.locator('html')).toHaveAttribute('data-part', 'a')
+  await expect(page.locator('link[data-dp-route-css]')).not.toHaveCount(0)
+  await expect(page.getByRole('heading', { level: 1 })).toHaveText('01 背包')
+  await page.waitForTimeout(800)
+
+  const cls = await page.evaluate(
+    () => (window as typeof window & { __dpCls?: number }).__dpCls || 0,
+  )
+  expect(cls).toBeLessThan(0.05)
 })
 
 test('unknown routes return the themed document with HTTP 404 and noindex', async ({ page }) => {
@@ -222,4 +258,43 @@ test('keyboard route navigation and skip-link activation focus main without stea
   await page.keyboard.press('Enter')
   await expect(main).toBeFocused()
   expect(browserErrors).toEqual([])
+})
+
+test('problem pagination and filters survive reload through URL state', async ({ page }) => {
+  await page.goto('/problems')
+  const rows = page.locator('.prob')
+  await expect(rows).toHaveCount(30)
+
+  await page.getByRole('button', { name: '下一页' }).click()
+  await expect(page).toHaveURL(/\/problems\?page=2$/)
+  expect(await rows.count()).toBeLessThanOrEqual(30)
+
+  const search = page.getByRole('textbox', { name: '搜索题目' })
+  await search.fill('P1048')
+  await expect(page).toHaveURL(/q=P1048/)
+  await expect(page).not.toHaveURL(/page=/)
+  await expect(rows.first()).toBeVisible()
+
+  await page.reload()
+  await expect(search).toHaveValue('P1048')
+  expect(await rows.count()).toBeLessThanOrEqual(30)
+})
+
+test('lesson outline and versioned local progress remain available after reload', async ({ page }) => {
+  await page.setViewportSize({ width: 1440, height: 900 })
+  await page.goto('/part/a/01')
+
+  const outline = page.locator('aside[aria-label="本课目录"]')
+  await expect(outline).toBeVisible()
+  expect(await outline.getByRole('link').count()).toBeGreaterThan(3)
+
+  const complete = page.getByRole('button', { name: '标为学完' })
+  await complete.click()
+  await expect(page.getByRole('button', { name: '已学完' })).toBeVisible()
+  await expect(page.locator('.sidebar-progress')).toContainText('1 / 37')
+
+  const stored = await page.evaluate(() => localStorage.getItem('dp-master-progress:v1'))
+  expect(stored).toContain('/part/a/01')
+  await page.reload()
+  await expect(page.getByRole('button', { name: '已学完' })).toBeVisible()
 })

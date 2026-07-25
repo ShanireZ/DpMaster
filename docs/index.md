@@ -29,6 +29,7 @@ This directory is the canonical OKF bundle for DP大师 after the July 7, 2026 d
 # Operations
 
 * [Verification](/operations/verification.md) - build/lint/doc checks and review gates.
+* [Analytics and Alerting](/operations/analytics.md) - RUM events, regional dashboards, feedback delivery, privacy, and alerts.
 * Deployment and feedback are maintained in the root [deploy.md](../deploy.md) because they are operational runbooks rather than bundle-only concepts.
 
 # Maintenance
