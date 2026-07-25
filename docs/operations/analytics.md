@@ -29,7 +29,7 @@ The UI collects feedback separately. Page name/path and feedback copy are sent o
 
 # Cloudflare Dashboard
 
-The international Worker writes every accepted event to the `dpmaster_events` Analytics Engine dataset through the `ANALYTICS` binding. Blob positions are:
+The international Worker writes every accepted event to the `dpmaster` Analytics Engine dataset through the `ANALYTICS` binding. Blob positions are:
 
 | Blob | Meaning |
 | ---: | --- |
@@ -48,7 +48,7 @@ Use Cloudflare Analytics Engine SQL for the event board. Core queries:
 
 ```sql
 SELECT blob2 AS event, SUM(double3) AS events
-FROM dpmaster_events
+FROM dpmaster
 WHERE timestamp > NOW() - INTERVAL '7' DAY
 GROUP BY event
 ORDER BY events DESC
@@ -58,7 +58,7 @@ ORDER BY events DESC
 SELECT blob3 AS path, blob5 AS metric,
        quantile(0.75)(double1) AS p75,
        SUM(double3) AS samples
-FROM dpmaster_events
+FROM dpmaster
 WHERE timestamp > NOW() - INTERVAL '7' DAY
   AND blob2 = 'web_vital'
 GROUP BY path, metric
@@ -69,7 +69,7 @@ ORDER BY metric, p75 DESC
 SELECT blob3 AS path,
        SUM(IF(blob2 = 'lesson_started', double3, 0)) AS starts,
        SUM(IF(blob2 = 'lesson_completed', double3, 0)) AS completions
-FROM dpmaster_events
+FROM dpmaster
 WHERE timestamp > NOW() - INTERVAL '30' DAY
 GROUP BY path
 ORDER BY starts DESC
