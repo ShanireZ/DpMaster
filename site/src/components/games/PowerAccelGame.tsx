@@ -181,10 +181,10 @@ export default function PowerAccelGame() {
   let fbClass = ''
   if (done) {
     if (used < fast) {
-      feedback = `🎉 超越快速幂！你只用 ${used} 步得到 x^${target}，比快速幂基线（${fast} 步）还少。`
+      feedback = `超越快速幂！你只用 ${used} 步得到 x^${target}，比快速幂基线（${fast} 步）还少。`
       fbClass = 'win'
     } else if (used === fast) {
-      feedback = `🎉 追平快速幂！你用 ${used} 步得到 x^${target}（正好等于快速幂基线 ${fast} 步）。`
+      feedback = `追平快速幂！你用 ${used} 步得到 x^${target}（正好等于快速幂基线 ${fast} 步）。`
       fbClass = 'win'
     } else {
       feedback = `到达 x^${target}，用了 ${used} 步。快速幂只要 ${fast} 步——试试更少的路线（可撤销）。`
@@ -354,7 +354,7 @@ export default function PowerAccelGame() {
               <Shuffle size={16} /> 换一批
             </button>
             <button className="gbtn gbtn--primary" onClick={reveal}>
-              <Trophy size={16} /> 看最优
+              <Trophy size={16} /> 核对效率基线
             </button>
           </div>
 

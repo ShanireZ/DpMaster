@@ -16,11 +16,10 @@ export default function Sidebar({ onNavigate }: { onNavigate?: () => void }) {
     <div className="sidebar-inner">
       <nav className="sidebar-nav" aria-label="主导航">
         <NavLink to="/" end className="brand" onClick={onNavigate}>
-          <span className="brand__mark" aria-hidden="true">DP</span>
           <span>
             <span className="brand__name">{BRAND.name}</span>
             <span className="brand__sub" style={{ display: 'block' }}>
-              动态规划教程
+              {'<DP Master>'}
             </span>
           </span>
         </NavLink>

@@ -62,11 +62,12 @@ export default function RerootGame() {
   }, [difficulty, roundSeed, startRound])
 
   // 换根一次算好每点距离和（O(n)），并布局
-  const { nodes, maxDepth, dist, best, bestNode } = useMemo(() => {
+  const { nodes, maxDepth, dist, best, bestNodes } = useMemo(() => {
     const t = buildRerootTree(n, edges, 0)
     const { nodes, maxDepth } = layoutRerootTree(t)
     const res = solveRerootDistance(t, 'unweighted')
-    return { nodes, maxDepth, dist: res.dist, best: res.best, bestNode: res.bestNode }
+    const bestNodes = res.dist.flatMap((value, id) => value === res.best ? [id] : [])
+    return { nodes, maxDepth, dist: res.dist, best: res.best, bestNodes }
   }, [n, edges])
 
   const distOfSel = dist[rootSel]
@@ -101,10 +102,10 @@ export default function RerootGame() {
   let feedback = '点一个节点把它当「集合点」，实时看它到所有其它点的距离和。挑战：找到距离和最小的点（树的重心方向）。'
   let fbClass = ''
   if (win) {
-    feedback = `🎉 命中重心！你选的节点 ${rootSel + 1} 距离和 ${distOfSel}，正是全树最小。换根一次就能同时算出所有点。`
+    feedback = `正确！节点 ${rootSel + 1} 的距离和 ${distOfSel} 是全树最小。${bestNodes.length > 1 ? '这棵树有多个同样正确的最优点。' : ''}`
     fbClass = 'win'
   } else if (revealed) {
-    feedback = `最小距离和是 ${best}（在节点 ${bestNode + 1}），你选的节点 ${rootSel + 1} 是 ${distOfSel}，还差 ${distOfSel - best}。绿圈才是重心。`
+    feedback = `最小距离和是 ${best}，最优点为节点 ${bestNodes.map((id) => id + 1).join('、')}。你选的节点 ${rootSel + 1} 是 ${distOfSel}，还差 ${distOfSel - best}。`
   }
 
   // SVG 布局
@@ -170,7 +171,7 @@ export default function RerootGame() {
               ))}
               {nodes.map((nd) => {
                 const isSel = nd.id === rootSel
-                const isBest = revealed && nd.id === bestNode
+                const isBest = revealed && bestNodes.includes(nd.id)
                 const fill = isSel
                   ? 'var(--grad-accent)'
                   : isBest
@@ -218,8 +219,8 @@ export default function RerootGame() {
                 </span>
               </div>
               <div className="game__compare-tip">
-                「看 DP 最优」用换根<strong>一次两遍 DFS</strong> 就同时算出全部 {n} 个点的距离和（图上每点已标 d 值），
-                {win ? '你正好命中了最小点。' : `其中最小在节点 ${bestNode + 1}。`}
+                换根 DP 用<strong>两遍 DFS</strong> 就能同时算出全部 {n} 个点的距离和（图上每点已标 d 值），
+                {win ? '你命中了一个最优点。' : `最优点为节点 ${bestNodes.map((id) => id + 1).join('、')}。`}
                 若逐点暴力则要 {n}×{n} 级别的工作量。
               </div>
             </div>
@@ -229,7 +230,7 @@ export default function RerootGame() {
               <Shuffle size={16} /> 换一棵树
             </button>
             <button className="gbtn gbtn--primary" onClick={reveal}>
-              <Trophy size={16} /> 看 DP 最优
+              <Trophy size={16} /> 核对最小值
             </button>
           </div>
           <div className="game__stats">

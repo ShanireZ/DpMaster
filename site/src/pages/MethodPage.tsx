@@ -4,6 +4,7 @@ import { ArrowRight, Sparkles } from 'lucide-react'
 import { M, MB } from '../components/ui/Math'
 import InfoBox from '../components/ui/InfoBox'
 import CodeBlock from '../components/ui/CodeBlock'
+import AnimatedContent from '../components/motion/AnimatedContent'
 import { PARTS } from '../data/catalog'
 import './typepage.css'
 import './about.css'
@@ -35,7 +36,8 @@ for (int i = 1; i <= n; i++)
 export default function MethodPage() {
   return (
     <article className="typepage">
-      <header className="typehead">
+      <AnimatedContent>
+        <header className="typehead">
         <span className="typehead__eyebrow">
           <span className="typehead__code">
             <Sparkles size={14} />
@@ -46,7 +48,8 @@ export default function MethodPage() {
         <p className="typehead__blurb">
           先把框架立起来，再进七大家族——学会用一张逐格填写的表，装下指数级的搜索。
         </p>
-      </header>
+        </header>
+      </AnimatedContent>
 
       <section className="lesson">
         <h2 className="section-title">动态规划在做什么</h2>
@@ -224,26 +227,28 @@ export default function MethodPage() {
         </div>
       </section>
 
-      <section className="lesson">
-        <h2 className="section-title">七大家族速览</h2>
-        <div className="prose">
-          <p>框架立好了，就进具体家族。每个家族其实是一类<strong>状态设计的范式</strong>——认出题目属于哪一类，状态怎么定就有了模板：</p>
-        </div>
-        <div className="about-parts" style={{ marginTop: 'var(--sp-5)' }}>
-          {PARTS.map((p) => (
-            <Link
-              to={`/part/${p.id}`}
-              key={p.id}
-              className="about-part"
-              style={{ ['--pg']: `var(--grad-${p.id})` } as CSSProperties}
-            >
-              <span className="about-part__code">{p.code}</span>
-              <span className="about-part__title">{p.title}</span>
-              <span className="about-part__n">{p.types.length}</span>
-            </Link>
-          ))}
-        </div>
-      </section>
+      <AnimatedContent distance={12}>
+        <section className="lesson">
+          <h2 className="section-title">七大家族速览</h2>
+          <div className="prose">
+            <p>框架立好了，就进具体家族。每个家族其实是一类<strong>状态设计的范式</strong>——认出题目属于哪一类，状态怎么定就有了模板：</p>
+          </div>
+          <div className="about-parts" style={{ marginTop: 'var(--sp-5)' }}>
+            {PARTS.map((p) => (
+              <Link
+                to={`/part/${p.id}`}
+                key={p.id}
+                className="about-part"
+                style={{ ['--pg']: `var(--grad-${p.id})` } as CSSProperties}
+              >
+                <span className="about-part__code">{p.code}</span>
+                <span className="about-part__title">{p.title}</span>
+                <span className="about-part__n">{p.types.length}</span>
+              </Link>
+            ))}
+          </div>
+        </section>
+      </AnimatedContent>
 
       <nav className="type-nav">
         <span />

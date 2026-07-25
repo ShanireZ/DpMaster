@@ -97,6 +97,7 @@ export default function TreePartyGame() {
   const curJoy = game.weight.reduce((s, w, i) => s + (sel[i] ? w : 0), 0)
   const valid = conflictPairs.length === 0
   const win = valid && revealed && curJoy === opt.ans
+  const sameAsReference = sel.every((picked, index) => picked === opt.chosen.has(index))
 
   const toggle = (i: number) => {
     playGameTone({ frequency: 430 + i * 40 }, muted)
@@ -124,16 +125,18 @@ export default function TreePartyGame() {
     playGameTone({ frequency: 420, duration: 0.06 }, muted)
   }
 
-  let feedback = '点员工把他请来舞会，凑最大欢乐值——但不能同时请一对直接上下级。再点「看 DP 最优」对照。'
+  let feedback = '点员工把他请来舞会，凑最大欢乐值，但不能同时请一对直接上下级。完成后核对最优值。'
   let fbClass = ''
   if (!valid) {
     feedback = `冲突！有直接上下级同时被选中（高亮成红色），先取消其中一个。`
     fbClass = 'over'
   } else if (win) {
-    feedback = `🎉 完美！你和树形 DP 一样，找到了最大欢乐独立集 ${opt.ans}。`
+    feedback = sameAsReference
+      ? `正确！你找到了一组欢乐值为 ${opt.ans} 的最优邀请方案。`
+      : `正确！你找到了另一组欢乐值同为 ${opt.ans} 的最优邀请方案，不必和星标方案相同。`
     fbClass = 'win'
   } else if (revealed) {
-    feedback = `DP 最优是 ${opt.ans}，你现在 ${curJoy}，还差 ${opt.ans - curJoy}。带 ★ 的是一种最优请法。`
+    feedback = `最优欢乐值是 ${opt.ans}，你现在 ${curJoy}，还差 ${opt.ans - curJoy}。星标方案只是参考最优解之一。`
   }
 
   // SVG 布局
@@ -244,7 +247,7 @@ export default function TreePartyGame() {
               <i style={{ borderColor: 'var(--viz-invalid)', background: 'transparent' }} /> 上下级冲突
             </span>
             <span>
-              <i style={{ borderColor: 'var(--viz-chosen)', background: 'transparent' }} /> DP 最优请法
+              <i style={{ borderColor: 'var(--viz-chosen)', background: 'transparent' }} /> 参考最优请法之一
             </span>
           </div>
         </div>
@@ -270,6 +273,9 @@ export default function TreePartyGame() {
                   贪心地「先请欢乐值最高的」往往不是最优——放弃一个高薪上司，可能腾出两个下属的名额。
                 </div>
               )}
+              <div className="tpg__compare-tip">
+                星标只展示参考最优解之一。系统按上下级约束和欢乐总值判定。
+              </div>
             </div>
           )}
           <div className="tpg__actions">
@@ -277,7 +283,7 @@ export default function TreePartyGame() {
               <Shuffle size={16} /> 换公司
             </button>
             <button className="tpg__btn tpg__btn--primary" onClick={reveal}>
-              <Trophy size={16} /> 看 DP 最优
+              <Trophy size={16} /> 核对最优值
             </button>
           </div>
           <div className="tpg__stats">

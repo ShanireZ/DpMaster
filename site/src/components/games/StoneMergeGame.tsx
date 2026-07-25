@@ -185,14 +185,14 @@ export default function StoneMergeGame() {
     feedback = `已选中第 ${firstSel + 1} 堆（值 ${heaps[firstSel].value}）——再点它左边或右边相邻的一堆完成合并。`
   }
   if (win) {
-    feedback = `🎉 完美！你的总代价 ${cost}，正好追平 DP 求得的最小合并代价。`
+    feedback = `正确！你的总代价 ${cost}，达到了 DP 求得的最小合并代价。其它达到同一总代价的合法合并顺序也同样正确。`
     fbClass = 'win'
   } else if (revealed) {
     feedback = done
       ? `DP 最小是 ${dpMin}，你的总代价 ${cost}，还差 ${cost - dpMin}。合并顺序不同，总代价就不同——这正是区间 DP 要解决的。`
       : `还没并完（剩 ${heaps.length} 堆）。DP 最小合并代价是 ${dpMin}，把石子并到只剩一堆再来对照吧。`
   } else if (done) {
-    feedback = `并完了！你的总代价 ${cost}。点「看 DP 最优」对照，看是不是最小。`
+    feedback = `并完了！你的总代价 ${cost}。核对一下它是否已经达到最小值。`
   }
 
   return (
@@ -291,6 +291,9 @@ export default function StoneMergeGame() {
                   ? '注意贪心（总挑最小相邻两堆）在这组也没压到最小——因为只能并相邻堆，此刻并哪对取决于全局，这正是要用区间 DP 的原因。'
                   : '这组贪心恰好也达到了最小，但它未必总是最优——只能并相邻堆时，最优要靠区间 DP 枚举所有断点。'}
               </div>
+              <div className="game__compare-tip">
+                系统只比较合并是否合法以及总代价是否最小，不要求使用某一条固定合并顺序。
+              </div>
             </div>
           )}
           <div className="game__actions">
@@ -306,7 +309,7 @@ export default function StoneMergeGame() {
               <Shuffle size={16} /> 换一批
             </button>
             <button className="gbtn gbtn--primary" onClick={reveal}>
-              <Trophy size={16} /> 看 DP 最优
+              <Trophy size={16} /> 核对最小值
             </button>
           </div>
           <div className="game__stats">
