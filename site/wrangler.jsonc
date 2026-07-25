@@ -38,6 +38,12 @@
 			"enabled": false
 		}
 	},
+	"analytics_engine_datasets": [
+		{
+			"binding": "ANALYTICS",
+			"dataset": "dpmaster_events"
+		}
+	],
 	"assets": {
 		"directory": "./dist/cloudflare/",
 		// 让 Worker 能通过 env.ASSETS.fetch() 取静态资源和 404 页面。

@@ -1,4 +1,5 @@
 // 区域无关的第一方统计接收器。只记录无身份、无联系方式的有限事件字段。
+import { forwardWebhook } from './_webhook-core.js'
 
 const BODY_LIMIT_BYTES = 4_000
 const PROVIDERS = new Set(['cloudflare', 'tencent-edgeone'])
@@ -8,7 +9,16 @@ const EVENTS = new Set([
   'feedback_submitted',
   'feedback_succeeded',
   'feedback_failed',
+  'web_vital',
+  'lesson_started',
+  'lesson_completed',
+  'problem_outbound',
+  'search_used',
+  'search_no_result',
+  'client_error',
+  'route_not_found',
 ])
+const ALERT_EVENTS = new Set(['client_error', 'feedback_failed'])
 
 const json = (body, status = 200, extraHeaders = {}) =>
   new Response(JSON.stringify(body), {
@@ -29,7 +39,14 @@ function normalizeMetadata(value) {
   return Object.fromEntries(
     entries
       .filter(([, item]) => ['string', 'number', 'boolean'].includes(typeof item))
-      .map(([key, item]) => [clippedString(key, 40), clippedString(item, 120)]),
+      .map(([key, item]) => {
+        const normalized = typeof item === 'string'
+          ? clippedString(item, 120)
+          : typeof item === 'number' && Number.isFinite(item)
+            ? item
+            : item
+        return [clippedString(key, 40), normalized]
+      }),
   )
 }
 
@@ -84,12 +101,36 @@ export async function handleAnalytics(request, runtime = {}) {
     title: clippedString(data.title, 160),
     metadata: normalizeMetadata(data.metadata),
     ts: clippedString(data.ts, 40),
+    schema: 1,
   }
   const log = runtime.log || ((value) => console.log('[analytics]', JSON.stringify(value)))
   try {
     log(entry)
+    runtime.write?.(entry)
   } catch {
     return fail('log_failed', '统计服务暂时不可用', 500)
+  }
+
+  const env = runtime.env || {}
+  if (ALERT_EVENTS.has(entry.name) && env.ALERT_WEBHOOK_URL) {
+    const alert = forwardWebhook({
+      baseUrl: env.ALERT_WEBHOOK_URL,
+      kind: env.ALERT_WEBHOOK_KIND || 'wecom',
+      secret: env.ALERT_WEBHOOK_SECRET,
+      text: [
+        'DP大师前端告警',
+        `事件：${entry.name}`,
+        `页面：${entry.path}`,
+        `详情：${JSON.stringify(entry.metadata)}`,
+      ].join('\n'),
+      fetchImpl: runtime.fetch || fetch,
+    }).then((result) => {
+      if (result.status !== 'forwarded') {
+        console.error('[analytics-alert]', JSON.stringify(result))
+      }
+    })
+    if (runtime.waitUntil) runtime.waitUntil(alert)
+    else await alert
   }
   return new Response(null, { status: 204 })
 }

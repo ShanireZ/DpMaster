@@ -1,5 +1,6 @@
 // 反馈处理核心 —— 被 Cloudflare Worker / Pages Functions / EdgeOne 共用。
 // 仅依赖 Fetch API 与 Web Crypto；运行时 Adapter 不得复制校验、限流或回执语义。
+import { clip, forwardWebhook } from './_webhook-core.js'
 
 const BODY_LIMIT_BYTES = 16_000
 const DEFAULT_LIMIT = 10
@@ -27,11 +28,7 @@ const fail = (error, message, status, extraHeaders) =>
   json({ ok: false, error, message }, status, extraHeaders)
 
 const defaultLog = (entry) => console.log('[feedback]', JSON.stringify(entry))
-
-function clip(value, maxLength) {
-  const text = String(value == null ? '' : value)
-  return text.length > maxLength ? `${text.slice(0, maxLength)}…` : text
-}
+const defaultErrorLog = (entry) => console.error('[feedback]', JSON.stringify(entry))
 
 function sourceFromRequest(request) {
   const forwarded = request.headers.get('cf-connecting-ip')
@@ -125,73 +122,6 @@ function buildText(data, id) {
   return lines.join('\n')
 }
 
-function webhookBody(kind, text) {
-  switch (kind) {
-    case 'feishu':
-      return { msg_type: 'text', content: { text } }
-    case 'discord':
-      return { content: text }
-    case 'slack':
-      return { text }
-    case 'dingtalk':
-    case 'wecom':
-    default:
-      return { msgtype: 'text', text: { content: text } }
-  }
-}
-
-async function dingtalkSignedUrl(baseUrl, secret, now) {
-  const timestamp = now()
-  const encoder = new TextEncoder()
-  const key = await crypto.subtle.importKey(
-    'raw',
-    encoder.encode(secret),
-    { name: 'HMAC', hash: 'SHA-256' },
-    false,
-    ['sign'],
-  )
-  const signature = await crypto.subtle.sign(
-    'HMAC',
-    key,
-    encoder.encode(`${timestamp}\n${secret}`),
-  )
-  let binary = ''
-  for (const byte of new Uint8Array(signature)) binary += String.fromCharCode(byte)
-  const separator = baseUrl.includes('?') ? '&' : '?'
-  return `${baseUrl}${separator}timestamp=${timestamp}&sign=${encodeURIComponent(btoa(binary))}`
-}
-
-async function forwardWebhook({ baseUrl, kind, secret, text, fetchImpl, now }) {
-  try {
-    const url = kind === 'dingtalk' && secret
-      ? await dingtalkSignedUrl(baseUrl, secret, now)
-      : baseUrl
-    const response = await fetchImpl(url, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(webhookBody(kind, text)),
-    })
-    if (!response.ok) return { status: 'http_error', code: response.status }
-
-    try {
-      const body = await response.clone().json()
-      if (body && typeof body === 'object') {
-        if (Number(body.errcode) !== 0 && body.errcode != null) {
-          return { status: 'business_error', code: Number(body.errcode), message: clip(body.errmsg, 160) }
-        }
-        if (Number(body.code) !== 0 && body.code != null) {
-          return { status: 'business_error', code: Number(body.code), message: clip(body.msg, 160) }
-        }
-      }
-    } catch {
-      // 非 JSON 的 2xx 响应仍视为转发成功。
-    }
-    return { status: 'forwarded', code: response.status }
-  } catch (error) {
-    return { status: 'network_error', message: clip(String(error), 200) }
-  }
-}
-
 export async function handleFeedback(request, env = {}, runtime = {}) {
   if (request.method !== 'POST') {
     return fail('method_not_allowed', '只支持 POST 请求', 405, { Allow: 'POST' })
@@ -246,6 +176,7 @@ export async function handleFeedback(request, env = {}, runtime = {}) {
   const baseUrl = env.FEEDBACK_WEBHOOK_URL
   const kind = env.FEEDBACK_WEBHOOK_KIND || 'wecom'
   const log = runtime.log || defaultLog
+  const errorLog = runtime.errorLog || defaultErrorLog
   const receipt = {
     event: 'feedback_received',
     requestId: id,
@@ -260,7 +191,16 @@ export async function handleFeedback(request, env = {}, runtime = {}) {
   }
 
   if (!baseUrl) {
-    return json({ ok: true, status: 'logged', forwarded: false, requestId: id })
+    errorLog({
+      event: 'feedback_delivery_unavailable',
+      requestId: id,
+      reason: 'webhook_not_configured',
+    })
+    return fail(
+      'delivery_unavailable',
+      '反馈通道尚未配置，请先复制反馈内容后通过公开渠道发送。',
+      503,
+    )
   }
 
   const webhook = await forwardWebhook({
@@ -274,13 +214,38 @@ export async function handleFeedback(request, env = {}, runtime = {}) {
   try {
     log({ event: 'feedback_webhook', requestId: id, webhook })
   } catch {
-    // 首条反馈日志已成功，转发诊断日志失败不改变“已收到”语义。
+    // 首条反馈日志已成功，转发诊断日志失败不改变最终送达判断。
+  }
+
+  if (webhook.status !== 'forwarded') {
+    const failure = {
+      event: 'feedback_delivery_failed',
+      requestId: id,
+      webhook,
+    }
+    errorLog(failure)
+    const alertUrl = env.ALERT_WEBHOOK_URL
+    if (alertUrl && alertUrl !== baseUrl) {
+      await forwardWebhook({
+        baseUrl: alertUrl,
+        kind: env.ALERT_WEBHOOK_KIND || kind,
+        secret: env.ALERT_WEBHOOK_SECRET,
+        text: `DP大师反馈通道异常\n编号：${id}\n状态：${webhook.status}`,
+        fetchImpl: runtime.fetch || fetch,
+        now,
+      })
+    }
+    return fail(
+      'delivery_failed',
+      '反馈暂时无法送达，请稍后重试，或复制反馈内容后通过公开渠道发送。',
+      502,
+    )
   }
 
   return json({
     ok: true,
-    status: 'logged',
-    forwarded: webhook.status === 'forwarded',
+    status: 'delivered',
+    forwarded: true,
     requestId: id,
   })
 }

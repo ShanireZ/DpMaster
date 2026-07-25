@@ -4,8 +4,37 @@
 import { handleFeedback } from './functions/_feedback-core.js'
 import { handleAnalytics } from './functions/_analytics-core.js'
 
+function analyticsRuntime(env, context) {
+  return {
+    env,
+    waitUntil: context?.waitUntil?.bind(context),
+    write(entry) {
+      if (!env.ANALYTICS) return
+      const metadata = entry.metadata || {}
+      env.ANALYTICS.writeDataPoint({
+        blobs: [
+          entry.provider,
+          entry.name,
+          entry.path,
+          entry.title,
+          String(metadata.name || ''),
+          String(metadata.rating || ''),
+          String(metadata.region || ''),
+          String(metadata.build || ''),
+        ],
+        doubles: [
+          Number(metadata.value || 0),
+          Number(metadata.delta || 0),
+          1,
+        ],
+        indexes: [entry.provider],
+      })
+    },
+  }
+}
+
 export default {
-  async fetch(request, env) {
+  async fetch(request, env, context) {
     const url = new URL(request.url)
     if (url.pathname === '/api/feedback') {
       if (request.method === 'POST') return handleFeedback(request, env)
@@ -13,7 +42,9 @@ export default {
       return new Response('Method Not Allowed', { status: 405, headers: { Allow: 'POST' } })
     }
     if (url.pathname === '/api/analytics') {
-      if (request.method === 'POST') return handleAnalytics(request)
+      if (request.method === 'POST') {
+        return handleAnalytics(request, analyticsRuntime(env, context))
+      }
       if (request.method === 'OPTIONS') return new Response(null, { status: 204 })
       return new Response('Method Not Allowed', { status: 405, headers: { Allow: 'POST' } })
     }

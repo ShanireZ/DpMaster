@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { Copy, Check, ExternalLink } from 'lucide-react'
 import { getHighlighter } from '../../lib/highlighter'
 import './codeblock.css'
@@ -17,21 +17,56 @@ export default function CodeBlock({
   const src = code.replace(/^\n+|\n+$/g, '')
   const [html, setHtml] = useState('')
   const [copied, setCopied] = useState(false)
+  const rootRef = useRef<HTMLDivElement>(null)
 
   useEffect(() => {
     let alive = true
-    getHighlighter()
-      .then((hl) =>
-        hl.codeToHtml(src, {
-          lang,
-          themes: { light: 'github-light', dark: 'github-dark' },
-          defaultColor: false,
-        }),
+    let idleHandle: number | undefined
+    let timeoutHandle: number | undefined
+    let observer: IntersectionObserver | undefined
+
+    const highlight = () => {
+      const run = () => {
+        getHighlighter()
+          .then((hl) =>
+            hl.codeToHtml(src, {
+              lang,
+              themes: { light: 'github-light', dark: 'github-dark' },
+              defaultColor: false,
+            }),
+          )
+          .then((h) => alive && setHtml(h))
+          .catch(() => {})
+      }
+      if ('requestIdleCallback' in window) {
+        idleHandle = window.requestIdleCallback(run, { timeout: 1200 })
+      } else {
+        timeoutHandle = window.setTimeout(run, 80)
+      }
+    }
+
+    const element = rootRef.current
+    if (!element || !('IntersectionObserver' in window)) {
+      highlight()
+    } else {
+      observer = new IntersectionObserver(
+        ([entry]) => {
+          if (!entry.isIntersecting) return
+          observer?.disconnect()
+          highlight()
+        },
+        { rootMargin: '360px 0px' },
       )
-      .then((h) => alive && setHtml(h))
-      .catch(() => {})
+      observer.observe(element)
+    }
+
     return () => {
       alive = false
+      observer?.disconnect()
+      if (idleHandle !== undefined && 'cancelIdleCallback' in window) {
+        window.cancelIdleCallback(idleHandle)
+      }
+      if (timeoutHandle !== undefined) window.clearTimeout(timeoutHandle)
     }
   }, [src, lang])
 
@@ -46,7 +81,7 @@ export default function CodeBlock({
   }
 
   return (
-    <div className="codeblock">
+    <div className="codeblock" ref={rootRef}>
       <div className="codeblock__bar">
         <span className="codeblock__title">{title ?? 'C++'}</span>
         <div className="codeblock__actions">
