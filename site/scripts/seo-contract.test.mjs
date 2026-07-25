@@ -1,8 +1,10 @@
 import assert from 'node:assert/strict'
 import { readFile } from 'node:fs/promises'
 import test from 'node:test'
+import { SITE_CONFIGS, SITE_ORIGIN } from '../src/config/site.ts'
 import { PARTS } from '../src/data/catalog.ts'
-import { SITE_ORIGIN, getPageMeta } from '../src/lib/pageMeta.ts'
+import { getPageMeta } from '../src/lib/pageMeta.ts'
+import { PUBLIC_PATHS } from '../src/lib/publicRoutes.ts'
 
 const siteRoot = new URL('../', import.meta.url)
 
@@ -10,106 +12,139 @@ async function siteSource(path) {
   return readFile(new URL(path, siteRoot), 'utf8')
 }
 
-test('homepage and static routes have stable canonical metadata', () => {
-  assert.equal(SITE_ORIGIN, 'https://dp.betaoi.cc')
-  const cases = [
-    ['/', 'DP大师 · 动态规划交互式教程'],
-    ['/method', '通用方法论 · DP大师'],
-    ['/problems', '题目索引 · DP大师'],
-    ['/about', '关于 · DP大师'],
-  ]
-  for (const [path, title] of cases) {
-    const meta = getPageMeta(path)
-    assert.equal(meta.title, title)
-    assert.equal(meta.canonical, `${SITE_ORIGIN}${path === '/' ? '/' : path}`)
-    assert.equal(meta.ogType, 'website')
-    assert.ok(meta.description.length >= 30)
-  }
-})
-
-test('all seven families derive metadata from the catalog', () => {
+test('the 48-route catalog is the single public-route contract', () => {
+  assert.equal(PUBLIC_PATHS.length, 48)
+  assert.equal(new Set(PUBLIC_PATHS).size, 48)
   assert.equal(PARTS.length, 7)
-  for (const part of PARTS) {
-    const meta = getPageMeta(`/part/${part.id}`)
-    assert.equal(meta.title, `${part.title} · DP大师`)
-    assert.equal(meta.canonical, `${SITE_ORIGIN}/part/${part.id}`)
-    assert.match(meta.description, new RegExp(part.title))
-    assert.equal(meta.ogType, 'website')
-  }
-})
-
-test('all 37 ready lessons use the approved title order and article metadata', () => {
-  const lessons = PARTS.flatMap((part) =>
-    part.types.filter((type) => type.status === 'ready').map((type) => ({ part, type })),
+  assert.equal(
+    PARTS.flatMap((part) => part.types.filter((type) => type.status === 'ready')).length,
+    37,
   )
-  assert.equal(lessons.length, 37)
-  for (const { part, type } of lessons) {
-    const path = `/part/${part.id}/${type.slug}`
-    const meta = getPageMeta(path)
-    assert.equal(meta.title, `${type.title} · ${part.title} · DP大师`)
-    assert.equal(meta.canonical, `${SITE_ORIGIN}${path}`)
-    assert.match(meta.description, new RegExp(type.title.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')))
-    assert.equal(meta.ogType, 'article')
+})
+
+test('both regions use host-aware canonical and equivalent hreflang alternates', () => {
+  assert.equal(SITE_ORIGIN, SITE_CONFIGS.international.origin)
+  assert.equal(SITE_CONFIGS.international.origin, 'https://dp.betaoi.cc')
+  assert.equal(SITE_CONFIGS.china.origin, 'https://dp.betaoi.cn')
+
+  for (const path of PUBLIC_PATHS) {
+    for (const site of Object.values(SITE_CONFIGS)) {
+      const meta = getPageMeta(path, site)
+      assert.equal(meta.canonical, `${site.origin}${path}`)
+      assert.equal(meta.indexable, true)
+      assert.equal(meta.alternates.length, 3)
+      assert.deepEqual(meta.alternates, [
+        {
+          hreflang: 'zh-Hans',
+          href: `${SITE_CONFIGS.international.origin}${path}`,
+        },
+        {
+          hreflang: 'zh-CN',
+          href: `${SITE_CONFIGS.china.origin}${path}`,
+        },
+        {
+          hreflang: 'x-default',
+          href: `${SITE_CONFIGS.international.origin}${path}`,
+        },
+      ])
+      assert.ok(meta.description.length >= 30)
+      assert.equal(meta.summary, meta.description)
+    }
   }
 })
 
-test('unknown routes receive not-found metadata without borrowing a lesson', () => {
-  const meta = getPageMeta('/part/z/missing')
-  assert.equal(meta.title, '页面未找到 · DP大师')
-  assert.equal(meta.canonical, `${SITE_ORIGIN}/part/z/missing`)
-  assert.equal(meta.ogType, 'website')
+test('all families and lessons derive branded metadata from the catalog', () => {
+  for (const part of PARTS) {
+    const family = getPageMeta(`/part/${part.id}`, SITE_CONFIGS.international)
+    assert.equal(family.title, `${part.title} · DP大师`)
+    assert.match(family.description, new RegExp(part.title))
+    assert.equal(family.routeKind, 'family')
+
+    for (const type of part.types.filter((entry) => entry.status === 'ready')) {
+      const lesson = getPageMeta(
+        `/part/${part.id}/${type.slug}`,
+        SITE_CONFIGS.international,
+      )
+      assert.equal(lesson.title, `${type.title} · ${part.title} · DP大师`)
+      assert.equal(lesson.ogType, 'article')
+      assert.equal(lesson.routeKind, 'lesson')
+      assert.equal(lesson.breadcrumbs.length, 3)
+    }
+  }
 })
 
-test('RouteMeta is the single DOM-head Adapter for every required tag', async () => {
+test('unknown routes are explicitly non-indexable and have no canonical alternates', () => {
+  const meta = getPageMeta('/part/z/missing', SITE_CONFIGS.international)
+  assert.equal(meta.title, '页面未找到 · DP大师')
+  assert.equal(meta.canonical, null)
+  assert.equal(meta.indexable, false)
+  assert.equal(meta.routeKind, 'not-found')
+  assert.deepEqual(meta.alternates, [])
+})
+
+test('RouteMeta owns every dynamic SEO tag including JSON-LD and noindex', async () => {
   const [adapter, app] = await Promise.all([
     siteSource('src/components/seo/RouteMeta.tsx'),
     siteSource('src/app/App.tsx'),
   ])
 
   assert.match(adapter, /useLocation\(\)/)
-  assert.match(adapter, /getPageMeta\(location\.pathname\)/)
+  assert.match(adapter, /getRuntimeSiteConfig\(\)/)
+  assert.match(adapter, /getPageMeta\(location\.pathname,\s*site\)/)
   assert.match(adapter, /document\.title\s*=\s*page\.title/)
-  for (const key of ['description', 'og:title', 'og:description', 'og:url', 'og:type', 'og:site_name']) {
+  for (const key of [
+    'description',
+    'abstract',
+    'robots',
+    'og:title',
+    'og:description',
+    'og:url',
+    'og:type',
+    'og:site_name',
+    'twitter:card',
+  ]) {
     assert.match(adapter, new RegExp(key.replace(':', '\\:')))
   }
+  assert.match(adapter, /structuredDataForPage/)
+  assert.match(adapter, /application\/ld\+json/)
+  assert.match(adapter, /hreflang/)
   assert.match(adapter, /rel\s*=\s*['"]canonical['"]/)
-  assert.match(adapter, /querySelector/)
-  assert.match(adapter, /createElement/)
   assert.match(app, /<RouteMeta \/>/)
   assert.equal((app.match(/<RouteMeta \/>/g) || []).length, 1)
 })
 
-test('sitemap and robots expose exactly the 48 approved canonical URLs', async () => {
-  const [sitemap, robots, generator, packageJson] = await Promise.all([
-    siteSource('public/sitemap.xml'),
-    siteSource('public/robots.txt'),
-    siteSource('scripts/generate-seo.mjs'),
-    siteSource('package.json').then(JSON.parse),
-  ])
-  const expectedPaths = [
-    '/',
-    ...PARTS.map((part) => `/part/${part.id}`),
-    ...PARTS.flatMap((part) =>
-      part.types
-        .filter((type) => type.status === 'ready')
-        .map((type) => `/part/${part.id}/${type.slug}`),
-    ),
-    '/method',
-    '/problems',
-    '/about',
-  ]
-  const expected = expectedPaths.map((path) => `${SITE_ORIGIN}${path}`)
+test('discovery files expose the 48 approved URLs and real summaries', async () => {
+  const [sitemap, robots, llms, routeSummaries, generator, publicRoutes, packageJson] =
+    await Promise.all([
+      siteSource('public/sitemap.xml'),
+      siteSource('public/robots.txt'),
+      siteSource('public/llms.txt'),
+      siteSource('public/route-summaries.json').then(JSON.parse),
+      siteSource('scripts/generate-seo.mjs'),
+      siteSource('src/lib/publicRoutes.ts'),
+      siteSource('package.json').then(JSON.parse),
+    ])
+  const expected = PUBLIC_PATHS.map((path) => `${SITE_CONFIGS.international.origin}${path}`)
   const actual = [...sitemap.matchAll(/<loc>([^<]+)<\/loc>/g)].map((match) => match[1])
 
-  assert.equal(expected.length, 48)
-  assert.equal(new Set(expected).size, 48)
   assert.deepEqual(actual, expected)
+  assert.equal((sitemap.match(/<xhtml:link /g) || []).length, 48 * 3)
+  assert.match(sitemap, /hreflang="zh-Hans"/)
+  assert.match(sitemap, /hreflang="zh-CN"/)
+  assert.match(sitemap, /hreflang="x-default"/)
   assert.match(robots, /User-agent:\s*\*/)
   assert.match(robots, /Allow:\s*\//)
-  assert.match(robots, new RegExp(`Sitemap: ${SITE_ORIGIN}/sitemap\\.xml`))
-  assert.match(generator, /\.\.\/src\/data\/catalog\.ts/)
-  assert.match(generator, /--write/)
-  assert.match(generator, /--check/)
+  assert.match(robots, /Sitemap: https:\/\/dp\.betaoi\.cc\/sitemap\.xml/)
+  assert.equal(routeSummaries.routes.length, 48)
+  assert.equal(routeSummaries.brand, 'DP大师')
+  assert.equal(
+    (llms.match(/^- \[[^\]]+\]\(https:\/\/dp\.betaoi\.cc/gm) || []).length,
+    48,
+  )
+  assert.match(llms, /## 可引用页面/)
+  assert.match(generator, /\.\.\/src\/lib\/publicRoutes\.ts/)
+  assert.match(generator, /generateDiscoveryFiles/)
+  assert.match(publicRoutes, /\.\.\/data\/catalog\.ts/)
   assert.equal(packageJson.scripts['check:seo'], 'node scripts/generate-seo.mjs --check')
   assert.match(packageJson.scripts.prebuild, /seo:generate/)
   assert.match(packageJson.scripts.verify, /check:content && npm run check:seo && npm run test/)
@@ -118,12 +153,44 @@ test('sitemap and robots expose exactly the 48 approved canonical URLs', async (
 test('static HTML gives crawlers complete homepage metadata before React runs', async () => {
   const html = await siteSource('index.html')
   assert.match(html, /<meta name="description" content="[^"]{30,}"/)
+  assert.match(html, /<meta name="abstract" content="[^"]{30,}"/)
+  assert.match(html, /<meta name="robots" content="index,follow"/)
   assert.match(html, /<link rel="canonical" href="https:\/\/dp\.betaoi\.cc\/"/)
+  assert.match(html, /hreflang="zh-Hans"/)
+  assert.match(html, /hreflang="zh-CN"/)
+  assert.match(html, /hreflang="x-default"/)
   for (const property of ['og:title', 'og:description', 'og:url', 'og:type', 'og:site_name']) {
     assert.match(html, new RegExp(`<meta property="${property}" content="[^"]+"`))
   }
   assert.match(html, /<meta name="theme-color" content="#[0-9a-fA-F]{6}"/)
-  assert.match(html, /<script type="application\/ld\+json">/)
+  assert.match(html, /<script[^>]+type="application\/ld\+json">/)
+  assert.match(html, /"@graph"/)
   assert.match(html, /"@type":\s*"WebSite"/)
   assert.match(html, /"url":\s*"https:\/\/dp\.betaoi\.cc\/"/)
+})
+
+test('build contracts provide two region outputs, SSR prerendering, hydration, and real 404s', async () => {
+  const [regions, prerender, main, wrangler, postbuild, preview, packageJson] =
+    await Promise.all([
+      siteSource('scripts/build-regions.mjs'),
+      siteSource('scripts/prerender.mjs'),
+      siteSource('src/main.tsx'),
+      siteSource('wrangler.jsonc'),
+      siteSource('scripts/postbuild.mjs'),
+      siteSource('scripts/preview.mjs'),
+      siteSource('package.json').then(JSON.parse),
+    ])
+
+  assert.match(regions, /dist\/cloudflare/)
+  assert.match(regions, /dist\/edgeone/)
+  assert.match(prerender, /PUBLIC_PATHS/)
+  assert.match(prerender, /404\.html/)
+  assert.match(prerender, /renderRouteHead/)
+  assert.match(main, /hydrateRoot/)
+  assert.match(wrangler, /"not_found_handling":\s*"404-page"/)
+  assert.match(postbuild, /status:\s*404/)
+  assert.match(postbuild, /x-robots-tag/)
+  assert.match(preview, /const status = file \? 200 : 404/)
+  assert.equal(packageJson.scripts.build, 'tsc -b && node scripts/build-regions.mjs')
+  assert.match(packageJson.scripts.preview, /scripts\/preview\.mjs/)
 })

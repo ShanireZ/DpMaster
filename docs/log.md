@@ -12,3 +12,7 @@
 * **2026-07-10 architecture remediation closure**: Closed the seven-task master plan at implementation snapshot `34c1c92`; the final 133-Node/9-Chromium gate covers 177 generated content slots, 48 canonical URLs, 29 algorithm teaching surfaces, 39 named-Result solver outcomes, weighted rerooting, exact-`Q` tree knapsack, key witness/argument invariants, input-domain and large-sentinel regressions, unified playback/safe captions, six seeded games, and seven-game statistics.
 * **Update**: Promoted root `deploy.md` as the single deployment and feedback runbook.
 * **Deprecation**: Removed root numbered planning docs, `handoff/` handoff notes, and `site/README.md` / `site/DEPLOY.md` as maintained documentation sources.
+
+## 2026-07-25
+
+* **Dual-region static delivery**: Added Cloudflare `.cc` and EdgeOne `.cn` build targets, catalog-derived prerendering for all 48 public routes, React hydration, per-host canonical/hreflang/discovery files, Course and Breadcrumb structured data, real noindex 404 responses, and a region-aware analytics layer with Cloudflare Web Analytics plus first-party EdgeOne events.

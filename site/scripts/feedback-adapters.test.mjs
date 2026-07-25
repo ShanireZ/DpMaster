@@ -43,9 +43,12 @@ test('EdgeOne generator strips every export from the inlined core', () => {
   assert.match(source, /replace\(\/\^export \/gm, ''\)/)
 })
 
-test('EdgeOne feedback exceptions return JSON instead of SPA HTML', () => {
+test('EdgeOne exceptions return JSON and unknown routes return real noindex 404s', () => {
   const source = readFileSync(join(siteDir, 'scripts', 'postbuild.mjs'), 'utf8')
   assert.match(source, /error:\s*['"]internal['"]/)
-  assert.match(source, /反馈服务暂时不可用/)
+  assert.match(source, /服务暂时不可用/)
+  assert.match(source, /pathname === '\/api\/analytics'/)
+  assert.match(source, /status:\s*404/)
+  assert.match(source, /x-robots-tag/)
   assert.doesNotMatch(source, /反馈分支异常.+SPA 兜底/)
 })
