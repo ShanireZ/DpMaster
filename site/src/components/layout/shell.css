@@ -3,7 +3,6 @@
   display: grid;
   grid-template-columns: var(--sidebar-current-w) minmax(0, 1fr);
   min-height: 100vh;
-  transition: grid-template-columns 0.42s var(--ease-out);
 }
 
 .skip-link {
@@ -44,6 +43,7 @@
   position: sticky;
   top: 0;
   align-self: start;
+  width: var(--sidebar-current-w);
   height: 100vh;
   overflow-x: hidden;
   overflow-y: auto;
@@ -53,7 +53,9 @@
   backdrop-filter: blur(18px);
   box-shadow: 20px 0 70px -62px color-mix(in srgb, var(--text-1) 22%, transparent);
   z-index: var(--z-nav);
-  transition: padding 0.42s var(--ease-out);
+  transition:
+    width 0.42s var(--ease-out),
+    padding 0.42s var(--ease-out);
 }
 
 .sidebar-inner {

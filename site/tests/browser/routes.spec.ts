@@ -335,6 +335,16 @@ test('desktop sidebar aligns nested lessons and remembers its compact rail state
   const familyYBefore = await page.locator('.nav-part__code').evaluateAll((codes) =>
     codes.map((code) => code.getBoundingClientRect().y),
   )
+  await page.evaluate(() => {
+    const main = document.querySelector('.main')
+    if (!main) return
+    let resizeCount = 0
+    const observer = new ResizeObserver(() => {
+      resizeCount += 1
+      document.documentElement.dataset.mainResizeCount = String(resizeCount)
+    })
+    observer.observe(main)
+  })
   await page.getByRole('button', { name: '收起侧栏' }).click()
   await expect(page.locator('.shell')).toHaveClass(/shell--sidebar-collapsed/)
   await expect(page.getByRole('button', { name: '展开侧栏' })).toBeVisible()
@@ -350,6 +360,7 @@ test('desktop sidebar aligns nested lessons and remembers its compact rail state
   familyYAfter.forEach((y, index) => {
     expect(Math.abs(y - familyYBefore[index])).toBeLessThanOrEqual(1)
   })
+  expect(Number(await page.locator('html').getAttribute('data-main-resize-count'))).toBeLessThanOrEqual(3)
   await expect.poll(() => page.evaluate(
     () => localStorage.getItem('dp-master-sidebar-collapsed:v1'),
   )).toBe('true')
@@ -380,6 +391,8 @@ test('home starts its entrance on the first styled frame and cancels trailing co
     return {
       imageAnimation: getComputedStyle(image).animationName,
       lineAnimation: getComputedStyle(line).animationName,
+      imageWidth: image.getBoundingClientRect().width,
+      heroWidth: hero.getBoundingClientRect().width,
       homeMarginBottom: Number.parseFloat(getComputedStyle(home).marginBottom),
       contentPaddingBottom: Number.parseFloat(getComputedStyle(content).paddingBottom),
       maximumScroll: document.documentElement.scrollHeight - window.innerHeight,
@@ -390,6 +403,12 @@ test('home starts its entrance on the first styled frame and cancels trailing co
   expect(firstFrameContract).not.toBeNull()
   expect(firstFrameContract?.imageAnimation).toBe('home-hero-image-intro')
   expect(firstFrameContract?.lineAnimation).toBe('home-hero-copy-intro')
+  expect(
+    Math.abs(
+      (firstFrameContract?.imageWidth ?? 0)
+      - (firstFrameContract?.heroWidth ?? 0),
+    ),
+  ).toBeLessThanOrEqual(1)
   expect(
     Math.abs(
       (firstFrameContract?.homeMarginBottom ?? 0)
@@ -412,6 +431,9 @@ test('first client-side route change keeps the application shell mounted', async
       if (!document.querySelector('.shell')) {
         document.documentElement.dataset.shellWasMissing = 'true'
       }
+      if (document.querySelectorAll('.route-stage').length > 1) {
+        document.documentElement.dataset.routeContentOverlapped = 'true'
+      }
     })
     monitor.observe(document.body, { childList: true, subtree: true })
   })
@@ -420,4 +442,5 @@ test('first client-side route change keeps the application shell mounted', async
   await expect(page).toHaveURL(/\/part\/a$/)
   await expect(page.locator('.partcover')).toBeVisible()
   expect(await page.locator('html').getAttribute('data-shell-was-missing')).toBeNull()
+  expect(await page.locator('html').getAttribute('data-route-content-overlapped')).toBeNull()
 })

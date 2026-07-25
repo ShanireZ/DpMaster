@@ -50,17 +50,21 @@ export default function HomeMotionController({ rootRef }: HomeMotionControllerPr
             }
             root.classList.add('home--gsap')
 
-            gsap.to('.home-hero__image', {
-              scale: 1.14,
-              yPercent: 4,
-              ease: 'none',
-              scrollTrigger: {
-                trigger: '.home-hero',
-                start: 'top top',
-                end: 'bottom top',
-                scrub: 1,
+            gsap.fromTo(
+              '.home-hero__image',
+              { scale: 1, yPercent: 0 },
+              {
+                scale: 1.14,
+                yPercent: 4,
+                ease: 'none',
+                scrollTrigger: {
+                  trigger: '.home-hero',
+                  start: 'top top',
+                  end: 'bottom top',
+                  scrub: 1,
+                },
               },
-            })
+            )
 
             gsap.to('.home-hero__content', {
               yPercent: -12,

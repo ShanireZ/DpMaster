@@ -10,6 +10,7 @@ import { getPageMeta } from '../../lib/pageMeta.ts'
 import './shell.css'
 
 const SIDEBAR_STORAGE_KEY = 'dp-master-sidebar-collapsed:v1'
+const layoutEase = [0.16, 1, 0.3, 1] as const
 
 export default function Shell() {
   const [mobileOpen, setMobileOpen] = useState(false)
@@ -93,12 +94,20 @@ export default function Shell() {
           aria-hidden={!mobileOpen}
           tabIndex={mobileOpen ? 0 : -1}
         />
-        <div className="main">
+        <motion.div
+          className="main"
+          layout
+          transition={
+            reduceMotion
+              ? { layout: { duration: 0 } }
+              : { layout: { duration: 0.42, ease: layoutEase } }
+          }
+        >
           <TopBar onHamburger={() => setMobileOpen((open) => !open)} mobileOpen={mobileOpen} />
           <main id="main-content" ref={mainRef} className="content" tabIndex={-1}>
             <RouteStage />
           </main>
-        </div>
+        </motion.div>
         <p className="route-announcer" role="status" aria-live="polite" aria-atomic="true">
           已进入 {routeMeta.title}
         </p>
