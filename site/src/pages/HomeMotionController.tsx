@@ -22,6 +22,19 @@ export default function HomeMotionController({ rootRef }: HomeMotionControllerPr
       const root = rootRef.current
       const media = gsap.matchMedia()
       const context = gsap.context(() => {
+        const topbar = document.querySelector('.topbar--home')
+        if (topbar) {
+          ScrollTrigger.create({
+            trigger: '.state-atlas',
+            start: 'top top',
+            end: 'bottom bottom',
+            toggleClass: {
+              targets: topbar,
+              className: 'topbar--atlas',
+            },
+          })
+        }
+
         media.add(
           {
             motionAllowed: '(prefers-reduced-motion: no-preference)',
