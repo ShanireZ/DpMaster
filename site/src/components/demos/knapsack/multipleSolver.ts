@@ -23,7 +23,7 @@ export function binarySplit(items: MultiItem[]): Pack[] {
   return splitMultipleItems(items)
 }
 
-/** 朴素打包数（Σmᵢ）与二进制打包数（Σ⌈log₂(mᵢ+1)⌉）——供工具条对比。 */
+/** 朴素打包数（Σmᵢ）与二进制打包数（Σ⌈log₂(mᵢ+1)⌉），供工具条对比。 */
 export function packCounts(items: MultiItem[]): { naive: number; binary: number } {
   return multiplePackCounts(items)
 }

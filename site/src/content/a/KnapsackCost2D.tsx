@@ -64,7 +64,7 @@ export default function KnapsackCost2D() {
         <h2 className="section-title">当一件东西，同时占两种资源</h2>
         <div className="prose">
           <p>
-            先看一个具体场景：你有 <strong>2 件</strong>物品，但背包这次卡的<strong>不是一条约束，而是两条</strong>——
+            先看一个具体场景：你有 <strong>2 件</strong>物品，但背包这次卡的<strong>不是一条约束，而是两条</strong>，
             物品 1 占「费用1 <M>{'a=1'}</M>、费用2 <M>{'b=2'}</M>」，价值 <M>{'v=3'}</M>；物品 2 占「<M>{'a=2,b=1'}</M>」，价值 <M>{'v=4'}</M>。
             背包要求：费用1 之和 <M>{'\\le A=4'}</M>，<strong>同时</strong>费用2 之和 <M>{'\\le B=4'}</M>。两条线都不能越界。
           </p>
@@ -78,10 +78,10 @@ export default function KnapsackCost2D() {
         <div className="prose">
           <p>
             这类约束在现实里遍地都是：买东西受<strong>钱</strong>和<strong>时间</strong>双重限制；装货受<strong>体积</strong>和<strong>质量</strong>双重限制；组队受<strong>预算</strong>和<strong>人数</strong>双重限制。
-            共同点是——<strong>每选一件，就要同时从两个「口袋」里各扣一笔</strong>，而且两个口袋<strong>互不相通</strong>：省下的时间换不来更多钱。
+            共同点是，<strong>每选一件，就要同时从两个「口袋」里各扣一笔</strong>，而且两个口袋<strong>互不相通</strong>：省下的时间换不来更多钱。
           </p>
           <p>
-            能不能只盯着一种费用做普通 01 背包，事后再检查另一种够不够？<strong>不行</strong>。因为「费用1 最省」的方案，费用2 未必也最省——两种费用的取舍是<strong>耦合</strong>的，必须一起进 DP 的状态，才知道某个费用1 的档位下、费用2 还剩多少空间。
+            能不能只盯着一种费用做普通 01 背包，事后再检查另一种够不够？<strong>不行</strong>。因为「费用1 最省」的方案，费用2 未必也最省，两种费用的取舍是<strong>耦合</strong>的，必须一起进 DP 的状态，才知道某个费用1 的档位下、费用2 还剩多少空间。
           </p>
         </div>
       </section>
@@ -122,12 +122,12 @@ export default function KnapsackCost2D() {
           <MB>{'dp[x][y]=\\max\\big(\\,dp[x][y],\\ dp[x-a_i][y-b_i]+v_i\\,\\big)'}</MB>
           <p>
             边界：<M>{'dp[x][y]=0'}</M>（一件不装，价值为 0）。答案：<M>{'dp[A][B]'}</M>。对照 01 背包
-            <Link to="/part/a/01" style={{ color: 'var(--accent-2)' }}>一维式</Link> <M>{'f[j]=\\max(f[j],\\ f[j-w_i]+v_i)'}</M>——
+            <Link to="/part/a/01" style={{ color: 'var(--accent-2)' }}>一维式</Link> <M>{'f[j]=\\max(f[j],\\ f[j-w_i]+v_i)'}</M>，
             二维费用只是把「一个下标 <M>{'j'}</M>、扣一种费用 <M>{'w'}</M>」换成「两个下标 <M>{'x,y'}</M>、同时扣两种费用 <M>{'a,b'}</M>」，方程骨架分毫未动。
           </p>
         </div>
         <InfoBox kind="key" title="本质">
-          二维费用不是新算法，而是给每件物品<strong>挂了两个属性标签</strong>：约束从一条变两条，DP 的状态维度就随之 <strong>+1</strong>。凡是「若干种<strong>相互独立</strong>的资源同时受限」，都照此把状态加一维即可——三种资源就加两维（时空代价会陡增，故通常止于二维）。
+          二维费用不是新算法，而是给每件物品<strong>挂了两个属性标签</strong>：约束从一条变两条，DP 的状态维度就随之 <strong>+1</strong>。凡是「若干种<strong>相互独立</strong>的资源同时受限」，都照此把状态加一维即可，三种资源就加两维（时空代价会陡增，故通常止于二维）。
         </InfoBox>
       </section>
 
@@ -160,7 +160,7 @@ export default function KnapsackCost2D() {
           <div className="step">
             <span className="step__n">3</span>
             <div className="step__b">
-              <b>读答案。</b> <M>{'dp[4][4]=7'}</M>——它对应「<strong>两件都装</strong>」：费用1 <M>{'1+2=3\\le4'}</M>、费用2 <M>{'2+1=3\\le4'}</M>，价值 <M>{'3+4=7'}</M>。两条约束同时满足，正是二维费用下的最优。
+              <b>读答案。</b> <M>{'dp[4][4]=7'}</M>，它对应「<strong>两件都装</strong>」：费用1 <M>{'1+2=3\\le4'}</M>、费用2 <M>{'2+1=3\\le4'}</M>，价值 <M>{'3+4=7'}</M>。两条约束同时满足，正是二维费用下的最优。
             </div>
           </div>
         </div>
@@ -180,12 +180,12 @@ export default function KnapsackCost2D() {
         <div className="prose">
           <p>
             注意演示里<strong>每处理一件，就把整张表刷一遍</strong>：能装下该件（<M>{'x\\ge a,\\ y\\ge b'}</M>）且更划算的格被抬高，其余不动。
-            这正是一维滚动写法的样子——只保留「当前这张二维表」，逐件在它上面就地更新。
+            这正是一维滚动写法的样子，只保留「当前这张二维表」，逐件在它上面就地更新。
           </p>
         </div>
         <div className="pointer-cue">
           <MousePointerClick size={18} />
-          用演示下方的按钮切到 <strong>「价值恒 1 · 数个数」</strong>模式：每件价值统一当 1，转移的 <M>{'+v_i'}</M> 变成 <M>{'+1'}</M>，<M>{'dp[x][y]'}</M> 就从「最大价值」变成「<strong>最多件数</strong>」——同一台机器，答案 <M>{'dp[4][4]'}</M> 从 7（价值）变成 2（装得下两件）。这正是下面「变形一」讲的 P1855 那一路。
+          用演示下方的按钮切到 <strong>「价值恒 1 · 数个数」</strong>模式：每件价值统一当 1，转移的 <M>{'+v_i'}</M> 变成 <M>{'+1'}</M>，<M>{'dp[x][y]'}</M> 就从「最大价值」变成「<strong>最多件数</strong>」，同一台机器，答案 <M>{'dp[4][4]'}</M> 从 7（价值）变成 2（装得下两件）。这正是下面「变形一」讲的 P1855 那一路。
         </div>
       </section>
 
@@ -198,11 +198,11 @@ export default function KnapsackCost2D() {
           </p>
           <MB>{'dp[x][y]=\\max\\big(\\,dp[x][y],\\ dp[x-a_i][y-b_i]+1\\,\\big)'}</MB>
           <p>
-            「求个数」和「求价值」在背包里本是<strong>同一台机器</strong>——把价值当成 1 计，最大价值就是最多件数。下面例题 P1855 正是这一路。
+            「求个数」和「求价值」在背包里本是<strong>同一台机器</strong>，把价值当成 1 计，最大价值就是最多件数。下面例题 P1855 正是这一路。
           </p>
           <p>
             <strong>变形二：把「二维」看成「朴素三属性物品」。</strong> 二维费用听着抽象，落到代码里不过是每件物品多带一个属性、循环多套一层。
-            像 P1507 那样「每份食物有体积、质量、卡路里」——体积和质量是两种费用，卡路里是价值，直接当普通 01 物品处理，只是背包状态是二维的 <M>{'dp[j][k]'}</M> 而已。
+            像 P1507 那样「每份食物有体积、质量、卡路里」，体积和质量是两种费用，卡路里是价值，直接当普通 01 物品处理，只是背包状态是二维的 <M>{'dp[j][k]'}</M> 而已。
           </p>
           <p>
             至于循环方向：一维滚动写法里，<strong>两种费用维都要倒序</strong>（<M>{'x'}</M> 从 <M>{'A'}</M> 到 <M>{'a'}</M>、<M>{'y'}</M> 从 <M>{'B'}</M> 到 <M>{'b'}</M>）。道理和 01 背包
@@ -246,7 +246,7 @@ export default function KnapsackCost2D() {
             「钱」= 费用1 <M>{'a'}</M>（上限 <M>{'A=M'}</M>），「时间」= 费用2 <M>{'b'}</M>（上限 <M>{'B=T'}</M>），每个愿望<strong>价值恒 1</strong>。二维费用最干净的入门题。
           </Field>
           <Field k="换个视角（价值恒 1 = 数个数）">
-            不问价值、只问个数——把每件价值设为 1，<M>{'dp[j][k]'}</M> 就是「花钱 <M>{'\\le j'}</M>、花时间 <M>{'\\le k'}</M> 时最多实现的愿望数」，转移的 <M>{'+v'}</M> 写成 <M>{'+1'}</M>。答案即 <M>{'dp[M][T]'}</M>。
+            不问价值、只问个数，把每件价值设为 1，<M>{'dp[j][k]'}</M> 就是「花钱 <M>{'\\le j'}</M>、花时间 <M>{'\\le k'}</M> 时最多实现的愿望数」，转移的 <M>{'+v'}</M> 写成 <M>{'+1'}</M>。答案即 <M>{'dp[M][T]'}</M>。
           </Field>
           <Field k="转移 · 复杂度">
             <M>{'dp[j][k]=\\max(dp[j][k],\\ dp[j-m_i][k-t_i]+1)'}</M>，两维都倒序；时间 <M>{'O(nMT)'}</M>。
@@ -264,7 +264,7 @@ export default function KnapsackCost2D() {
             「体积」= 费用1、「质量」= 费用2、「卡路里」= 价值。每份食物就是一个带<strong>两种费用、一个价值</strong>的普通 01 物品。
           </Field>
           <Field k="换个视角（二维 = 三属性物品）">
-            把「二维背包」想成「物品有三个数：两笔费用 + 一份价值」，代码结构和一维 01 背包<strong>只差一层循环</strong>——外层逐份食物，内层是费用1、费用2 两个倒序循环。
+            把「二维背包」想成「物品有三个数：两笔费用 + 一份价值」，代码结构和一维 01 背包<strong>只差一层循环</strong>，外层逐份食物，内层是费用1、费用2 两个倒序循环。
           </Field>
           <Field k="转移 · 复杂度">
             <M>{'dp[j][k]=\\max(dp[j][k],\\ dp[j-h_i][k-t_i]+c_i)'}</M>，两维都倒序；时间 <M>{'O(nHT)'}</M>。
@@ -283,7 +283,7 @@ export default function KnapsackCost2D() {
         <Exercise
           pid="P1509"
           name="找啊找啊找 GF"
-          hint="钱 + 人品双约束的二维费用背包：dp[j][k] 记「花钱 ≤ j、花人品 ≤ k」时能追到的最多女友数。难点在双关键字——先比女友数量最大，数量相同再比所花时间最少，转移时对这两个关键字依次取优。"
+          hint="钱 + 人品双约束的二维费用背包：dp[j][k] 记「花钱 ≤ j、花人品 ≤ k」时能追到的最多女友数。难点在双关键字，先比女友数量最大，数量相同再比所花时间最少，转移时对这两个关键字依次取优。"
         />
         <Exercise
           pid="P1855"

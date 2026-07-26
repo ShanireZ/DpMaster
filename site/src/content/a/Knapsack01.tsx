@@ -85,21 +85,21 @@ export default function Knapsack01() {
         <div className="prose">
           <p>
             先看一个具体场景：有 3 件物品，一个容量 <M>{'m=8'}</M> 的背包。每件物品有自己的<strong>重量 <M>{'w'}</M></strong> 和<strong>价值 <M>{'v'}</M></strong>，
-            而且要么<strong>整件装入</strong>、要么<strong>留下</strong>——没有「装半件」这回事（这就是「01」的含义：每件取 0 次或 1 次）。目标：在不超重的前提下，让装入的<strong>总价值最大</strong>。
+            而且要么<strong>整件装入</strong>、要么<strong>留下</strong>，没有「装半件」这回事（这就是「01」的含义：每件取 0 次或 1 次）。目标：在不超重的前提下，让装入的<strong>总价值最大</strong>。
           </p>
         </div>
         <figure className="figure">
           <SetupFigure />
-          <figcaption className="figure__cap">3 件物品（重量 w、价值 v）与容量 m=8 的背包——该带走哪些？</figcaption>
+          <figcaption className="figure__cap">3 件物品（重量 w、价值 v）与容量 m=8 的背包，该带走哪些？</figcaption>
         </figure>
         <div className="prose">
           <p>
             第一反应也许是<strong>贪心</strong>：按「性价比」<M>{'v/w'}</M> 从高到低装。这里三件的性价比是 <M>{'1.5,\\ 1.33,\\ 1.25'}</M>，
-            于是先装物品 1（<M>{'w=2'}</M>），再装物品 2（<M>{'w=3'}</M>，累计 5），想装物品 3 时 <M>{'5+4=9>8'}</M> 塞不下——贪心只拿到 <M>{'3+4=7'}</M>。
+            于是先装物品 1（<M>{'w=2'}</M>），再装物品 2（<M>{'w=3'}</M>，累计 5），想装物品 3 时 <M>{'5+4=9>8'}</M> 塞不下，贪心只拿到 <M>{'3+4=7'}</M>。
           </p>
           <p>
             可最优其实是<strong>物品 2 + 物品 3</strong>：重量 <M>{'3+4=7\\le 8'}</M>，价值 <M>{'4+5=9'}</M>。贪心输了 2。
-            <strong>「整件取舍」的最优，贪心按不住</strong>——因为此刻的最优选择，依赖后面还剩多少空间，是一个牵一发动全身的全局问题。
+            <strong>「整件取舍」的最优，贪心按不住</strong>，因为此刻的最优选择，依赖后面还剩多少空间，是一个牵一发动全身的全局问题。
           </p>
           <p>
             那把 <M>{'n'}</M> 件物品「取 / 不取」的所有组合都枚举一遍？那是 <M>{'2^n'}</M> 种，<M>{'n=100'}</M> 就已是天文数字。
@@ -113,7 +113,7 @@ export default function Knapsack01() {
         <div className="prose">
           <p>
             <strong>定状态。</strong>设 <M>{'f[i][j]'}</M> 表示：<strong>只在前 <M>{'i'}</M> 件物品里挑选、且总重量不超过 <M>{'j'}</M></strong> 时，能得到的最大价值。
-            把「逐件考虑」当作阶段，第 <M>{'i'}</M> 阶段只决断一件事——第 <M>{'i'}</M> 件，取还是不取？
+            把「逐件考虑」当作阶段，第 <M>{'i'}</M> 阶段只决断一件事，第 <M>{'i'}</M> 件，取还是不取？
           </p>
         </div>
         <figure className="figure">
@@ -166,7 +166,7 @@ export default function Knapsack01() {
             <span className="step__n">3</span>
             <div className="step__b">
               <b>放入物品 3</b>（<M>{'w=4,v=5'}</M>），看容量 8：取 = <M>{'f[2][8-4]+5=f[2][4]+5=4+5=9'}</M>，大于不取的 <M>{'f[2][8]=7'}</M>。
-              于是 <M>{'f[3][8]=9'}</M>——正是最优解，和我们手算的「物品 2+3」吻合。
+              于是 <M>{'f[3][8]=9'}</M>，正是最优解，和我们手算的「物品 2+3」吻合。
             </div>
           </div>
         </div>
@@ -193,7 +193,7 @@ export default function Knapsack01() {
           </p>
           <MB>{'f[j]=\\max\\big(f[j],\\ f[j-w_i]+v_i\\big)'}</MB>
           <p>
-            但方向<strong>必须逆推</strong>（<M>{'j'}</M> 从 <M>{'m'}</M> 到 <M>{'w_i'}</M>）：算 <M>{'f[j]'}</M> 要用「上一件」留下的 <M>{'f[j-w_i]'}</M>，逆推时它还没被本件动过，是<strong>干净的旧值</strong>。方向反过来会怎样？这不是小瑕疵，而是会让答案<strong>彻底跑偏</strong>——下一节把它摊开看。
+            但方向<strong>必须逆推</strong>（<M>{'j'}</M> 从 <M>{'m'}</M> 到 <M>{'w_i'}</M>）：算 <M>{'f[j]'}</M> 要用「上一件」留下的 <M>{'f[j-w_i]'}</M>，逆推时它还没被本件动过，是<strong>干净的旧值</strong>。方向反过来会怎样？这不是小瑕疵，而是会让答案<strong>彻底跑偏</strong>，下一节把它摊开看。
           </p>
         </div>
       </section>
@@ -205,13 +205,13 @@ export default function Knapsack01() {
             把内层循环从逆推改成<strong>正推</strong>（<M>{'j'}</M> 从 <M>{'w_i'}</M> 到 <M>{'m'}</M>），代码只差一个方向，结果却会错得离谱。病根就一句话：<strong>正推时，你用来更新 <M>{'f[j]'}</M> 的 <M>{'f[j-w_i]'}</M>，可能在本轮已经被同一件物品改过了。</strong>
           </p>
           <p>
-            用最干净的例子看——只有<strong>一件</strong>物品 <M>{'(w,v)=(2,3)'}</M>，容量 6：
+            用最干净的例子看，只有<strong>一件</strong>物品 <M>{'(w,v)=(2,3)'}</M>，容量 6：
           </p>
         </div>
         <figure className="figure">
           <ForwardBugFigure />
           <figcaption className="figure__cap">
-            同一件物品：逆推每格都取「装它之前」的旧值，恒为 3（只装 1 件）；正推却让 f[0]→f[2]→f[4]→f[6] 链式 +3，一路滚到 9——同一件被装了 3 次。
+            同一件物品：逆推每格都取「装它之前」的旧值，恒为 3（只装 1 件）；正推却让 f[0]→f[2]→f[4]→f[6] 链式 +3，一路滚到 9，同一件被装了 3 次。
           </figcaption>
         </figure>
         <div className="steps">
@@ -233,7 +233,7 @@ export default function Knapsack01() {
         </InfoBox>
         <div className="prose">
           <p>
-            下面把两个方向<strong>并排跑给你看</strong>——改物品的 <M>{'w,v'}</M> 或容量：左边逆推恒等于一件的价值，右边正推随容量成倍上涨。
+            下面把两个方向<strong>并排跑给你看</strong>，改物品的 <M>{'w,v'}</M> 或容量：左边逆推恒等于一件的价值，右边正推随容量成倍上涨。
           </p>
         </div>
         <div className="demo">
@@ -268,7 +268,7 @@ export default function Knapsack01() {
             <M>{'N'}</M> 个饰品，每个重量 <M>{'W_i'}</M>、魅力 <M>{'D_i'}</M>，背包承重 <M>{'M'}</M>，求最大魅力和。
           </Field>
           <Field k="为什么选它">
-            <M>{'N\\le 3402,\\ M\\le 12880'}</M>——二维表 <M>{'N\\times M'}</M> 直接 MLE，逼你写一维滚动数组。是讲「为何必须一维、为何倒序」的最佳载体。
+            <M>{'N\\le 3402,\\ M\\le 12880'}</M>，二维表 <M>{'N\\times M'}</M> 直接 MLE，逼你写一维滚动数组。是讲「为何必须一维、为何倒序」的最佳载体。
           </Field>
           <Field k="参考代码">
             <CodeBlock code={CODE_P2871} luogu="P2871" />

@@ -106,16 +106,16 @@ export default function KnapsackComplete() {
         <div className="prose">
           <p>
             完全背包与 01 背包只差一个字：01 里每件<strong>要么取要么留</strong>，完全里每种物品有<strong>无限件</strong>，同一种想拿几件就拿几件。
-            目标不变——在不超过容量的前提下，让装入的<strong>总价值最大</strong>。
+            目标不变，在不超过容量的前提下，让装入的<strong>总价值最大</strong>。
           </p>
         </div>
         <figure className="figure">
           <CompleteSetupFigure />
-          <figcaption className="figure__cap">每种物品都带 ×∞：容量 m=9 时，物品 1（w=2,v=3）可拿到 4 件价值 12，物品 2（w=3,v=5）可拿 3 件价值 15——同一种可反复取用。</figcaption>
+          <figcaption className="figure__cap">每种物品都带 ×∞：容量 m=9 时，物品 1（w=2,v=3）可拿到 4 件价值 12，物品 2（w=3,v=5）可拿 3 件价值 15，同一种可反复取用。</figcaption>
         </figure>
         <div className="prose">
           <p>
-            状态定义也不用改：<M>{'f[j]'}</M> 仍表示容量不超过 <M>{'j'}</M> 时的最大价值。变的只有一件事——
+            状态定义也不用改：<M>{'f[j]'}</M> 仍表示容量不超过 <M>{'j'}</M> 时的最大价值。变的只有一件事，
             「考虑第 <M>{'i'}</M> 种物品」这个动作，现在可以对同一种<strong>反复施加</strong>，而不是只做一次决断。
           </p>
         </div>
@@ -132,7 +132,7 @@ export default function KnapsackComplete() {
           </p>
         </div>
         <InfoBox kind="key" title="本质 · 为什么正推就对了">
-          正推时算 <M>{'f[j]'}</M> 用到的 <M>{'f[j-w_i]'}</M>，可能<strong>已经包含了第 <M>{'i'}</M> 种</strong>——于是这一种被自然地再取一次。
+          正推时算 <M>{'f[j]'}</M> 用到的 <M>{'f[j-w_i]'}</M>，可能<strong>已经包含了第 <M>{'i'}</M> 种</strong>，于是这一种被自然地再取一次。
           这正是 <Link to="/part/a/01" style={{ color: 'var(--accent-2)' }}>01 背包「不能正推」那一节</Link>里的同一个机制：在 01 里它是要极力避开的 bug，在完全背包里它<strong>恰恰是我们想要的特性</strong>。同一段转移，方向决定物种。
         </InfoBox>
       </section>
@@ -141,11 +141,11 @@ export default function KnapsackComplete() {
         <h2 className="section-title">为什么还是 O(nm)：从枚举件数到一次转移</h2>
         <div className="prose">
           <p>
-            「无限件」听起来更复杂，最朴素的想法是<strong>枚举第 <M>{'i'}</M> 种取几件</strong>：取 <M>{'0,1,2,\\dots'}</M> 件各算一遍再取最大——
+            「无限件」听起来更复杂，最朴素的想法是<strong>枚举第 <M>{'i'}</M> 种取几件</strong>：取 <M>{'0,1,2,\\dots'}</M> 件各算一遍再取最大，
           </p>
           <MB>{'f[i][j]=\\max_{k\\ge 0}\\ \\big(f[i-1][j-k\\,w_i]+k\\,v_i\\big)'}</MB>
           <p>
-            这比 01 多了一层「枚举件数」，复杂度升到 <M>{'O\\!\\big(nm\\cdot m/w\\big)'}</M>。但盯住 <M>{'f[i][j-w_i]'}</M> 看：它本身已经是「前 <M>{'i'}</M> 种、容量 <M>{'j-w_i'}</M>」把所有件数都枚举过的最优——<strong>已经包含了「再多取一件第 <M>{'i'}</M> 种」的全部可能</strong>。于是那一整层枚举可以折叠成<strong>一步</strong>：
+            这比 01 多了一层「枚举件数」，复杂度升到 <M>{'O\\!\\big(nm\\cdot m/w\\big)'}</M>。但盯住 <M>{'f[i][j-w_i]'}</M> 看：它本身已经是「前 <M>{'i'}</M> 种、容量 <M>{'j-w_i'}</M>」把所有件数都枚举过的最优，<strong>已经包含了「再多取一件第 <M>{'i'}</M> 种」的全部可能</strong>。于是那一整层枚举可以折叠成<strong>一步</strong>：
           </p>
           <MB>{'f[i][j]=\\max\\big(f[i-1][j],\\ f[i][j-w_i]+v_i\\big)'}</MB>
         </div>
@@ -157,7 +157,7 @@ export default function KnapsackComplete() {
         </figure>
         <div className="prose">
           <p>
-            降到一维后，<M>{'f[i][\\cdot]'}</M> 与 <M>{'f[i-1][\\cdot]'}</M> 共用同一个数组，「本行的 <M>{'f[j-w_i]'}</M>」正是<strong>正推</strong>时那个已被本种更新过的值——上一节循环方向的由来，到这里就完全说通了。
+            降到一维后，<M>{'f[i][\\cdot]'}</M> 与 <M>{'f[i-1][\\cdot]'}</M> 共用同一个数组，「本行的 <M>{'f[j-w_i]'}</M>」正是<strong>正推</strong>时那个已被本种更新过的值，上一节循环方向的由来，到这里就完全说通了。
           </p>
         </div>
       </section>
@@ -177,19 +177,19 @@ export default function KnapsackComplete() {
           <div className="step">
             <span className="step__n">1</span>
             <div className="step__b">
-              <b>正推到 <M>{'j=2'}</M>。</b> <M>{'f[2]=\\max(f[2],f[0]+3)=3'}</M>——放进第 <b>1</b> 件。
+              <b>正推到 <M>{'j=2'}</M>。</b> <M>{'f[2]=\\max(f[2],f[0]+3)=3'}</M>，放进第 <b>1</b> 件。
             </div>
           </div>
           <div className="step">
             <span className="step__n">2</span>
             <div className="step__b">
-              <b>正推到 <M>{'j=4'}</M>。</b> 此刻 <M>{'f[2]=3'}</M> <b>已经含这件了</b>，<M>{'f[4]=f[2]+3=6'}</M>——同一种又拿了 1 件，共 <b>2</b> 件。
+              <b>正推到 <M>{'j=4'}</M>。</b> 此刻 <M>{'f[2]=3'}</M> <b>已经含这件了</b>，<M>{'f[4]=f[2]+3=6'}</M>，同一种又拿了 1 件，共 <b>2</b> 件。
             </div>
           </div>
           <div className="step">
             <span className="step__n">3</span>
             <div className="step__b">
-              <b>正推到 <M>{'j=6'}</M>。</b> <M>{'f[6]=f[4]+3=9'}</M>——第 <b>3</b> 件。容量 6、每件重 2，最多 3 件，总价值 <b>9</b>。这就是完全背包要的答案。
+              <b>正推到 <M>{'j=6'}</M>。</b> <M>{'f[6]=f[4]+3=9'}</M>，第 <b>3</b> 件。容量 6、每件重 2，最多 3 件，总价值 <b>9</b>。这就是完全背包要的答案。
             </div>
           </div>
         </div>
@@ -203,7 +203,7 @@ export default function KnapsackComplete() {
         <h2 className="section-title">看它累积起来</h2>
         <div className="prose">
           <p>
-            改物品与容量，观察 <M>{'f[j]'}</M> 如何沿正方向累积——同一件物品在一条链上被反复加进来。这与 01 背包的
+            改物品与容量，观察 <M>{'f[j]'}</M> 如何沿正方向累积，同一件物品在一条链上被反复加进来。这与 01 背包的
             <Link to="/part/a/01" style={{ color: 'var(--accent-2)' }}> 「顺推 bug」</Link>是同一个机制，只是这里它是<strong>特性</strong>而非缺陷。
           </p>
         </div>
@@ -218,7 +218,7 @@ export default function KnapsackComplete() {
         <h2 className="section-title">01 还是完全？并排看差别</h2>
         <div className="prose">
           <p>
-            同一组物品、同一容量，左边按 01（每种至多 1 件）、右边按完全（每种无限件）各算一遍——改改 <M>{'w,v'}</M> 和容量，
+            同一组物品、同一容量，左边按 01（每种至多 1 件）、右边按完全（每种无限件）各算一遍，改改 <M>{'w,v'}</M> 和容量，
             看完全背包如何靠<strong>反复取用同一种</strong>，拿到不低于 01 的价值。
           </p>
         </div>
@@ -237,7 +237,7 @@ export default function KnapsackComplete() {
             与 P1048 采药同型，但每株草药可采<strong>无限次</strong>。求 <M>{'T'}</M> 时间内最大价值。
           </Field>
           <Field k="为什么选它">
-            和 01 背包的 P1048 构成「逆推 ↔ 正推」黄金对照——代码<strong>只差内层循环方向</strong>，一眼看清两类背包的分界。
+            和 01 背包的 P1048 构成「逆推 ↔ 正推」黄金对照，代码<strong>只差内层循环方向</strong>，一眼看清两类背包的分界。
           </Field>
           <Field k="参考代码（一维正推）">
             <CodeBlock code={CODE_P1616} luogu="P1616" />
@@ -281,7 +281,7 @@ export default function KnapsackComplete() {
 
       <div className="pointer-cue">
         <Gamepad2 size={18} />
-        回到 <Link to="/part/a" style={{ color: 'var(--accent-1)', fontWeight: 600 }}>A 部分页的「装包大师」</Link>时，不妨设想若同一件宝物可以无限件地装——完全背包正是把「每件只拿一次」的枷锁彻底松开的那一步。
+        回到 <Link to="/part/a" style={{ color: 'var(--accent-1)', fontWeight: 600 }}>A 部分页的「装包大师」</Link>时，不妨设想若同一件宝物可以无限件地装，完全背包正是把「每件只拿一次」的枷锁彻底松开的那一步。
       </div>
 
     </>

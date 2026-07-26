@@ -547,3 +547,292 @@
     transition-duration: 0.01ms;
   }
 }
+
+/* ---------------- A 背包 DP：polygon 图谱 ---------------- */
+.partpage[data-part-id='a'] .partcover {
+  min-height: clamp(600px, 72dvh, 760px);
+  background:
+    radial-gradient(circle at 76% 47%, color-mix(in srgb, var(--accent-1) 12%, transparent), transparent 38%),
+    linear-gradient(90deg, var(--canvas) 0 44%, color-mix(in srgb, var(--surface-1) 72%, var(--canvas)) 100%);
+}
+
+.partpage[data-part-id='a'] .partcover::before {
+  background-size: 72px 72px;
+  opacity: 0.48;
+  mask-image: linear-gradient(90deg, transparent 2%, #000 50%, #000 100%);
+}
+
+.partpage[data-part-id='a'] .partcover__frame {
+  width: min(100%, 1320px);
+  grid-template-columns: minmax(360px, 0.82fr) minmax(540px, 1.18fr);
+  gap: 0;
+  padding-top: clamp(var(--sp-6), 5vw, var(--sp-8));
+  padding-bottom: clamp(var(--sp-6), 5vw, var(--sp-8));
+}
+
+.partpage[data-part-id='a'] .partcover__code {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  clip-path: inset(50%);
+  white-space: nowrap;
+}
+
+.partpage[data-part-id='a'] .partcover h1 {
+  max-width: none;
+  font-size: clamp(70px, 7.1vw, 112px);
+  font-weight: 650;
+  line-height: 0.91;
+}
+
+.partpage[data-part-id='a'] .partcover__tag {
+  max-width: 38em;
+  margin-top: var(--sp-6);
+  font-size: clamp(16px, 1.45vw, 21px);
+}
+
+.partpage[data-part-id='a'] .partcover__actions {
+  align-items: flex-end;
+  margin-top: var(--sp-7);
+}
+
+.partpage[data-part-id='a'] .partcover__primary {
+  min-height: 56px;
+  padding-inline: var(--sp-6);
+  border-radius: 0;
+  font-size: 15px;
+}
+
+.partpage[data-part-id='a'] .partcover__art {
+  min-height: 540px;
+}
+
+.partpage[data-part-id='a'] .partcover__art::before,
+.partpage[data-part-id='a'] .partcover__art::after {
+  display: none;
+}
+
+.partcover__backpack {
+  width: min(48vw, 660px);
+  transform: translate(4%, 2%);
+  filter: drop-shadow(0 34px 80px color-mix(in srgb, var(--accent-1) 14%, transparent));
+}
+
+.partjourney--a {
+  min-height: 880px;
+  overflow: hidden;
+  padding: clamp(var(--sp-6), 4vw, var(--sp-8)) var(--content-px) clamp(var(--sp-7), 6vw, var(--sp-9));
+  border-bottom: 1px solid color-mix(in srgb, var(--accent-1) 42%, var(--border));
+  background:
+    linear-gradient(90deg, var(--canvas) 0 54%, color-mix(in srgb, var(--accent-1) 2%, var(--canvas)) 100%);
+}
+
+.partjourney--a .partjourney__header {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  clip-path: inset(50%);
+  white-space: nowrap;
+}
+
+.partjourney__polygon {
+  position: absolute;
+  z-index: 0;
+  top: -12px;
+  right: max(-120px, calc((100vw - 1440px) / 2 - 80px));
+  width: min(47vw, 650px);
+  opacity: 0.82;
+  pointer-events: none;
+}
+
+.partjourney--a .typepath {
+  z-index: 1;
+  width: min(100%, 1110px);
+  margin: 0 auto;
+  padding-right: min(34vw, 390px);
+}
+
+.partjourney--a .typepath::before {
+  top: 42px;
+  bottom: 42px;
+  left: 10px;
+  background: linear-gradient(
+    180deg,
+    var(--accent-1),
+    color-mix(in srgb, var(--accent-1) 64%, var(--border))
+  );
+}
+
+.partjourney--a .typewaypoint {
+  min-height: 88px;
+  padding: 0 0 0 54px;
+  justify-content: stretch;
+  contain-intrinsic-size: 0 88px;
+}
+
+.partjourney--a .typewaypoint::before {
+  left: 10px;
+  width: 14px;
+  height: 14px;
+  border-width: 1px;
+}
+
+.partjourney--a .typewaypoint:first-child::before {
+  background: var(--accent-1);
+}
+
+.partjourney--a .typewaypoint::after {
+  display: none;
+}
+
+.partjourney--a .typewaypoint__link {
+  min-height: 88px;
+  grid-template-columns: 46px minmax(0, 1fr) 30px;
+  gap: var(--sp-3);
+  padding: var(--sp-3) 0;
+  border-bottom: 1px solid var(--border);
+  text-align: left;
+  transition:
+    border-color var(--t-fast),
+    transform var(--t-med) var(--ease-out);
+}
+
+.partjourney--a .typewaypoint:last-child .typewaypoint__link {
+  border-bottom: 0;
+}
+
+.partjourney--a .typewaypoint__link:hover,
+.partjourney--a .typewaypoint__link:focus-visible {
+  border-color: color-mix(in srgb, var(--accent-1) 45%, var(--border));
+  transform: translateX(5px);
+}
+
+.partjourney--a .typewaypoint__num {
+  font-size: 18px;
+}
+
+.partjourney--a .typewaypoint__title {
+  font-size: clamp(18px, 1.7vw, 24px);
+}
+
+.partjourney--a .typewaypoint__blurb {
+  margin-top: 4px;
+  font-size: 12.5px;
+}
+
+.partjourney--a .typewaypoint__arrow {
+  justify-self: end;
+}
+
+.partpage[data-part-id='a'] .partlab {
+  padding-top: var(--sp-6);
+  background:
+    linear-gradient(90deg, color-mix(in srgb, var(--accent-1) 7%, transparent), transparent 58%),
+    var(--surface-1);
+}
+
+.partpage[data-part-id='a'] .partlab__header {
+  min-height: 106px;
+  align-items: center;
+  margin-bottom: var(--sp-5);
+}
+
+.partpage[data-part-id='a'] .partlab__header h2 {
+  font-size: clamp(24px, 2.5vw, 34px);
+}
+
+.partpage[data-part-id='a'] .partlab__icon,
+.partpage[data-part-id='a'] .partlab__stage,
+.partpage[data-part-id='a'] .partlab__stage .deferred-game,
+.partpage[data-part-id='a'] .partlab__stage .game,
+.partpage[data-part-id='a'] .partlab__stage .gbb {
+  border-radius: 0;
+}
+
+.partpage[data-part-id='a'] .partlab__stage {
+  padding: 0;
+  border: 1px solid var(--border-strong);
+  background: var(--border-strong);
+  box-shadow: none;
+}
+
+@media (max-width: 1000px) {
+  .partpage[data-part-id='a'] .partcover__frame {
+    grid-template-columns: minmax(300px, 0.9fr) minmax(390px, 1.1fr);
+  }
+
+  .partjourney--a .typepath {
+    padding-right: min(29vw, 280px);
+  }
+
+  .partjourney__polygon {
+    right: -160px;
+    width: 560px;
+    opacity: 0.52;
+  }
+}
+
+@media (max-width: 700px) {
+  .partpage[data-part-id='a'] .partcover__frame {
+    min-height: 760px;
+    grid-template-columns: 1fr;
+    gap: 0;
+  }
+
+  .partpage[data-part-id='a'] .partcover__art {
+    min-height: 330px;
+  }
+
+  .partcover__backpack {
+    width: min(94vw, 430px);
+    transform: translateY(4%);
+  }
+
+  .partpage[data-part-id='a'] .partcover h1 {
+    font-size: clamp(54px, 17vw, 76px);
+  }
+
+  .partpage[data-part-id='a'] .partcover__tag {
+    margin-top: var(--sp-4);
+    font-size: 15px;
+  }
+
+  .partpage[data-part-id='a'] .partcover__actions {
+    margin-top: var(--sp-5);
+  }
+
+  .partjourney--a {
+    min-height: auto;
+    padding-top: var(--sp-5);
+  }
+
+  .partjourney--a .typepath {
+    padding-right: 0;
+  }
+
+  .partjourney__polygon {
+    top: 120px;
+    right: -245px;
+    width: 500px;
+    opacity: 0.18;
+  }
+
+  .partjourney--a .typewaypoint {
+    min-height: 100px;
+    padding-left: 42px;
+  }
+
+  .partjourney--a .typewaypoint__link {
+    min-height: 100px;
+    grid-template-columns: 38px minmax(0, 1fr) 22px;
+  }
+
+  .partjourney--a .typewaypoint__title {
+    font-size: 19px;
+  }
+}

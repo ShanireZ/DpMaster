@@ -2,6 +2,7 @@ import { lazy, Suspense } from 'react'
 import { Link, useParams } from 'react-router-dom'
 import { ArrowRight, FlaskConical } from 'lucide-react'
 import PartGlyph from '../components/PartGlyph'
+import PolygonBackpack from '../components/art/PolygonBackpack'
 import { DeferredGame } from '../components/games/runtime/DeferredGame'
 import AnimatedContent from '../components/motion/AnimatedContent'
 import { getPart } from '../data/catalog'
@@ -23,9 +24,9 @@ export default function PartPage() {
   const firstLesson = part.types.find((type) => type.status === 'ready')
 
   return (
-    <div className="partpage">
+    <div className="partpage" data-part-id={part.id}>
       <AnimatedContent>
-        <header className="partcover">
+        <header className={`partcover partcover--${part.id}`}>
           <div className="partcover__frame">
             <div className="partcover__copy">
               <span className="partcover__code" aria-hidden="true">{part.code}</span>
@@ -41,21 +42,32 @@ export default function PartPage() {
               </div>
             </div>
             <div className="partcover__art" aria-hidden="true">
-              <span className="partcover__ghost">{part.code}</span>
-              <span className="partcover__glyph">
-                <PartGlyph id={part.id} size={360} />
-              </span>
+              {part.id === 'a' ? (
+                <PolygonBackpack className="partcover__backpack" />
+              ) : (
+                <>
+                  <span className="partcover__ghost">{part.code}</span>
+                  <span className="partcover__glyph">
+                    <PartGlyph id={part.id} size={360} />
+                  </span>
+                </>
+              )}
             </div>
           </div>
         </header>
       </AnimatedContent>
 
       <AnimatedContent className="partjourney-wrap" delay={0.04}>
-        <section className="partjourney" aria-labelledby="partjourney-title">
+        <section className={`partjourney partjourney--${part.id}`} aria-labelledby="partjourney-title">
           <div className="partjourney__header">
             <h2 id="partjourney-title">沿状态路径学习</h2>
             <p>每一站只解决一个关键转移，前一站的直觉会成为下一站的起点。</p>
           </div>
+          {part.id === 'a' && (
+            <div className="partjourney__polygon" aria-hidden="true">
+              <PolygonBackpack mode="wireframe" />
+            </div>
+          )}
           <ol className="typepath">
             {part.types.map((type, index) => {
               const num = String(index + 1).padStart(2, '0')
@@ -82,7 +94,7 @@ export default function PartPage() {
               return (
                 <li
                   key={type.slug}
-                  className={`typewaypoint typewaypoint--${index % 2 === 0 ? 'left' : 'right'}`}
+                  className={`typewaypoint typewaypoint--${part.id === 'a' ? 'left' : (index % 2 === 0 ? 'left' : 'right')}`}
                 >
                   {type.status === 'ready' ? (
                     <Link to={`/part/${part.id}/${type.slug}`} className="typewaypoint__link">
@@ -107,7 +119,7 @@ export default function PartPage() {
               <FlaskConical size={34} />
             </span>
             <div>
-              <h2 id="partlab-title">状态实验室</h2>
+              <h2 id="partlab-title">{part.id === 'a' ? '交互式实验室' : '状态实验室'}</h2>
               <p>在可视化环境里观察状态如何转移，再动手验证你的理解。</p>
             </div>
           </header>

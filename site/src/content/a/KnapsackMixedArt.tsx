@@ -1,7 +1,7 @@
 // 混合背包讲解用的插图（on-brand SVG，随强调色变色）。
 // 三张：MixedSetupFigure（三类物品同场）、DispatchFigure（件数属性→循环方向分派表）、MixedTraceFigure（同一维 f[j] 分段处理）。
 
-/** 三件物品各带件数徽标（×1 / ×∞ / ×m），一起进同一个背包——件数属性各不相同。 */
+/** 三件物品各带件数徽标（×1 / ×∞ / ×m），一起进同一个背包，件数属性各不相同。 */
 export function MixedSetupFigure() {
   const items = [
     { w: 2, v: 3, badge: '×1', tip: '恰一件' },

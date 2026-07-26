@@ -27,7 +27,7 @@ function settled(vals: (number | null)[][]): Record<string, CellState> {
  * 倒序保证 dp[x-a][y-b] 用的是「本件尚未装入」的旧值，故每件至多取一次。
  *
  * mode='value'：转移补 +v，dp 是「最大价值」。
- * mode='count'：价值恒 1，转移补 +1，dp 变成「两费用受限下最多能装几件」——这正是
+ * mode='count'：价值恒 1，转移补 +1，dp 变成「两费用受限下最多能装几件」，这正是
  *   「价值恒 1 = 数个数」这一变形（如 P1855 求最多愿望数）。
  *
  * 可视化：DPViz 网格的「行 r = 费用2 y（0..B）」「列 c = 费用1 x（0..A）」。
@@ -95,8 +95,8 @@ export function cost2D(items: C2Item[], A: number, B: number, mode: C2Mode = 'va
     values: snap(),
     states: fin,
     caption: count
-      ? `答案在右下角 <b>dp[${A}][${B}] = ${run.result.value}</b>——两种费用分别不超过 A=${A}、B=${B} 时最多能装 <b>${run.result.value}</b> 件（价值恒 1，故最大价值就是最多件数）。`
-      : `答案在右下角 <b>dp[${A}][${B}] = ${run.result.value}</b>——两种费用分别不超过 A=${A}、B=${B} 时能取得的最大价值。`,
+      ? `答案在右下角 <b>dp[${A}][${B}] = ${run.result.value}</b>，两种费用分别不超过 A=${A}、B=${B} 时最多能装 <b>${run.result.value}</b> 件（价值恒 1，故最大价值就是最多件数）。`
+      : `答案在右下角 <b>dp[${A}][${B}] = ${run.result.value}</b>，两种费用分别不超过 A=${A}、B=${B} 时能取得的最大价值。`,
     formula: `dp[${A}][${B}]=${run.result.value}`,
   })
 

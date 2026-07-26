@@ -19,7 +19,7 @@ const itemsStr = (items: readonly Group[number][], hit: number) =>
 /**
  * 一维分组背包 · 正确的循环顺序：
  *   for 组 g:  for j = W..0(倒序):  for 组内每件 (w,v):  f[j]=max(f[j], f[j-w]+v)
- * 容量循环夹在「组」与「组内件」之间——处理某组时，组内不管试哪一件，f[j-w] 用的都是
+ * 容量循环夹在「组」与「组内件」之间，处理某组时，组内不管试哪一件，f[j-w] 用的都是
  * 「本组尚未出手」的旧值，各件在同一起点上竞争，每组至多有一件胜出被计入。
  */
 export function groupOrderCorrect(groups: Group[], W: number): VizModel {
@@ -91,7 +91,7 @@ export function groupOrderCorrect(groups: Group[], W: number): VizModel {
 /**
  * 一维分组背包 · 错误的循环顺序：
  *   for 组 g:  for 组内每件 (w,v):  for j = W..0:  f[j]=max(f[j], f[j-w]+v)
- * 容量循环沉到最里层——组内每一件各自独立跑一遍完整倒序背包。前一件已改过 f[·]，后一件
+ * 容量循环沉到最里层，组内每一件各自独立跑一遍完整倒序背包。前一件已改过 f[·]，后一件
  * 又在「前一件已装进去」的结果上继续叠，于是同组多件可同时选中，答案偏大。
  */
 export function groupOrderWrong(groups: Group[], W: number): VizModel {
@@ -128,7 +128,7 @@ export function groupOrderWrong(groups: Group[], W: number): VizModel {
           `<b>${label(g)}</b> [${itemsStr(items, k)}] · 组内第 <b>${k + 1}</b> 件 <b>(${w},${v})</b> 单独跑倒序 · j=${j}：` +
           `f[${j - w}]+${v} = <b>${cand}</b> ${changed ? '&gt;' : '≤'} f[${j}]=<b>${oldJ}</b> → ${changed ? `更新为 <b>${cand}</b>` : '不变'}。`
         if (stacked) {
-          caption += ` <span class="bad">⚠ f[${j - w}] 已含本组更早的件——这一步把<b>同一组的两件叠在了一起</b>，组内互斥失效！</span>`
+          caption += ` <span class="bad">⚠ f[${j - w}] 已含本组更早的件，这一步把<b>同一组的两件叠在了一起</b>，组内互斥失效！</span>`
         }
         const formula = `f[${j}]=\\max(${oldJ},\\ ${cand - v}+${v})=${after}`
 

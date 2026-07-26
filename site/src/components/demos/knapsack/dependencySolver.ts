@@ -12,7 +12,7 @@ export type Master = DependencyMaster
 /** 主件的一个附件（合法与否取决于主件是否被选）。 */
 export type Accessory = DependencyAccessory
 
-/** 由「主件 + 所选附件子集」枚举出的一个合法组合——当作一件“分组物品”。 */
+/** 由「主件 + 所选附件子集」枚举出的一个合法组合，当作一件“分组物品”。 */
 export type Combo = DependencyCombo
 
 function settled(vals: (number | null)[][]): Record<string, CellState> {
@@ -24,7 +24,7 @@ function settled(vals: (number | null)[][]): Record<string, CellState> {
 
 /**
  * 依赖归约的核心：把「主件 + 它的附件的任一子集」枚举成若干**合法组合**。
- * 附件必须依主件而选——所以每个组合都**含主件**，再叠加附件的一个子集（2^附件数 个）。
+ * 附件必须依主件而选，所以每个组合都**含主件**，再叠加附件的一个子集（2^附件数 个）。
  * 于是「有依赖的背包」= 这些组合构成**同一组**、组内至多选一个的**分组背包**。
  */
 export function enumCombos(master: Master, acc: Accessory[]): Combo[] {
@@ -33,10 +33,10 @@ export function enumCombos(master: Master, acc: Accessory[]): Combo[] {
 
 /**
  * 有依赖的背包演示（单主件 + 若干附件）：
- *   第 1 阶段——枚举出所有合法组合（每个组合含主件 + 一个附件子集）；
- *   第 2 阶段——把这些组合当作**同一组**，做一维 f[j] 的分组背包（组内至多选一个）。
+ *   第 1 阶段，枚举出所有合法组合（每个组合含主件 + 一个附件子集）；
+ *   第 2 阶段，把这些组合当作**同一组**，做一维 f[j] 的分组背包（组内至多选一个）。
  * 网格用二维原型 f[组][j]：第 0 行是空组的地基，第 1 行 = 处理「这一组组合」后的结果，
- * 逐格取「不选本组」与「选组内某个组合」的较大者——恰好复用分组背包的转移。
+ * 逐格取「不选本组」与「选组内某个组合」的较大者，恰好复用分组背包的转移。
  */
 export function dependencyKnapsack(master: Master, acc: Accessory[], W: number): VizModel {
   const run = recordDependencyKnapsack(master, acc, W)
@@ -54,7 +54,7 @@ export function dependencyKnapsack(master: Master, acc: Accessory[], W: number):
     states: settled(f),
     caption:
       `<b>第一步：枚举组合</b>。附件必须依主件而选，所以每个合法组合都含主件，再叠加附件的一个子集，` +
-      `共 <b>${combos.length}</b> 个：${combosStr}。它们构成<b>同一组</b>，组内至多选一个——问题就归约成了<b>分组背包</b>。`,
+      `共 <b>${combos.length}</b> 个：${combosStr}。它们构成<b>同一组</b>，组内至多选一个，问题就归约成了<b>分组背包</b>。`,
     formula: `2^{${acc.length}} = ${combos.length}`,
   })
 
@@ -105,12 +105,12 @@ export function dependencyKnapsack(master: Master, acc: Accessory[], W: number):
   const bestCombo = run.result.bestCombo
   const tail =
     bestCombo && bestCombo.v === run.result.value
-      ? `——最优是选组合 <b>${bestCombo.label}</b>（费用 ${bestCombo.w} ≤ ${W}、价值 ${bestCombo.v}）。`
+      ? `，最优是选组合 <b>${bestCombo.label}</b>（费用 ${bestCombo.w} ≤ ${W}、价值 ${bestCombo.v}）。`
       : '。'
   frames.push({
     values: snap(),
     states: fin,
-    caption: `答案在 <b>f[1][${W}] = ${run.result.value}</b>——这一组组合、容量 ${W}、至多选一个组合时的最大价值${tail}`,
+    caption: `答案在 <b>f[1][${W}] = ${run.result.value}</b>，这一组组合、容量 ${W}、至多选一个组合时的最大价值${tail}`,
     formula: `f[1][${W}]=${run.result.value}`,
   })
 

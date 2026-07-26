@@ -73,19 +73,19 @@ export default function KnapsackVariant() {
         <div className="prose">
           <p>
             到这里，背包的<strong>容量骨架</strong>已经很熟：枚举物品、逐容量转移、一维 <M>{'f[j]'}</M> 由 <M>{'f[j-w]'}</M> 推来。
-            前面几类都在问同一件事——<strong>价值最大是多少</strong>，所以转移里坐着一个 <M>{'\\max'}</M>。可现实里的问题未必都求最优：
+            前面几类都在问同一件事，<strong>价值最大是多少</strong>，所以转移里坐着一个 <M>{'\\max'}</M>。可现实里的问题未必都求最优：
             「恰好花光 <M>{'m'}</M> 元有<strong>多少种</strong>点法？」「这堆砝码<strong>能不能</strong>称出重量 <M>{'j'}</M>？」
           </p>
         </div>
         <figure className="figure">
           <OperatorSwapFigure />
-          <figcaption className="figure__cap">容量骨架原封不动，只换掉中间的聚合算子：max 得最优、+ 得方案数、|| 得可行性——同一套表，三种问题。</figcaption>
+          <figcaption className="figure__cap">容量骨架原封不动，只换掉中间的聚合算子：max 得最优、+ 得方案数、|| 得可行性，同一套表，三种问题。</figcaption>
         </figure>
         <div className="prose">
           <p>
             关键洞察是：<strong>背包的骨架和「求什么」是解耦的</strong>。把转移中的 <M>{'\\max'}</M> 换成<strong>加法 <M>{'+'}</M></strong>，
             <M>{'f[j]'}</M> 的含义就从「最大价值」变成「凑出 <M>{'j'}</M> 的方案数」；换成<strong>逻辑或 <M>{'\\lor'}</M></strong>，就变成「<M>{'j'}</M> 能否被凑出」的布尔判定。
-            物品怎么取、循环怎么转，一个字都不用改。这一节就把最常考的一支——<strong>方案数背包</strong>——讲透，再看它的一个漂亮延伸：<strong>撤销</strong>。
+            物品怎么取、循环怎么转，一个字都不用改。这一节就把最常考的一支，<strong>方案数背包</strong>，讲透，再看它的一个漂亮延伸：<strong>撤销</strong>。
           </p>
         </div>
       </section>
@@ -95,16 +95,16 @@ export default function KnapsackVariant() {
         <div className="prose">
           <p>
             设 <M>{'f[j]'}</M> 表示<strong>恰好装满容量 <M>{'j'}</M> 的方案数</strong>。对第 <M>{'i'}</M> 件物品（重量 <M>{'w_i'}</M>），
-            凑出 <M>{'j'}</M> 的方案分两类：<strong>不含它</strong>——数目已记在旧的 <M>{'f[j]'}</M> 里；<strong>含它</strong>——先把它占的 <M>{'w_i'}</M> 抠掉，
+            凑出 <M>{'j'}</M> 的方案分两类：<strong>不含它</strong>，数目已记在旧的 <M>{'f[j]'}</M> 里；<strong>含它</strong>，先把它占的 <M>{'w_i'}</M> 抠掉，
             剩下的 <M>{'j-w_i'}</M> 由前面的物品去凑，方案数正是 <M>{'f[j-w_i]'}</M>。两类<strong>不重不漏</strong>，加起来就是新的 <M>{'f[j]'}</M>：
           </p>
           <MB>{'f[j] \\mathrel{+}= f[j-w_i]\\qquad (j:\\,m\\to w_i)'}</MB>
           <p>
-            和 01 背包一样<strong>倒序</strong>——每件至多计入一次，倒序让 <M>{'f[j-w_i]'}</M> 停在「这件还没参与」的旧值上。真正的分水岭在<strong>初值</strong>：
+            和 01 背包一样<strong>倒序</strong>，每件至多计入一次，倒序让 <M>{'f[j-w_i]'}</M> 停在「这件还没参与」的旧值上。真正的分水岭在<strong>初值</strong>：
           </p>
           <MB>{'f[0]=1,\\qquad f[j]=0\\ (j>0)'}</MB>
           <p>
-            为什么 <M>{'f[0]=1'}</M>？因为「凑出容量 0」有且只有<strong>一种</strong>办法——<strong>什么都不装</strong>（空方案）。这个 1 是所有计数的<strong>种子</strong>：
+            为什么 <M>{'f[0]=1'}</M>？因为「凑出容量 0」有且只有<strong>一种</strong>办法，<strong>什么都不装</strong>（空方案）。这个 1 是所有计数的<strong>种子</strong>：
             它顺着 <M>{'\\mathrel{+}='}</M> 一路传播，每落到一个能被凑出的容量，就点亮一种新组合。若把它写成 0，整张表会永远是 0，一种方案也数不出来。
           </p>
         </div>
@@ -139,7 +139,7 @@ export default function KnapsackVariant() {
           <div className="step">
             <span className="step__n">1</span>
             <div className="step__b">
-              <b>放物品 1</b>（<M>{'w=2'}</M>），倒序 <M>{'j:5\\to 2'}</M>。只有 <M>{'f[2]\\mathrel{+}=f[0]=1'}</M> 有效，其余来源都是 0。表变成 <M>{'1,0,1,0,0,0'}</M>——凑出 2 有 1 种（就 <M>{'\\{2\\}'}</M>）。
+              <b>放物品 1</b>（<M>{'w=2'}</M>），倒序 <M>{'j:5\\to 2'}</M>。只有 <M>{'f[2]\\mathrel{+}=f[0]=1'}</M> 有效，其余来源都是 0。表变成 <M>{'1,0,1,0,0,0'}</M>，凑出 2 有 1 种（就 <M>{'\\{2\\}'}</M>）。
             </div>
           </div>
           <div className="step">
@@ -151,7 +151,7 @@ export default function KnapsackVariant() {
           <div className="step">
             <span className="step__n">3</span>
             <div className="step__b">
-              <b>放物品 3</b>（<M>{'w=5'}</M>），倒序 <M>{'j:5'}</M>。<M>{'f[5]\\mathrel{+}=f[0]=1'}</M>（这是 <M>{'\\{5\\}'}</M>）。<M>{'f[5]'}</M> 从 1 加到 <strong>2</strong>——两条组合各贡献 1，和手数吻合。
+              <b>放物品 3</b>（<M>{'w=5'}</M>），倒序 <M>{'j:5'}</M>。<M>{'f[5]\\mathrel{+}=f[0]=1'}</M>（这是 <M>{'\\{5\\}'}</M>）。<M>{'f[5]'}</M> 从 1 加到 <strong>2</strong>，两条组合各贡献 1，和手数吻合。
             </div>
           </div>
         </div>
@@ -180,7 +180,7 @@ export default function KnapsackVariant() {
           <p>
             方案数背包有一个极漂亮的延伸。设想这样的问题（洛谷 P4141「消失之物」）：<M>{'n'}</M> 个物品，
             对<strong>每一个</strong>物品 <M>{'k'}</M>，都要回答「假如第 <M>{'k'}</M> 件<strong>消失</strong>了，凑出体积 <M>{'j'}</M> 的方案数是多少」。
-            最笨的办法是抠掉一件、重算一遍整张表，<M>{'n'}</M> 件就是 <M>{'n'}</M> 遍，<M>{'O(n^2 m)'}</M>——太慢。
+            最笨的办法是抠掉一件、重算一遍整张表，<M>{'n'}</M> 件就是 <M>{'n'}</M> 遍，<M>{'O(n^2 m)'}</M>，太慢。
           </p>
           <p>
             <strong>正难则反</strong>：与其一件件「不放进去」，不如先把<strong>全部物品都放进去</strong>算出全集方案数 <M>{'f[j]'}</M>，
@@ -195,14 +195,14 @@ export default function KnapsackVariant() {
         </figure>
         <div className="prose">
           <p>
-            <strong>方向是这里唯一的陷阱。</strong>回想计数为什么倒序：为了让 <M>{'f[j-w]'}</M> 保持「本件还没加入」的干净旧值。撤销要的恰恰相反——
+            <strong>方向是这里唯一的陷阱。</strong>回想计数为什么倒序：为了让 <M>{'f[j-w]'}</M> 保持「本件还没加入」的干净旧值。撤销要的恰恰相反，
             算 <M>{'g[j]'}</M> 时，我需要 <M>{'g[j-w_k]'}</M> 已经是<strong>「本件退干净」</strong>的值，这样减出来的 <M>{'g[j]'}</M> 才不含第 <M>{'k'}</M> 件。
-            而 <M>{'j-w_k < j'}</M>，所以必须让小下标<strong>先</strong>被退——也就是 <M>{'j'}</M> 从 <M>{'w_k'}</M> <strong>正序</strong>涨到 <M>{'m'}</M>。
+            而 <M>{'j-w_k < j'}</M>，所以必须让小下标<strong>先</strong>被退，也就是 <M>{'j'}</M> 从 <M>{'w_k'}</M> <strong>正序</strong>涨到 <M>{'m'}</M>。
             把方向记反，退出来的就是一堆错数。
           </p>
         </div>
         <InfoBox kind="warn" title="常见陷阱 · 撤销的方向与加时相反">
-          加一件物品用<strong>倒序</strong>（<M>{'j:m\\to w'}</M>），撤一件物品用<strong>正序</strong>（<M>{'j:w\\to m'}</M>）——这不是可选项，是逆操作的内在要求：
+          加一件物品用<strong>倒序</strong>（<M>{'j:m\\to w'}</M>），撤一件物品用<strong>正序</strong>（<M>{'j:w\\to m'}</M>），这不是可选项，是逆操作的内在要求：
           撤销时 <M>{'g[j]'}</M> 依赖<strong>已经退干净</strong>的 <M>{'g[j-w]'}</M>，故小下标必须先处理。此外别在原数组上直接减（会污染下一件的撤销），
           每次<strong>从全集 <M>{'f'}</M> 拷一份 <M>{'g'}</M> 再退</strong>；带模数时减法记得 <M>{'+\\text{MOD}'}</M> 再取模，避免出现负数。
         </InfoBox>
@@ -213,8 +213,8 @@ export default function KnapsackVariant() {
         <div className="pointer-cue">
           <MousePointerClick size={18} />
           先看<strong>第一幕</strong>把全部物品倒序累加成全集 <M>{'f[j]'}</M>；再挑「让第几件消失」，<strong>第二幕</strong>会拷一份 <M>{'g\\gets f'}</M>，
-          对那件<strong>正序</strong>逐格做 <M>{'g[j]\\mathrel{-}=g[j-w_k]'}</M>——注意方向和加时（倒序）相反。末帧上下两行并排：全集 <M>{'f[j]'}</M> vs 缺那件的 <M>{'g[j]'}</M>。
-          留意默认这组：<M>{'w=(2,3,5)'}</M>、<M>{'W=5'}</M> 时全集 <M>{'f[5]=2'}</M>，让 <M>{'w=5'}</M> 那件消失后 <M>{'g[5]'}</M> 退成 <strong>1</strong>（只剩 <M>{'\\{2,3\\}'}</M>）——方案数从 2 降到 1，退掉的正是用到它的那条。
+          对那件<strong>正序</strong>逐格做 <M>{'g[j]\\mathrel{-}=g[j-w_k]'}</M>，注意方向和加时（倒序）相反。末帧上下两行并排：全集 <M>{'f[j]'}</M> vs 缺那件的 <M>{'g[j]'}</M>。
+          留意默认这组：<M>{'w=(2,3,5)'}</M>、<M>{'W=5'}</M> 时全集 <M>{'f[5]=2'}</M>，让 <M>{'w=5'}</M> 那件消失后 <M>{'g[5]'}</M> 退成 <strong>1</strong>（只剩 <M>{'\\{2,3\\}'}</M>），方案数从 2 降到 1，退掉的正是用到它的那条。
         </div>
         <div className="demo">
           <div className="demo__body">
@@ -249,10 +249,10 @@ export default function KnapsackVariant() {
             <M>{'n'}</M> 个物品各有体积 <M>{'w_i'}</M>。对每个 <M>{'i'}</M>，求「第 <M>{'i'}</M> 件消失后，用其余物品恰好凑出体积 <M>{'j'}</M>（<M>{'1\\le j\\le m'}</M>）」的方案数。
           </Field>
           <Field k="为什么选它">
-            「对每件都要缺它一次的方案数」，直接重算是 <M>{'O(n^2m)'}</M>。此题逼你用<strong>撤销（正难则反）</strong>：先算全集 <M>{'f'}</M>，再对每件做逆操作退掉贡献——把 <M>{'n'}</M> 遍重算压到 <M>{'O(nm)'}</M>。是「计数 DP 可逆」这一思想最经典的载体。
+            「对每件都要缺它一次的方案数」，直接重算是 <M>{'O(n^2m)'}</M>。此题逼你用<strong>撤销（正难则反）</strong>：先算全集 <M>{'f'}</M>，再对每件做逆操作退掉贡献，把 <M>{'n'}</M> 遍重算压到 <M>{'O(nm)'}</M>。是「计数 DP 可逆」这一思想最经典的载体。
           </Field>
           <Field k="换个视角">
-            背包转移在计数意义下是<strong>可逆</strong>的：加它 <M>{'f[j]\\mathrel{+}=f[j-w]'}</M> 的逆就是退它 <M>{'g[j]\\mathrel{-}=g[j-w]'}</M>。唯一要翻转的是<strong>循环方向</strong>——加倒序、退正序。
+            背包转移在计数意义下是<strong>可逆</strong>的：加它 <M>{'f[j]\\mathrel{+}=f[j-w]'}</M> 的逆就是退它 <M>{'g[j]\\mathrel{-}=g[j-w]'}</M>。唯一要翻转的是<strong>循环方向</strong>，加倒序、退正序。
           </Field>
           <Field k="转移 · 复杂度">
             全集 <M>{'f[j]\\mathrel{+}=f[j-w_i]'}</M>（倒序）；对每件拷 <M>{'g\\gets f'}</M> 后 <M>{'g[j]\\mathrel{-}=g[j-w_i]'}</M>（<strong>正序</strong>）。时间 <M>{'O(nm)'}</M>，按题意对结果取模。
