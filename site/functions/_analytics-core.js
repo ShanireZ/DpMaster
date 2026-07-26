@@ -10,8 +10,6 @@ const EVENTS = new Set([
   'feedback_succeeded',
   'feedback_failed',
   'web_vital',
-  'lesson_started',
-  'lesson_completed',
   'problem_outbound',
   'search_used',
   'search_no_result',

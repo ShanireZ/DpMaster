@@ -816,7 +816,6 @@
 }
 
 .lesson-outline--mobile { display: none; }
-.lesson-completion-marker { height: 1px; }
 
 @media (max-width: 1180px) {
   .typepage-layout { display: block; }

@@ -78,6 +78,13 @@ test('analytics rejects cross-origin and unsupported provider or event values', 
     request({ provider: 'cloudflare', event: 'email_collected', path: '/' }),
   )
   assert.equal(event.status, 422)
+
+  for (const retiredEvent of ['lesson_started', 'lesson_completed']) {
+    const retired = await handleAnalytics(
+      request({ provider: 'cloudflare', event: retiredEvent, path: '/part/a/01' }),
+    )
+    assert.equal(retired.status, 422)
+  }
 })
 
 test('Cloudflare worker exposes the analytics endpoint and keeps static assets isolated', async () => {

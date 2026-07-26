@@ -1,15 +1,13 @@
 import type { CSSProperties } from 'react'
 import { AnimatePresence, motion, useReducedMotion } from 'motion/react'
 import { NavLink, useMatch } from 'react-router-dom'
-import { Info, BookOpen, Library, Check } from 'lucide-react'
+import { Info, BookOpen, Library } from 'lucide-react'
 import { PARTS } from '../../data/catalog'
 import { BRAND } from '../../config/site.ts'
-import { useLearningProgress } from '../../learning/LearningProgressContext'
 
 export default function Sidebar({ onNavigate }: { onNavigate?: () => void }) {
   const match = useMatch('/part/:pid/*')
   const activePid = match?.params.pid
-  const { completed } = useLearningProgress()
   const reduceMotion = useReducedMotion()
 
   return (
@@ -68,9 +66,6 @@ export default function Sidebar({ onNavigate }: { onNavigate?: () => void }) {
                           <span className="nav-type__label">{t.title}</span>
                           <span className="nav-type__compact" aria-hidden="true">
                             {compactCode}
-                          </span>
-                          <span className="nav-type__progress" aria-hidden="true">
-                            {completed.includes(`/part/${p.id}/${t.slug}`) && <Check size={12} />}
                           </span>
                         </NavLink>
                       ) : (
