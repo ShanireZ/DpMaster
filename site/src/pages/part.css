@@ -616,7 +616,7 @@
 
 .partcover__backpack {
   width: min(48vw, 660px);
-  transform: translate(4%, 2%);
+  transform: translate(3%, 1%);
   filter: drop-shadow(0 34px 80px color-mix(in srgb, var(--accent-1) 14%, transparent));
 }
 
@@ -643,10 +643,10 @@
 .partjourney__polygon {
   position: absolute;
   z-index: 0;
-  top: -12px;
+  top: 88px;
   right: max(-120px, calc((100vw - 1440px) / 2 - 80px));
   width: min(47vw, 650px);
-  opacity: 0.82;
+  opacity: 0.74;
   pointer-events: none;
 }
 
@@ -771,9 +771,10 @@
   }
 
   .partjourney__polygon {
+    top: 120px;
     right: -160px;
     width: 560px;
-    opacity: 0.52;
+    opacity: 0.46;
   }
 }
 
@@ -816,10 +817,10 @@
   }
 
   .partjourney__polygon {
-    top: 120px;
+    top: 250px;
     right: -245px;
     width: 500px;
-    opacity: 0.18;
+    opacity: 0.16;
   }
 
   .partjourney--a .typewaypoint {

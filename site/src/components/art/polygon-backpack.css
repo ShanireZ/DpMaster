@@ -17,6 +17,12 @@
   overflow: visible;
 }
 
+.poly-backpack__silhouette {
+  transform: scaleX(0.91);
+  transform-box: fill-box;
+  transform-origin: center;
+}
+
 .poly-backpack__construction {
   fill: none;
   stroke: var(--poly-line-soft);
@@ -143,11 +149,22 @@
 }
 
 .knapsack-plate__line,
+.knapsack-plate__axis path,
+.knapsack-plate__result-link,
 .knapsack-plate__brace,
 .knapsack-plate__bracket,
 .knapsack-plate__vessel {
   fill: none !important;
   stroke: color-mix(in srgb, var(--text-2) 65%, var(--border-strong)) !important;
+}
+
+.knapsack-plate__axis path {
+  stroke-width: 1 !important;
+}
+
+.knapsack-plate__result-link {
+  stroke: color-mix(in srgb, var(--accent-1) 55%, var(--border-strong)) !important;
+  stroke-dasharray: 4 5;
 }
 
 .knapsack-plate__result {
