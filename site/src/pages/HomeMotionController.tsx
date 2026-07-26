@@ -92,7 +92,7 @@ export default function HomeMotionController({ rootRef }: HomeMotionControllerPr
                   start: 'top top',
                   end: () => `+=${distance()}`,
                   pin: true,
-                  scrub: 1,
+                  scrub: true,
                   invalidateOnRefresh: true,
                   onEnter: showAtlasTopbar,
                   onEnterBack: showAtlasTopbar,
@@ -103,6 +103,8 @@ export default function HomeMotionController({ rootRef }: HomeMotionControllerPr
               let activePointerId: number | null = null
               let dragStartX = 0
               let dragStartScroll = 0
+              let dragTargetScroll = 0
+              let dragTargetProgress = 0
               let dragMoved = false
               let blockClickUntil = 0
 
@@ -116,18 +118,40 @@ export default function HomeMotionController({ rootRef }: HomeMotionControllerPr
               const endDrag = (event?: PointerEvent) => {
                 if (activePointerId === null) return
                 if (event && event.pointerId !== activePointerId) return
-                if (atlas.hasPointerCapture(activePointerId)) {
-                  atlas.releasePointerCapture(activePointerId)
+                const pointerId = activePointerId
+                activePointerId = null
+                if (dragMoved) {
+                  window.scrollTo({
+                    top: dragTargetScroll,
+                    left: window.scrollX,
+                    behavior: 'instant',
+                  })
+                  ScrollTrigger.update()
+                  horizontalTween.progress(dragTargetProgress)
+                }
+                if (atlas.hasPointerCapture(pointerId)) {
+                  atlas.releasePointerCapture(pointerId)
                 }
                 if (dragMoved) blockClickUntil = performance.now() + 400
-                activePointerId = null
                 atlas.classList.remove('state-atlas--dragging')
               }
               const onPointerDown = (event: PointerEvent) => {
                 if (event.pointerType === 'mouse' && event.button !== 0) return
+                if (activePointerId !== null) return
                 activePointerId = event.pointerId
                 dragStartX = event.clientX
+                window.scrollTo({
+                  top: window.scrollY,
+                  left: window.scrollX,
+                  behavior: 'instant',
+                })
+                ScrollTrigger.update()
                 dragStartScroll = window.scrollY
+                dragTargetScroll = dragStartScroll
+                const { start, end } = scrollBounds()
+                dragTargetProgress = end > start
+                  ? gsap.utils.clamp(0, 1, (dragStartScroll - start) / (end - start))
+                  : 0
                 dragMoved = false
                 atlas.setPointerCapture(event.pointerId)
                 atlas.classList.add('state-atlas--dragging')
@@ -140,11 +164,15 @@ export default function HomeMotionController({ rootRef }: HomeMotionControllerPr
                 event.preventDefault()
 
                 const { start, end } = scrollBounds()
-                const nextScroll = gsap.utils.clamp(start, end, dragStartScroll - delta * 1.25)
-                const progress = end > start ? (nextScroll - start) / (end - start) : 0
-                window.scrollTo({ top: nextScroll, behavior: 'auto' })
-                horizontalTween.progress(progress)
-                ScrollTrigger.update()
+                const nextScroll = Math.round(
+                  gsap.utils.clamp(start, end, dragStartScroll - delta),
+                )
+                dragTargetScroll = nextScroll
+                dragTargetProgress = end > start ? (nextScroll - start) / (end - start) : 0
+                horizontalTween.progress(dragTargetProgress)
+              }
+              const onNativeDragStart = (event: DragEvent) => {
+                event.preventDefault()
               }
               const onClickCapture = (event: MouseEvent) => {
                 if (performance.now() > blockClickUntil) return
@@ -159,37 +187,8 @@ export default function HomeMotionController({ rootRef }: HomeMotionControllerPr
               atlas.addEventListener('pointerup', endDrag)
               atlas.addEventListener('pointercancel', endDrag)
               atlas.addEventListener('lostpointercapture', endDrag)
+              atlas.addEventListener('dragstart', onNativeDragStart)
               atlas.addEventListener('click', onClickCapture, true)
-
-              gsap.utils.toArray<HTMLElement>('.family-scene').forEach((scene) => {
-                const glyph = scene.querySelector('.family-scene__glyph')
-                const copy = scene.querySelector('.family-scene__copy')
-                gsap.from(glyph, {
-                  scale: 0.7,
-                  rotation: -10,
-                  autoAlpha: 0.08,
-                  ease: 'none',
-                  scrollTrigger: {
-                    trigger: scene,
-                    containerAnimation: horizontalTween,
-                    start: 'left 92%',
-                    end: 'left 42%',
-                    scrub: 1,
-                  },
-                })
-                gsap.from(copy, {
-                  x: 72,
-                  autoAlpha: 0.1,
-                  ease: 'none',
-                  scrollTrigger: {
-                    trigger: scene,
-                    containerAnimation: horizontalTween,
-                    start: 'left 88%',
-                    end: 'left 48%',
-                    scrub: 1,
-                  },
-                })
-              })
 
               return () => {
                 endDrag()
@@ -199,6 +198,7 @@ export default function HomeMotionController({ rootRef }: HomeMotionControllerPr
                 atlas.removeEventListener('pointerup', endDrag)
                 atlas.removeEventListener('pointercancel', endDrag)
                 atlas.removeEventListener('lostpointercapture', endDrag)
+                atlas.removeEventListener('dragstart', onNativeDragStart)
                 atlas.removeEventListener('click', onClickCapture, true)
               }
             } else {

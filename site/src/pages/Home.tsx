@@ -88,6 +88,7 @@ export default function Home() {
                 <Link
                   to={`/part/${part.id}`}
                   className="family-scene__link"
+                  draggable={false}
                   aria-label={`进入${part.title}，共 ${part.types.length} 个类型`}
                 >
                   <span className="family-scene__code" aria-hidden="true">{part.code}</span>
