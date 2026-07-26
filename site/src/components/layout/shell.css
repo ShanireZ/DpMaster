@@ -78,30 +78,31 @@
     calc(var(--nav-pad-x) + 10px);
   overflow: hidden;
 }
+.brand__mark {
+  position: absolute;
+  left: calc(var(--nav-pad-x) + 8px);
+  width: 32px;
+  height: 32px;
+  flex: none;
+  transform: translateX(0);
+  transition:
+    left 0.34s var(--ease-out),
+    transform 0.34s var(--ease-out);
+}
+.brand__mark img {
+  display: block;
+  width: 100%;
+  height: 100%;
+}
 .brand__wordmark {
   display: block;
   min-width: 0;
+  margin-left: 44px;
   opacity: 1;
   visibility: visible;
   transition:
     opacity 0.14s var(--ease) 0.14s,
     visibility 0s linear;
-}
-.brand__compact {
-  position: absolute;
-  left: 50%;
-  display: block;
-  color: var(--accent-1);
-  font-family: var(--font-mono);
-  font-size: 13px;
-  font-weight: 700;
-  letter-spacing: -0.04em;
-  opacity: 0;
-  visibility: hidden;
-  transform: translateX(-50%);
-  transition:
-    opacity 0.1s var(--ease),
-    visibility 0s linear 0.1s;
 }
 .brand__name { color: var(--text-1); font-family: var(--font-display); font-weight: 700; font-size: 18px; letter-spacing: -0.04em; }
 .brand__sub {
@@ -469,20 +470,17 @@ a.nav-type.active::before { opacity: 1; transform: scaleY(1); }
     padding-inline: 0;
   }
 
+  .shell--sidebar-collapsed .brand__mark {
+    left: 50%;
+    transform: translateX(-50%);
+  }
+
   .shell--sidebar-collapsed .brand__wordmark {
     opacity: 0;
     visibility: hidden;
     transition:
       opacity 0.1s var(--ease),
       visibility 0s linear 0.1s;
-  }
-
-  .shell--sidebar-collapsed .brand__compact {
-    opacity: 1;
-    visibility: visible;
-    transition:
-      opacity 0.14s var(--ease) 0.14s,
-      visibility 0s linear;
   }
 
   .shell--sidebar-collapsed .nav-part {

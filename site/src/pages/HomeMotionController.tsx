@@ -100,6 +100,67 @@ export default function HomeMotionController({ rootRef }: HomeMotionControllerPr
                 },
               })
 
+              let activePointerId: number | null = null
+              let dragStartX = 0
+              let dragStartScroll = 0
+              let dragMoved = false
+              let blockClickUntil = 0
+
+              const scrollBounds = () => {
+                const trigger = horizontalTween.scrollTrigger
+                return {
+                  start: Number(trigger?.start ?? 0),
+                  end: Number(trigger?.end ?? distance()),
+                }
+              }
+              const endDrag = (event?: PointerEvent) => {
+                if (activePointerId === null) return
+                if (event && event.pointerId !== activePointerId) return
+                if (atlas.hasPointerCapture(activePointerId)) {
+                  atlas.releasePointerCapture(activePointerId)
+                }
+                if (dragMoved) blockClickUntil = performance.now() + 400
+                activePointerId = null
+                atlas.classList.remove('state-atlas--dragging')
+              }
+              const onPointerDown = (event: PointerEvent) => {
+                if (event.pointerType === 'mouse' && event.button !== 0) return
+                activePointerId = event.pointerId
+                dragStartX = event.clientX
+                dragStartScroll = window.scrollY
+                dragMoved = false
+                atlas.setPointerCapture(event.pointerId)
+                atlas.classList.add('state-atlas--dragging')
+              }
+              const onPointerMove = (event: PointerEvent) => {
+                if (event.pointerId !== activePointerId) return
+                const delta = event.clientX - dragStartX
+                if (!dragMoved && Math.abs(delta) < 6) return
+                dragMoved = true
+                event.preventDefault()
+
+                const { start, end } = scrollBounds()
+                const nextScroll = gsap.utils.clamp(start, end, dragStartScroll - delta * 1.25)
+                const progress = end > start ? (nextScroll - start) / (end - start) : 0
+                window.scrollTo({ top: nextScroll, behavior: 'auto' })
+                horizontalTween.progress(progress)
+                ScrollTrigger.update()
+              }
+              const onClickCapture = (event: MouseEvent) => {
+                if (performance.now() > blockClickUntil) return
+                event.preventDefault()
+                event.stopPropagation()
+                blockClickUntil = 0
+              }
+
+              atlas.classList.add('state-atlas--draggable')
+              atlas.addEventListener('pointerdown', onPointerDown)
+              atlas.addEventListener('pointermove', onPointerMove)
+              atlas.addEventListener('pointerup', endDrag)
+              atlas.addEventListener('pointercancel', endDrag)
+              atlas.addEventListener('lostpointercapture', endDrag)
+              atlas.addEventListener('click', onClickCapture, true)
+
               gsap.utils.toArray<HTMLElement>('.family-scene').forEach((scene) => {
                 const glyph = scene.querySelector('.family-scene__glyph')
                 const copy = scene.querySelector('.family-scene__copy')
@@ -129,6 +190,17 @@ export default function HomeMotionController({ rootRef }: HomeMotionControllerPr
                   },
                 })
               })
+
+              return () => {
+                endDrag()
+                atlas.classList.remove('state-atlas--draggable', 'state-atlas--dragging')
+                atlas.removeEventListener('pointerdown', onPointerDown)
+                atlas.removeEventListener('pointermove', onPointerMove)
+                atlas.removeEventListener('pointerup', endDrag)
+                atlas.removeEventListener('pointercancel', endDrag)
+                atlas.removeEventListener('lostpointercapture', endDrag)
+                atlas.removeEventListener('click', onClickCapture, true)
+              }
             } else {
               ScrollTrigger.create({
                 trigger: '.state-atlas',

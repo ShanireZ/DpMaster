@@ -1,7 +1,7 @@
 import { useRef } from 'react'
 import { Link } from 'react-router-dom'
 import type { CSSProperties } from 'react'
-import { ArrowRight, ArrowUpRight } from 'lucide-react'
+import { ArrowRight, ArrowUpRight, MoveHorizontal } from 'lucide-react'
 import PartGlyph from '../components/PartGlyph'
 import Magnet from '../components/motion/Magnet'
 import { PARTS } from '../data/catalog'
@@ -53,7 +53,11 @@ export default function Home() {
         </div>
       </section>
 
-      <section className="state-atlas" aria-labelledby="state-atlas-title">
+      <section
+        className="state-atlas"
+        aria-labelledby="state-atlas-title"
+        aria-describedby="state-atlas-instructions"
+      >
         <div className="state-atlas__track">
           <div className="state-atlas__intro">
             <h2 id="state-atlas-title">
@@ -63,6 +67,10 @@ export default function Home() {
             <p>
               {lessonTotal} 门课程沿七个 DP 家族展开，从状态含义进入，沿转移路径抵达答案。
             </p>
+            <span className="state-atlas__gesture" id="state-atlas-instructions">
+              <MoveHorizontal size={16} aria-hidden="true" />
+              滚动或左右拖动浏览
+            </span>
           </div>
 
           <ol className="family-scenes">

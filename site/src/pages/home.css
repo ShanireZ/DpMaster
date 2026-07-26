@@ -210,6 +210,18 @@
   line-height: 1.75;
 }
 
+.state-atlas__gesture {
+  display: inline-flex;
+  align-items: center;
+  align-self: flex-start;
+  gap: var(--sp-2);
+  margin-top: var(--sp-5);
+  color: var(--text-3);
+  font-family: var(--font-mono);
+  font-size: 12px;
+  letter-spacing: 0.04em;
+}
+
 .family-scenes {
   padding: 0;
   margin: 0;
@@ -374,6 +386,20 @@
 
   .home--gsap .state-atlas {
     overflow: hidden;
+  }
+
+  .home--gsap .state-atlas--draggable {
+    cursor: grab;
+    touch-action: pan-y;
+    user-select: none;
+  }
+
+  .home--gsap .state-atlas--dragging {
+    cursor: grabbing;
+  }
+
+  .home--gsap .state-atlas--dragging .family-scene__link {
+    pointer-events: none;
   }
 
   .state-atlas__track {

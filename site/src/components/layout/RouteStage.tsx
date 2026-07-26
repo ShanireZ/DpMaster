@@ -18,8 +18,8 @@ export default function RouteStage() {
     <motion.div
       className="route-stage"
       key={location.pathname}
-      initial={reduceMotion || !hasMounted ? false : { filter: 'blur(5px)' }}
-      animate={{ filter: 'blur(0px)' }}
+      initial={reduceMotion || !hasMounted ? false : { opacity: 0.94 }}
+      animate={{ opacity: 1 }}
       transition={reduceMotion ? { duration: 0 } : { duration: 0.22, ease: routeEase }}
     >
       {outlet}
