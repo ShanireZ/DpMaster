@@ -5,16 +5,20 @@ import { clip, forwardWebhook } from './_webhook-core.js'
 const BODY_LIMIT_BYTES = 16_000
 const DEFAULT_LIMIT = 10
 const DEFAULT_WINDOW_MS = 30 * 60 * 1000
-const FEEDBACK_KINDS = new Set(['内容有误', '显示异常', '功能问题', '建议', '其他'])
+const FEEDBACK_KINDS = new Set(['内容错漏', '显示异常', '其他建议'])
 const FIELD_LIMITS = {
   page: 120,
   path: 160,
   description: 2000,
-  steps: 1000,
   contact: 120,
   url: 500,
   viewport: 40,
+  screen: 80,
   ua: 300,
+  browser: 160,
+  device: 240,
+  locale: 80,
+  timezone: 120,
   ts: 40,
 }
 
@@ -109,15 +113,20 @@ const defaultLimiter = createFeedbackLimiter()
 
 function buildText(data, id) {
   const lines = [
-    '🐞 DP大师 · 新反馈',
+    '🐞 DP大师 · 问题反馈',
     `编号：${id}`,
     `类型：${clip(data.kind, 20)}`,
     `页面：${clip(data.page, 120)}（${clip(data.path, 160)}）`,
     `描述：${clip(data.description, 2000)}`,
   ]
-  if (data.steps) lines.push(`复现/期望：${clip(data.steps, 1000)}`)
   if (data.contact) lines.push(`联系：${clip(data.contact, 120)}`)
-  lines.push(`环境：${clip(data.viewport, 40)} · ${clip(data.ua, 300)}`)
+  if (data.url) lines.push(`网址：${clip(data.url, 500)}`)
+  lines.push(`浏览器：${clip(data.browser, 160)}`)
+  lines.push(`设备：${clip(data.device, 240)}`)
+  lines.push(`视口：${clip(data.viewport, 40)}；屏幕：${clip(data.screen, 80)}`)
+  lines.push(`区域：${clip(data.locale, 80)}；时区：${clip(data.timezone, 120)}`)
+  lines.push(`UA：${clip(data.ua, 300)}`)
+  lines.push(`IP：${clip(data.ip, 80)}`)
   lines.push(`时间：${clip(data.ts, 40)}`)
   return lines.join('\n')
 }
@@ -160,7 +169,8 @@ export async function handleFeedback(request, env = {}, runtime = {}) {
 
   const now = runtime.now || Date.now
   const timestamp = now()
-  const source = runtime.sourceKey ? runtime.sourceKey(request) : sourceFromRequest(request)
+  const ip = sourceFromRequest(request)
+  const source = runtime.sourceKey ? runtime.sourceKey(request) : ip
   const limiter = runtime.limiter || defaultLimiter
   const rate = limiter.take(source, timestamp)
   if (!rate.allowed) {
@@ -177,10 +187,11 @@ export async function handleFeedback(request, env = {}, runtime = {}) {
   const kind = env.FEEDBACK_WEBHOOK_KIND || 'wecom'
   const log = runtime.log || defaultLog
   const errorLog = runtime.errorLog || defaultErrorLog
+  const feedback = { ...normalized.value, ip }
   const receipt = {
     event: 'feedback_received',
     requestId: id,
-    feedback: normalized.value,
+    feedback,
     webhook: { status: baseUrl ? 'pending' : 'not_configured' },
   }
 
@@ -207,7 +218,7 @@ export async function handleFeedback(request, env = {}, runtime = {}) {
     baseUrl,
     kind,
     secret: env.FEEDBACK_WEBHOOK_SECRET,
-    text: buildText(normalized.value, id),
+    text: buildText(feedback, id),
     fetchImpl: runtime.fetch || fetch,
     now,
   })

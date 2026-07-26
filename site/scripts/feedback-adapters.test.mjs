@@ -31,7 +31,7 @@ test('Pages adapter delegates POST and supports OPTIONS', async () => {
     request: new Request('https://dp.betaoi.cc/api/feedback', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ kind: '内容有误', description: '有效反馈内容' }),
+      body: JSON.stringify({ kind: '内容错漏', description: '有效反馈内容' }),
     }),
     env: { FEEDBACK_WEBHOOK_URL: 'https://hooks.example.test' },
   })

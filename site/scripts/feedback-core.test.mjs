@@ -3,22 +3,31 @@ import test from 'node:test'
 import * as feedback from '../functions/_feedback-core.js'
 
 const VALID = {
-  kind: '内容有误',
+  kind: '内容错漏',
   page: 'A 背包 DP · 01 背包',
   path: '/part/a/01',
   description: '这里的状态转移公式需要复核',
-  steps: '打开页面并播放到第三步',
   contact: '',
   url: 'https://dp.betaoi.cc/part/a/01',
   viewport: '1280×720',
+  screen: '2560×1440 @ 2x',
   ua: 'test-agent',
+  browser: 'Google Chrome 140.0.0.0',
+  device: 'Windows 15.0 / x86 64 位 / 桌面设备',
+  locale: 'zh-CN',
+  timezone: 'Asia/Shanghai',
   ts: '2026-07-10T10:00:00.000Z',
 }
 
 function request(body = VALID, headers = {}) {
   return new Request('https://dp.betaoi.cc/api/feedback', {
     method: 'POST',
-    headers: { 'Content-Type': 'application/json', Origin: 'https://dp.betaoi.cc', ...headers },
+    headers: {
+      'Content-Type': 'application/json',
+      Origin: 'https://dp.betaoi.cc',
+      'CF-Connecting-IP': '203.0.113.42',
+      ...headers,
+    },
     body: typeof body === 'string' ? body : JSON.stringify(body),
   })
 }
@@ -82,6 +91,12 @@ test('validates kind and field lengths', async () => {
   )
   assert.equal(tooLong.status, 422)
   assert.equal((await tooLong.json()).error, 'description_too_long')
+
+  for (const oldKind of ['内容有误', '功能问题', '建议', '其他']) {
+    const removedKind = await feedback.handleFeedback(request({ ...VALID, kind: oldKind }), {}, value)
+    assert.equal(removedKind.status, 422)
+    assert.equal((await removedKind.json()).error, 'invalid_kind')
+  }
 })
 
 test('fails visibly when the delivery webhook is not configured', async () => {
@@ -107,6 +122,35 @@ test('only returns success after the webhook confirms delivery', async () => {
     forwarded: true,
     requestId: 'feedback-test-id',
   })
+})
+
+test('forwards the new schema with automatic diagnostics and server-derived IP', async () => {
+  let forwardedBody
+  const { value, logs } = runtime({
+    fetch: async (_url, init) => {
+      forwardedBody = JSON.parse(init.body)
+      return new Response('{}', { status: 200 })
+    },
+  })
+  const response = await feedback.handleFeedback(
+    request({ ...VALID, steps: '客户端遗留字段不应继续转发', ip: '198.51.100.8' }),
+    { FEEDBACK_WEBHOOK_URL: 'https://hooks.example.test', FEEDBACK_WEBHOOK_KIND: 'wecom' },
+    value,
+  )
+
+  assert.equal(response.status, 200)
+  assert.equal(logs[0].feedback.ip, '203.0.113.42')
+  assert.equal(logs[0].feedback.steps, undefined)
+  const text = forwardedBody.text.content
+  assert.match(text, /DP大师 · 问题反馈/)
+  assert.match(text, /类型：内容错漏/)
+  assert.match(text, /网址：https:\/\/dp\.betaoi\.cc\/part\/a\/01/)
+  assert.match(text, /浏览器：Google Chrome 140\.0\.0\.0/)
+  assert.match(text, /设备：Windows 15\.0/)
+  assert.match(text, /视口：1280×720；屏幕：2560×1440 @ 2x/)
+  assert.match(text, /IP：203\.0\.113\.42/)
+  assert.doesNotMatch(text, /复现|客户端遗留字段/)
+  assert.doesNotMatch(text, /198\.51\.100\.8/)
 })
 
 test('returns a retryable failure when the webhook returns non-2xx', async () => {

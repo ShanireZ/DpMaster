@@ -1,14 +1,139 @@
 import { useEffect, useRef, useState } from 'react'
-import { Link, useLocation } from 'react-router-dom'
+import { useLocation } from 'react-router-dom'
 import { MessageSquarePlus, X, Send, Check, Loader2 } from 'lucide-react'
 import { getPart } from '../../data/catalog'
 import { trackAnalyticsEvent } from '../../analytics/index.ts'
 import './feedback.css'
 
-type Kind = '内容有误' | '显示异常' | '功能问题' | '建议' | '其他'
-const KINDS: Kind[] = ['内容有误', '显示异常', '功能问题', '建议', '其他']
+type Kind = '内容错漏' | '显示异常' | '其他建议'
+const KINDS: Kind[] = ['内容错漏', '显示异常', '其他建议']
 
 type Status = 'idle' | 'sending' | 'ok' | 'error'
+
+type BrandVersion = {
+  brand: string
+  version: string
+}
+
+type UserAgentData = {
+  brands?: BrandVersion[]
+  mobile?: boolean
+  platform?: string
+  getHighEntropyValues?: (hints: string[]) => Promise<Record<string, unknown>>
+}
+
+type Diagnostics = {
+  url: string
+  ua: string
+  browser: string
+  device: string
+  viewport: string
+  screen: string
+  locale: string
+  timezone: string
+}
+
+function brandVersions(value: unknown): BrandVersion[] {
+  if (!Array.isArray(value)) return []
+  return value.flatMap((item) => {
+    if (!item || typeof item !== 'object') return []
+    const brand = String(Reflect.get(item, 'brand') ?? '').trim()
+    const version = String(Reflect.get(item, 'version') ?? '').trim()
+    return brand ? [{ brand, version }] : []
+  })
+}
+
+function browserLabel(ua: string, brands: BrandVersion[]): string {
+  const usefulBrands = brands.filter(({ brand }) => !/not.?a.?brand|chromium/i.test(brand))
+  // UA-CH 往往会同时返回浏览器品牌与 Chromium/Chrome 品牌；按派生浏览器
+  // 优先级挑选，避免把 Edge、Opera 等误报成 Chrome。
+  for (const pattern of [/edge/i, /opera/i, /vivaldi/i, /brave/i, /firefox/i, /chrome/i]) {
+    const preferredBrand = usefulBrands.find(({ brand }) => pattern.test(brand))
+    if (preferredBrand) {
+      return `${preferredBrand.brand}${preferredBrand.version ? ` ${preferredBrand.version}` : ''}`
+    }
+  }
+
+  const signatures: Array<[RegExp, string]> = [
+    [/\bEdgA?\/([\d.]+)/, 'Microsoft Edge'],
+    [/\bEdgiOS\/([\d.]+)/, 'Microsoft Edge'],
+    [/\bOPR\/([\d.]+)/, 'Opera'],
+    [/\bVivaldi\/([\d.]+)/, 'Vivaldi'],
+    [/\bYaBrowser\/([\d.]+)/, 'Yandex Browser'],
+    [/\bSamsungBrowser\/([\d.]+)/, 'Samsung Internet'],
+    [/\bFxiOS\/([\d.]+)/, 'Firefox'],
+    [/\bFirefox\/([\d.]+)/, 'Firefox'],
+    [/\bCriOS\/([\d.]+)/, 'Google Chrome'],
+    [/\bChrome\/([\d.]+)/, 'Google Chrome'],
+    [/\bVersion\/([\d.]+).*Safari\//, 'Safari'],
+  ]
+  for (const [pattern, name] of signatures) {
+    const match = ua.match(pattern)
+    if (match) return `${name} ${match[1]}`
+  }
+  return usefulBrands.length
+    ? usefulBrands.map(({ brand, version }) => `${brand} ${version}`.trim()).join(', ')
+    : '未识别浏览器'
+}
+
+async function collectDiagnostics(): Promise<Diagnostics> {
+  if (typeof window === 'undefined' || typeof navigator === 'undefined') {
+    return {
+      url: '',
+      ua: '',
+      browser: '未识别浏览器',
+      device: '未识别设备',
+      viewport: '',
+      screen: '',
+      locale: '',
+      timezone: '',
+    }
+  }
+
+  const ua = navigator.userAgent
+  const uaData = (navigator as Navigator & { userAgentData?: UserAgentData }).userAgentData
+  let highEntropy: Record<string, unknown> = {}
+  if (uaData?.getHighEntropyValues) {
+    try {
+      highEntropy = await uaData.getHighEntropyValues([
+        'architecture',
+        'bitness',
+        'fullVersionList',
+        'model',
+        'platformVersion',
+        'wow64',
+      ])
+    } catch {
+      // 部分浏览器会拒绝高熵 UA-CH；下面仍会提交标准 UA 与平台信息。
+    }
+  }
+
+  const brands = brandVersions(highEntropy.fullVersionList)
+  const fallbackBrands = brandVersions(uaData?.brands)
+  const platform = String(uaData?.platform || navigator.platform || '').trim()
+  const platformVersion = String(highEntropy.platformVersion || '').trim()
+  const architecture = String(highEntropy.architecture || '').trim()
+  const bitness = String(highEntropy.bitness || '').trim()
+  const model = String(highEntropy.model || '').trim()
+  const device = [
+    platform && `${platform}${platformVersion ? ` ${platformVersion}` : ''}`,
+    architecture && `${architecture}${bitness ? ` ${bitness} 位` : ''}`,
+    model,
+    uaData?.mobile === true ? '移动设备' : uaData?.mobile === false ? '桌面设备' : '',
+    navigator.maxTouchPoints > 0 ? `${navigator.maxTouchPoints} 点触控` : '',
+  ].filter(Boolean).join(' / ') || '未识别设备'
+
+  return {
+    url: window.location.href,
+    ua,
+    browser: browserLabel(ua, brands.length ? brands : fallbackBrands),
+    device,
+    viewport: `${window.innerWidth}×${window.innerHeight}`,
+    screen: `${window.screen.width}×${window.screen.height} @ ${window.devicePixelRatio || 1}x`,
+    locale: navigator.language || '',
+    timezone: Intl.DateTimeFormat().resolvedOptions().timeZone || '',
+  }
+}
 
 /** 把当前路由翻成一个人话页面标签，便于反馈自动定位。 */
 function pageLabel(pathname: string): string {
@@ -28,11 +153,9 @@ function pageLabel(pathname: string): string {
 export default function FeedbackWidget() {
   const location = useLocation()
   const [open, setOpen] = useState(false)
-  const [kind, setKind] = useState<Kind>('内容有误')
+  const [kind, setKind] = useState<Kind>('内容错漏')
   const [desc, setDesc] = useState('')
-  const [steps, setSteps] = useState('')
   const [contact, setContact] = useState('')
-  const [includeDiagnostics, setIncludeDiagnostics] = useState(false)
   const [status, setStatus] = useState<Status>('idle')
   const [errorMessage, setErrorMessage] = useState('')
   const [receiptId, setReceiptId] = useState('')
@@ -80,11 +203,9 @@ export default function FeedbackWidget() {
   }, [open])
 
   const reset = () => {
-    setKind('内容有误')
+    setKind('内容错漏')
     setDesc('')
-    setSteps('')
     setContact('')
-    setIncludeDiagnostics(false)
     setStatus('idle')
     setErrorMessage('')
     setReceiptId('')
@@ -101,31 +222,30 @@ export default function FeedbackWidget() {
     if (status === 'ok') doneRef.current?.focus()
   }, [status])
 
-  const payload = () => ({
+  const payload = async () => ({
     kind,
-    page,
+    page: page || pageLabel(location.pathname),
     path: location.pathname,
     description: desc.trim(),
-    steps: steps.trim(),
     contact: contact.trim(),
-    url: includeDiagnostics && typeof window !== 'undefined' ? window.location.href : '',
-    ua: includeDiagnostics && typeof navigator !== 'undefined' ? navigator.userAgent : '',
-    viewport: includeDiagnostics && typeof window !== 'undefined'
-      ? `${window.innerWidth}×${window.innerHeight}`
-      : '',
+    ...(await collectDiagnostics()),
     ts: new Date().toISOString(),
   })
 
-  const asText = () => {
-    const p = payload()
+  const asText = async () => {
+    const p = await payload()
     return [
-      `【DP大师 · 反馈】`,
+      '【DP大师 · 问题反馈】',
       `类型：${p.kind}`,
       `页面：${p.page}（${p.path}）`,
       `描述：${p.description}`,
-      p.steps && `复现/期望：${p.steps}`,
       p.contact && `联系方式：${p.contact}`,
-      p.viewport && `环境：${p.viewport} · ${p.ua}`,
+      p.url && `网址：${p.url}`,
+      p.browser && `浏览器：${p.browser}`,
+      p.device && `设备：${p.device}`,
+      p.viewport && `视口：${p.viewport}；屏幕：${p.screen}`,
+      p.locale && `区域：${p.locale}；时区：${p.timezone}`,
+      p.ua && `UA：${p.ua}`,
       `时间：${p.ts}`,
     ]
       .filter(Boolean)
@@ -148,7 +268,7 @@ export default function FeedbackWidget() {
       const res = await fetch('/api/feedback', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(payload()),
+        body: JSON.stringify(await payload()),
       })
       let result: {
         ok?: boolean
@@ -196,7 +316,7 @@ export default function FeedbackWidget() {
 
   const copyFallback = async () => {
     try {
-      await navigator.clipboard.writeText(asText())
+      await navigator.clipboard.writeText(await asText())
       setCopied(true)
       setTimeout(() => setCopied(false), 1800)
     } catch {
@@ -232,7 +352,7 @@ export default function FeedbackWidget() {
           >
             <div className="fbw__head">
               <h2 id="fbw-title" className="fbw__title">
-                报告问题 · 提建议
+                问题反馈
               </h2>
               <button className="fbw__close" onClick={close} aria-label="关闭">
                 <X size={18} />
@@ -258,7 +378,7 @@ export default function FeedbackWidget() {
             ) : (
               <div className="fbw__body">
                 <fieldset className="fbw__field">
-                  <legend className="fbw__label">这是关于</legend>
+                  <legend className="fbw__sr-only">反馈类型</legend>
                   <div className="fbw__kinds">
                     {KINDS.map((k) => (
                       <button
@@ -273,13 +393,6 @@ export default function FeedbackWidget() {
                     ))}
                   </div>
                 </fieldset>
-
-                <div className="fbw__field">
-                  <label className="fbw__label">
-                    当前页面 <span className="fbw__hint">（自动带上，便于定位）</span>
-                  </label>
-                  <div className="fbw__page">{page}</div>
-                </div>
 
                 <div className="fbw__field">
                   <label className="fbw__label" htmlFor="fbw-desc">
@@ -298,21 +411,6 @@ export default function FeedbackWidget() {
                 </div>
 
                 <div className="fbw__field">
-                  <label className="fbw__label" htmlFor="fbw-steps">
-                    复现步骤 / 期望 <span className="fbw__hint">（选填）</span>
-                  </label>
-                  <textarea
-                    id="fbw-steps"
-                    className="fbw__textarea"
-                    rows={2}
-                    value={steps}
-                    onChange={(e) => setSteps(e.target.value)}
-                    placeholder="怎么触发的、你期望是什么样"
-                    maxLength={1000}
-                  />
-                </div>
-
-                <div className="fbw__field">
                   <label className="fbw__label" htmlFor="fbw-contact">
                     联系方式 <span className="fbw__hint">（选填，便于回复）</span>
                   </label>
@@ -324,24 +422,6 @@ export default function FeedbackWidget() {
                     placeholder="邮箱 / QQ / 微信，可留空匿名"
                     maxLength={120}
                   />
-                </div>
-
-                <div className="fbw__privacy">
-                  <label className="fbw__diagnostics">
-                    <input
-                      type="checkbox"
-                      checked={includeDiagnostics}
-                      onChange={(event) => setIncludeDiagnostics(event.target.checked)}
-                    />
-                    <span>
-                      附带设备诊断信息
-                      <small>当前完整网址、浏览器标识和视口尺寸，默认不收集。</small>
-                    </span>
-                  </label>
-                  <p>
-                    页面名称和路径会随反馈提交；联系方式可留空匿名。详见{' '}
-                    <Link to="/about#privacy" onClick={close}>隐私与反馈说明</Link>。
-                  </p>
                 </div>
 
                 {status === 'error' && (

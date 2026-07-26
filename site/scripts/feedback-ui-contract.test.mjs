@@ -11,8 +11,9 @@ async function source() {
 test('feedback kind selector exposes a named pressed-button group', async () => {
   const text = await source()
   assert.match(text, /<fieldset[^>]*className="fbw__field"/)
-  assert.match(text, /<legend[^>]*className="fbw__label"/)
+  assert.match(text, /<legend[^>]*className="fbw__sr-only">反馈类型/)
   assert.match(text, /aria-pressed=\{kind === k\}/)
+  assert.match(text, /const KINDS: Kind\[\] = \['内容错漏', '显示异常', '其他建议'\]/)
 })
 
 test('feedback dialog traps focus, locks scroll, and restores the trigger', async () => {
@@ -42,10 +43,15 @@ test('feedback status changes are announced without exposing forwarding state', 
   assert.doesNotMatch(text, /result\?\.forwarded/)
 })
 
-test('diagnostic fields require an explicit opt-in and link to privacy details', async () => {
+test('route and diagnostic fields are collected automatically without visible controls', async () => {
   const text = await source()
-  assert.match(text, /includeDiagnostics/)
-  assert.match(text, /type="checkbox"/)
-  assert.match(text, /默认不收集/)
-  assert.match(text, /\/about#privacy/)
+  assert.match(text, /collectDiagnostics/)
+  assert.match(text, /userAgentData/)
+  assert.match(text, /fullVersionList/)
+  assert.match(text, /page:\s*page \|\| pageLabel\(location\.pathname\)/)
+  assert.match(text, /path:\s*location\.pathname/)
+  assert.doesNotMatch(text, /includeDiagnostics/)
+  assert.doesNotMatch(text, /type="checkbox"/)
+  assert.doesNotMatch(text, /复现步骤/)
+  assert.doesNotMatch(text, /页面名称和路径会随反馈提交/)
 })

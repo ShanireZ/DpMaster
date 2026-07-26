@@ -1,4 +1,4 @@
-import { useRef } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { Link } from 'react-router-dom'
 import type { CSSProperties } from 'react'
 import { ArrowRight, ArrowUpRight, MoveHorizontal } from 'lucide-react'
@@ -8,8 +8,41 @@ import { PARTS } from '../data/catalog'
 import HomeMotionController from './HomeMotionController'
 import './home.css'
 
+type HeroTheme = 'dark' | 'light'
+
+function readHeroTheme(): HeroTheme {
+  if (typeof document === 'undefined') return 'dark'
+  return document.documentElement.dataset.theme === 'light' ? 'light' : 'dark'
+}
+
+function useHeroTheme() {
+  const [theme, setTheme] = useState<HeroTheme>(readHeroTheme)
+
+  useEffect(() => {
+    const root = document.documentElement
+    const syncTheme = () => setTheme(readHeroTheme())
+    const observer = new MutationObserver(syncTheme)
+    observer.observe(root, { attributes: true, attributeFilter: ['data-theme'] })
+    syncTheme()
+    return () => observer.disconnect()
+  }, [])
+
+  useEffect(() => {
+    const alternate = new Image()
+    alternate.src = theme === 'light'
+      ? '/og/dpmaster-social.jpg'
+      : '/og/dpmaster-social-light.jpg'
+    return () => {
+      alternate.src = ''
+    }
+  }, [theme])
+
+  return theme
+}
+
 export default function Home() {
   const rootRef = useRef<HTMLDivElement>(null)
+  const heroTheme = useHeroTheme()
   const lessonTotal = PARTS.reduce((total, part) => total + part.types.length, 0)
 
   return (
@@ -19,7 +52,9 @@ export default function Home() {
       <section className="home-hero" aria-labelledby="home-hero-title">
         <img
           className="home-hero__image"
-          src="/og/dpmaster-social.jpg"
+          src={heroTheme === 'light'
+            ? '/og/dpmaster-social-light.jpg'
+            : '/og/dpmaster-social.jpg'}
           alt=""
           width="1200"
           height="630"
@@ -101,7 +136,7 @@ export default function Home() {
                     <h3>{part.title}</h3>
                     <span className="family-scene__tagline">{part.tagline}</span>
                     <span className="family-scene__action">
-                      进入这一族 <ArrowUpRight size={20} />
+                      从此开始 <ArrowUpRight size={20} />
                     </span>
                   </span>
                 </Link>
