@@ -1,13 +1,13 @@
 .poly-backpack,
 .knapsack-plate {
-  --poly-line: color-mix(in srgb, var(--accent-1) 72%, var(--text-2));
-  --poly-line-soft: color-mix(in srgb, var(--accent-1) 30%, transparent);
-  --poly-fill-1: color-mix(in srgb, var(--accent-1) 82%, var(--surface-1));
-  --poly-fill-2: color-mix(in srgb, var(--accent-1) 62%, var(--surface-2));
-  --poly-fill-3: color-mix(in srgb, var(--accent-1) 43%, var(--surface-2));
-  --poly-fill-4: color-mix(in srgb, var(--accent-2) 30%, var(--surface-3));
-  --poly-fill-5: color-mix(in srgb, var(--accent-2) 20%, var(--surface-1));
-  --poly-fill-6: color-mix(in srgb, var(--accent-1) 13%, var(--surface-1));
+  --poly-line: color-mix(in srgb, var(--accent-1) 76%, var(--text-2));
+  --poly-line-soft: color-mix(in srgb, var(--accent-1) 22%, transparent);
+  --poly-fill-1: color-mix(in srgb, var(--accent-1) 88%, var(--text-1));
+  --poly-fill-2: color-mix(in srgb, var(--accent-1) 70%, var(--surface-2));
+  --poly-fill-3: color-mix(in srgb, var(--accent-1) 46%, var(--surface-2));
+  --poly-fill-4: color-mix(in srgb, var(--accent-1) 30%, var(--surface-3));
+  --poly-fill-5: color-mix(in srgb, var(--accent-1) 17%, var(--surface-1));
+  --poly-fill-6: color-mix(in srgb, var(--accent-1) 6%, var(--surface-1));
 }
 
 .poly-backpack {
@@ -20,7 +20,7 @@
 .poly-backpack__construction {
   fill: none;
   stroke: var(--poly-line-soft);
-  stroke-width: 1;
+  stroke-width: 0.8;
   vector-effect: non-scaling-stroke;
 }
 
@@ -28,7 +28,7 @@
   stroke: var(--poly-line);
   stroke-linecap: square;
   stroke-linejoin: miter;
-  stroke-width: 1.35;
+  stroke-width: 0.95;
   vector-effect: non-scaling-stroke;
 }
 
@@ -39,26 +39,50 @@
 .poly-backpack__face--5 { fill: var(--poly-fill-5); }
 .poly-backpack__face--6 { fill: var(--poly-fill-6); }
 
-.poly-backpack__outline {
+.poly-backpack__outline,
+.poly-backpack__strap-outline {
   fill: none;
   stroke: color-mix(in srgb, var(--accent-1) 90%, var(--text-1));
-  stroke-width: 2.1;
+  stroke-width: 1.7;
+  vector-effect: non-scaling-stroke;
 }
 
-.poly-backpack__facets {
+.poly-backpack__strap-outline {
+  stroke-width: 1.45;
+}
+
+.poly-backpack__handle-cutout {
+  fill: color-mix(in srgb, var(--canvas) 94%, transparent);
+  stroke: color-mix(in srgb, var(--accent-1) 52%, var(--border-strong));
+  stroke-width: 1.15;
+  vector-effect: non-scaling-stroke;
+}
+
+.poly-backpack__seams {
   fill: none;
-  stroke: color-mix(in srgb, var(--accent-1) 54%, transparent);
-  stroke-width: 0.8;
+  stroke: color-mix(in srgb, var(--accent-1) 44%, transparent);
+  stroke-width: 0.65;
+  vector-effect: non-scaling-stroke;
 }
 
 .poly-backpack__geometry--wireframe .poly-backpack__face {
-  fill: color-mix(in srgb, var(--accent-1) 2%, transparent);
-  stroke: color-mix(in srgb, var(--accent-1) 43%, transparent);
+  fill: color-mix(in srgb, var(--accent-1) 1%, transparent);
+  stroke: color-mix(in srgb, var(--accent-1) 40%, transparent);
 }
 
-.poly-backpack__geometry--wireframe .poly-backpack__outline {
+.poly-backpack__geometry--wireframe .poly-backpack__outline,
+.poly-backpack__geometry--wireframe .poly-backpack__strap-outline {
   stroke: color-mix(in srgb, var(--accent-1) 58%, transparent);
-  stroke-width: 1.45;
+  stroke-width: 1.2;
+}
+
+.poly-backpack__geometry--wireframe .poly-backpack__handle-cutout {
+  fill: transparent;
+  stroke: color-mix(in srgb, var(--accent-1) 34%, transparent);
+}
+
+.poly-backpack__geometry--wireframe .poly-backpack__seams {
+  stroke: color-mix(in srgb, var(--accent-1) 28%, transparent);
 }
 
 .poly-backpack--wireframe .poly-backpack__construction {
@@ -87,20 +111,6 @@
 .knapsack-plate__label {
   fill: var(--text-2) !important;
   font-weight: 620;
-}
-
-.knapsack-plate__grid {
-  stroke: color-mix(in srgb, var(--border) 72%, transparent);
-  stroke-width: 0.75;
-}
-
-.knapsack-plate__grid,
-.knapsack-plate__watermark {
-  pointer-events: none;
-}
-
-.knapsack-plate__watermark {
-  opacity: 0.2;
 }
 
 .knapsack-plate circle,

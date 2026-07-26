@@ -294,16 +294,19 @@ test('lesson outline and versioned local progress remain available after reload'
   await expect(outline.locator('.lesson-outline__status')).toHaveCount(0)
   await expect(outline.getByText('读到文末自动完成', { exact: true })).toHaveCount(0)
 
-  const complete = page.getByRole('button', { name: '标为学完' })
-  await complete.click()
-  await expect(page.getByRole('button', { name: '已学完' })).toBeVisible()
+  await expect(page.getByRole('button', { name: /学完/ })).toHaveCount(0)
+  await page.locator('.lesson-completion-marker').scrollIntoViewIfNeeded()
+  await expect.poll(
+    () => page.evaluate(() => localStorage.getItem('dp-master-progress:v1')),
+  ).toContain('/part/a/01')
   await expect(page.locator('.nav-type.active .nav-type__progress svg')).toBeVisible()
   await expect(page.getByText('学习进度', { exact: true })).toHaveCount(0)
 
   const stored = await page.evaluate(() => localStorage.getItem('dp-master-progress:v1'))
   expect(stored).toContain('/part/a/01')
   await page.reload()
-  await expect(page.getByRole('button', { name: '已学完' })).toBeVisible()
+  await expect(page.getByRole('button', { name: /学完/ })).toHaveCount(0)
+  await expect(page.locator('.nav-type.active .nav-type__progress svg')).toBeVisible()
 })
 
 test('desktop sidebar aligns nested lessons and remembers its compact rail state', async ({
