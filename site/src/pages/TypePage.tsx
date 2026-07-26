@@ -6,6 +6,7 @@ import { getLessonEditorial } from '../data/editorial.ts'
 import { ROUTE_LAST_MODIFIED } from '../data/routeLastModified.ts'
 import { trackAnalyticsEvent } from '../analytics/index.ts'
 import AnimatedContent from '../components/motion/AnimatedContent'
+import PartGlyph from '../components/PartGlyph'
 import { useLearningProgress } from '../learning/LearningProgressContext'
 import { useStaticLessonContents } from '../app/StaticLessonContent.ts'
 import './typepage.css'
@@ -92,16 +93,25 @@ export default function TypePage() {
       const headings = Array.from(article.querySelectorAll<HTMLElement>('h2.section-title'))
       const items = headings.map((heading, index) => {
         if (!heading.id) heading.id = headingId(heading.textContent?.trim() || '', index)
+        const section = heading.closest<HTMLElement>('.lesson')
+        if (section) section.dataset.sectionIndex = String(index + 1).padStart(2, '0')
         return { id: heading.id, label: heading.textContent?.trim() || `第 ${index + 1} 节` }
       })
       setOutline(items)
+      setActiveId((current) => (
+        items.some((item) => item.id === current) ? current : (items[0]?.id ?? '')
+      ))
       sectionObserver?.disconnect()
       sectionObserver = new IntersectionObserver(
-        (entries) => {
-          const visible = entries
-            .filter((entry) => entry.isIntersecting)
-            .sort((left, right) => left.boundingClientRect.top - right.boundingClientRect.top)
-          if (visible[0]) setActiveId((visible[0].target as HTMLElement).id)
+        () => {
+          const readingLine = window.innerHeight * 0.3
+          const current = headings.reduce(
+            (candidate, heading) => (
+              heading.getBoundingClientRect().top <= readingLine ? heading : candidate
+            ),
+            headings[0],
+          )
+          if (current) setActiveId(current.id)
         },
         { rootMargin: '-15% 0px -70% 0px' },
       )
@@ -157,66 +167,80 @@ export default function TypePage() {
       <article className="typepage" ref={articleRef}>
         <AnimatedContent>
           <header className="typehead">
-          <span className="typehead__eyebrow">
-            <span className="typehead__code">{part.code}</span>
-            {part.title}
-          </span>
-          <div className="typehead__titleline">
-            <h1>{type.title}</h1>
-            <button
-              type="button"
-              className={`typehead__complete${isComplete ? ' is-complete' : ''}`}
-              onClick={() => {
-                if (!isComplete) {
-                  trackAnalyticsEvent({
-                    event: 'lesson_completed',
-                    path,
-                    title: type.title,
-                    metadata: { method: 'manual' },
-                  })
-                }
-                toggleComplete(path)
-              }}
-            >
-              {isComplete ? <Check size={15} /> : <Circle size={15} />}
-              {isComplete ? '已学完' : '标为学完'}
-            </button>
-          </div>
-          <p className="typehead__blurb">{type.blurb}</p>
-          {editorial && (
-            <section className="lesson-abstract" aria-labelledby="lesson-abstract-title">
-              <h2 id="lesson-abstract-title">本课摘要</h2>
-              <p>{editorial.summary}</p>
-              <ul>
-                {editorial.outcomes.map((outcome) => <li key={outcome}>{outcome}</li>)}
-              </ul>
-              <footer>
-                <span>内容维护：{editorial.reviewedBy}</span>
-                <span>审核状态：{editorial.reviewStatus}</span>
-                {ROUTE_LAST_MODIFIED[path] && (
-                  <span>最近更新：<time dateTime={ROUTE_LAST_MODIFIED[path]}>{ROUTE_LAST_MODIFIED[path]}</time></span>
-                )}
-              </footer>
-            </section>
-          )}
-          <details className="lesson-outline lesson-outline--mobile">
-            <summary><ListTree size={15} /> 本课目录 · {outline.length} 节</summary>
-            <OutlineLinks items={outline} activeId={activeId} />
-          </details>
+            <div className="typehead__canvas">
+              <div className="typehead__copy">
+                <span className="typehead__eyebrow">
+                  <span className="typehead__code">{part.code}</span>
+                  {part.title}
+                </span>
+                <div className="typehead__titleline">
+                  <h1>{type.title}</h1>
+                  <button
+                    type="button"
+                    className={`typehead__complete${isComplete ? ' is-complete' : ''}`}
+                    onClick={() => {
+                      if (!isComplete) {
+                        trackAnalyticsEvent({
+                          event: 'lesson_completed',
+                          path,
+                          title: type.title,
+                          metadata: { method: 'manual' },
+                        })
+                      }
+                      toggleComplete(path)
+                    }}
+                  >
+                    {isComplete ? <Check size={15} /> : <Circle size={15} />}
+                    {isComplete ? '已学完' : '标为学完'}
+                  </button>
+                </div>
+                <p className="typehead__blurb">{type.blurb}</p>
+              </div>
+              <div className="typehead__art" aria-hidden="true">
+                <span className="typehead__art-code">{part.code}</span>
+                <div className="typehead__glyph">
+                  <PartGlyph id={part.id} size={320} />
+                </div>
+              </div>
+            </div>
+            {editorial && (
+              <section className="lesson-abstract" aria-labelledby="lesson-abstract-title">
+                <div className="lesson-abstract__summary">
+                  <h2 id="lesson-abstract-title">本课摘要</h2>
+                  <p>{editorial.summary}</p>
+                </div>
+                <ul>
+                  {editorial.outcomes.map((outcome) => <li key={outcome}>{outcome}</li>)}
+                </ul>
+                <footer>
+                  <span>内容维护：{editorial.reviewedBy}</span>
+                  <span>审核状态：{editorial.reviewStatus}</span>
+                  {ROUTE_LAST_MODIFIED[path] && (
+                    <span>最近更新：<time dateTime={ROUTE_LAST_MODIFIED[path]}>{ROUTE_LAST_MODIFIED[path]}</time></span>
+                  )}
+                </footer>
+              </section>
+            )}
+            <details className="lesson-outline lesson-outline--mobile">
+              <summary><ListTree size={15} /> 本课目录 · {outline.length} 节</summary>
+              <OutlineLinks items={outline} activeId={activeId} />
+            </details>
           </header>
         </AnimatedContent>
 
-        {StaticBody ? (
-          <>
-            <StaticBody />
-            <div ref={completionRef} className="lesson-completion-marker" aria-hidden="true" />
-          </>
-        ) : (
-          <Suspense fallback={<div style={{ minHeight: '50vh' }} aria-busy="true" />}>
-            <Body />
-            <div ref={completionRef} className="lesson-completion-marker" aria-hidden="true" />
-          </Suspense>
-        )}
+        <div className="lesson-flow">
+          {StaticBody ? (
+            <>
+              <StaticBody />
+              <div ref={completionRef} className="lesson-completion-marker" aria-hidden="true" />
+            </>
+          ) : (
+            <Suspense fallback={<div style={{ minHeight: '50vh' }} aria-busy="true" />}>
+              <Body />
+              <div ref={completionRef} className="lesson-completion-marker" aria-hidden="true" />
+            </Suspense>
+          )}
+        </div>
         <AnimatedContent distance={12}>
           <nav className="type-nav" aria-label="课程导航">
         {neighbors.previous ? (
