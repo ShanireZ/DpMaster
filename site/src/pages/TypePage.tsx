@@ -1,9 +1,8 @@
 import { lazy, Suspense, useEffect, useRef, useState } from 'react'
 import { Link, useParams } from 'react-router-dom'
-import { Check, Circle, ListTree } from 'lucide-react'
+import { ListTree } from 'lucide-react'
 import { getLesson, getLessonNeighbors } from '../data/catalog'
 import { getLessonEditorial } from '../data/editorial.ts'
-import { ROUTE_LAST_MODIFIED } from '../data/routeLastModified.ts'
 import { trackAnalyticsEvent } from '../analytics/index.ts'
 import AnimatedContent from '../components/motion/AnimatedContent'
 import PartGlyph from '../components/PartGlyph'
@@ -63,7 +62,7 @@ export default function TypePage() {
   const completionRef = useRef<HTMLDivElement>(null)
   const [outline, setOutline] = useState<OutlineItem[]>([])
   const [activeId, setActiveId] = useState('')
-  const { completed, visit, markComplete, toggleComplete } = useLearningProgress()
+  const { completed, visit, markComplete } = useLearningProgress()
   const editorial = lesson ? getLessonEditorial(lesson) : undefined
   const neighbors = pid && slug
     ? getLessonNeighbors(pid, slug)
@@ -163,27 +162,6 @@ export default function TypePage() {
     )
   }
 
-  const completionButton = (
-    <button
-      type="button"
-      className={`typehead__complete${isComplete ? ' is-complete' : ''}`}
-      onClick={() => {
-        if (!isComplete) {
-          trackAnalyticsEvent({
-            event: 'lesson_completed',
-            path,
-            title: type.title,
-            metadata: { method: 'manual' },
-          })
-        }
-        toggleComplete(path)
-      }}
-    >
-      {isComplete ? <Check size={15} /> : <Circle size={15} />}
-      {isComplete ? '已学完' : '标为学完'}
-    </button>
-  )
-
   return (
     <div className={`typepage-layout typepage-layout--${part.id}`} data-part-id={part.id}>
       <article className="typepage" ref={articleRef} data-part-id={part.id} data-lesson-slug={type.slug}>
@@ -197,10 +175,8 @@ export default function TypePage() {
                 </span>
                 <div className="typehead__titleline">
                   <h1>{type.title}</h1>
-                  {part.id !== 'a' && completionButton}
                 </div>
                 <p className="typehead__blurb">{type.blurb}</p>
-                {part.id === 'a' && completionButton}
               </div>
               <div className="typehead__art" aria-hidden="true">
                 <div className="typehead__glyph">
@@ -220,13 +196,6 @@ export default function TypePage() {
                 <ul>
                   {editorial.outcomes.map((outcome) => <li key={outcome}>{outcome}</li>)}
                 </ul>
-                <footer>
-                  <span>内容维护：{editorial.reviewedBy}</span>
-                  <span>审核状态：{editorial.reviewStatus}</span>
-                  {ROUTE_LAST_MODIFIED[path] && (
-                    <span>最近更新：<time dateTime={ROUTE_LAST_MODIFIED[path]}>{ROUTE_LAST_MODIFIED[path]}</time></span>
-                  )}
-                </footer>
               </section>
             )}
             <details className="lesson-outline lesson-outline--mobile">
