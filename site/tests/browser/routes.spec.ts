@@ -291,7 +291,10 @@ test('lesson outline remains available without recording local learning progress
 
   const outline = page.locator('aside[aria-label="本课目录"]')
   await expect(outline).toBeVisible()
-  expect(await outline.getByRole('link').count()).toBeGreaterThan(3)
+  await expect.poll(
+    () => outline.getByRole('link').count(),
+    { message: 'wait for the hydrated lesson headings to populate the outline' },
+  ).toBeGreaterThan(3)
   await expect(outline.locator('.lesson-outline__status')).toHaveCount(0)
   await expect(outline.getByText('读到文末自动完成', { exact: true })).toHaveCount(0)
 
