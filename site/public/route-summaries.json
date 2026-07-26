@@ -7,10 +7,10 @@
     {
       "path": "/",
       "url": "https://dp.betaoi.cc/",
-      "title": "DP大师 · 动态规划交互式教程",
-      "summary": "DP大师是一套面向算法学习者的动态规划交互式教程，通过精讲、逐帧可视化、题目索引和小游戏掌握 DP。",
+      "title": "DP大师 · DP Master",
+      "summary": "DP大师面向算法学习者，用精讲、逐帧可视化、题目索引和小游戏讲清状态定义、转移顺序与模型迁移。",
       "type": "home",
-      "lastModified": "2026-07-25",
+      "lastModified": "2026-07-26",
       "alternates": {
         "zh-Hans": "https://dp.betaoi.cc/",
         "zh-CN": "https://dp.betaoi.cn/",
@@ -23,7 +23,7 @@
       "title": "背包 DP · DP大师",
       "summary": "背包 DP学习路径以“容量受限下的取舍：物品件数属性决定了背包的谱系。”为主线，串联 9 门课程的状态模型、转移顺序、可视化验证与配套题目。",
       "type": "family",
-      "lastModified": "2026-07-25",
+      "lastModified": "2026-07-26",
       "alternates": {
         "zh-Hans": "https://dp.betaoi.cc/part/a",
         "zh-CN": "https://dp.betaoi.cn/part/a",
@@ -36,7 +36,7 @@
       "title": "线性 DP · DP大师",
       "summary": "线性 DP学习路径以“把问题排成一条推进的序列，dp[i] 只依赖更早的状态。”为主线，串联 7 门课程的状态模型、转移顺序、可视化验证与配套题目。",
       "type": "family",
-      "lastModified": "2026-07-25",
+      "lastModified": "2026-07-26",
       "alternates": {
         "zh-Hans": "https://dp.betaoi.cc/part/b",
         "zh-CN": "https://dp.betaoi.cn/part/b",
@@ -49,7 +49,7 @@
       "title": "区间 DP · DP大师",
       "summary": "区间 DP学习路径以“dp[l][r] 表示区间最优，枚举分割/合并点，按长度递推。”为主线，串联 5 门课程的状态模型、转移顺序、可视化验证与配套题目。",
       "type": "family",
-      "lastModified": "2026-07-25",
+      "lastModified": "2026-07-26",
       "alternates": {
         "zh-Hans": "https://dp.betaoi.cc/part/c",
         "zh-CN": "https://dp.betaoi.cn/part/c",
@@ -62,7 +62,7 @@
       "title": "矩阵 DP · DP大师",
       "summary": "矩阵 DP学习路径以“两条主线：网格坐标上的 DP，与矩阵快速幂加速的递推。”为主线，串联 2 门课程的状态模型、转移顺序、可视化验证与配套题目。",
       "type": "family",
-      "lastModified": "2026-07-25",
+      "lastModified": "2026-07-26",
       "alternates": {
         "zh-Hans": "https://dp.betaoi.cc/part/d",
         "zh-CN": "https://dp.betaoi.cn/part/d",
@@ -75,7 +75,7 @@
       "title": "换根 DP · DP大师",
       "summary": "换根 DP学习路径以“二次扫描：固定根一遍 DFS，再一遍换根 O(1) 推每个点。”为主线，串联 4 门课程的状态模型、转移顺序、可视化验证与配套题目。",
       "type": "family",
-      "lastModified": "2026-07-25",
+      "lastModified": "2026-07-26",
       "alternates": {
         "zh-Hans": "https://dp.betaoi.cc/part/e",
         "zh-CN": "https://dp.betaoi.cn/part/e",
@@ -88,7 +88,7 @@
       "title": "树形 DP · DP大师",
       "summary": "树形 DP学习路径以“dp[u][…] 表示子树最优，后序遍历自底向上合并。”为主线，串联 5 门课程的状态模型、转移顺序、可视化验证与配套题目。",
       "type": "family",
-      "lastModified": "2026-07-25",
+      "lastModified": "2026-07-26",
       "alternates": {
         "zh-Hans": "https://dp.betaoi.cc/part/f",
         "zh-CN": "https://dp.betaoi.cn/part/f",
@@ -101,7 +101,7 @@
       "title": "状压 DP · DP大师",
       "summary": "状压 DP学习路径以“状态是一个集合，用二进制整数表示；转移在 mask 间进行。”为主线，串联 5 门课程的状态模型、转移顺序、可视化验证与配套题目。",
       "type": "family",
-      "lastModified": "2026-07-25",
+      "lastModified": "2026-07-26",
       "alternates": {
         "zh-Hans": "https://dp.betaoi.cc/part/g",
         "zh-CN": "https://dp.betaoi.cn/part/g",
@@ -669,7 +669,7 @@
       "title": "通用方法论 · DP大师",
       "summary": "用状态设计、转移方程、计算顺序、空间优化和调试清单，建立可复用的动态规划解题方法。",
       "type": "static",
-      "lastModified": "2026-07-25",
+      "lastModified": "2026-07-26",
       "alternates": {
         "zh-Hans": "https://dp.betaoi.cc/method",
         "zh-CN": "https://dp.betaoi.cn/method",
@@ -682,7 +682,7 @@
       "title": "题目索引 · DP大师",
       "summary": "按 DP 家族、课程、难度和关键词检索教程中的例题与练习，快速定位对应的洛谷题目和学习路径。",
       "type": "static",
-      "lastModified": "2026-07-25",
+      "lastModified": "2026-07-26",
       "alternates": {
         "zh-Hans": "https://dp.betaoi.cc/problems",
         "zh-CN": "https://dp.betaoi.cn/problems",
@@ -695,7 +695,7 @@
       "title": "关于 · DP大师",
       "summary": "了解DP大师的教学目标、使用方式、内容边界、开源说明与反馈渠道，更高效地使用交互式 DP 课程。",
       "type": "static",
-      "lastModified": "2026-07-25",
+      "lastModified": "2026-07-26",
       "alternates": {
         "zh-Hans": "https://dp.betaoi.cc/about",
         "zh-CN": "https://dp.betaoi.cn/about",

@@ -38,7 +38,7 @@ export function structuredDataForPage(page: PageMeta, site: SiteConfig): object 
       '@id': websiteId,
       name: BRAND.name,
       url: `${site.origin}/`,
-      description: `${BRAND.name}是${BRAND.shortDescription}。`,
+      description: `${BRAND.name}用精讲、逐帧可视化、题目索引和小游戏讲清动态规划。`,
       inLanguage: site.language,
       publisher: { '@id': publisherId },
     },

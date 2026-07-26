@@ -60,7 +60,7 @@ export function generateDiscoveryFiles(
   const llms = [
     `# ${BRAND.name}`,
     '',
-    `> ${BRAND.name}是面向算法学习者的${BRAND.shortDescription}，包含 7 个 DP 家族、37 门课程、逐帧可视化、题目索引和互动小游戏。`,
+    `> ${BRAND.name}面向算法学习者，包含 7 个 DP 家族、37 门课程、逐帧可视化、题目索引和互动小游戏。`,
     '',
     `- 当前站点：${site.origin}/`,
     `- 国际站：${SITE_CONFIGS.international.origin}/`,

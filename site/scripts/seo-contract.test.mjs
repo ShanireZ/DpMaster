@@ -55,6 +55,10 @@ test('both regions use host-aware canonical and equivalent hreflang alternates',
 })
 
 test('all families and lessons derive branded metadata from the catalog', () => {
+  const home = getPageMeta('/', SITE_CONFIGS.international)
+  assert.equal(home.title, 'DP大师 · DP Master')
+  assert.doesNotMatch(home.description, /动态规划交互式教程/)
+
   for (const part of PARTS) {
     const family = getPageMeta(`/part/${part.id}`, SITE_CONFIGS.international)
     assert.equal(family.title, `${part.title} · DP大师`)

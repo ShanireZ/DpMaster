@@ -211,7 +211,7 @@
 }
 
 .state-atlas__gesture {
-  display: inline-flex;
+  display: none;
   align-items: center;
   align-self: flex-start;
   gap: var(--sp-2);
@@ -377,6 +377,10 @@
 }
 
 @media (min-width: 1025px) and (prefers-reduced-motion: no-preference) {
+  .state-atlas__gesture {
+    display: inline-flex;
+  }
+
   .state-atlas {
     height: 100dvh;
     overflow-x: auto;

@@ -1,13 +1,13 @@
 // 由 scripts/generate-seo.mjs 从 Git 历史生成，请勿手改。
 export const ROUTE_LAST_MODIFIED: Readonly<Record<string, string>> = Object.freeze({
-  "/": "2026-07-25",
-  "/part/a": "2026-07-25",
-  "/part/b": "2026-07-25",
-  "/part/c": "2026-07-25",
-  "/part/d": "2026-07-25",
-  "/part/e": "2026-07-25",
-  "/part/f": "2026-07-25",
-  "/part/g": "2026-07-25",
+  "/": "2026-07-26",
+  "/part/a": "2026-07-26",
+  "/part/b": "2026-07-26",
+  "/part/c": "2026-07-26",
+  "/part/d": "2026-07-26",
+  "/part/e": "2026-07-26",
+  "/part/f": "2026-07-26",
+  "/part/g": "2026-07-26",
   "/part/a/01": "2026-07-26",
   "/part/a/complete": "2026-07-26",
   "/part/a/multiple": "2026-07-26",
@@ -45,7 +45,7 @@ export const ROUTE_LAST_MODIFIED: Readonly<Record<string, string>> = Object.free
   "/part/g/cover": "2026-07-26",
   "/part/g/subset": "2026-07-26",
   "/part/g/plug": "2026-07-26",
-  "/method": "2026-07-25",
-  "/problems": "2026-07-25",
-  "/about": "2026-07-25"
+  "/method": "2026-07-26",
+  "/problems": "2026-07-26",
+  "/about": "2026-07-26"
 })
