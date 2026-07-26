@@ -1,6 +1,15 @@
-.dpviz { display: flex; flex-direction: column; gap: var(--sp-4); }
+.dpviz {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(210px, 0.34fr);
+  gap: 0 var(--sp-5);
+}
 
-.dpviz__scroll { overflow-x: auto; overflow-y: hidden; padding: 4px 2px 8px; }
+.dpviz__scroll {
+  overflow-x: auto;
+  overflow-y: hidden;
+  padding: var(--sp-4) 0 var(--sp-5);
+  border-right: 1px solid var(--border);
+}
 .dpviz__grid { position: relative; display: grid; width: max-content; }
 
 .dp-corner, .dp-colh, .dp-rowh {
@@ -14,11 +23,11 @@
 
 .dp-cell {
   display: grid; place-items: center;
-  margin: 3px;
-  border-radius: 8px;
+  margin: 0;
   background: var(--viz-cell);
-  border: 1.5px solid transparent;
-  font-family: var(--font-mono); font-size: 15px; font-weight: 600;
+  border-right: 1px solid var(--border);
+  border-bottom: 1px solid var(--border);
+  font-family: var(--font-mono); font-size: 14px; font-weight: 600;
   color: var(--text-2);
   transition: background var(--t-fast), border-color var(--t-fast), color var(--t-fast), transform var(--t-fast);
 }
@@ -26,47 +35,80 @@
 .dp-cell.is-settled { color: var(--text-1); background: var(--viz-cell-2); }
 .dp-cell.is-source {
   border-color: var(--viz-source);
-  color: #fff;
-  box-shadow: 0 0 0 3px color-mix(in srgb, var(--viz-source) 22%, transparent);
+  color: var(--text-1);
+  box-shadow: inset 0 0 0 1px var(--viz-source);
 }
 .dp-cell.is-chosen {
   border-color: var(--viz-chosen);
   background: color-mix(in srgb, var(--viz-chosen) 18%, var(--viz-cell));
-  color: #fff;
+  color: var(--text-1);
+  box-shadow: inset 0 0 0 1px var(--viz-chosen);
 }
 .dp-cell.is-current {
   border-color: var(--viz-current);
-  background: color-mix(in srgb, var(--viz-current) 20%, var(--viz-cell));
-  color: #fff;
-  transform: scale(1.06);
-  box-shadow: 0 0 0 4px color-mix(in srgb, var(--viz-current) 26%, transparent);
-  animation: cellpulse 1.1s var(--ease) infinite;
+  background: color-mix(in srgb, var(--viz-current) 17%, var(--viz-cell));
+  color: var(--text-1);
+  box-shadow: inset 0 0 0 2px var(--viz-current);
 }
 .dp-cell.is-invalid { color: var(--viz-invalid); border-color: var(--viz-invalid-border); }
-
-@keyframes cellpulse {
-  0%, 100% { box-shadow: 0 0 0 4px color-mix(in srgb, var(--viz-current) 26%, transparent); }
-  50% { box-shadow: 0 0 0 7px color-mix(in srgb, var(--viz-current) 8%, transparent); }
-}
 
 .dpviz__arrows { position: absolute; pointer-events: none; overflow: visible; }
 
 /* 解说面板 */
 .dpviz__panel {
+  display: flex;
   min-height: 74px;
-  padding: var(--sp-4);
-  border-radius: var(--r-2);
-  background: var(--surface-2);
-  border: 1px solid var(--border);
-  display: flex; flex-direction: column; gap: 8px;
+  flex-direction: column;
+  gap: var(--sp-3);
+  padding: var(--sp-4) 0 var(--sp-4) var(--sp-5);
 }
-.dpviz__formula { color: var(--text-1); overflow-x: auto; }
-.dpviz__caption { color: var(--text-2); font-size: 14px; }
+.dpviz__formula {
+  overflow-x: auto;
+  padding-bottom: var(--sp-4);
+  border-bottom: 1px solid var(--border);
+  color: var(--text-1);
+}
+.dpviz__caption { color: var(--text-2); font-size: 13px; line-height: 1.7; }
 .dpviz__caption b { color: var(--text-1); }
 .dpviz__caption .ok { color: var(--viz-chosen); }
 .dpviz__caption .bad { color: var(--viz-invalid); }
 
 /* 图例 */
-.dpviz__legend { display: flex; flex-wrap: wrap; gap: var(--sp-4); font-size: 12px; color: var(--text-3); }
+.dpviz__legend {
+  display: flex;
+  grid-column: 1 / -1;
+  flex-wrap: wrap;
+  gap: var(--sp-4);
+  padding: var(--sp-3) 0;
+  border-top: 1px solid var(--border);
+  border-bottom: 1px solid var(--border);
+  color: var(--text-3);
+  font-size: 11px;
+}
 .dpviz__legend span { display: inline-flex; align-items: center; gap: 6px; }
-.dpviz__legend i { width: 12px; height: 12px; border-radius: 4px; border: 1.5px solid; }
+.dpviz__legend i { width: 10px; height: 10px; border: 1px solid; }
+
+.dpviz > .playback {
+  grid-column: 1 / -1;
+}
+
+@media (max-width: 760px) {
+  .dpviz {
+    grid-template-columns: 1fr;
+  }
+  .dpviz__scroll {
+    border-right: 0;
+  }
+  .dpviz__panel {
+    padding: var(--sp-4) 0;
+    border-top: 1px solid var(--border);
+  }
+  .dpviz__legend,
+  .dpviz > .playback {
+    grid-column: auto;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .dp-cell { transition: none; }
+}

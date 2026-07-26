@@ -1,10 +1,10 @@
 .playback {
   display: flex;
   align-items: center;
-  gap: var(--sp-3);
+  gap: var(--sp-4);
   flex-wrap: wrap;
   width: 100%;
-  border-radius: var(--r-2);
+  padding: var(--sp-3) 0;
 }
 
 .playback:focus-visible {
@@ -20,7 +20,7 @@
 }
 
 .playback__transport {
-  gap: 6px;
+  gap: 1px;
 }
 
 .playback button {
@@ -31,15 +31,14 @@
   height: 40px;
   padding: 0 10px;
   border: 1px solid var(--border);
-  border-radius: var(--r-2);
   color: var(--text-1);
-  background: var(--surface-2);
+  background: transparent;
   transition: border-color var(--t-fast), background var(--t-fast), color var(--t-fast);
 }
 
 .playback button:hover:not(:disabled) {
   border-color: var(--accent-2);
-  background: var(--surface-3);
+  background: color-mix(in srgb, var(--accent-1) 6%, transparent);
 }
 
 .playback button:disabled {
@@ -51,8 +50,8 @@
   gap: 7px;
   min-width: 48px;
   color: var(--text-on-accent);
-  background: var(--grad-accent);
-  border-color: transparent;
+  background: var(--accent-1);
+  border-color: var(--accent-1);
   font-weight: 700;
 }
 
@@ -82,7 +81,8 @@
 }
 
 .playback__speed {
-  gap: 4px;
+  gap: 0;
+  border: 1px solid var(--border);
 }
 
 .playback__speed button {
@@ -90,28 +90,30 @@
   width: auto;
   height: 32px;
   padding: 0 9px;
+  border: 0;
+  border-right: 1px solid var(--border);
   font-family: var(--font-mono);
   font-size: 12px;
 }
+.playback__speed button:last-child { border-right: 0; }
 
 .playback__speed button.is-active {
-  color: var(--text-on-accent);
-  background: var(--grad-accent);
-  border-color: transparent;
+  color: var(--accent-1);
+  background: color-mix(in srgb, var(--accent-1) 10%, transparent);
 }
 
 .playback--compact {
   gap: var(--sp-2);
   padding: var(--sp-3);
-  background: var(--surface-2);
-  border: 1px solid var(--border);
+  border-top: 1px solid var(--border);
+  border-bottom: 1px solid var(--border);
 }
 
 .playback--compact button {
   min-width: 36px;
   height: 36px;
   padding: 0 8px;
-  background: var(--surface-1);
+  background: transparent;
 }
 
 .playback--compact .playback__speed button {
