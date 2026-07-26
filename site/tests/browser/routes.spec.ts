@@ -335,17 +335,25 @@ test('desktop sidebar aligns nested lessons and remembers its compact rail state
   const familyYBefore = await page.locator('.nav-part__code').evaluateAll((codes) =>
     codes.map((code) => code.getBoundingClientRect().y),
   )
-  await page.evaluate(() => {
-    const main = document.querySelector('.main')
-    if (!main) return
-    let resizeCount = 0
-    const observer = new ResizeObserver(() => {
-      resizeCount += 1
-      document.documentElement.dataset.mainResizeCount = String(resizeCount)
-    })
-    observer.observe(main)
+  const collapseTransition = await page.evaluate(async () => {
+    const button = document.querySelector<HTMLButtonElement>('.sidebar-collapse')
+    const main = document.querySelector<HTMLElement>('.main')
+    const wordmark = document.querySelector<HTMLElement>('.brand__wordmark')
+    const title = document.querySelector<HTMLElement>('.nav-part__title')
+    if (!button || !main || !wordmark || !title) return null
+    button.click()
+    await new Promise<void>((resolve) => requestAnimationFrame(() => resolve()))
+    return {
+      mainTransform: getComputedStyle(main).transform,
+      wordmarkDisplay: getComputedStyle(wordmark).display,
+      titleDisplay: getComputedStyle(title).display,
+    }
   })
-  await page.getByRole('button', { name: '收起侧栏' }).click()
+  expect(collapseTransition).toEqual({
+    mainTransform: 'none',
+    wordmarkDisplay: 'block',
+    titleDisplay: 'block',
+  })
   await expect(page.locator('.shell')).toHaveClass(/shell--sidebar-collapsed/)
   await expect(page.getByRole('button', { name: '展开侧栏' })).toBeVisible()
   await expect(page.locator('.brand__compact')).toHaveText('DP')
@@ -360,7 +368,6 @@ test('desktop sidebar aligns nested lessons and remembers its compact rail state
   familyYAfter.forEach((y, index) => {
     expect(Math.abs(y - familyYBefore[index])).toBeLessThanOrEqual(1)
   })
-  expect(Number(await page.locator('html').getAttribute('data-main-resize-count'))).toBeLessThanOrEqual(3)
   await expect.poll(() => page.evaluate(
     () => localStorage.getItem('dp-master-sidebar-collapsed:v1'),
   )).toBe('true')
