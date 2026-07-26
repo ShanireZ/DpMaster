@@ -370,9 +370,7 @@
 
 .home--gsap .home-hero__image,
 .home--gsap .home-hero__content,
-.home--gsap .state-atlas__track,
-.home--gsap .family-scene__glyph,
-.home--gsap .family-scene__copy {
+.home--gsap .state-atlas__track {
   will-change: transform;
 }
 
@@ -396,14 +394,35 @@
     cursor: grab;
     touch-action: pan-y;
     user-select: none;
+    -webkit-user-drag: none;
   }
 
-  .home--gsap .state-atlas--dragging {
+  .home--gsap .state-atlas--draggable .family-scene__link {
+    cursor: grab;
+    -webkit-user-drag: none;
+  }
+
+  .home--gsap .state-atlas--dragging,
+  .home--gsap .state-atlas--dragging .family-scene__link {
     cursor: grabbing;
   }
 
-  .home--gsap .state-atlas--dragging .family-scene__link {
-    pointer-events: none;
+  .home--gsap .state-atlas--dragging .family-scene__link::after {
+    opacity: 0;
+    transition: none;
+  }
+
+  .home--gsap .state-atlas--dragging .family-scene__glyph,
+  .home--gsap .state-atlas--dragging .family-scene__action svg {
+    transform: none;
+    transition: none;
+  }
+
+  .home--gsap .state-atlas--draggable .family-scene__link:hover .family-scene__glyph,
+  .home--gsap .state-atlas--draggable .family-scene__link:hover .family-scene__action svg,
+  .home--gsap .state-atlas--draggable .family-scene__link:focus-visible .family-scene__glyph,
+  .home--gsap .state-atlas--draggable .family-scene__link:focus-visible .family-scene__action svg {
+    transform: none;
   }
 
   .state-atlas__track {

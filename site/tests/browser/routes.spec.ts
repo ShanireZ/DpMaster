@@ -448,7 +448,7 @@ test('home starts its entrance on the first styled frame and cancels trailing co
   ).toBeLessThanOrEqual(2)
 })
 
-test('home state atlas stays pinned and supports horizontal drag scrubbing', async ({ page }) => {
+test('home state atlas drag stays aligned and settles without catch-up motion', async ({ page }) => {
   await page.setViewportSize({ width: 1440, height: 900 })
   await page.goto('/')
 
@@ -481,6 +481,13 @@ test('home state atlas stays pinned and supports horizontal drag scrubbing', asy
   await expect.poll(() => atlas.evaluate((element) =>
     Math.abs(element.getBoundingClientRect().top),
   )).toBeLessThanOrEqual(1)
+  await page.evaluate(() => {
+    document.documentElement.dataset.atlasNativeDragStarts = '0'
+    document.addEventListener('dragstart', () => {
+      const count = Number(document.documentElement.dataset.atlasNativeDragStarts ?? 0)
+      document.documentElement.dataset.atlasNativeDragStarts = String(count + 1)
+    }, { capture: true, once: true })
+  })
 
   const beforeDrag = await page.evaluate(() => ({
     scrollY: window.scrollY,
@@ -492,20 +499,67 @@ test('home state atlas stays pinned and supports horizontal drag scrubbing', asy
   expect(box).not.toBeNull()
   const y = (box?.y ?? 0) + (box?.height ?? 0) * 0.55
   const startX = (box?.x ?? 0) + (box?.width ?? 0) * 0.72
-  const endX = (box?.x ?? 0) + (box?.width ?? 0) * 0.42
+  const leftX = (box?.x ?? 0) + (box?.width ?? 0) * 0.38
+  const releaseX = (box?.x ?? 0) + (box?.width ?? 0) * 0.51
   await page.mouse.move(startX, y)
   await page.mouse.down()
-  await page.mouse.move(endX, y, { steps: 8 })
+  await page.mouse.move(leftX, y, { steps: 12 })
+  await page.mouse.move(releaseX, y, { steps: 6 })
   await page.mouse.up()
+
+  const released = await page.evaluate(() => {
+    const matrixX = (element: Element) => {
+      const transform = getComputedStyle(element).transform
+      if (transform === 'none') return 0
+      return new DOMMatrixReadOnly(transform).m41
+    }
+    const atlasElement = document.querySelector<HTMLElement>('.state-atlas')!
+    const trackElement = document.querySelector<HTMLElement>('.state-atlas__track')!
+    return {
+      scrollY: window.scrollY,
+      trackX: matrixX(trackElement),
+      atlasTop: atlasElement.getBoundingClientRect().top,
+      dragging: atlasElement.classList.contains('state-atlas--dragging'),
+    }
+  })
+  await page.waitForTimeout(450)
+  const settled = await page.evaluate(() => {
+    const matrixX = (element: Element) => {
+      const transform = getComputedStyle(element).transform
+      if (transform === 'none') return 0
+      return new DOMMatrixReadOnly(transform).m41
+    }
+    const atlasElement = document.querySelector<HTMLElement>('.state-atlas')!
+    const trackElement = document.querySelector<HTMLElement>('.state-atlas__track')!
+    return {
+      scrollY: window.scrollY,
+      trackX: matrixX(trackElement),
+      atlasTop: atlasElement.getBoundingClientRect().top,
+      dragging: atlasElement.classList.contains('state-atlas--dragging'),
+      nativeDragStarts: Number(
+        document.documentElement.dataset.atlasNativeDragStarts ?? 0,
+      ),
+      animatedSceneChildren: document.querySelectorAll(
+        '.family-scene__glyph[style*="transform"], .family-scene__copy[style*="transform"]',
+      ).length,
+    }
+  })
 
   await expect.poll(() => page.evaluate(() => window.scrollY))
     .toBeGreaterThan(beforeDrag.scrollY + 200)
-  await expect.poll(() => track.evaluate((element) =>
-    getComputedStyle(element).transform,
-  )).not.toBe(beforeDrag.transform)
-  await expect.poll(() => atlas.evaluate((element) =>
-    Math.abs(element.getBoundingClientRect().top),
-  )).toBeLessThanOrEqual(1)
+  expect(Math.abs(released.scrollY - settled.scrollY)).toBeLessThanOrEqual(1)
+  expect(Math.abs(released.trackX - settled.trackX)).toBeLessThanOrEqual(1)
+  expect(
+    Math.abs(settled.trackX + settled.scrollY - (range?.start ?? 0)),
+  ).toBeLessThanOrEqual(1)
+  expect(Math.abs(released.atlasTop)).toBeLessThanOrEqual(1)
+  expect(Math.abs(settled.atlasTop)).toBeLessThanOrEqual(1)
+  expect(released.dragging).toBe(false)
+  expect(settled.dragging).toBe(false)
+  expect(settled.nativeDragStarts).toBe(0)
+  expect(settled.animatedSceneChildren).toBe(0)
+  await expect(track).not.toHaveCSS('transform', beforeDrag.transform)
+  await expect(page).toHaveURL('/')
 })
 
 test('first client-side route change keeps the application shell mounted', async ({ page }) => {
