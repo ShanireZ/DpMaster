@@ -6,6 +6,8 @@ tags: [operations, analytics, rum, alerting]
 timestamp: 2026-07-25T00:00:00+08:00
 source_paths:
   - site/src/analytics/
+  - site/scripts/prerender.mjs
+  - site/scripts/check-regional-analytics.mjs
   - site/functions/_analytics-core.js
   - site/functions/_feedback-core.js
   - site/worker.js
@@ -79,6 +81,8 @@ Keep Cloudflare Web Analytics enabled for independent request/page-view trends; 
 
 # EdgeOne Dashboard
 
+Every HTML document published from `dist/edgeone/`, including the real 404 page, contains one statically rendered Cloudflare Web Analytics beacon using the shared production token. This supplies an independent page-view trend for `dp.betaoi.cn`; `npm run check:analytics` verifies the complete HTML set and rejects missing or duplicate snippets.
+
 The China Adapter writes the identical structured event object to Edge Function logs. In EdgeOne Log Analysis, create saved searches for `analytics_event` and group by `name`, `path`, `metadata.name`, and `metadata.rating`. Create widgets for:
 
 * page views and 404s by route;
@@ -114,4 +118,4 @@ After each regional deployment:
 3. Confirm LCP, CLS, INP, FCP, and TTFB begin arriving from real navigation.
 4. Open a made-up path and confirm an HTTP 404 plus `route_not_found`.
 5. Exercise a controlled client error in staging and confirm the alert channel.
-6. Verify dashboards filter `.cc` as `international` and `.cn` as `china`.
+6. Verify the Cloudflare Web Analytics dashboard receives `.cc` and `.cn` page views, while first-party dashboards still filter `.cc` as `international` and `.cn` as `china`.

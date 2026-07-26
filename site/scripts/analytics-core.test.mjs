@@ -93,7 +93,7 @@ test('Cloudflare worker exposes the analytics endpoint and keeps static assets i
   assert.equal(options.status, 204)
 })
 
-test('analytics provider defers the Cloudflare beacon and keeps Tencent traffic same-origin', async () => {
+test('analytics providers keep route events same-origin and defer the international beacon', async () => {
   const source = await import('node:fs/promises').then(({ readFile }) =>
     readFile(new URL('../src/analytics/index.ts', import.meta.url), 'utf8'),
   )

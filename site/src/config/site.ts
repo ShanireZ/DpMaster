@@ -7,6 +7,12 @@ export const BRAND = Object.freeze({
 
 export type SiteRegion = 'international' | 'china'
 export type AnalyticsProviderKind = 'cloudflare' | 'tencent-edgeone'
+export type CloudflareWebAnalyticsDelivery = 'runtime' | 'static'
+
+export interface CloudflareWebAnalyticsConfig {
+  token: string
+  delivery: CloudflareWebAnalyticsDelivery
+}
 
 export interface SiteConfig {
   region: SiteRegion
@@ -17,7 +23,7 @@ export interface SiteConfig {
   analytics: {
     provider: AnalyticsProviderKind
     endpoint: '/api/analytics'
-    cloudflareToken?: string
+    cloudflareWebAnalytics: CloudflareWebAnalyticsConfig
   }
 }
 
@@ -31,7 +37,10 @@ export const SITE_CONFIGS: Readonly<Record<SiteRegion, SiteConfig>> = Object.fre
     analytics: {
       provider: 'cloudflare',
       endpoint: '/api/analytics',
-      cloudflareToken: 'c113fb69d7e84d38a645c5160f6f1bda',
+      cloudflareWebAnalytics: {
+        token: 'c113fb69d7e84d38a645c5160f6f1bda',
+        delivery: 'runtime',
+      },
     },
   },
   china: {
@@ -43,6 +52,10 @@ export const SITE_CONFIGS: Readonly<Record<SiteRegion, SiteConfig>> = Object.fre
     analytics: {
       provider: 'tencent-edgeone',
       endpoint: '/api/analytics',
+      cloudflareWebAnalytics: {
+        token: 'c113fb69d7e84d38a645c5160f6f1bda',
+        delivery: 'static',
+      },
     },
   },
 })

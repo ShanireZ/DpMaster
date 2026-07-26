@@ -1,6 +1,15 @@
 import assert from 'node:assert/strict'
 import test from 'node:test'
-import { settleSuspenseMarkup } from './prerender.mjs'
+import { SITE_CONFIGS } from '../src/config/site.ts'
+import { renderStaticWebAnalytics, settleSuspenseMarkup } from './prerender.mjs'
+
+const webAnalyticsSnippet =
+  '<!-- Cloudflare Web Analytics --><script type=\'module\' src=\'https://static.cloudflareinsights.com/beacon.min.js\' data-cf-beacon=\'{"token": "c113fb69d7e84d38a645c5160f6f1bda"}\'></script><!-- End Cloudflare Web Analytics -->'
+
+test('EdgeOne receives the exact static Cloudflare Web Analytics snippet', () => {
+  assert.equal(renderStaticWebAnalytics(SITE_CONFIGS.china), webAnalyticsSnippet)
+  assert.equal(renderStaticWebAnalytics(SITE_CONFIGS.international), '')
+})
 
 test('settleSuspenseMarkup replaces streamed fallbacks with final hydration markup', () => {
   const markup = [
