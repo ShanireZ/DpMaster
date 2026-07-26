@@ -427,19 +427,21 @@
 .step__b .kx-hl { color: var(--accent-1); }
 
 .pointer-cue {
-  display: grid;
-  grid-template-columns: 26px minmax(0, 1fr);
-  gap: var(--sp-3);
-  max-width: 68ch;
+  position: relative;
+  display: block;
+  width: min(100%, 88ch);
   margin: var(--sp-5) 0;
-  padding: var(--sp-3) 0 var(--sp-3) var(--sp-4);
+  padding: var(--sp-3) var(--sp-4) var(--sp-3) calc(var(--sp-4) + 26px + var(--sp-3));
   border-left: 1px solid var(--border-strong);
   color: var(--text-2);
   font-size: 13.5px;
   line-height: 1.7;
 }
 
-.pointer-cue svg {
+.pointer-cue > svg {
+  position: absolute;
+  top: calc(var(--sp-3) + 0.18em);
+  left: var(--sp-4);
   color: var(--accent-1);
 }
 
@@ -1155,6 +1157,16 @@
   border-bottom-color: var(--border-strong);
 }
 
+.typepage[data-part-id='a'] .demo__body {
+  padding-top: clamp(var(--sp-4), 2.4vw, var(--sp-6));
+  padding-bottom: clamp(var(--sp-4), 2.4vw, var(--sp-6));
+}
+
+.typepage[data-part-id='a'] .kd__toolbar,
+.typepage[data-part-id='a'] .fbug__toolbar {
+  justify-content: space-between;
+}
+
 .typepage[data-part-id='a'] .example {
   border: 1px solid var(--border-strong);
   background: color-mix(in srgb, var(--surface-1) 86%, transparent);
@@ -1209,6 +1221,11 @@
 
   .typepage[data-part-id='a'] .dpviz {
     grid-template-columns: 1fr;
+    grid-template-areas:
+      'table'
+      'legend'
+      'panel'
+      'playback';
   }
 
   .typepage[data-part-id='a'] .dpviz__scroll {

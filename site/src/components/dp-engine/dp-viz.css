@@ -1,10 +1,15 @@
 .dpviz {
   display: grid;
   grid-template-columns: minmax(0, 1fr) minmax(210px, 0.34fr);
+  grid-template-areas:
+    'table panel'
+    'legend legend'
+    'playback playback';
   gap: 0 var(--sp-5);
 }
 
 .dpviz__scroll {
+  grid-area: table;
   overflow-x: auto;
   overflow-y: hidden;
   padding: var(--sp-4) 0 var(--sp-5);
@@ -56,6 +61,7 @@
 
 /* 解说面板 */
 .dpviz__panel {
+  grid-area: panel;
   display: flex;
   min-height: 74px;
   flex-direction: column;
@@ -76,7 +82,7 @@
 /* 图例 */
 .dpviz__legend {
   display: flex;
-  grid-column: 1 / -1;
+  grid-area: legend;
   flex-wrap: wrap;
   gap: var(--sp-4);
   padding: var(--sp-3) 0;
@@ -89,12 +95,17 @@
 .dpviz__legend i { width: 10px; height: 10px; border: 1px solid; }
 
 .dpviz > .playback {
-  grid-column: 1 / -1;
+  grid-area: playback;
 }
 
 @media (max-width: 760px) {
   .dpviz {
     grid-template-columns: 1fr;
+    grid-template-areas:
+      'table'
+      'legend'
+      'panel'
+      'playback';
   }
   .dpviz__scroll {
     border-right: 0;
@@ -102,10 +113,6 @@
   .dpviz__panel {
     padding: var(--sp-4) 0;
     border-top: 1px solid var(--border);
-  }
-  .dpviz__legend,
-  .dpviz > .playback {
-    grid-column: auto;
   }
 }
 
