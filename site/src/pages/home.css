@@ -170,6 +170,53 @@
   transform: translateY(1px);
 }
 
+/* 浅色首屏与暗色首屏共用同一构图，仅切换照明与文字对比。 */
+[data-theme='light'] .home-hero {
+  background: #f4f1ea;
+}
+
+[data-theme='light'] .home-hero__image {
+  filter: saturate(0.92) contrast(1.04) brightness(0.99);
+}
+
+[data-theme='light'] .home-hero__shade {
+  background:
+    linear-gradient(90deg, rgba(244, 241, 234, 0.02) 0%, rgba(244, 241, 234, 0.2) 43%, rgba(244, 241, 234, 0.96) 100%),
+    linear-gradient(0deg, rgba(244, 241, 234, 0.82) 0%, transparent 43%, rgba(244, 241, 234, 0.2) 100%);
+}
+
+[data-theme='light'] .home-hero h1 {
+  color: #1d1812;
+}
+
+[data-theme='light'] .home-hero__line:first-child > span {
+  color: rgba(29, 24, 18, 0.58);
+}
+
+[data-theme='light'] .home-hero__lead {
+  color: rgba(29, 24, 18, 0.7);
+}
+
+[data-theme='light'] .home-hero__primary {
+  border-color: #8f6015;
+  background: #8f6015;
+  color: #fbf7ef;
+}
+
+[data-theme='light'] .home-hero__primary:hover {
+  background: #7a5210;
+}
+
+[data-theme='light'] .home-hero__secondary {
+  color: rgba(29, 24, 18, 0.78);
+  border-color: rgba(29, 24, 18, 0.28);
+}
+
+[data-theme='light'] .home-hero__secondary:hover {
+  color: #1d1812;
+  border-color: #8f6015;
+}
+
 /* ---------------- 状态图谱：桌面横向叙事，移动端纵向展开 ---------------- */
 .state-atlas {
   position: relative;
@@ -485,6 +532,12 @@
     background:
       linear-gradient(0deg, rgba(11, 10, 9, 0.97) 0%, rgba(11, 10, 9, 0.74) 48%, rgba(11, 10, 9, 0.08) 100%),
       linear-gradient(90deg, rgba(11, 10, 9, 0.22), transparent 72%);
+  }
+
+  [data-theme='light'] .home-hero__shade {
+    background:
+      linear-gradient(0deg, rgba(244, 241, 234, 0.98) 0%, rgba(244, 241, 234, 0.76) 48%, rgba(244, 241, 234, 0.08) 100%),
+      linear-gradient(90deg, rgba(244, 241, 234, 0.24), transparent 72%);
   }
 
   .home-hero__frame {

@@ -413,6 +413,27 @@ a.nav-type.active::before { opacity: 1; transform: scaleY(1); }
 .topbar--home .icon-btn:hover {
   background: rgba(240, 235, 227, 0.09);
 }
+[data-theme='light'] .topbar--home {
+  color: #2b241a;
+  background: linear-gradient(
+    180deg,
+    rgba(244, 241, 234, 0.88) 0%,
+    rgba(244, 241, 234, 0.52) 72%,
+    rgba(244, 241, 234, 0) 100%
+  );
+}
+[data-theme='light'] .topbar--home .crumbs,
+[data-theme='light'] .topbar--home .crumbs a,
+[data-theme='light'] .topbar--home .icon-btn {
+  color: rgba(43, 36, 26, 0.68);
+}
+[data-theme='light'] .topbar--home .crumbs a:hover,
+[data-theme='light'] .topbar--home .icon-btn:hover {
+  color: #2b241a;
+}
+[data-theme='light'] .topbar--home .icon-btn:hover {
+  background: rgba(43, 36, 26, 0.07);
+}
 .topbar--home.topbar--atlas {
   color: var(--text-1);
   background: linear-gradient(
