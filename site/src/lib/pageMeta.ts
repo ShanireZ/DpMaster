@@ -29,7 +29,7 @@ export interface PageMeta {
 }
 
 const HOME_DESCRIPTION =
-  'DP大师是一套面向算法学习者的动态规划交互式教程，通过精讲、逐帧可视化、题目索引和小游戏掌握 DP。'
+  'DP大师面向算法学习者，用精讲、逐帧可视化、题目索引和小游戏讲清状态定义、转移顺序与模型迁移。'
 
 const STATIC_META: Record<
   string,
@@ -125,7 +125,7 @@ export function getPageMeta(
     return meta(
       site,
       '/',
-      `${BRAND.name} · ${BRAND.shortDescription}`,
+      `${BRAND.name} · ${BRAND.subtitle}`,
       HOME_DESCRIPTION,
       'home',
       [{ name: '首页', path: '/' }],

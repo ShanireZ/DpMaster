@@ -47,7 +47,7 @@ export default function AboutPage() {
             <span className="grad-text-brand">一格一格讲清楚</span>
           </h1>
           <p className="about-hero__lead">
-            DP大师是一个动态规划交互式教程：七大家族、每个类型都配可改值的演示动画与互动小游戏，
+            DP大师围绕动态规划的七大家族展开，每个类型都配可改值的演示动画与互动小游戏，
             让状态、转移与无后效性在你眼前一格一格地长出来。例题全部取自洛谷原生题库。
           </p>
         </section>

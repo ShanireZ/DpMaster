@@ -1,6 +1,6 @@
 export const BRAND = Object.freeze({
   name: 'DP大师',
-  shortDescription: '动态规划交互式教程',
+  subtitle: 'DP Master',
   owner: 'AzureL蔚澜算法',
   slogan: '在算法的海洋中，我就是你的信标',
 })

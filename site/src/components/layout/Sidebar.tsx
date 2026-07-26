@@ -16,13 +16,13 @@ export default function Sidebar({ onNavigate }: { onNavigate?: () => void }) {
     <div className="sidebar-inner">
       <nav className="sidebar-nav" aria-label="主导航">
         <NavLink to="/" end className="brand" onClick={onNavigate}>
+          <span className="brand__mark" aria-hidden="true">
+            <img src="/favicon.svg" alt="" width="32" height="32" />
+          </span>
           <span className="brand__wordmark">
             <span className="brand__name">{BRAND.name}</span>
-            <span className="brand__sub">
-              DP Master
-            </span>
+            <span className="brand__sub">{BRAND.subtitle}</span>
           </span>
-          <span className="brand__compact" aria-hidden="true">DP</span>
         </NavLink>
 
         {PARTS.map((p) => {
