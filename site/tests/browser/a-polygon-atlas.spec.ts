@@ -80,3 +80,63 @@ test('all nine A lessons render their own scientific plate', async ({ page }) =>
   ).toBe(true)
   expect(runtimeErrors).toEqual([])
 })
+
+test('A lesson cues keep inline copy readable and DP panels use the available width', async ({ page }) => {
+  await page.setViewportSize({ width: 1440, height: 900 })
+
+  for (const slug of lessons) {
+    await page.goto(`/part/a/${slug}`)
+    await expect(page.locator('.lesson-flow')).toBeVisible()
+
+    const layout = await page.evaluate(() => {
+      const brokenCueChildren = [...document.querySelectorAll('.pointer-cue')]
+        .flatMap((cue) => [...cue.children])
+        .filter((child) => {
+          if (child.tagName.toLowerCase() === 'svg') return false
+          const rect = child.getBoundingClientRect()
+          return rect.width <= 30 && rect.height > 40
+        })
+        .map((child) => child.textContent?.trim())
+
+      const dpPanels = [...document.querySelectorAll('.dpviz')].map((viz) => {
+        const table = viz.querySelector('.dpviz__scroll')?.getBoundingClientRect()
+        const panel = viz.querySelector('.dpviz__panel')?.getBoundingClientRect()
+        return {
+          aligned: !!table && !!panel && Math.abs(table.top - panel.top) <= 1,
+          separated: !!table && !!panel && panel.left >= table.right - 1,
+        }
+      })
+
+      return {
+        brokenCueChildren,
+        dpPanels,
+        noOverflow: document.documentElement.scrollWidth <= document.documentElement.clientWidth + 1,
+      }
+    })
+
+    expect(layout.brokenCueChildren, `${slug}: pointer cue copy should not collapse into the icon column`).toEqual([])
+    expect(layout.dpPanels.every(({ aligned, separated }) => aligned && separated), `${slug}: DP table and explanation panel should share the first row`).toBe(true)
+    expect(layout.noOverflow, `${slug}: desktop page should not overflow horizontally`).toBe(true)
+  }
+
+  await page.setViewportSize({ width: 390, height: 844 })
+  await page.goto('/part/a/01')
+  await expect(page.locator('.lesson-flow')).toBeVisible()
+
+  const mobileLayout = await page.evaluate(() => {
+    const cue = document.querySelector('.pointer-cue')?.getBoundingClientRect()
+    const table = document.querySelector('.dpviz__scroll')?.getBoundingClientRect()
+    const panel = document.querySelector('.dpviz__panel')?.getBoundingClientRect()
+    return {
+      cueFits: !!cue && cue.right <= document.documentElement.clientWidth + 1,
+      panelBelowTable: !!table && !!panel && panel.top >= table.bottom - 1,
+      noOverflow: document.documentElement.scrollWidth <= document.documentElement.clientWidth + 1,
+    }
+  })
+
+  expect(mobileLayout).toEqual({
+    cueFits: true,
+    panelBelowTable: true,
+    noOverflow: true,
+  })
+})
