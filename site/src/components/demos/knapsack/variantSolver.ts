@@ -28,7 +28,7 @@ export function countKnapsack(items: CountItem[], W: number): VizModel {
     values: snap(),
     states: settled(snap()),
     caption:
-      `初始：<b>f[0]=1</b>（凑出容量 0 有唯一一种方案——空方案），其余 f[j]=<b>0</b>（还没有物品可用，凑不出来）。` +
+      `初始：<b>f[0]=1</b>（凑出容量 0 有唯一一种方案，空方案），其余 f[j]=<b>0</b>（还没有物品可用，凑不出来）。` +
       `这一步取代了最优 DP 里的「全 0」地基。`,
     formula: 'f[0]=1,\\ f[j]=0\\ (j>0)',
   })
@@ -62,7 +62,7 @@ export function countKnapsack(items: CountItem[], W: number): VizModel {
     states: fin,
     caption:
       `答案 <b>f[${W}] = ${run.result.count}</b>：恰好装满容量 ${W} 的方案共 <b>${run.result.count}</b> 种。` +
-      `全程没有一次 max——只有一层层累加，把每种能凑出 ${W} 的组合数了个遍。`,
+      `全程没有一次 max，只有一层层累加，把每种能凑出 ${W} 的组合数了个遍。`,
     formula: `f[${W}]=${run.result.count}`,
   })
 

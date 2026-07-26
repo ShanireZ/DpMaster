@@ -156,7 +156,7 @@ export default function GroupOrderContrastDemo() {
             （错法把<b className="bad">同组多件</b>重复计入，答案被抬高了 <b className="bad">{fBad - fOk}</b>）
           </>
         ) : (
-          <>（本组合下两种顺序恰好同值——试试让同组两件都装得下）</>
+          <>（本组合下两种顺序恰好同值，试试让同组两件都装得下）</>
         )}
       </div>
 

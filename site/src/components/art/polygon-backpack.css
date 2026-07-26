@@ -1,0 +1,208 @@
+.poly-backpack,
+.knapsack-plate {
+  --poly-line: color-mix(in srgb, var(--accent-1) 72%, var(--text-2));
+  --poly-line-soft: color-mix(in srgb, var(--accent-1) 30%, transparent);
+  --poly-fill-1: color-mix(in srgb, var(--accent-1) 82%, var(--surface-1));
+  --poly-fill-2: color-mix(in srgb, var(--accent-1) 62%, var(--surface-2));
+  --poly-fill-3: color-mix(in srgb, var(--accent-1) 43%, var(--surface-2));
+  --poly-fill-4: color-mix(in srgb, var(--accent-2) 30%, var(--surface-3));
+  --poly-fill-5: color-mix(in srgb, var(--accent-2) 20%, var(--surface-1));
+  --poly-fill-6: color-mix(in srgb, var(--accent-1) 13%, var(--surface-1));
+}
+
+.poly-backpack {
+  display: block;
+  width: 100%;
+  height: auto;
+  overflow: visible;
+}
+
+.poly-backpack__construction {
+  fill: none;
+  stroke: var(--poly-line-soft);
+  stroke-width: 1;
+  vector-effect: non-scaling-stroke;
+}
+
+.poly-backpack__geometry {
+  stroke: var(--poly-line);
+  stroke-linecap: square;
+  stroke-linejoin: miter;
+  stroke-width: 1.35;
+  vector-effect: non-scaling-stroke;
+}
+
+.poly-backpack__face--1 { fill: var(--poly-fill-1); }
+.poly-backpack__face--2 { fill: var(--poly-fill-2); }
+.poly-backpack__face--3 { fill: var(--poly-fill-3); }
+.poly-backpack__face--4 { fill: var(--poly-fill-4); }
+.poly-backpack__face--5 { fill: var(--poly-fill-5); }
+.poly-backpack__face--6 { fill: var(--poly-fill-6); }
+
+.poly-backpack__outline {
+  fill: none;
+  stroke: color-mix(in srgb, var(--accent-1) 90%, var(--text-1));
+  stroke-width: 2.1;
+}
+
+.poly-backpack__facets {
+  fill: none;
+  stroke: color-mix(in srgb, var(--accent-1) 54%, transparent);
+  stroke-width: 0.8;
+}
+
+.poly-backpack__geometry--wireframe .poly-backpack__face {
+  fill: color-mix(in srgb, var(--accent-1) 2%, transparent);
+  stroke: color-mix(in srgb, var(--accent-1) 43%, transparent);
+}
+
+.poly-backpack__geometry--wireframe .poly-backpack__outline {
+  stroke: color-mix(in srgb, var(--accent-1) 58%, transparent);
+  stroke-width: 1.45;
+}
+
+.poly-backpack--wireframe .poly-backpack__construction {
+  opacity: 0.46;
+}
+
+.knapsack-plate {
+  display: block;
+  width: 100%;
+  height: auto;
+  color: var(--text-2);
+}
+
+.knapsack-plate text {
+  fill: var(--text-2);
+  font-family: var(--font-body);
+  font-size: 13px;
+}
+
+.knapsack-plate__formula {
+  fill: var(--text-1) !important;
+  font-family: var(--font-mono) !important;
+  font-size: 13px !important;
+}
+
+.knapsack-plate__label {
+  fill: var(--text-2) !important;
+  font-weight: 620;
+}
+
+.knapsack-plate__grid {
+  stroke: color-mix(in srgb, var(--border) 72%, transparent);
+  stroke-width: 0.75;
+}
+
+.knapsack-plate__grid,
+.knapsack-plate__watermark {
+  pointer-events: none;
+}
+
+.knapsack-plate__watermark {
+  opacity: 0.2;
+}
+
+.knapsack-plate circle,
+.knapsack-plate rect,
+.knapsack-plate polygon,
+.knapsack-plate line,
+.knapsack-plate path {
+  fill: none;
+  stroke: var(--border-strong);
+  stroke-width: 1.25;
+  vector-effect: non-scaling-stroke;
+}
+
+.knapsack-plate .is-active,
+.knapsack-plate__cell.is-active {
+  fill: color-mix(in srgb, var(--accent-1) 14%, var(--surface-1));
+  stroke: var(--accent-1);
+  stroke-width: 2;
+}
+
+.knapsack-plate__accent-line {
+  fill: none !important;
+  stroke: var(--accent-1) !important;
+  stroke-width: 2 !important;
+}
+
+.knapsack-plate marker path {
+  fill: var(--accent-1);
+  stroke: none;
+}
+
+.knapsack-plate__line,
+.knapsack-plate__brace,
+.knapsack-plate__bracket,
+.knapsack-plate__vessel {
+  fill: none !important;
+  stroke: color-mix(in srgb, var(--text-2) 65%, var(--border-strong)) !important;
+}
+
+.knapsack-plate__result {
+  fill: color-mix(in srgb, var(--surface-2) 82%, transparent) !important;
+  stroke: color-mix(in srgb, var(--accent-1) 55%, var(--border-strong)) !important;
+}
+
+.knapsack-plate__parcel polygon {
+  fill: color-mix(in srgb, var(--surface-3) 88%, transparent);
+  stroke: color-mix(in srgb, var(--text-2) 64%, var(--border-strong));
+}
+
+.knapsack-plate__parcel polygon:nth-child(2) {
+  fill: color-mix(in srgb, var(--accent-1) 7%, var(--surface-3));
+}
+
+.knapsack-plate__parcel polygon:nth-child(3) {
+  fill: color-mix(in srgb, var(--accent-1) 13%, var(--surface-3));
+}
+
+.knapsack-plate__node circle {
+  fill: color-mix(in srgb, var(--surface-2) 88%, transparent);
+}
+
+.knapsack-plate__node path {
+  stroke-dasharray: 5 5;
+}
+
+.knapsack-plate__fill {
+  fill: color-mix(in srgb, var(--accent-1) 18%, var(--surface-2)) !important;
+  stroke: var(--accent-1) !important;
+}
+
+.knapsack-plate__fill.is-fraction {
+  fill: color-mix(in srgb, var(--accent-1) 34%, var(--surface-2)) !important;
+  stroke-dasharray: 5 3;
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .partcover--a .poly-backpack__geometry {
+    animation: poly-backpack-settle 720ms var(--ease-out) both;
+    transform-box: fill-box;
+    transform-origin: 52% 70%;
+  }
+
+  .partcover--a .poly-backpack__construction {
+    animation: poly-construction-enter 820ms var(--ease-out) both;
+  }
+}
+
+@keyframes poly-backpack-settle {
+  from {
+    opacity: 0;
+    transform: translateY(10px) scale(0.985);
+  }
+}
+
+@keyframes poly-construction-enter {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .poly-backpack__geometry,
+  .poly-backpack__construction {
+    animation: none;
+  }
+}

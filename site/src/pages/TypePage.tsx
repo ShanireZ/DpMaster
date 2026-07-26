@@ -7,6 +7,7 @@ import { ROUTE_LAST_MODIFIED } from '../data/routeLastModified.ts'
 import { trackAnalyticsEvent } from '../analytics/index.ts'
 import AnimatedContent from '../components/motion/AnimatedContent'
 import PartGlyph from '../components/PartGlyph'
+import { KnapsackLessonPlate } from '../components/art/PolygonBackpack'
 import { useLearningProgress } from '../learning/LearningProgressContext'
 import { useStaticLessonContents } from '../app/StaticLessonContent.ts'
 import './typepage.css'
@@ -162,9 +163,30 @@ export default function TypePage() {
     )
   }
 
+  const completionButton = (
+    <button
+      type="button"
+      className={`typehead__complete${isComplete ? ' is-complete' : ''}`}
+      onClick={() => {
+        if (!isComplete) {
+          trackAnalyticsEvent({
+            event: 'lesson_completed',
+            path,
+            title: type.title,
+            metadata: { method: 'manual' },
+          })
+        }
+        toggleComplete(path)
+      }}
+    >
+      {isComplete ? <Check size={15} /> : <Circle size={15} />}
+      {isComplete ? '已学完' : '标为学完'}
+    </button>
+  )
+
   return (
-    <div className="typepage-layout">
-      <article className="typepage" ref={articleRef}>
+    <div className={`typepage-layout typepage-layout--${part.id}`} data-part-id={part.id}>
+      <article className="typepage" ref={articleRef} data-part-id={part.id} data-lesson-slug={type.slug}>
         <AnimatedContent>
           <header className="typehead">
             <div className="typehead__canvas">
@@ -175,32 +197,18 @@ export default function TypePage() {
                 </span>
                 <div className="typehead__titleline">
                   <h1>{type.title}</h1>
-                  <button
-                    type="button"
-                    className={`typehead__complete${isComplete ? ' is-complete' : ''}`}
-                    onClick={() => {
-                      if (!isComplete) {
-                        trackAnalyticsEvent({
-                          event: 'lesson_completed',
-                          path,
-                          title: type.title,
-                          metadata: { method: 'manual' },
-                        })
-                      }
-                      toggleComplete(path)
-                    }}
-                  >
-                    {isComplete ? <Check size={15} /> : <Circle size={15} />}
-                    {isComplete ? '已学完' : '标为学完'}
-                  </button>
+                  {part.id !== 'a' && completionButton}
                 </div>
                 <p className="typehead__blurb">{type.blurb}</p>
+                {part.id === 'a' && completionButton}
               </div>
               <div className="typehead__art" aria-hidden="true">
-                <span className="typehead__art-code">{part.code}</span>
                 <div className="typehead__glyph">
-                  <PartGlyph id={part.id} size={320} />
+                  {part.id === 'a'
+                    ? <KnapsackLessonPlate slug={type.slug} />
+                    : <PartGlyph id={part.id} size={320} />}
                 </div>
+                {part.id !== 'a' && <span className="typehead__art-code">{part.code}</span>}
               </div>
             </div>
             {editorial && (

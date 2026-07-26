@@ -1,7 +1,7 @@
 // 分数背包（辨析课）讲解用插图（on-brand SVG，随强调色变色）。
 // 不做 opacity:0 起步动画；强调色上的文字用 var(--text-on-accent)。
 
-// 图一：可分割物品（金粉 / 牛奶）——一整袋可以只舀出一部分。
+// 图一：可分割物品（金粉 / 牛奶），一整袋可以只舀出一部分。
 export function DivisibleFigure() {
   return (
     <svg viewBox="0 0 620 176" role="img" aria-label="可分割物品：一整袋金粉可以只取一部分">
@@ -47,7 +47,7 @@ export function DivisibleFigure() {
   )
 }
 
-// 图二：贪心装填 —— 按单位价值 v/w 降序把整段填进容量条，最后一件按剩余比例切开（斜纹）。
+// 图二：贪心装填 ， 按单位价值 v/w 降序把整段填进容量条，最后一件按剩余比例切开（斜纹）。
 // 对应正文小例子：items (2,3)(3,4)(4,5)、C=8 → 装满 (2,3)、(3,4)，再切 (4,5) 取 3/4。
 export function GreedyFillFigure() {
   const C = 8
@@ -129,7 +129,7 @@ export function GreedyFillFigure() {
   )
 }
 
-// 图三：交换论证 —— 若某一格容量给了低 v/w 的物品、而高 v/w 的还没装满，
+// 图三：交换论证 ， 若某一格容量给了低 v/w 的物品、而高 v/w 的还没装满，
 // 把这一格换成高 v/w 的，总价值只增不减（换前 vs 换后两条背包条 + 「交换 ⇒ 更优」箭头）。
 export function ExchangeFigure() {
   // 两条容量条各 6 格。低 v/w=1.0（每格价值 1），高 v/w=2.0（每格价值 2）。

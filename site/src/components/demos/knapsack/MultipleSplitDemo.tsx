@@ -145,7 +145,7 @@ export default function MultipleSplitDemo() {
       </div>
 
       <div className="msp__delta">
-        m={m} 时，朴素要 <b>{counts.naive}</b> 个物品，二进制只用 <b>{counts.binary}</b> 个打包件——
+        m={m} 时，朴素要 <b>{counts.naive}</b> 个物品，二进制只用 <b>{counts.binary}</b> 个打包件，
         少做 <b>{counts.naive - counts.binary}</b> 次 01 转移，却依旧能凑出「取 0…{m} 件」的每一种，
         既不重复、也不遗漏。m 越大，这道差距越悬殊。
       </div>

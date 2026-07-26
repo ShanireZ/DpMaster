@@ -50,23 +50,23 @@ export default function KnapsackGroup() {
         <div className="prose">
           <p>
             先看一个具体场景：有 <strong>2 组</strong>物品，一个容量 <M>{'m=6'}</M> 的背包。组 1 里放着两件
-            <M>{'(w,v)=(2,3),(3,4)'}</M>，组 2 里放着两件 <M>{'(2,2),(4,5)'}</M>。规则多了一条硬约束——
+            <M>{'(w,v)=(2,3),(3,4)'}</M>，组 2 里放着两件 <M>{'(2,2),(4,5)'}</M>。规则多了一条硬约束，
             <strong>每一组里至多挑一件</strong>（也可以一件都不挑），组与组之间互不影响。目标仍是不超重的前提下让<strong>总价值最大</strong>。
           </p>
         </div>
         <figure className="figure">
           <GroupSetupFigure />
-          <figcaption className="figure__cap">2 组物品，组内互斥：每组至多取一件——组 1 里 (2,3) 与 (3,4) 只能二选一或都不选。</figcaption>
+          <figcaption className="figure__cap">2 组物品，组内互斥：每组至多取一件，组 1 里 (2,3) 与 (3,4) 只能二选一或都不选。</figcaption>
         </figure>
         <div className="prose">
           <p>
-            为什么不能把它当普通 01 背包，把 4 件一股脑丢进去做？因为 01 背包允许「组 1 的两件<strong>同时拿</strong>」——
+            为什么不能把它当普通 01 背包，把 4 件一股脑丢进去做？因为 01 背包允许「组 1 的两件<strong>同时拿</strong>」，
             <M>{'(2,3)+(3,4)'}</M> 重 5、价值 7，它会毫不犹豫地收下。可分组规则里这是<strong>非法</strong>的：同一组内互斥。
             普通 01 背包<strong>压根不知道「组」的存在</strong>，自然管不住「一组只能出一件」。
           </p>
           <p>
             那把每组「挑哪一件、或不挑」的所有搭配枚举出来呢？<M>{'g'}</M> 组、每组约 <M>{'c'}</M> 种选择，就是 <M>{'c^g'}</M> 种组合，
-            又回到指数爆炸。分组背包的思路，是把这层组内的互斥，<strong>直接焊进背包的转移里</strong>——让「组」成为 DP 的阶段。
+            又回到指数爆炸。分组背包的思路，是把这层组内的互斥，<strong>直接焊进背包的转移里</strong>，让「组」成为 DP 的阶段。
           </p>
         </div>
       </section>
@@ -76,7 +76,7 @@ export default function KnapsackGroup() {
         <div className="prose">
           <p>
             <strong>定状态。</strong>设 <M>{'f[g][j]'}</M> 表示：<strong>只在前 <M>{'g'}</M> 组里挑选（每组至多一件）、总重量不超过 <M>{'j'}</M></strong> 时的最大价值。
-            和 01 背包最大的不同在<strong>阶段的粒度</strong>：01 里一个阶段决断「第 <M>{'i'}</M> <strong>件</strong>取不取」，分组里一个阶段决断「第 <M>{'g'}</M> <strong>组</strong>——不选，还是选组内的哪一件」。
+            和 01 背包最大的不同在<strong>阶段的粒度</strong>：01 里一个阶段决断「第 <M>{'i'}</M> <strong>件</strong>取不取」，分组里一个阶段决断「第 <M>{'g'}</M> <strong>组</strong>，不选，还是选组内的哪一件」。
           </p>
         </div>
         <figure className="figure">
@@ -91,15 +91,15 @@ export default function KnapsackGroup() {
             <strong>选第 <M>{'g'}</M> 组里的某一件 <M>{'k'}</M></strong>（需装得下 <M>{'j\\ge w_k'}</M>）：腾出 <M>{'w_k'}</M>，剩下的 <M>{'j-w_k'}</M> 留给前 <M>{'g-1'}</M> 组去最优，再加上这件的价值 <M>{'v_k'}</M>，即 <M>{'f[g-1][j-w_k]+v_k'}</M>。
             究竟选组内哪一件？<strong>把每一件都试一遍，取最好的那件</strong>。
           </p>
-          <p>合起来，就是<strong>转移方程</strong>——注意第二项里那个对组内物品的 <M>{'\\max'}</M>：</p>
+          <p>合起来，就是<strong>转移方程</strong>，注意第二项里那个对组内物品的 <M>{'\\max'}</M>：</p>
           <MB>{'f[g][j]=\\max\\Big(\\,f[g-1][j],\\ \\max_{k\\,\\in\\,g,\\ w_k\\le j}\\big(f[g-1][j-w_k]+v_k\\big)\\Big)'}</MB>
           <p>
             边界：<M>{'f[0][j]=0'}</M>（一组都不考虑，价值为 0）。答案：<M>{'f[G][m]'}</M>。
-            对比 01 背包 <M>{'f[i][j]=\\max(f[i-1][j],\\ f[i-1][j-w_i]+v_i)'}</M>——分组只是把「取这一件」换成了「<strong>在组内挑最好的一件</strong>」，多套了一层组内的 <M>{'\\max'}</M>。
+            对比 01 背包 <M>{'f[i][j]=\\max(f[i-1][j],\\ f[i-1][j-w_i]+v_i)'}</M>，分组只是把「取这一件」换成了「<strong>在组内挑最好的一件</strong>」，多套了一层组内的 <M>{'\\max'}</M>。
           </p>
         </div>
         <InfoBox kind="key" title="本质">
-          分组背包是 01 背包的<strong>自然推广</strong>：把决策的粒度从「一件」抬升到「一组」。两项候选<strong>都从上一行 <M>{'f[g-1][\\cdot]'}</M> 取值</strong>——这一句就锁死了「每组至多一件」：因为一件都还没往本行写，组内不管试多少件，用的都是「本组尚未出手」的旧值。
+          分组背包是 01 背包的<strong>自然推广</strong>：把决策的粒度从「一件」抬升到「一组」。两项候选<strong>都从上一行 <M>{'f[g-1][\\cdot]'}</M> 取值</strong>，这一句就锁死了「每组至多一件」：因为一件都还没往本行写，组内不管试多少件，用的都是「本组尚未出手」的旧值。
         </InfoBox>
       </section>
 
@@ -132,7 +132,7 @@ export default function KnapsackGroup() {
           <div className="step">
             <span className="step__n">3</span>
             <div className="step__b">
-              <b>读答案。</b> <M>{'f[2][6]=8'}</M>——它来自「组 1 选 <M>{'(2,3)'}</M> + 组 2 选 <M>{'(4,5)'}</M>」，重 <M>{'2+4=6'}</M>、价值 <M>{'3+5=8'}</M>。<strong>每组恰好一件</strong>，正是分组规则下的最优。
+              <b>读答案。</b> <M>{'f[2][6]=8'}</M>，它来自「组 1 选 <M>{'(2,3)'}</M> + 组 2 选 <M>{'(4,5)'}</M>」，重 <M>{'2+4=6'}</M>、价值 <M>{'3+5=8'}</M>。<strong>每组恰好一件</strong>，正是分组规则下的最优。
             </div>
           </div>
         </div>
@@ -180,13 +180,13 @@ export default function KnapsackGroup() {
           </pre>
           <p>
             记住这个骨架的关键：<strong>容量循环 <M>{'j'}</M> 必须在「组内物品枚举」的外层</strong>，而且照旧<strong>倒序</strong>。
-            这样一来，处理组 <M>{'g'}</M> 时，无论组内枚举到第几件，<M>{'f[j-w]'}</M> 用的都是<strong>本组还没动过的旧值</strong>（即上一行的值）——组内各件都在「本组尚未出手」的同一起点上竞争，自然只会有<strong>一件</strong>胜出被计入。
+            这样一来，处理组 <M>{'g'}</M> 时，无论组内枚举到第几件，<M>{'f[j-w]'}</M> 用的都是<strong>本组还没动过的旧值</strong>（即上一行的值），组内各件都在「本组尚未出手」的同一起点上竞争，自然只会有<strong>一件</strong>胜出被计入。
           </p>
         </div>
         <figure className="figure">
           <GroupLoopOrderFigure />
           <figcaption className="figure__cap">
-            左：容量 j 在组内物品之外——组内各件都基于旧值，每组至多选 1 件（正确）。右：容量 j 被塞进组内物品里层——前一件已改 f[j]，同组下一件又叠上去，一组能选出多件，退化成「组内可重复取」（错误）。
+            左：容量 j 在组内物品之外，组内各件都基于旧值，每组至多选 1 件（正确）。右：容量 j 被塞进组内物品里层，前一件已改 f[j]，同组下一件又叠上去，一组能选出多件，退化成「组内可重复取」（错误）。
           </figcaption>
         </figure>
       </section>
@@ -195,7 +195,7 @@ export default function KnapsackGroup() {
         <h2 className="section-title">若把容量循环放进组内，会怎样</h2>
         <div className="prose">
           <p>
-            把三重循环写反——让<strong>组内物品在外、容量 <M>{'j'}</M> 在里</strong>：
+            把三重循环写反，让<strong>组内物品在外、容量 <M>{'j'}</M> 在里</strong>：
           </p>
           <pre
             className="mono"
@@ -218,11 +218,11 @@ export default function KnapsackGroup() {
       f[j] = max( f[j], f[j − w] + v )`}
           </pre>
           <p>
-            这时组内每一件都<strong>各自独立地跑一遍完整的倒序背包</strong>。第一件更新完 <M>{'f[\\cdot]'}</M> 后，第二件是在<strong>「第一件已经装进去」的结果上</strong>继续做——于是同一组的两件<strong>可以被同时选中</strong>。
+            这时组内每一件都<strong>各自独立地跑一遍完整的倒序背包</strong>。第一件更新完 <M>{'f[\\cdot]'}</M> 后，第二件是在<strong>「第一件已经装进去」的结果上</strong>继续做，于是同一组的两件<strong>可以被同时选中</strong>。
             这恰好退化成「把这一组当作若干件<strong>各自独立的 01 物品</strong>」，组内互斥的约束彻底失效。
           </p>
           <p>
-            用开头组 1 <M>{'(2,3),(3,4)'}</M>、容量 5 验一下错法：先跑 <M>{'(2,3)'}</M> 得 <M>{'f[5]=3'}</M>；再跑 <M>{'(3,4)'}</M> 时 <M>{'f[5]=\\max(3,\\ f[2]+4)=\\max(3,3+4)=7'}</M>——
+            用开头组 1 <M>{'(2,3),(3,4)'}</M>、容量 5 验一下错法：先跑 <M>{'(2,3)'}</M> 得 <M>{'f[5]=3'}</M>；再跑 <M>{'(3,4)'}</M> 时 <M>{'f[5]=\\max(3,\\ f[2]+4)=\\max(3,3+4)=7'}</M>，
             <M>{'f[2]=3'}</M> 里<strong>已经含了 <M>{'(2,3)'}</M></strong>，于是 7 = 两件相加。可正确答案（组内至多一件）只该是 <M>{'4'}</M>。一层循环放错位置，答案就从 4 涨成了 7。
           </p>
         </div>
@@ -237,8 +237,8 @@ export default function KnapsackGroup() {
         <div className="prose">
           <p>
             道理讲完，不如让两种顺序<strong>同跑一遍并排对照</strong>。默认就是本节手算的那组：单独一组 <M>{'(2,3),(3,4)'}</M>、容量 5。
-            左边把<strong>容量倒序放在组内件之外</strong>，组内两件都基于「本组未动过」的旧值竞争，只有一件胜出——<M>{'f[5]=4'}</M>；
-            右边把<strong>容量倒序沉进组内件里层</strong>，第二件在「第一件已装进去」的结果上继续叠，两件被同时计入——<M>{'f[5]=7'}</M>。
+            左边把<strong>容量倒序放在组内件之外</strong>，组内两件都基于「本组未动过」的旧值竞争，只有一件胜出，<M>{'f[5]=4'}</M>；
+            右边把<strong>容量倒序沉进组内件里层</strong>，第二件在「第一件已装进去」的结果上继续叠，两件被同时计入，<M>{'f[5]=7'}</M>。
             单步走到右侧 <M>{'j=5'}</M> 那一格，会看到来源列被标红：那正是「同组两件叠在一起」的瞬间。改改 w / v 或再加一组，看这 <M>{'4'}</M> 与 <M>{'7'}</M> 的差随之变化。
           </p>
         </div>
@@ -299,7 +299,7 @@ export default function KnapsackGroup() {
 
       <div className="pointer-cue">
         <Gamepad2 size={18} />
-        到 <Link to="/part/a" style={{ color: 'var(--accent-1)', fontWeight: 600 }}>A 部分页的「装包大师」</Link>挑物品时留意：若把清单按「同一栏里只能拿一件」重新分栏，你面对的就是分组背包——组内互斥，正是它区别于 01 背包的那一笔。
+        到 <Link to="/part/a" style={{ color: 'var(--accent-1)', fontWeight: 600 }}>A 部分页的「装包大师」</Link>挑物品时留意：若把清单按「同一栏里只能拿一件」重新分栏，你面对的就是分组背包，组内互斥，正是它区别于 01 背包的那一笔。
       </div>
 
     </>

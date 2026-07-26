@@ -60,7 +60,7 @@ export function knapsack2D(items: Item[], W: number): VizModel {
   frames.push({
     values: snap(),
     states: fin,
-    caption: `答案在右下角 <b>f[${n}][${W}] = ${run.result.value}</b>——考虑全部 ${n} 件、容量 ${W} 时的最大价值。`,
+    caption: `答案在右下角 <b>f[${n}][${W}] = ${run.result.value}</b>，考虑全部 ${n} 件、容量 ${W} 时的最大价值。`,
     formula: `f[${n}][${W}]=${run.result.value}`,
   })
 
@@ -116,7 +116,7 @@ export function knapsack1D(items: Item[], W: number, mode: Mode1D): VizModel {
         `物品 <b>${i}</b>（w=${w}, v=${v}）· <b>${forward ? '正' : '逆'}推</b> j=${j}：` +
         `f[${j - w}]+${v} = <b>${cand}</b> ${better ? '&gt;' : '≤'} f[${j}]=<b>${old}</b> → ${better ? `更新为 <b>${cand}</b>` : '不变'}。`
       if (reused && better) {
-        caption += ` <span class="bad">⚠ f[${j - w}] 本轮已被物品 ${i} 更新过——物品 ${i} 被<b>重复计入</b>！这正是 01 背包顺推的 bug。</span>`
+        caption += ` <span class="bad">⚠ f[${j - w}] 本轮已被物品 ${i} 更新过，物品 ${i} 被<b>重复计入</b>！这正是 01 背包顺推的 bug。</span>`
       }
       if (better) updated.add(j)
 
@@ -128,7 +128,7 @@ export function knapsack1D(items: Item[], W: number, mode: Mode1D): VizModel {
   fin[key(0, W)] = 'chosen'
   const note =
     mode === 'forward'
-      ? `顺推得到 <b>f[${W}] = ${f[W]}</b>——若这里比逆推大，说明有物品被重复取了（错误）。`
+      ? `顺推得到 <b>f[${W}] = ${f[W]}</b>，若这里比逆推大，说明有物品被重复取了（错误）。`
       : mode === 'complete'
         ? `完全背包答案 <b>f[${W}] = ${f[W]}</b>：正推让同一物品可被多次计入，正是我们想要的。`
         : `逆推答案 <b>f[${W}] = ${f[W]}</b>：每件至多取一次，正确。`

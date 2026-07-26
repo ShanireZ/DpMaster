@@ -140,17 +140,17 @@ export default function KnapsackMixed() {
         </div>
         <figure className="figure">
           <MixedSetupFigure />
-          <figcaption className="figure__cap">同一个背包，三件物品件数属性不同：物品 1 只有一件（×1）、物品 2 无限（×∞）、物品 3 限 m 件（×m）——要在一次 DP 里全部装下。</figcaption>
+          <figcaption className="figure__cap">同一个背包，三件物品件数属性不同：物品 1 只有一件（×1）、物品 2 无限（×∞）、物品 3 限 m 件（×m），要在一次 DP 里全部装下。</figcaption>
         </figure>
         <div className="prose">
           <p>
             先看个小例子体会一下「为什么要分派」。容量 <M>{'m=9'}</M>，物品 1 是 <strong>01 件</strong> <M>{'(w,v)=(2,3)'}</M>，物品 2 是<strong>完全件</strong> <M>{'(3,4)'}</M>。
-            物品 1 至多拿一次，物品 2 却能反复拿。如果对它俩用<strong>同一套循环方向</strong>，必然有一个出错——
+            物品 1 至多拿一次，物品 2 却能反复拿。如果对它俩用<strong>同一套循环方向</strong>，必然有一个出错，
             要么把只有一件的物品 1 反复塞（当成了完全），要么把管够的物品 2 也锁死成一件（当成了 01）。
           </p>
           <p>
-            难点不在「想出新方程」——混合背包<strong>没有新方程</strong>。难点在于：不同物品的<strong>件数属性不同</strong>，
-            必须<strong>逐件判断它属于哪一类，再套用那一类的转移方式</strong>。这份「看属性、选方式」的对照，就是这一节的主角——<strong>分派表</strong>。
+            难点不在「想出新方程」，混合背包<strong>没有新方程</strong>。难点在于：不同物品的<strong>件数属性不同</strong>，
+            必须<strong>逐件判断它属于哪一类，再套用那一类的转移方式</strong>。这份「看属性、选方式」的对照，就是这一节的主角，<strong>分派表</strong>。
           </p>
         </div>
       </section>
@@ -164,12 +164,12 @@ export default function KnapsackMixed() {
           </p>
           <MB>{'f[j]=\\max\\big(f[j],\\ f[j-w]+v\\big)'}</MB>
           <p>
-            三类物品<strong>共用这一格 <M>{'f[j]'}</M>、共用这一句转移</strong>。它们唯一的差别，是<strong>怎么遍历容量 <M>{'j'}</M></strong>——回想前几节反复强调的那件事：
+            三类物品<strong>共用这一格 <M>{'f[j]'}</M>、共用这一句转移</strong>。它们唯一的差别，是<strong>怎么遍历容量 <M>{'j'}</M></strong>，回想前几节反复强调的那件事：
           </p>
         </div>
         <figure className="figure">
           <DispatchFigure />
-          <figcaption className="figure__cap">分派表：看这件的件数属性，就用对应的转移方式——01 倒序、完全正序、多重先二进制拆包再逐包倒序。三条路最终都写同一格 f[j]。</figcaption>
+          <figcaption className="figure__cap">分派表：看这件的件数属性，就用对应的转移方式，01 倒序、完全正序、多重先二进制拆包再逐包倒序。三条路最终都写同一格 f[j]。</figcaption>
         </figure>
         <div className="prose">
           <p>
@@ -183,12 +183,12 @@ export default function KnapsackMixed() {
           </p>
           <p>
             <strong>多重（有限件）→ 先拆再倒序</strong>：把 <M>{'m'}</M> 件<strong>二进制拆</strong>成 <M>{'1,2,4,\\dots'}</M> 与余数几个「打包件」，每个打包件当一件普通 01 物品<strong>倒序</strong>处理。
-            拆分保证「取 0…<M>{'m'}</M> 件」的每种可能都能凑出，倒序保证每个包至多用一次——合起来就是「不超过 <M>{'m'}</M> 件」。
+            拆分保证「取 0…<M>{'m'}</M> 件」的每种可能都能凑出，倒序保证每个包至多用一次，合起来就是「不超过 <M>{'m'}</M> 件」。
           </p>
         </div>
         <InfoBox kind="key" title="本质 · 三类物品能同题混装，因为它们落在同一维 f[j] 上">
           混合背包不是一个新算法，而是前三节的<strong>拼装</strong>。既然 01、完全、多重<strong>最终都归结为同一句 <M>{'f[j]=\\max(f[j],f[j-w]+v)'}</M></strong>，
-          就完全可以在<strong>同一个 <M>{'f[j]'}</M></strong> 上，对每件物品<strong>按其件数属性选择遍历方向 / 是否拆包</strong>，一件件叠加处理。谁先谁后都不影响结果——因为每件都只依赖「它进来之前」的 <M>{'f'}</M>。
+          就完全可以在<strong>同一个 <M>{'f[j]'}</M></strong> 上，对每件物品<strong>按其件数属性选择遍历方向 / 是否拆包</strong>，一件件叠加处理。谁先谁后都不影响结果，因为每件都只依赖「它进来之前」的 <M>{'f'}</M>。
         </InfoBox>
       </section>
 
@@ -212,7 +212,7 @@ export default function KnapsackMixed() {
           </pre>
           <p>
             三条分支的循环体<strong>一字不差</strong>，区别只在 <M>{'j'}</M> 的方向与多重那一步的<strong>拆包</strong>。
-            把它们串在一个大循环里，一维 <M>{'f[j]'}</M> 就地累积——处理完全部物品，<M>{'f[W]'}</M> 就是答案。这正是混合背包的定义式。
+            把它们串在一个大循环里，一维 <M>{'f[j]'}</M> 就地累积，处理完全部物品，<M>{'f[W]'}</M> 就是答案。这正是混合背包的定义式。
           </p>
         </div>
       </section>
@@ -221,7 +221,7 @@ export default function KnapsackMixed() {
         <h2 className="section-title">跟着算一遍：一件 01 + 一件完全</h2>
         <div className="prose">
           <p>
-            用开头的例子——物品 1 是 <strong>01 件</strong> <M>{'(2,3)'}</M>、物品 2 是<strong>完全件</strong> <M>{'(3,4)'}</M>，容量 8。把两件<strong>先后</strong>落到同一维 <M>{'f'}</M> 上：
+            用开头的例子，物品 1 是 <strong>01 件</strong> <M>{'(2,3)'}</M>、物品 2 是<strong>完全件</strong> <M>{'(3,4)'}</M>，容量 8。把两件<strong>先后</strong>落到同一维 <M>{'f'}</M> 上：
           </p>
         </div>
         <div className="steps">
@@ -234,13 +234,13 @@ export default function KnapsackMixed() {
           <div className="step">
             <span className="step__n">1</span>
             <div className="step__b">
-              <b>处理物品 1（01 件）</b>，<strong>倒序</strong> <M>{'j:8\\to 2'}</M>：每格 <M>{'f[j]=\\max(f[j],f[j-2]+3)'}</M>，来源都是旧值 0。这一行变成 <M>{'0,0,3,3,3,3,3,3,3'}</M>——因为倒序，这件<strong>只被计入一次</strong>。
+              <b>处理物品 1（01 件）</b>，<strong>倒序</strong> <M>{'j:8\\to 2'}</M>：每格 <M>{'f[j]=\\max(f[j],f[j-2]+3)'}</M>，来源都是旧值 0。这一行变成 <M>{'0,0,3,3,3,3,3,3,3'}</M>，因为倒序，这件<strong>只被计入一次</strong>。
             </div>
           </div>
           <div className="step">
             <span className="step__n">2</span>
             <div className="step__b">
-              <b>处理物品 2（完全件）</b>，<strong>正序</strong> <M>{'j:3\\to 8'}</M>。到 <M>{'f[6]=\\max(3,\\ f[3]+4)'}</M>，而 <M>{'f[3]'}</M> 此刻<strong>已被本件更新为 4</strong>，故 <M>{'f[6]=4+4=8'}</M>——同一件完全物品<strong>被叠了两次</strong>（装了 2 个），正是「无限件」想要的。
+              <b>处理物品 2（完全件）</b>，<strong>正序</strong> <M>{'j:3\\to 8'}</M>。到 <M>{'f[6]=\\max(3,\\ f[3]+4)'}</M>，而 <M>{'f[3]'}</M> 此刻<strong>已被本件更新为 4</strong>，故 <M>{'f[6]=4+4=8'}</M>，同一件完全物品<strong>被叠了两次</strong>（装了 2 个），正是「无限件」想要的。
             </div>
           </div>
           <div className="step">
@@ -252,7 +252,7 @@ export default function KnapsackMixed() {
         </div>
         <figure className="figure">
           <MixedTraceFigure />
-          <figcaption className="figure__cap">同一条 f 数组的两次快照：上行是 01 件倒序处理后（每格至多含一件），下行再被完全件正序处理，高亮格为被完全件抬升的位置——f[8] 一路涨到 11。</figcaption>
+          <figcaption className="figure__cap">同一条 f 数组的两次快照：上行是 01 件倒序处理后（每格至多含一件），下行再被完全件正序处理，高亮格为被完全件抬升的位置，f[8] 一路涨到 11。</figcaption>
         </figure>
         <div className="pointer-cue">
           <MousePointerClick size={18} />
@@ -273,7 +273,7 @@ export default function KnapsackMixed() {
         <h2 className="section-title">一个统一写法：把 01 并进多重</h2>
         <div className="prose">
           <p>
-            实战里，「01」其实是「多重」的<strong>特例</strong>——恰一件，就是件数上限 <M>{'m=1'}</M> 的多重物品（二进制拆分后只有<strong>一个 <M>{'\\times1'}</M> 包</strong>，逆序一遍，与 01 分毫不差）。
+            实战里，「01」其实是「多重」的<strong>特例</strong>，恰一件，就是件数上限 <M>{'m=1'}</M> 的多重物品（二进制拆分后只有<strong>一个 <M>{'\\times1'}</M> 包</strong>，逆序一遍，与 01 分毫不差）。
             于是分派只需<strong>两条分支</strong>就够：
           </p>
           <pre className="mono" style={preMono}>
@@ -284,12 +284,12 @@ export default function KnapsackMixed() {
         把 p 二进制拆包，各包当 01 物品逆序处理`}
           </pre>
           <p>
-            这正是例题 <strong>P1833 樱花</strong> 的标准写法：题面用 <M>{'P_i'}</M> 编码件数——<M>{'P_i=1'}</M> 是 01、<M>{'0<P_i<\\infty'}</M> 是多重、<M>{'P_i=0'}</M> 是完全。
+            这正是例题 <strong>P1833 樱花</strong> 的标准写法：题面用 <M>{'P_i'}</M> 编码件数，<M>{'P_i=1'}</M> 是 01、<M>{'0<P_i<\\infty'}</M> 是多重、<M>{'P_i=0'}</M> 是完全。
             按 <M>{'P_i'}</M> 一分派，三类樱花就在同一维 <M>{'f'}</M> 上算完了。
           </p>
         </div>
         <InfoBox kind="warn" title="常见陷阱 · 别把方向记反 / 别忘拆多重">
-          混合背包最容易翻车的两处：其一，<strong>把完全件写成倒序</strong>（它就退化成 01，无限件变一件），或<strong>把 01 件写成正序</strong>（它就被反复取，答案虚高）——方向必须随件数属性走。
+          混合背包最容易翻车的两处：其一，<strong>把完全件写成倒序</strong>（它就退化成 01，无限件变一件），或<strong>把 01 件写成正序</strong>（它就被反复取，答案虚高），方向必须随件数属性走。
           其二，<strong>多重件忘了二进制拆分</strong>，直接当完全（正序）会超取、直接当 01（一个包倒序）会漏取。拿不准时回看 <Link to="/part/a/01" style={{ color: 'var(--accent-2)' }}>01</Link> / <Link to="/part/a/complete" style={{ color: 'var(--accent-2)' }}>完全</Link> / <Link to="/part/a/multiple" style={{ color: 'var(--accent-2)' }}>多重</Link> 三页的方向依据。
         </InfoBox>
       </section>
@@ -305,7 +305,7 @@ export default function KnapsackMixed() {
             件数由 <M>{'P_i'}</M> 编码：<M>{'P_i=1'}</M> → <strong>01</strong>（恰一株）、<M>{'0<P_i<\\infty'}</M> → <strong>多重</strong>（有限株）、<M>{'P_i=0'}</M> → <strong>完全</strong>（无限株）。三类落在同一维 <M>{'f'}</M> 上，是混合背包<strong>定义式</strong>最标准的一题。
           </Field>
           <Field k="为什么选它">
-            它把「按件数属性分派」摆到明面上——读入时看一眼 <M>{'P_i'}</M> 就知道走哪条分支。用<strong>「01 并进多重」的两分支统一写法</strong>最省心：<M>{'P_i=0'}</M> 走完全正序，其余一律二进制拆包逆序。
+            它把「按件数属性分派」摆到明面上，读入时看一眼 <M>{'P_i'}</M> 就知道走哪条分支。用<strong>「01 并进多重」的两分支统一写法</strong>最省心：<M>{'P_i=0'}</M> 走完全正序，其余一律二进制拆包逆序。
           </Field>
           <Field k="转移 · 复杂度">
             完全支 <M>{'f[j]=\\max(f[j],f[j-w_i]+v_i)'}</M> 正序；有限支拆包后逐包逆序。时间 <M>{'O\\!\\big(T\\cdot(n_\\infty+\\sum\\log P_i)\\big)'}</M>。
@@ -338,12 +338,12 @@ export default function KnapsackMixed() {
       <section className="lesson exercises">
         <h2 className="section-title">练习</h2>
         <p className="prose" style={{ maxWidth: 'none', fontSize: '13.5px', color: 'var(--text-3)', marginBottom: 'var(--sp-4)' }}>
-          说明：纯「三类物品同题混装」的洛谷原生题目池很窄——真正综合的题多半把混合骨架藏进更大的模型里。因此这里用<strong>各分支的代表题</strong>组合覆盖：先用一道纯完全、一道纯有限件，把混合骨架的两条支路分别练熟，再回头做上面的 P1833 就水到渠成。
+          说明：纯「三类物品同题混装」的洛谷原生题目池很窄，真正综合的题多半把混合骨架藏进更大的模型里。因此这里用<strong>各分支的代表题</strong>组合覆盖：先用一道纯完全、一道纯有限件，把混合骨架的两条支路分别练熟，再回头做上面的 P1833 就水到渠成。
         </p>
         <Exercise
           pid="P1616"
           name="疯狂的采药"
-          hint="混合骨架的『完全』分支：草药可无限次采，先把它当纯完全背包正推练手——f[j]=max(f[j],f[j−w]+v)，j 从 w 到 T 正序。注意 f 与答案可能超 int，开 long long。"
+          hint="混合骨架的『完全』分支：草药可无限次采，先把它当纯完全背包正推练手，f[j]=max(f[j],f[j−w]+v)，j 从 w 到 T 正序。注意 f 与答案可能超 int，开 long long。"
         />
         <Exercise
           pid="P1077"
@@ -354,7 +354,7 @@ export default function KnapsackMixed() {
 
       <div className="pointer-cue">
         <Gamepad2 size={18} />
-        回 <Link to="/part/a" style={{ color: 'var(--accent-1)', fontWeight: 600 }}>A 部分页的「装包大师」</Link>时，试着给每件宝物先贴个标签：这件只有一件、那件成箱、另一件管够——混合背包做的就是这道「逐件分派」的分诊，再把三条支路各自转移。
+        回 <Link to="/part/a" style={{ color: 'var(--accent-1)', fontWeight: 600 }}>A 部分页的「装包大师」</Link>时，试着给每件宝物先贴个标签：这件只有一件、那件成箱、另一件管够，混合背包做的就是这道「逐件分派」的分诊，再把三条支路各自转移。
       </div>
 
     </>

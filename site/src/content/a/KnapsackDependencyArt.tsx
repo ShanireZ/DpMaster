@@ -1,6 +1,6 @@
 // 有依赖的背包讲解用插图（on-brand SVG，随强调色变色）。
 
-// 引入图：1 个主件 + 2 个附件，附件用虚线「依赖」箭头挂在主件下——不选主件，附件就非法。
+// 引入图：1 个主件 + 2 个附件，附件用虚线「依赖」箭头挂在主件下，不选主件，附件就非法。
 export function DepSetupFigure() {
   return (
     <svg viewBox="0 0 640 232" role="img" aria-label="一个主件与两个附件，附件依赖主件">
@@ -105,7 +105,7 @@ export function DepReduceFigure() {
   )
 }
 
-// 转移图：落到分组背包——f[j] 两条路：不选本组(继承)，或选组内某个组合(枚举取 max)。
+// 转移图：落到分组背包，f[j] 两条路：不选本组(继承)，或选组内某个组合(枚举取 max)。
 export function DepTransitionFigure() {
   return (
     <svg viewBox="0 0 640 300" role="img" aria-label="有依赖的背包落到分组背包的一格转移">

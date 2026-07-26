@@ -77,7 +77,7 @@ function greedyFractional(items: Item[], cap: number): { value: number; segs: Se
   return { value, segs }
 }
 
-// 整取 01 背包（不可分割）最优价值——自写小背包作对照。
+// 整取 01 背包（不可分割）最优价值，自写小背包作对照。
 function best01(items: Item[], cap: number): number {
   const f = new Array(cap + 1).fill(0)
   for (const it of items) {

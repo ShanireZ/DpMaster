@@ -72,7 +72,7 @@ export default function VariantUndoDemo() {
     <div>
       <div className="kd__toolbar">
         <div>
-          <div className="kd__group-label">物品（只需重量——方案数与价值无关）</div>
+          <div className="kd__group-label">物品（只需重量，方案数与价值无关）</div>
           <div className="kd__items">
             {items.map((it, i) => (
               <div className="kd__item" key={i}>
@@ -117,9 +117,9 @@ export default function VariantUndoDemo() {
         全集 <b className="you">f[{cap}] = {fAns}</b> ，让<b className="you">第 {k + 1} 件（w={items[k]?.w}）</b>消失后 ，
         缺它的方案数 <b className="ok">g[{cap}] = {gAns}</b>
         {fAns !== gAns && (
-          <>——退掉了 <b className="bad">{fAns - gAns}</b> 种「用到第 {k + 1} 件」的方案。</>
+          <>，退掉了 <b className="bad">{fAns - gAns}</b> 种「用到第 {k + 1} 件」的方案。</>
         )}
-        {fAns === gAns && <>——该件在容量 {cap} 上没参与任何方案，退掉前后不变。</>}
+        {fAns === gAns && <>，该件在容量 {cap} 上没参与任何方案，退掉前后不变。</>}
       </div>
 
       <DPViz key={modelKey} model={model} />

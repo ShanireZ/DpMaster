@@ -39,7 +39,7 @@ const finalCap = (m: VizModel, cap: number): number => {
   return x == null ? 0 : x
 }
 
-/** 单件物品的逆推(正确) vs 顺推(错误)并排对照——直观揭示"01 背包为何不能正推"。 */
+/** 单件物品的逆推(正确) vs 顺推(错误)并排对照，直观揭示"01 背包为何不能正推"。 */
 export default function ForwardBugDemo() {
   const [w, setW] = useState(2)
   const [v, setV] = useState(3)

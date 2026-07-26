@@ -36,7 +36,7 @@ export function mixedKnapsack(items: MixItem[], W: number): VizModel {
   frames.push({
     values: snap(),
     states: settled(snap()),
-    caption: `初始：容量 0…${W} 下最大价值都是 <b>0</b>（空背包）。本例 ${summary}——三类物品即将落到<b>同一维 f[j]</b> 上，各按自己的方式转移。`,
+    caption: `初始：容量 0…${W} 下最大价值都是 <b>0</b>（空背包）。本例 ${summary}，三类物品即将落到<b>同一维 f[j]</b> 上，各按自己的方式转移。`,
     formula: 'f[j]=0',
   })
 

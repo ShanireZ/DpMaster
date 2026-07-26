@@ -70,23 +70,23 @@ export default function KnapsackDependency() {
         <h2 className="section-title">当「选它」得先「选它的主件」</h2>
         <div className="prose">
           <p>
-            先看一个具体场景：有一件<strong>主件</strong> <M>{'(w,v)=(2,3)'}</M>，还有它的两件<strong>附件</strong>——
+            先看一个具体场景：有一件<strong>主件</strong> <M>{'(w,v)=(2,3)'}</M>，还有它的两件<strong>附件</strong>，
             附件 1 <M>{'(2,4)'}</M>、附件 2 <M>{'(3,5)'}</M>，一个容量 <M>{'W=7'}</M> 的背包。规则多了一条硬约束：
-            <strong>附件必须依附主件而选</strong>——想装附件 1，就<strong>必须先把主件也装上</strong>；主件不装，两个附件都是<strong>非法</strong>的。目标仍是不超重下让<strong>总价值最大</strong>。
+            <strong>附件必须依附主件而选</strong>，想装附件 1，就<strong>必须先把主件也装上</strong>；主件不装，两个附件都是<strong>非法</strong>的。目标仍是不超重下让<strong>总价值最大</strong>。
           </p>
         </div>
         <figure className="figure">
           <DepSetupFigure />
-          <figcaption className="figure__cap">1 个主件 + 2 个附件：虚线是「依赖」——附件指向主件，选附件的前提是先选主件。</figcaption>
+          <figcaption className="figure__cap">1 个主件 + 2 个附件：虚线是「依赖」，附件指向主件，选附件的前提是先选主件。</figcaption>
         </figure>
         <div className="prose">
           <p>
             很自然会想：把主件、附件 1、附件 2 当成<strong>三件独立的 01 物品</strong>丢进背包不就行了？<strong>不行。</strong>
-            普通 01 背包会毫不客气地<strong>只挑附件 1、不挑主件</strong>（附件 1 性价比高），可这在依赖规则里是非法的——它<strong>压根不知道「附件得先有主件」这回事</strong>。
+            普通 01 背包会毫不客气地<strong>只挑附件 1、不挑主件</strong>（附件 1 性价比高），可这在依赖规则里是非法的，它<strong>压根不知道「附件得先有主件」这回事</strong>。
             反过来，也没法用「先强制装主件再随便挑附件」蒙混：主件到底装不装、装了之后还剩多少钱给附件，本身就是要一起权衡的决策。
           </p>
           <p>
-            那把「主件带哪些附件」的所有情形枚举出来呢？主件要么不装；一旦装，它的两个附件各可带可不带——<strong>仅主 / 主+附1 / 主+附2 / 主+附1+2</strong>，加上「整个不装」，就把这一族物品的<strong>合法方案全数罗列</strong>了。这份枚举，正是打开依赖背包的钥匙。
+            那把「主件带哪些附件」的所有情形枚举出来呢？主件要么不装；一旦装，它的两个附件各可带可不带，<strong>仅主 / 主+附1 / 主+附2 / 主+附1+2</strong>，加上「整个不装」，就把这一族物品的<strong>合法方案全数罗列</strong>了。这份枚举，正是打开依赖背包的钥匙。
           </p>
         </div>
       </section>
@@ -107,11 +107,11 @@ export default function KnapsackDependency() {
         </figure>
         <div className="prose">
           <p>
-            关键的一跃在这里：这 4 个组合<strong>互斥</strong>——你不可能同时「只带附件 1」又「两个附件都带」，一个主件<strong>最终只能落实成其中一种方案</strong>（或整个不选）。这正是
+            关键的一跃在这里：这 4 个组合<strong>互斥</strong>，你不可能同时「只带附件 1」又「两个附件都带」，一个主件<strong>最终只能落实成其中一种方案</strong>（或整个不选）。这正是
             <Link to="/part/a/group" style={{ color: 'var(--accent-2)' }}>分组背包</Link>的定义：<strong>把这些组合归为同一组，组内至多选一个</strong>。
           </p>
           <p>
-            于是<strong>有依赖的背包，被归约成了分组背包</strong>——一个主件（连同它的附件）= 一组，组内物品 = 该主件的各个合法组合。为什么必须走这条「枚举组合」的路、而不能把附件当独立物品？因为独立物品会漏掉
+            于是<strong>有依赖的背包，被归约成了分组背包</strong>，一个主件（连同它的附件）= 一组，组内物品 = 该主件的各个合法组合。为什么必须走这条「枚举组合」的路、而不能把附件当独立物品？因为独立物品会漏掉
             <strong>「选附件必先选主件」</strong>这条约束；而<strong>把主件焊进每个组合里</strong>，就让「带附件」永远伴随「带主件」，约束天然成立。
           </p>
         </div>
@@ -138,7 +138,7 @@ export default function KnapsackDependency() {
           </p>
           <MB>{'f[j]=\\max\\Big(f[j],\\ \\max_{c\\,\\in\\,G,\\ w_c\\le j}\\big(f[j-w_c]+v_c\\big)\\Big)'}</MB>
           <p>
-            一维写法照分组背包：<strong>外层枚举主件（组）、中层容量 <M>{'j'}</M> 倒序、内层枚举本组的各个组合</strong>。容量倒序保证组内各组合都基于「本组尚未出手」的旧值——<strong>一组至多落实一个组合</strong>，正好对应「一个主件最终只有一种方案」。
+            一维写法照分组背包：<strong>外层枚举主件（组）、中层容量 <M>{'j'}</M> 倒序、内层枚举本组的各个组合</strong>。容量倒序保证组内各组合都基于「本组尚未出手」的旧值，<strong>一组至多落实一个组合</strong>，正好对应「一个主件最终只有一种方案」。
           </p>
         </div>
         <InfoBox kind="key" title="本质">
@@ -176,7 +176,7 @@ export default function KnapsackDependency() {
           <div className="step">
             <span className="step__n">3</span>
             <div className="step__b">
-              <b>看容量 7（读答案）。</b> 四个组合都装得下，其中「主+附1+2」<M>{'(7,12)'}</M> 给出 <M>{'f[7-7]+12=12'}</M>，压过其余。<M>{'f[7]=12'}</M>——正是主件带上两个附件全装，价值 <M>{'3+4+5=12'}</M>，恰好占满容量 7。
+              <b>看容量 7（读答案）。</b> 四个组合都装得下，其中「主+附1+2」<M>{'(7,12)'}</M> 给出 <M>{'f[7-7]+12=12'}</M>，压过其余。<M>{'f[7]=12'}</M>，正是主件带上两个附件全装，价值 <M>{'3+4+5=12'}</M>，恰好占满容量 7。
             </div>
           </div>
         </div>
@@ -199,16 +199,16 @@ export default function KnapsackDependency() {
         <h2 className="section-title">深化：附件多了、依赖连成了树</h2>
         <div className="prose">
           <p>
-            本例每个主件只挂 2 个附件，枚举 <M>{'2^2=4'}</M> 个组合毫无压力。<strong>P1064</strong> 正是这种「主件 + 至多 2 附件」的教科书原型——每个主件最多 4 个组合，直接枚举即可。
+            本例每个主件只挂 2 个附件，枚举 <M>{'2^2=4'}</M> 个组合毫无压力。<strong>P1064</strong> 正是这种「主件 + 至多 2 附件」的教科书原型，每个主件最多 4 个组合，直接枚举即可。
             但依赖可以更深：如果<strong>附件本身又能挂自己的附件</strong>，依赖关系就从「主-附两层」长成了一棵<strong>树</strong>（甚至一片森林）。
           </p>
           <p>
-            <strong>P2014 选课</strong>就是这样：一门课可能有<strong>先修课</strong>，要选它必先选先修——先修关系把课程连成<strong>树</strong>。这时「枚举一个节点的所有后代子集」会指数爆炸，不能再照搬本页的暴力枚举，而要在树上做 DP：
+            <strong>P2014 选课</strong>就是这样：一门课可能有<strong>先修课</strong>，要选它必先选先修，先修关系把课程连成<strong>树</strong>。这时「枚举一个节点的所有后代子集」会指数爆炸，不能再照搬本页的暴力枚举，而要在树上做 DP：
             <M>{'f[u][j]'}</M> 表示<strong>以 <M>{'u'}</M> 为根的子树、选课数（或容量）为 <M>{'j'}</M></strong> 时的最优，把子树当分组、在各子树间做背包合并。
           </p>
         </div>
         <InfoBox kind="key" title="承接：依赖成树 → 树上背包">
-          「主件-附件」是依赖背包最浅的两层形态，归约成分组背包即可解。当依赖<strong>连成树/森林</strong>（如 P2014 选课的先修关系），它一般化为<strong>树上背包（树形 DP）</strong>——那是
+          「主件-附件」是依赖背包最浅的两层形态，归约成分组背包即可解。当依赖<strong>连成树/森林</strong>（如 P2014 选课的先修关系），它一般化为<strong>树上背包（树形 DP）</strong>，那是
           <Link to="/part/f" style={{ color: 'var(--accent-2)' }}>F 部分</Link>的主题。本页只点到「依赖成树」这一形态，树形转移的细节留到那里展开。
         </InfoBox>
       </section>
@@ -221,7 +221,7 @@ export default function KnapsackDependency() {
             总钱数 <M>{'n'}</M>，<M>{'m'}</M> 件物品，每件给出价格 <M>{'v'}</M>、重要度 <M>{'p(1\\sim5)'}</M>、以及归属 <M>{'q'}</M>（<M>{'q=0'}</M> 为主件，否则表示它是第 <M>{'q'}</M> 号主件的附件）。每个主件<strong>至多 2 个附件</strong>，选附件必先选其主件。求 <M>{'\\sum v\\times p'}</M> 的最大值。
           </Field>
           <Field k="对应关系">
-            「价格」= 费用 <M>{'w'}</M>，「<M>{'v\\times p'}</M>」= 价值，「总钱数 <M>{'n'}</M>」= 容量。<strong>每个主件 = 一组</strong>，枚举 <strong>仅主 / 主+附1 / 主+附2 / 主+附1+2</strong> 四种组合作为组内物品——依赖背包归约成分组背包的教科书原型。
+            「价格」= 费用 <M>{'w'}</M>，「<M>{'v\\times p'}</M>」= 价值，「总钱数 <M>{'n'}</M>」= 容量。<strong>每个主件 = 一组</strong>，枚举 <strong>仅主 / 主+附1 / 主+附2 / 主+附1+2</strong> 四种组合作为组内物品，依赖背包归约成分组背包的教科书原型。
           </Field>
           <Field k="转移 · 复杂度">
             <M>{'f[j]=\\max(f[j],\\ f[j-w_c]+v_c)'}</M>，外层枚举主件、中层 <M>{'j'}</M> 倒序、内层枚举本主件的组合（至多 4 个）；时间 <M>{'O(nm)'}</M> 级。
@@ -236,7 +236,7 @@ export default function KnapsackDependency() {
             <M>{'n'}</M> 门课，每门有学分，部分课有<strong>唯一先修课</strong>（选它必先选先修）。先修关系把课程连成<strong>森林</strong>。选 <M>{'m'}</M> 门课，求最大学分和。
           </Field>
           <Field k="为什么选它（依赖的一般化）">
-            它把依赖从「主件-附件两层」推广到<strong>树/森林</strong>：附件还能有自己的附件。此时不能再暴力枚举子集，而要在树上做 DP——<strong>每棵子树当一组，在子树间做背包合并</strong>。是从「依赖背包」跨到「树上背包」的桥梁题。
+            它把依赖从「主件-附件两层」推广到<strong>树/森林</strong>：附件还能有自己的附件。此时不能再暴力枚举子集，而要在树上做 DP，<strong>每棵子树当一组，在子树间做背包合并</strong>。是从「依赖背包」跨到「树上背包」的桥梁题。
           </Field>
           <Field k="思路（只点到「依赖成树」）">
             建虚根 <M>{'0'}</M> 把森林并成一棵树，选课总数 <M>{'m'}</M> 相应 <M>{'+1'}</M>。树形背包 <M>{'f[u][j]'}</M> = 子树 <M>{'u'}</M> 选 <M>{'j'}</M> 门的最大学分，逐棵子树做分组合并。<strong>本页不展开树形转移细节</strong>，完整做法见 <Link to="/part/f" style={{ color: 'var(--accent-2)' }}>F 部分 · 树上背包</Link>。

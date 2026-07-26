@@ -17,8 +17,8 @@ function settled(vals: (number | null)[][]): Record<string, CellState> {
 /**
  * 撤销可视化 · 洛谷 P4141「消失之物」。
  * 分两幕：
- *   第一幕——先把全部物品都放进去，倒序 f[j] += f[j-w] 建好全集方案数 f[j]（多帧展示）。
- *   第二幕——从全集拷一份 g=f，对选定的第 k 件做逆操作 g[j] -= g[j-w]，
+ *   第一幕，先把全部物品都放进去，倒序 f[j] += f[j-w] 建好全集方案数 f[j]（多帧展示）。
+ *   第二幕，从全集拷一份 g=f，对选定的第 k 件做逆操作 g[j] -= g[j-w]，
  *            方向与加时相反（正序 j:w→m），逐帧把这件「退」出去。
  * 末帧对比：全集 f[j]（含第 k 件）vs 缺第 k 件 g[j]。
  * 网格两行：第 0 行 f（全集，第二幕保持不动作参照），第 1 行 g（正在被退掉第 k 件）。
@@ -81,7 +81,7 @@ export function undoKnapsack(items: UndoItem[], W: number, victim: number): VizM
       states: st,
       caption:
         `<b>全集就绪：</b>f[0..${W}] 已含全部 ${n} 件物品。特别地 <b>f[${W}]=${f[W]}</b>。` +
-        `接下来要让<strong>第 ${k + 1} 件（w=${wk}）消失</strong>——不是重算，而是把它对 f 的贡献「退」出去。`,
+        `接下来要让<strong>第 ${k + 1} 件（w=${wk}）消失</strong>，不是重算，而是把它对 f 的贡献「退」出去。`,
       formula: `f[${W}]=${f[W]}`,
     })
   }
@@ -118,7 +118,7 @@ export function undoKnapsack(items: UndoItem[], W: number, victim: number): VizM
       caption:
         `<b>第二幕 · 从全集拷一份 g ← f</b>（别在原数组上减，否则会污染别的物品）。` +
         `下面对第 <b>${k + 1}</b> 件（w=${wk}）做<strong>逆操作</strong>：加它当初是 f[j] += f[j−w]，退它就是 g[j] −= g[j−w]。` +
-        `<strong>方向与加时相反——正序 j:${wk}→${W}</strong>：撤销要用「已退干净」的 g[j−w]，故小下标必须先退。`,
+        `<strong>方向与加时相反，正序 j:${wk}→${W}</strong>：撤销要用「已退干净」的 g[j−w]，故小下标必须先退。`,
       formula: `g[j]\\gets f[j]`,
     })
   }
@@ -165,7 +165,7 @@ export function undoKnapsack(items: UndoItem[], W: number, victim: number): VizM
     }
     const drop =
       f[demoJ] !== (gRow[demoJ] as number)
-        ? `例如容量 ${demoJ}：全集 f[${demoJ}]=<b>${f[demoJ]}</b>，缺第 ${k + 1} 件后 g[${demoJ}]=<b>${gRow[demoJ]}</b>——` +
+        ? `例如容量 ${demoJ}：全集 f[${demoJ}]=<b>${f[demoJ]}</b>，缺第 ${k + 1} 件后 g[${demoJ}]=<b>${gRow[demoJ]}</b>，` +
           `少掉的正是<strong>用到第 ${k + 1} 件</strong>的那些方案。`
         : `第 ${k + 1} 件（w=${wk}）在 1..${W} 内没改变任何方案数，说明当前物品下它可有可无。`
     frames.push({

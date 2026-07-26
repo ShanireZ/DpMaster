@@ -48,7 +48,7 @@ export function GroupSetupFigure() {
   )
 }
 
-// 转移决策图：f[g][j] 两条路——跳过本组(继承上一行)，或选组内某一件(枚举取 max)。
+// 转移决策图：f[g][j] 两条路，跳过本组(继承上一行)，或选组内某一件(枚举取 max)。
 export function GroupTransitionFigure() {
   return (
     <svg viewBox="0 0 640 300" role="img" aria-label="分组背包一格 f[g][j] 的两条转移路径">
@@ -90,7 +90,7 @@ export function GroupTransitionFigure() {
         <text x="120" y="32" textAnchor="middle" fontSize="14" className="mono" fill="var(--text-1)">取较大者 = max(两者)</text>
       </g>
       <text x="320" y="292" textAnchor="middle" fontSize="11.5" fill="var(--text-3)">
-        两条路都只回看上一行 f[g−1][·]——所以本组至多贡献一件
+        两条路都只回看上一行 f[g−1][·]，所以本组至多贡献一件
       </text>
     </svg>
   )

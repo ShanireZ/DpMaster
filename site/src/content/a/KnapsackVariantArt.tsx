@@ -1,6 +1,6 @@
 // 背包综合变形（方案数 / 布尔可行 / 撤销）讲解用插图（on-brand SVG，随强调色变色）
 
-// 引入图：容量骨架不变，只把中间的「聚合算子」换掉——max→最优、+→方案数、||→可行。
+// 引入图：容量骨架不变，只把中间的「聚合算子」换掉，max→最优、+→方案数、||→可行。
 export function OperatorSwapFigure() {
   const ops = [
     { sym: 'max', out: '最优价值', tint: 'var(--accent-1)' },

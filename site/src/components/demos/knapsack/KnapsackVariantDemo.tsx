@@ -54,7 +54,7 @@ export default function KnapsackVariantDemo() {
     <div>
       <div className="kd__toolbar">
         <div>
-          <div className="kd__group-label">物品（只需重量——方案数与价值无关）</div>
+          <div className="kd__group-label">物品（只需重量，方案数与价值无关）</div>
           <div className="kd__items">
             {items.map((it, i) => (
               <div className="kd__item" key={i}>
@@ -86,7 +86,7 @@ export default function KnapsackVariantDemo() {
 
       <div className="fbug__readout">
         恰好装满容量 <b className="you">W = {cap}</b> 的方案数：<b className="ok">f[{cap}] = {answer}</b>
-        {answer === 0 && <>（当前物品凑不出 {cap}——没有任何子集和恰好等于它）</>}
+        {answer === 0 && <>（当前物品凑不出 {cap}，没有任何子集和恰好等于它）</>}
       </div>
 
       <DPViz key={modelKey} model={model} />

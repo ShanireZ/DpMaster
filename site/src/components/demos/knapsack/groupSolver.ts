@@ -16,7 +16,7 @@ function settled(vals: (number | null)[][]): Record<string, CellState> {
 /**
  * 二维原型分组背包：f[g][j] = max( f[g-1][j]（本组一件都不选）,
  *   max_{组内第 k 件}( f[g-1][j-w_k] + v_k )（本组只选这一件） )
- * 关键：转移一律只从上一行 f[g-1][·] 取值——绝不从本行已更新的值来，
+ * 关键：转移一律只从上一行 f[g-1][·] 取值，绝不从本行已更新的值来，
  * 这样每组至多贡献一件。第 g 行 = 前 g 组的最优。
  */
 export function group2D(groups: Group[], W: number): VizModel {
@@ -75,7 +75,7 @@ export function group2D(groups: Group[], W: number): VizModel {
   frames.push({
     values: snap(),
     states: fin,
-    caption: `答案在右下角 <b>f[${G}][${W}] = ${run.result.value}</b>——考虑全部 ${G} 组、容量 ${W}、每组至多取一件时的最大价值。`,
+    caption: `答案在右下角 <b>f[${G}][${W}] = ${run.result.value}</b>，考虑全部 ${G} 组、容量 ${W}、每组至多取一件时的最大价值。`,
     formula: `f[${G}][${W}]=${run.result.value}`,
   })
 

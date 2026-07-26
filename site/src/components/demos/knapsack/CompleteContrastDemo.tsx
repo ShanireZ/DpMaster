@@ -91,7 +91,7 @@ export default function CompleteContrastDemo() {
         01 最优 <b className="you">f[{cap}] = {v01}</b>（每种至多 1 件） · 完全最优 <b className="ok">f[{cap}] = {vFull}</b>
         {vFull > v01 ? (
           <>
-            （多拿 <b className="ok">{vFull - v01}</b>——靠反复取用同一种）
+            （多拿 <b className="ok">{vFull - v01}</b>，靠反复取用同一种）
           </>
         ) : (
           <>（本例容量下两者相同）</>
