@@ -17,7 +17,7 @@ export default function AnimatedContent({
   children,
   className,
   delay = 0,
-  distance = 18,
+  distance = 10,
   direction = 'vertical',
 }: AnimatedContentProps) {
   const reduceMotion = useReducedMotion()
@@ -32,7 +32,7 @@ export default function AnimatedContent({
       initial={initial}
       whileInView={{ opacity: 1, x: 0, y: 0 }}
       viewport={{ once: true, amount: 0.12 }}
-      transition={reduceMotion ? { duration: 0 } : { duration: 0.52, delay, ease: [0.16, 1, 0.3, 1] }}
+      transition={reduceMotion ? { duration: 0 } : { duration: 0.42, delay, ease: [0.16, 1, 0.3, 1] }}
     >
       {children}
     </motion.div>

@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'react'
+import { useEffect, useLayoutEffect, useRef, useState } from 'react'
 import { motion, useReducedMotion } from 'motion/react'
 import { PanelLeftClose } from 'lucide-react'
 import { useLocation, useMatch } from 'react-router-dom'
@@ -10,7 +10,6 @@ import { getPageMeta } from '../../lib/pageMeta.ts'
 import './shell.css'
 
 const SIDEBAR_STORAGE_KEY = 'dp-master-sidebar-collapsed:v1'
-const layoutEase = [0.16, 1, 0.3, 1] as const
 
 export default function Shell() {
   const [mobileOpen, setMobileOpen] = useState(false)
@@ -23,7 +22,7 @@ export default function Shell() {
   const pid = match?.params.pid
   const routeMeta = getPageMeta(location.pathname)
 
-  useEffect(() => {
+  useLayoutEffect(() => {
     try {
       setSidebarCollapsed(window.localStorage.getItem(SIDEBAR_STORAGE_KEY) === 'true')
     } catch {
@@ -38,7 +37,7 @@ export default function Shell() {
   }, [pid])
 
   // 路由变化：关闭移动抽屉 + 滚动到顶 + 将键盘焦点移到新页面正文
-  useEffect(() => {
+  useLayoutEffect(() => {
     const changed = previousPath.current !== location.pathname
     previousPath.current = location.pathname
     setMobileOpen(false)
@@ -94,20 +93,12 @@ export default function Shell() {
           aria-hidden={!mobileOpen}
           tabIndex={mobileOpen ? 0 : -1}
         />
-        <motion.div
-          className="main"
-          layout
-          transition={
-            reduceMotion
-              ? { layout: { duration: 0 } }
-              : { layout: { duration: 0.42, ease: layoutEase } }
-          }
-        >
+        <div className="main">
           <TopBar onHamburger={() => setMobileOpen((open) => !open)} mobileOpen={mobileOpen} />
           <main id="main-content" ref={mainRef} className="content" tabIndex={-1}>
             <RouteStage />
           </main>
-        </motion.div>
+        </div>
         <p className="route-announcer" role="status" aria-live="polite" aria-atomic="true">
           已进入 {routeMeta.title}
         </p>
