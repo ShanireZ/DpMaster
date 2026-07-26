@@ -80,7 +80,7 @@
 }
 .brand__mark {
   position: absolute;
-  left: calc(var(--nav-pad-x) + 8px);
+  left: calc(var(--nav-pad-x) - 2px);
   width: 32px;
   height: 32px;
   flex: none;
@@ -97,7 +97,7 @@
 .brand__wordmark {
   display: block;
   min-width: 0;
-  margin-left: 44px;
+  margin-left: 28px;
   opacity: 1;
   visibility: visible;
   transition:

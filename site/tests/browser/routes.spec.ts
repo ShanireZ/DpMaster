@@ -13,9 +13,9 @@ interface RouteExpectation {
 const routes: RouteExpectation[] = [
   {
     path: '/',
-    title: 'DP大师 · 动态规划交互式教程',
+    title: 'DP大师 · DP Master',
     description:
-      'DP大师是一套面向算法学习者的动态规划交互式教程，通过精讲、逐帧可视化、题目索引和小游戏掌握 DP。',
+      'DP大师面向算法学习者，用精讲、逐帧可视化、题目索引和小游戏讲清状态定义、转移顺序与模型迁移。',
     ogType: 'website',
     currentLabel: '首页',
   },
@@ -319,17 +319,25 @@ test('desktop sidebar aligns nested lessons and remembers its compact rail state
   await expect(page.getByText('<DP Master>', { exact: true })).toHaveCount(0)
 
   const brandPosition = await brand.boundingBox()
-  const familyCodePosition = await page.locator(
-    '.nav-part.active .nav-part__code',
+  const brandMarkPosition = await page.locator('.brand__mark').boundingBox()
+  const familyBadgePosition = await page.locator(
+    '.nav-part.active .nav-part__badge',
   ).boundingBox()
   const parentTitle = await page.locator('.nav-part.active .nav-part__title').boundingBox()
   const childTitle = await page.locator('.nav-type.active .nav-type__label').boundingBox()
   expect(brandPosition).not.toBeNull()
-  expect(familyCodePosition).not.toBeNull()
+  expect(brandMarkPosition).not.toBeNull()
+  expect(familyBadgePosition).not.toBeNull()
   expect(parentTitle).not.toBeNull()
   expect(childTitle).not.toBeNull()
   expect(
-    Math.abs((brandPosition?.x ?? 0) - (familyCodePosition?.x ?? 0)),
+    Math.abs(
+      (brandMarkPosition?.x ?? 0) + (brandMarkPosition?.width ?? 0) / 2
+      - (familyBadgePosition?.x ?? 0) - (familyBadgePosition?.width ?? 0) / 2,
+    ),
+  ).toBeLessThanOrEqual(1)
+  expect(
+    Math.abs((brandPosition?.x ?? 0) - (parentTitle?.x ?? 0)),
   ).toBeLessThanOrEqual(1)
   expect(Math.abs((parentTitle?.x ?? 0) - (childTitle?.x ?? 0))).toBeLessThanOrEqual(1)
 
@@ -358,8 +366,8 @@ test('desktop sidebar aligns nested lessons and remembers its compact rail state
   })
   await expect(page.locator('.shell')).toHaveClass(/shell--sidebar-collapsed/)
   await expect(page.getByRole('button', { name: '展开侧栏' })).toBeVisible()
-  await expect(page.locator('.brand__compact')).toHaveText('DP')
-  await expect(page.locator('.brand__compact')).toBeVisible()
+  await expect(page.locator('.brand__mark img')).toHaveAttribute('src', '/favicon.svg')
+  await expect(page.locator('.brand__mark')).toBeVisible()
   const compactLessons = page.locator('.nav-types .nav-type__compact')
   await expect(compactLessons).toHaveCount(9)
   await expect(page.locator('.nav-type.active .nav-type__compact')).toHaveText('01')
@@ -438,6 +446,66 @@ test('home starts its entrance on the first styled frame and cancels trailing co
       - (firstFrameContract?.atlasScrollEnd ?? 0),
     ),
   ).toBeLessThanOrEqual(2)
+})
+
+test('home state atlas stays pinned and supports horizontal drag scrubbing', async ({ page }) => {
+  await page.setViewportSize({ width: 1440, height: 900 })
+  await page.goto('/')
+
+  const home = page.locator('.home')
+  const atlas = page.locator('.state-atlas')
+  const track = page.locator('.state-atlas__track')
+  await expect(home).toHaveClass(/home--gsap/)
+  await expect(atlas).toHaveClass(/state-atlas--draggable/)
+  await expect(page.getByText('滚动或左右拖动浏览')).toBeVisible()
+
+  const range = await page.evaluate(() => {
+    const hero = document.querySelector<HTMLElement>('.home-hero')
+    const atlasElement = document.querySelector<HTMLElement>('.state-atlas')
+    const trackElement = document.querySelector<HTMLElement>('.state-atlas__track')
+    const routeStage = document.querySelector<HTMLElement>('.route-stage')
+    if (!hero || !atlasElement || !trackElement || !routeStage) return null
+    return {
+      start: hero.offsetHeight,
+      distance: trackElement.scrollWidth - atlasElement.clientWidth,
+      routeFilter: getComputedStyle(routeStage).filter,
+    }
+  })
+
+  expect(range).not.toBeNull()
+  expect(range?.routeFilter).toBe('none')
+  expect(range?.distance ?? 0).toBeGreaterThan(0)
+
+  const middle = (range?.start ?? 0) + (range?.distance ?? 0) * 0.42
+  await page.evaluate((scrollTop) => window.scrollTo(0, scrollTop), middle)
+  await expect.poll(() => atlas.evaluate((element) =>
+    Math.abs(element.getBoundingClientRect().top),
+  )).toBeLessThanOrEqual(1)
+
+  const beforeDrag = await page.evaluate(() => ({
+    scrollY: window.scrollY,
+    transform: getComputedStyle(
+      document.querySelector<HTMLElement>('.state-atlas__track')!,
+    ).transform,
+  }))
+  const box = await atlas.boundingBox()
+  expect(box).not.toBeNull()
+  const y = (box?.y ?? 0) + (box?.height ?? 0) * 0.55
+  const startX = (box?.x ?? 0) + (box?.width ?? 0) * 0.72
+  const endX = (box?.x ?? 0) + (box?.width ?? 0) * 0.42
+  await page.mouse.move(startX, y)
+  await page.mouse.down()
+  await page.mouse.move(endX, y, { steps: 8 })
+  await page.mouse.up()
+
+  await expect.poll(() => page.evaluate(() => window.scrollY))
+    .toBeGreaterThan(beforeDrag.scrollY + 200)
+  await expect.poll(() => track.evaluate((element) =>
+    getComputedStyle(element).transform,
+  )).not.toBe(beforeDrag.transform)
+  await expect.poll(() => atlas.evaluate((element) =>
+    Math.abs(element.getBoundingClientRect().top),
+  )).toBeLessThanOrEqual(1)
 })
 
 test('first client-side route change keeps the application shell mounted', async ({ page }) => {
