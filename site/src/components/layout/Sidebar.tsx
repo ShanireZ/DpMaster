@@ -54,26 +54,35 @@ export default function Sidebar({ onNavigate }: { onNavigate?: () => void }) {
                     exit={reduceMotion ? { height: 0 } : { height: 0, opacity: 0, y: -6 }}
                     transition={reduceMotion ? { duration: 0 } : { duration: 0.28, ease: [0.16, 1, 0.3, 1] }}
                   >
-                    {p.types.map((t) =>
-                      t.status === 'ready' ? (
+                    {p.types.map((t, index) => {
+                      const compactCode = String(index + 1).padStart(2, '0')
+                      return t.status === 'ready' ? (
                         <NavLink
                           key={t.slug}
                           to={`/part/${p.id}/${t.slug}`}
                           className={({ isActive }) => `nav-type${isActive ? ' active' : ''}`}
                           onClick={onNavigate}
+                          aria-label={t.title}
+                          title={t.title}
                         >
                           <span className="nav-type__label">{t.title}</span>
+                          <span className="nav-type__compact" aria-hidden="true">
+                            {compactCode}
+                          </span>
                           <span className="nav-type__progress" aria-hidden="true">
                             {completed.includes(`/part/${p.id}/${t.slug}`) && <Check size={12} />}
                           </span>
                         </NavLink>
                       ) : (
-                        <span key={t.slug} className="nav-type planned">
+                        <span key={t.slug} className="nav-type planned" title={t.title}>
                           <span className="nav-type__label">{t.title}</span>
+                          <span className="nav-type__compact" aria-hidden="true">
+                            {compactCode}
+                          </span>
                           <span className="nav-type__tag">待建</span>
                         </span>
-                      ),
-                    )}
+                      )
+                    })}
                   </motion.div>
                 )}
               </AnimatePresence>

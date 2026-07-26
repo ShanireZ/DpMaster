@@ -291,6 +291,8 @@ test('lesson outline and versioned local progress remain available after reload'
   const outline = page.locator('aside[aria-label="本课目录"]')
   await expect(outline).toBeVisible()
   expect(await outline.getByRole('link').count()).toBeGreaterThan(3)
+  await expect(outline.locator('.lesson-outline__status')).toHaveCount(0)
+  await expect(outline.getByText('读到文末自动完成', { exact: true })).toHaveCount(0)
 
   const complete = page.getByRole('button', { name: '标为学完' })
   await complete.click()
@@ -358,6 +360,10 @@ test('desktop sidebar aligns nested lessons and remembers its compact rail state
   await expect(page.getByRole('button', { name: '展开侧栏' })).toBeVisible()
   await expect(page.locator('.brand__compact')).toHaveText('DP')
   await expect(page.locator('.brand__compact')).toBeVisible()
+  const compactLessons = page.locator('.nav-types .nav-type__compact')
+  await expect(compactLessons).toHaveCount(9)
+  await expect(page.locator('.nav-type.active .nav-type__compact')).toHaveText('01')
+  await expect(page.locator('.nav-type.active .nav-type__compact')).toBeVisible()
   await expect
     .poll(async () => (await sidebar.boundingBox())?.width ?? expandedWidth)
     .toBeLessThan(expandedWidth)
@@ -371,6 +377,10 @@ test('desktop sidebar aligns nested lessons and remembers its compact rail state
   await expect.poll(() => page.evaluate(
     () => localStorage.getItem('dp-master-sidebar-collapsed:v1'),
   )).toBe('true')
+
+  await page.locator('.nav-types a[href="/part/a/complete"]').click()
+  await expect(page).toHaveURL(/\/part\/a\/complete$/)
+  await expect(page.locator('.nav-type.active .nav-type__compact')).toHaveText('02')
 
   await page.reload()
   await expect(page.locator('.shell')).toHaveClass(/shell--sidebar-collapsed/)

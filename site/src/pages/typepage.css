@@ -286,18 +286,9 @@
   border-left-color: var(--accent-1);
   background: color-mix(in srgb, var(--accent-1) 7%, transparent);
 }
-.lesson-outline__pending,
-.lesson-outline__status {
+.lesson-outline__pending {
   color: var(--text-3);
   font-size: 11.5px;
-}
-.lesson-outline__status {
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  margin-top: var(--sp-4);
-  padding-top: var(--sp-3);
-  border-top: 1px solid var(--border);
 }
 .lesson-outline--mobile { display: none; }
 .lesson-completion-marker { height: 1px; }
