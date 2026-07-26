@@ -1,131 +1,57 @@
 # DP大师
 
 [![License: GPL-3.0](https://img.shields.io/badge/license-GPL--3.0-blue.svg?style=flat-square)](LICENSE)
-![React 19](https://img.shields.io/badge/React-19-61DAFB.svg?style=flat-square&logo=react&logoColor=black)
-![Vite 8](https://img.shields.io/badge/Vite-8-646CFF.svg?style=flat-square&logo=vite&logoColor=white)
-![TypeScript 6](https://img.shields.io/badge/TypeScript-6-3178C6.svg?style=flat-square&logo=typescript&logoColor=white)
-[![Deploy: Cloudflare + EdgeOne](https://img.shields.io/badge/deploy-Cloudflare%20%2B%20EdgeOne-success.svg?style=flat-square)](https://dp.betaoi.cc)
-![Lessons](https://img.shields.io/badge/lessons-37%2F37%20ready-success.svg?style=flat-square)
 
-DP大师是一个面向 C++ 算法学习者的动态规划交互式学习网站。把常见 DP 模型整理成可浏览的学习体系：知识点精讲、可改值演示、小游戏、手算过程、C++ 代码和洛谷练习路径放在同一套静态站里。
+DP大师是面向 C++ 算法学习者的动态规划交互式学习网站，将课程讲解、可编辑演示、小游戏、代码示例和练习题整合在同一套学习体验中。
 
-适合正在准备 NOIP、CSP、省选基础阶段，或想系统补齐动态规划模型的学习者。
+[国际站](https://dp.betaoi.cc) · [国内站](https://dp.betaoi.cn)
 
-> 站点源码目录：`site/`  
-> GitHub 仓库：<https://github.com/ShanireZ/DpMaster>
+## 主要特点
 
-## 项目状态
-
-- 7 个 DP 家族已注册。
-- 37 个类型页已注册并标记为 `ready`。
-- 7 个家族小游戏已接入。
-- 题目索引包含 177 个题目槽位，其中 116 个唯一洛谷题号。
-- 站点是预渲染静态 React 应用：48 个公开路由先生成 HTML，再由 React 水合；小游戏、反馈和站内导航仍保持交互。
-- 国际站为 <https://dp.betaoi.cc>（Cloudflare），国内站为 <https://dp.betaoi.cn>（Tencent EdgeOne）。
-- 两站提供 host-aware canonical、互指 hreflang、课程/Breadcrumb JSON-LD、可引用摘要、`llms.txt` 和真实 HTTP 404。
-
-## 覆盖内容
-
-| 编号 | 家族    | 类型数 | 学习重点                           |
-| ---- | ------- | -----: | ---------------------------------- |
-| A    | 背包 DP |      9 | 容量、选择、物品转移和滚动数组     |
-| B    | 线性 DP |      7 | 沿序列推进的状态、递推和最优子结构 |
-| C    | 区间 DP |      5 | 区间长度枚举、断点枚举和合并顺序   |
-| D    | 矩阵 DP |      2 | 网格状态与矩阵快速幂加速           |
-| E    | 换根 DP |      4 | 子树内外信息合并与根的转移         |
-| F    | 树形 DP |      5 | 树上选择、树上背包、覆盖与统计     |
-| G    | 状压 DP |      5 | 位集合、子集枚举、棋盘状态与轮廓   |
-
-## 功能亮点
-
-- **可改值的 DP 演示**：改输入后重新求解，逐步播放表格、树、网格或 bitmask 状态。
-- **家族小游戏**：装包大师、LIS 接龙、合并石子、幂次加速器、换根巡礼、舞会邀请、棋盘布阵。
-- **题目索引**：按家族、类型、难度和例题/练习关系组织洛谷题目，分页、搜索和筛选状态写入 URL，可刷新和分享。
-- **课程进度**：课程目录、阅读定位和版本化本地完成进度，无需账号或数据库。
-- **静态优先**：不需要后端数据库，构建产物可以直接发布到边缘静态托管。
-- **反馈入口**：站内 `POST /api/feedback` 可转发到钉钉等 webhook 机器人。
-- **区域统计**：同一统计抽象层采集 Web Vitals、路由、学习与反馈事件；国际站写入 Cloudflare Analytics Engine，国内站写入 EdgeOne 结构化日志，并在各自平台建立事件看板。
-
-## 技术栈
-
-| 层级     | 技术                                                                |
-| -------- | ------------------------------------------------------------------- |
-| 前端     | React 19, React Router 7, Vite 8, TypeScript                        |
-| 内容渲染 | KaTeX 公式渲染, Shiki C++ 高亮                                      |
-| UI       | CSS 分层样式, Lucide React 图标, 自托管字体包                       |
-| 部署     | Cloudflare Workers Static Assets, Tencent EdgeOne Pages             |
-| SEO      | 48 路由预渲染、canonical/hreflang、JSON-LD、sitemap、llms.txt      |
-| 边缘 API | Cloudflare Worker / EdgeOne Edge Function 共用的反馈与统计处理核心  |
-
-## 本地运行
-
-请先确保 **Node.js ≥ 24** 且 **npm ≥ 11**（仓库用 `package-lock.json` 锁版，`packageManager` 固定为 npm 11，见 `site/package.json` 的 `engines`），再进入 `site/` 运行命令。
-
-```bash
-npm ci        # 按 lockfile 精确安装依赖（Requires Node ≥ 24）
-npm run dev
-```
-
-常用命令：
-
-| 命令               | 作用                                                      |
-| ------------------ | --------------------------------------------------------- |
-| `npm run dev`      | 启动 Vite 开发服务器。                                  |
-| `npm run test`     | 运行课程目录、题目语料与资产预算合同测试（node --test）。 |
-| `npm run test:unit`| 运行 React 组件级单测（Vitest + Testing Library）。    |
-| `npm run lint`     | 运行零 warning 的 Oxlint。                              |
-| `npm run build`    | 构建并预渲染到 `site/dist/cloudflare/` 与 `site/dist/edgeone/`。 |
-| `npm run verify`   | 内容/SEO 检查、测试、组件单测、lint、构建与资产预算。   |
-| `npm run preview`  | 本地预览构建产物。                                      |
-| `npm run deploy`   | 构建一次，然后依次发布 Cloudflare 和 EdgeOne。          |
+- 课程按 DP 模型组织，配有推导、图解、代码和练习。
+- 演示支持修改输入并逐步观察状态转移。
+- 家族小游戏将抽象模型转化为可操作的训练。
+- 题目索引支持搜索、筛选和可分享的 URL 状态。
+- 无需账号，打开网页即可学习。
 
 ## 项目结构
 
 ```text
 DpMaster/
-├─ docs/                    # OKF 项目文档包
-├─ deploy.md                # 部署与反馈机器人用户指南
-├─ README.md                # GitHub 项目介绍页
-└─ site/
-   ├─ src/
-   │  ├─ app/               # 路由与应用壳
-   │  ├─ components/        # 布局、演示、小游戏、反馈组件
-   │  ├─ content/           # 课程正文，也是题目语料来源
-   │  ├─ data/catalog.ts    # 家族、课程、正文与游戏的统一目录
-   │  ├─ data/problems.ts   # 由正文自动生成的题目索引
-   │  ├─ analytics/         # 区域统计抽象层与 Provider
-   │  ├─ config/site.ts     # 双域名、区域、品牌与统计配置
-   │  ├─ pages/             # 首页、家族页、类型页、方法页、题单页、关于页
-   │  └─ styles/            # 全局样式与设计 token
-   ├─ functions/            # 反馈与第一方统计端点核心
-   ├─ scripts/              # 双区域构建、预渲染、发现文件与 EdgeOne Adapter
-   ├─ worker.js             # Cloudflare Workers 入口
-   └─ wrangler.jsonc        # Cloudflare Workers Static Assets 配置
+├─ site/                       # 网站应用
+│  ├─ src/
+│  │  ├─ algorithms/          # DP 算法与可视化计算模型
+│  │  ├─ analytics/           # 站点事件与性能采集
+│  │  ├─ app/                 # 应用入口、路由与静态渲染
+│  │  ├─ components/          # 布局、交互演示、小游戏与通用组件
+│  │  ├─ content/             # 课程正文
+│  │  ├─ data/                # 课程目录、题目索引与页面元数据
+│  │  ├─ learning/            # 本地学习状态
+│  │  ├─ pages/               # 页面级组件
+│  │  └─ styles/              # 全局样式与设计变量
+│  ├─ functions/              # 反馈与统计接口
+│  ├─ public/                 # 静态资源
+│  ├─ scripts/                # 内容生成、预渲染与区域构建
+│  ├─ tests/                  # 浏览器端到端测试
+│  ├─ worker.js               # Cloudflare Worker 入口
+│  └─ wrangler.jsonc          # Cloudflare 部署配置
+├─ docs/                      # 项目维护文档
+├─ deploy.md                  # 部署说明
+├─ LICENSE
+└─ README.md
 ```
 
-## 文档入口
+## 本地运行
 
-项目知识已整理到 `docs/` 的 OKF 文档包中：
+需要 Node.js 24 或更高版本、npm 11 或更高版本。
 
-- [文档索引](docs/index.md)
-- [项目概览](docs/project/overview.md)
-- [产品范围](docs/product/scope.md)
-- [内容分类](docs/product/content-taxonomy.md)
-- [洛谷题目策略](docs/product/problem-policy.md)
-- [工程架构](docs/engineering/architecture.md)
-- [验证流程](docs/operations/verification.md)
-- [统计与告警](docs/operations/analytics.md)
+```bash
+cd site
+npm ci
+npm run dev
+```
 
-部署、平台环境变量、钉钉反馈机器人和上线验收见 [deploy.md](deploy.md)。
-
-## 部署
-
-当前维护的生产目标：
-
-- Cloudflare Workers Static Assets
-- Tencent EdgeOne Pages
-
-第一次部署请从 [deploy.md](deploy.md) 开始。里面包含 Cloudflare 端操作、EdgeOne 端操作、钉钉群机器人配置、单聊机器人限制说明、验收命令和常见排障。
+启动后访问终端显示的本地地址。
 
 ## License
 

@@ -247,10 +247,6 @@ export default function TypePage() {
       <aside className="lesson-outline lesson-outline--desktop" aria-label="本课目录">
         <p className="lesson-outline__label"><ListTree size={14} /> 本课目录</p>
         <OutlineLinks items={outline} activeId={activeId} />
-        <p className="lesson-outline__status">
-          {isComplete ? <Check size={13} /> : <Circle size={13} />}
-          {isComplete ? '已记录完成' : '读到文末自动完成'}
-        </p>
       </aside>
     </div>
   )
