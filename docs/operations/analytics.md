@@ -20,7 +20,6 @@ Both regions send the same bounded first-party event schema to `POST /api/analyt
 
 * `page_view`, `route_not_found`;
 * `web_vital`;
-* `lesson_started`, `lesson_completed`;
 * `search_used`, `search_no_result`, `problem_outbound`;
 * `feedback_opened`, `feedback_submitted`, `feedback_succeeded`, `feedback_failed`;
 * `client_error`.
@@ -67,17 +66,7 @@ GROUP BY path, metric
 ORDER BY metric, p75 DESC
 ```
 
-```sql
-SELECT blob3 AS path,
-       SUM(IF(blob2 = 'lesson_started', double3, 0)) AS starts,
-       SUM(IF(blob2 = 'lesson_completed', double3, 0)) AS completions
-FROM dpmaster
-WHERE timestamp > NOW() - INTERVAL '30' DAY
-GROUP BY path
-ORDER BY starts DESC
-```
-
-Keep Cloudflare Web Analytics enabled for independent request/page-view trends; use the first-party dataset for route, learning, feedback, and RUM funnels.
+Keep Cloudflare Web Analytics enabled for independent request/page-view trends; use the first-party dataset for route, feedback, search, outbound-problem, and RUM funnels. Course visits are represented only by ordinary route page views; the site does not record lesson-start, lesson-completion, or local learning-progress state.
 
 # EdgeOne Dashboard
 
@@ -87,12 +76,11 @@ The China Adapter writes the identical structured event object to Edge Function 
 
 * page views and 404s by route;
 * Web Vitals sample count and p75 by metric/route;
-* lesson starts versus completions;
 * searches with no result;
 * feedback success/failure;
 * `client_error` count by route and safe message.
 
-EdgeOne access analytics remains the authority for traffic, geography, cache, status code, and edge latency. The first-party function logs are the authority for client-route and learning events. If the platform log retention or aggregation cannot support the desired window, export structured logs to the Tencent logging product approved for the deployment; do not add a public admin dashboard or client-side analytics secret to this static repository.
+EdgeOne access analytics remains the authority for traffic, geography, cache, status code, and edge latency. The first-party function logs are the authority for client-route, feedback, search, outbound-problem, and RUM events. If the platform log retention or aggregation cannot support the desired window, export structured logs to the Tencent logging product approved for the deployment; do not add a public admin dashboard or client-side analytics secret to this static repository.
 
 # Alerts And Secrets
 

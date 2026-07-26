@@ -3,16 +3,13 @@ import { Link, useParams } from 'react-router-dom'
 import { ListTree } from 'lucide-react'
 import { getLesson, getLessonNeighbors } from '../data/catalog'
 import { getLessonEditorial } from '../data/editorial.ts'
-import { trackAnalyticsEvent } from '../analytics/index.ts'
 import AnimatedContent from '../components/motion/AnimatedContent'
 import PartGlyph from '../components/PartGlyph'
 import { KnapsackLessonPlate } from '../components/art/PolygonBackpack'
-import { useLearningProgress } from '../learning/LearningProgressContext'
 import { useStaticLessonContents } from '../app/StaticLessonContent.ts'
 import './typepage.css'
 
 const NotFound = lazy(() => import('./NotFound'))
-const startedLessons = new Set<string>()
 
 interface OutlineItem {
   id: string
@@ -59,29 +56,12 @@ export default function TypePage() {
   const StaticBody = path ? staticLessonContents?.[path] : undefined
   const Body = StaticBody || type?.content
   const articleRef = useRef<HTMLElement>(null)
-  const completionRef = useRef<HTMLDivElement>(null)
   const [outline, setOutline] = useState<OutlineItem[]>([])
   const [activeId, setActiveId] = useState('')
-  const { completed, visit, markComplete } = useLearningProgress()
   const editorial = lesson ? getLessonEditorial(lesson) : undefined
   const neighbors = pid && slug
     ? getLessonNeighbors(pid, slug)
     : { previous: undefined, next: undefined }
-
-  const isComplete = Boolean(path && completed.includes(path))
-
-  useEffect(() => {
-    if (!path || !type) return
-    visit(path)
-    if (!startedLessons.has(path)) {
-      startedLessons.add(path)
-      trackAnalyticsEvent({
-        event: 'lesson_started',
-        path,
-        title: type.title,
-      })
-    }
-  }, [path, type, visit])
 
   useEffect(() => {
     if (!path) return
@@ -130,28 +110,6 @@ export default function TypePage() {
       sectionObserver?.disconnect()
     }
   }, [path])
-
-  useEffect(() => {
-    if (!path || !type) return
-    const target = completionRef.current
-    if (!target || isComplete) return
-    const observer = new IntersectionObserver(
-      ([entry]) => {
-        if (!entry?.isIntersecting) return
-        markComplete(path)
-        trackAnalyticsEvent({
-          event: 'lesson_completed',
-          path,
-          title: type.title,
-          metadata: { method: 'reached_end' },
-        })
-        observer.disconnect()
-      },
-      { threshold: 0.8 },
-    )
-    observer.observe(target)
-    return () => observer.disconnect()
-  }, [isComplete, markComplete, outline.length, path, type])
 
   // 无效部分 / 无效类型 / 尚未上线（无内容）的类型 —— 一律视为不存在，跳 404
   if (!part || !type || !Body) {
@@ -207,14 +165,10 @@ export default function TypePage() {
 
         <div className="lesson-flow">
           {StaticBody ? (
-            <>
-              <StaticBody />
-              <div ref={completionRef} className="lesson-completion-marker" aria-hidden="true" />
-            </>
+            <StaticBody />
           ) : (
             <Suspense fallback={<div style={{ minHeight: '50vh' }} aria-busy="true" />}>
               <Body />
-              <div ref={completionRef} className="lesson-completion-marker" aria-hidden="true" />
             </Suspense>
           )}
         </div>

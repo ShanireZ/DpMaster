@@ -244,18 +244,8 @@ a.nav-type.active::before { opacity: 1; transform: scaleY(1); }
   margin-left: auto; font-size: 10px; color: var(--text-3);
   border: 1px solid var(--border); border-radius: 4px; padding: 0 5px;
 }
-.nav-type__progress {
-  width: 14px;
-  height: 14px;
-  flex: 0 0 auto;
-  display: grid;
-  place-items: center;
-  margin-left: auto;
-  color: var(--viz-chosen);
-}
 .nav-type__label,
-.nav-type__tag,
-.nav-type__progress {
+.nav-type__tag {
   opacity: 1;
   visibility: visible;
   transition:
@@ -551,8 +541,7 @@ a.nav-type.active::before { opacity: 1; transform: scaleY(1); }
   }
 
   .shell--sidebar-collapsed .nav-type__label,
-  .shell--sidebar-collapsed .nav-type__tag,
-  .shell--sidebar-collapsed .nav-type__progress {
+  .shell--sidebar-collapsed .nav-type__tag {
     opacity: 0;
     visibility: hidden;
     pointer-events: none;

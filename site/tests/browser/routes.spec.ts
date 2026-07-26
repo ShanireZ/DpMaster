@@ -284,8 +284,9 @@ test('problem pagination and filters survive reload through URL state', async ({
   expect(await rows.count()).toBeLessThanOrEqual(30)
 })
 
-test('lesson outline and versioned local progress remain available after reload', async ({ page }) => {
+test('lesson outline remains available without recording local learning progress', async ({ page }) => {
   await page.setViewportSize({ width: 1440, height: 900 })
+  await page.addInitScript(() => localStorage.removeItem('dp-master-progress:v1'))
   await page.goto('/part/a/01')
 
   const outline = page.locator('aside[aria-label="本课目录"]')
@@ -295,18 +296,18 @@ test('lesson outline and versioned local progress remain available after reload'
   await expect(outline.getByText('读到文末自动完成', { exact: true })).toHaveCount(0)
 
   await expect(page.getByRole('button', { name: /学完/ })).toHaveCount(0)
-  await page.locator('.lesson-completion-marker').scrollIntoViewIfNeeded()
+  await expect(page.locator('.lesson-completion-marker')).toHaveCount(0)
+  await expect(page.locator('.nav-type__progress')).toHaveCount(0)
+  await page.locator('.type-nav').scrollIntoViewIfNeeded()
   await expect.poll(
     () => page.evaluate(() => localStorage.getItem('dp-master-progress:v1')),
-  ).toContain('/part/a/01')
-  await expect(page.locator('.nav-type.active .nav-type__progress svg')).toBeVisible()
+  ).toBeNull()
   await expect(page.getByText('学习进度', { exact: true })).toHaveCount(0)
 
-  const stored = await page.evaluate(() => localStorage.getItem('dp-master-progress:v1'))
-  expect(stored).toContain('/part/a/01')
   await page.reload()
   await expect(page.getByRole('button', { name: /学完/ })).toHaveCount(0)
-  await expect(page.locator('.nav-type.active .nav-type__progress svg')).toBeVisible()
+  await expect(page.locator('.nav-type__progress')).toHaveCount(0)
+  expect(await page.evaluate(() => localStorage.getItem('dp-master-progress:v1'))).toBeNull()
 })
 
 test('desktop sidebar aligns nested lessons and remembers its compact rail state', async ({
