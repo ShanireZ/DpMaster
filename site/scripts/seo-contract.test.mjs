@@ -26,6 +26,18 @@ test('both regions use host-aware canonical and equivalent hreflang alternates',
   assert.equal(SITE_ORIGIN, SITE_CONFIGS.international.origin)
   assert.equal(SITE_CONFIGS.international.origin, 'https://dp.betaoi.cc')
   assert.equal(SITE_CONFIGS.china.origin, 'https://dp.betaoi.cn')
+  assert.equal(
+    SITE_CONFIGS.international.analytics.cloudflareWebAnalytics.delivery,
+    'runtime',
+  )
+  assert.equal(
+    SITE_CONFIGS.china.analytics.cloudflareWebAnalytics.delivery,
+    'static',
+  )
+  assert.equal(
+    SITE_CONFIGS.china.analytics.cloudflareWebAnalytics.token,
+    'c113fb69d7e84d38a645c5160f6f1bda',
+  )
 
   for (const path of PUBLIC_PATHS) {
     for (const site of Object.values(SITE_CONFIGS)) {
@@ -195,6 +207,7 @@ test('build contracts provide two region outputs, SSR prerendering, hydration, a
   assert.match(prerender, /PUBLIC_PATHS/)
   assert.match(prerender, /404\.html/)
   assert.match(prerender, /renderRouteHead/)
+  assert.match(prerender, /renderStaticWebAnalytics/)
   assert.match(main, /hydrateRoot/)
   assert.match(wrangler, /"not_found_handling":\s*"404-page"/)
   assert.match(postbuild, /status:\s*404/)

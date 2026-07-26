@@ -74,10 +74,10 @@ function cloudflareProvider(): AnalyticsProvider {
   return {
     name: 'cloudflare',
     initialize() {
-      const token = site.analytics.cloudflareToken
+      const webAnalytics = site.analytics.cloudflareWebAnalytics
       if (
         window.location.hostname !== site.hostname ||
-        !token ||
+        webAnalytics.delivery !== 'runtime' ||
         document.querySelector('script[data-dp-analytics="cloudflare"]')
       ) {
         return
@@ -85,7 +85,7 @@ function cloudflareProvider(): AnalyticsProvider {
       const script = document.createElement('script')
       script.type = 'module'
       script.src = 'https://static.cloudflareinsights.com/beacon.min.js'
-      script.dataset.cfBeacon = JSON.stringify({ token })
+      script.dataset.cfBeacon = JSON.stringify({ token: webAnalytics.token })
       script.dataset.dpAnalytics = 'cloudflare'
       document.body.append(script)
     },
@@ -100,8 +100,8 @@ function tencentEdgeOneProvider(): AnalyticsProvider {
   return {
     name: 'tencent-edgeone',
     initialize() {
-      // EdgeOne 自身从边缘访问日志提供流量、地域、状态码和性能统计；
-      // 站内路由事件通过同源端点补齐，不加载境外第三方脚本。
+      // Cloudflare Web Analytics 已在 EdgeOne HTML 产物中静态注入；
+      // 站内路由、学习与反馈事件仍通过同源端点发送到 EdgeOne。
     },
     track(event) {
       sendFirstPartyEvent('tencent-edgeone', site.analytics.endpoint, event)

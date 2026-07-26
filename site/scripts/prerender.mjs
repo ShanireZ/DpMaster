@@ -9,6 +9,15 @@ import { PUBLIC_PATHS } from '../src/lib/publicRoutes.ts'
 import { renderRouteHead, replaceRouteHead } from '../src/lib/seoHead.ts'
 import { renderRouteAssetLinks } from './route-assets.mjs'
 
+const CLOUDFLARE_WEB_ANALYTICS_SRC =
+  'https://static.cloudflareinsights.com/beacon.min.js'
+
+export function renderStaticWebAnalytics(site) {
+  const webAnalytics = site.analytics.cloudflareWebAnalytics
+  if (webAnalytics.delivery !== 'static') return ''
+  return `<!-- Cloudflare Web Analytics --><script type='module' src='${CLOUDFLARE_WEB_ANALYTICS_SRC}' data-cf-beacon='{"token": "${webAnalytics.token}"}'></script><!-- End Cloudflare Web Analytics -->`
+}
+
 export function settleSuspenseMarkup(markup) {
   if (!markup.includes('<!--$?-->')) return markup
   const fragment = JSDOM.fragment(markup)
@@ -51,7 +60,13 @@ export function settleSuspenseMarkup(markup) {
   return settled
 }
 
-function documentForRoute(template, routeMarkup, routeHead, routeCss) {
+function documentForRoute(
+  template,
+  routeMarkup,
+  routeHead,
+  routeCss,
+  staticAnalytics,
+) {
   const withHead = replaceRouteHead(template, routeHead)
   const root = '<div id="root"></div>'
   if (!withHead.includes(root)) throw new Error('Built index.html is missing the empty root')
@@ -65,7 +80,10 @@ function documentForRoute(template, routeMarkup, routeHead, routeCss) {
   const withCss = missingAssets
     ? withHead.replace('</head>', `${missingAssets}\n  </head>`)
     : withHead
-  return withCss.replace(root, `<div id="root">${routeMarkup}</div>`)
+  const withMarkup = withCss.replace(root, `<div id="root">${routeMarkup}</div>`)
+  return staticAnalytics
+    ? withMarkup.replace('</body>', `    ${staticAnalytics}\n  </body>`)
+    : withMarkup
 }
 
 function writeHtml(path, content) {
@@ -90,6 +108,7 @@ export async function prerenderRegion(region, outDir, serverEntry) {
   const template = readFileSync(indexPath, 'utf8')
     .replace('<html lang="zh-CN">', `<html lang="${site.language}">`)
   const manifest = JSON.parse(readFileSync(manifestPath, 'utf8'))
+  const staticAnalytics = renderStaticWebAnalytics(site)
   const { renderRoute } = await import(
     `${pathToFileURL(serverEntry).href}?region=${region}&time=${Date.now()}`
   )
@@ -105,6 +124,7 @@ export async function prerenderRegion(region, outDir, serverEntry) {
         markup,
         renderRouteHead(page, site),
         renderRouteAssetLinks(manifest, path),
+        staticAnalytics,
       ),
     )
   }
@@ -119,6 +139,7 @@ export async function prerenderRegion(region, outDir, serverEntry) {
       notFoundMarkup,
       renderRouteHead(notFound, site),
       renderRouteAssetLinks(manifest, notFoundPath),
+      staticAnalytics,
     ),
   )
 

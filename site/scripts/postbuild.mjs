@@ -6,6 +6,7 @@
 import { existsSync, mkdirSync, readFileSync, writeFileSync } from 'node:fs'
 import { fileURLToPath } from 'node:url'
 import { join } from 'node:path'
+import { checkRegionalAnalytics } from './check-regional-analytics.mjs'
 
 const edgeOneDir = fileURLToPath(new URL('../dist/edgeone/', import.meta.url))
 const notFoundPath = join(edgeOneDir, '404.html')
@@ -109,4 +110,15 @@ export default async function onRequest(context) {
 writeFileSync(join(fnDir, '[[default]].js'), fnSource, 'utf8')
 console.log(
   '[postbuild] EdgeOne Adapter 已生成：反馈 + 区域统计 + 未知路径真实 404',
+)
+
+const analyticsCheck = checkRegionalAnalytics()
+if (!analyticsCheck.ok) {
+  for (const error of analyticsCheck.errors) {
+    console.error(`[postbuild] ${error}`)
+  }
+  process.exit(1)
+}
+console.log(
+  `[postbuild] Web Analytics 已校验：${analyticsCheck.edgeOneHtml} 个 EdgeOne HTML 各含一份 beacon`,
 )

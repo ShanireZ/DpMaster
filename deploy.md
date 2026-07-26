@@ -330,8 +330,8 @@ Invoke-RestMethod `
 
 前端只调用统一的 `trackAnalyticsEvent`。当前允许的事件是 `page_view`、`feedback_opened`、`feedback_submitted`、`feedback_succeeded`、`feedback_failed`。
 
-- 国际站 Provider 只在真实 `dp.betaoi.cc` 主机动态加载 Cloudflare Web Analytics beacon，使用 token `c113fb69d7e84d38a645c5160f6f1bda`；localhost、预览域名和国内站不会加载。
-- 国内站 Provider 不加载 Cloudflare 或其他境外统计脚本。EdgeOne 控制台的访问日志/数据分析负责请求、地域、状态码和性能观察；React 路由与反馈漏斗事件发送到同源 `/api/analytics`。
+- 国际站 Provider 只在真实 `dp.betaoi.cc` 主机动态加载 Cloudflare Web Analytics beacon，使用 token `c113fb69d7e84d38a645c5160f6f1bda`；localhost 和预览域名不会动态加载。
+- 国内站构建会在 `dist/edgeone/` 的全部 96 个 HTML 文件（48 个公开路由的 clean-URL 变体与真实 404）中各静态注入一次相同 token 的 Cloudflare Web Analytics snippet。EdgeOne 控制台的访问日志/数据分析仍负责请求、地域、状态码和性能观察；React 路由、学习与反馈漏斗事件仍发送到同源 `/api/analytics`。
 - 两个 Provider 都把有限事件写到同源 `/api/analytics`，成功返回 204。接收器拒绝跨站请求、未知事件、未知 Provider、非 JSON 和过大请求；只记录裁剪后的路径、标题及少量原始类型元数据，不读取反馈内容、联系方式、Cookie 或账号标识。
 - 统计失败由客户端静默降级，不影响课程、小游戏、导航或反馈提交。
 
@@ -355,6 +355,8 @@ Invoke-WebRequest `
 ```
 
 国内站测试时把 URL 换成 `.cn`，并把 `provider` 改成 `tencent-edgeone`。期望 HTTP 204，并在相应平台日志中看到 `analytics_event`。
+
+构建后运行 `npm run check:analytics`。检查必须确认 96 个 EdgeOne HTML 各包含且只包含一份静态 beacon，同时 Cloudflare HTML 不含静态片段（国际站仍由运行时 Provider 加载）。
 
 ## 钉钉反馈机器人
 

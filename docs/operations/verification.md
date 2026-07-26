@@ -18,7 +18,7 @@ Run from `site/`:
 npm run verify
 ```
 
-`npm run verify` checks generated content and discovery artifacts, runs Node tests and zero-warning lint, builds and prerenders both regional targets, writes the EdgeOne API/404 Adapter, runs Chromium against the international production target through the strict custom preview server, and enforces the asset budget on both regional asset directories.
+`npm run verify` checks generated content and discovery artifacts, runs Node tests and zero-warning lint, builds and prerenders both regional targets, writes the EdgeOne API/404 Adapter, verifies that every EdgeOne HTML contains exactly one static Web Analytics beacon while Cloudflare HTML contains none, runs Chromium against the international production target through the strict custom preview server, and enforces the asset budget on both regional asset directories.
 
 To rerun only the browser smoke suite after a production build:
 
