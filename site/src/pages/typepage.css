@@ -9,6 +9,8 @@
 }
 
 .typepage {
+  --lesson-prose-measure: min(100%, clamp(64ch, 82%, 96ch));
+
   min-width: 0;
   max-width: var(--content-max);
 }
@@ -32,7 +34,7 @@
 .typehead__canvas::before {
   position: absolute;
   z-index: -1;
-  inset: 5% -4% auto auto;
+  inset: -4% -4% auto auto;
   width: min(54vw, 620px);
   aspect-ratio: 1;
   border: 1px solid color-mix(in srgb, var(--accent-1) 18%, transparent);
@@ -43,7 +45,7 @@
 .typehead__canvas::after {
   position: absolute;
   z-index: -1;
-  top: 16%;
+  top: 7%;
   right: 8%;
   width: min(31vw, 380px);
   aspect-ratio: 1;
@@ -300,10 +302,12 @@
 }
 
 .lesson .prose {
-  max-width: 68ch;
+  width: var(--lesson-prose-measure);
+  max-width: none;
   color: var(--text-1);
   font-size: clamp(15.5px, 1.18vw, 17px);
   line-height: 1.9;
+  text-wrap: pretty;
 }
 
 .lesson .prose p {
@@ -540,7 +544,8 @@
 }
 
 .example__body .prose {
-  max-width: 72ch;
+  width: var(--lesson-prose-measure);
+  max-width: none;
 }
 
 .field {
@@ -1035,13 +1040,13 @@
 }
 
 .typepage[data-part-id='a'] .typehead__canvas::before {
-  top: 3%;
+  top: -6%;
   right: -2%;
   width: min(52vw, 660px);
 }
 
 .typepage[data-part-id='a'] .typehead__canvas::after {
-  top: 18%;
+  top: 7%;
   right: 13%;
 }
 

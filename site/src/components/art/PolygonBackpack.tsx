@@ -66,11 +66,11 @@ function BackpackGeometry({ mode = 'solid', textureId }: BackpackGeometryProps) 
           <polygon points="230,176 481,174 492,233 430,250 251,237" className="poly-backpack__face poly-backpack__face--1" />
           <polygon points="230,176 251,237 185,260" className="poly-backpack__face poly-backpack__face--2" />
           <polygon points="481,174 532,234 492,233" className="poly-backpack__face poly-backpack__face--4" />
-          <polygon points="251,237 430,250 370,318" className="poly-backpack__face poly-backpack__face--1" />
-          <polygon points="251,237 370,318 270,340" className="poly-backpack__face poly-backpack__face--2" />
-          <polygon points="370,318 430,250 392,359" className="poly-backpack__face poly-backpack__face--3" />
-          <polygon points="270,340 370,318 415,466 273,438" className="poly-backpack__face poly-backpack__face--1" />
-          <polygon points="370,318 392,359 415,466" className="poly-backpack__face poly-backpack__face--2" />
+          <polygon points="251,237 430,250 370,318" className="poly-backpack__face poly-backpack__face--2" />
+          <polygon points="251,237 370,318 270,340" className="poly-backpack__face poly-backpack__face--3" />
+          <polygon points="370,318 430,250 392,359" className="poly-backpack__face poly-backpack__face--4" />
+          <polygon points="270,340 370,318 415,466 273,438" className="poly-backpack__face poly-backpack__face--2" />
+          <polygon points="370,318 392,359 415,466" className="poly-backpack__face poly-backpack__face--3" />
         </g>
 
         <g className="poly-backpack__buckle">
@@ -135,7 +135,9 @@ export default function PolygonBackpack({
         <circle cx="378" cy="344" r="218" />
         <path d="M42 680 692 22M0 602 720 250M378 0V680M0 344H720" />
       </g>
-      <BackpackGeometry mode={mode} textureId={textureId} />
+      <g className="poly-backpack__silhouette">
+        <BackpackGeometry mode={mode} textureId={textureId} />
+      </g>
     </svg>
   )
 }
@@ -186,13 +188,24 @@ function Plate01() {
   const path = new Set(['0-3', '1-3', '2-3', '2-2', '3-2', '3-1'])
   return (
     <g>
-      <text x="55" y="58" className="knapsack-plate__label">物品 i</text>
-      <text x="374" y="343" className="knapsack-plate__label">容量 j</text>
+      <g className="knapsack-plate__axis">
+        <path d="M86 304V56M86 304H382" />
+        <text
+          x="47"
+          y="180"
+          textAnchor="middle"
+          transform="rotate(-90 47 180)"
+          className="knapsack-plate__label"
+        >
+          物品 i
+        </text>
+        <text x="382" y="332" textAnchor="end" className="knapsack-plate__label">容量 j</text>
+      </g>
       {Array.from({ length: 4 }, (_, row) =>
         Array.from({ length: 5 }, (_, col) => {
           const active = path.has(`${row}-${col}`)
           return (
-            <g key={`${row}-${col}`} transform={`translate(${88 + col * 60},${78 + row * 60})`}>
+            <g key={`${row}-${col}`} transform={`translate(${112 + col * 60},${76 + row * 60})`}>
               <circle r={active ? 6 : 4} className={active ? 'is-active' : ''} />
               {col < 4 && <line x1="6" x2="54" />}
               {row < 3 && <line y1="6" y2="54" />}
@@ -200,9 +213,10 @@ function Plate01() {
           )
         }),
       )}
-      <path className="knapsack-plate__accent-line" d="M268 78v60H208v60H148v60" markerEnd="url(#kp-arrow)" />
-      <rect x="302" y="232" width="78" height="34" className="knapsack-plate__result" />
-      <text x="341" y="254" textAnchor="middle" className="knapsack-plate__formula">f[i][j]</text>
+      <path className="knapsack-plate__accent-line" d="M292 76v60H232v60H172v60" markerEnd="url(#kp-arrow)" />
+      <path className="knapsack-plate__result-link" d="M180 256H404Q418 256 418 242V192H430" />
+      <rect x="430" y="170" width="116" height="44" className="knapsack-plate__result" />
+      <text x="488" y="198" textAnchor="middle" className="knapsack-plate__formula">f[i][j]</text>
     </g>
   )
 }
