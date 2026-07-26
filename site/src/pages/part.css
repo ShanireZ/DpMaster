@@ -594,15 +594,8 @@
 }
 
 .partpage[data-part-id='a'] .partcover__actions {
-  align-items: flex-end;
+  align-items: center;
   margin-top: var(--sp-7);
-}
-
-.partpage[data-part-id='a'] .partcover__primary {
-  min-height: 56px;
-  padding-inline: var(--sp-6);
-  border-radius: 0;
-  font-size: 15px;
 }
 
 .partpage[data-part-id='a'] .partcover__art {
@@ -643,7 +636,7 @@
 .partjourney__polygon {
   position: absolute;
   z-index: 0;
-  top: 88px;
+  top: 154px;
   right: max(-120px, calc((100vw - 1440px) / 2 - 80px));
   width: min(47vw, 650px);
   opacity: 0.74;
@@ -771,7 +764,7 @@
   }
 
   .partjourney__polygon {
-    top: 120px;
+    top: 150px;
     right: -160px;
     width: 560px;
     opacity: 0.46;
@@ -817,7 +810,7 @@
   }
 
   .partjourney__polygon {
-    top: 250px;
+    top: 300px;
     right: -245px;
     width: 500px;
     opacity: 0.16;

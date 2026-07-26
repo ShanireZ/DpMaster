@@ -127,7 +127,8 @@ export default function PolygonBackpack({
           <feComponentTransfer in="grain-base" result="grain">
             <feFuncA type="table" tableValues="0 .2" />
           </feComponentTransfer>
-          <feBlend in="SourceGraphic" in2="grain" mode="soft-light" />
+          <feComposite in="grain" in2="SourceAlpha" operator="in" result="clipped-grain" />
+          <feBlend in="SourceGraphic" in2="clipped-grain" mode="soft-light" />
         </filter>
       </defs>
       <g className="poly-backpack__construction">
