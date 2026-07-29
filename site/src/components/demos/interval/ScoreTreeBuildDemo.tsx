@@ -3,7 +3,7 @@ import { Minus, Plus, X } from 'lucide-react'
 import { layoutScoreTree } from './scoreTreeSolver'
 import type { TreeNode } from './scoreTreeSolver'
 import { solveScoreTree } from '../../../algorithms/score-tree/index.ts'
-import '../knapsack/knapsack-demo.css'
+import '../shared/demo-workbench.css'
 import './score-tree-build.css'
 
 function Stepper({

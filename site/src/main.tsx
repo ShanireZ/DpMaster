@@ -18,6 +18,7 @@ import { loadInitialRouteViews } from './app/routeViews.ts'
 import { installVitePreloadRecovery } from './app/preloadRecovery.ts'
 import { getLesson } from './data/catalog.ts'
 import type { StaticLessonContents } from './app/StaticLessonContent.ts'
+import { loadFamilyArtForPath } from './components/art/familyArtRegistry.ts'
 
 installVitePreloadRecovery()
 
@@ -33,16 +34,21 @@ async function loadInitialLessonContents(pathname: string): Promise<StaticLesson
   return { [lesson.path]: module.default }
 }
 
-const [views, initialLessonContents] = container.hasChildNodes()
+const [views, initialLessonContents, initialFamilyArt] = container.hasChildNodes()
   ? await Promise.all([
       loadInitialRouteViews(window.location.pathname),
       loadInitialLessonContents(window.location.pathname),
+      loadFamilyArtForPath(window.location.pathname),
     ])
-  : [undefined, {}]
+  : [undefined, {}, {}]
 
 const application = (
   <StrictMode>
-    <App views={views} initialLessonContents={initialLessonContents} />
+    <App
+      views={views}
+      initialLessonContents={initialLessonContents}
+      initialFamilyArt={initialFamilyArt}
+    />
   </StrictMode>
 )
 

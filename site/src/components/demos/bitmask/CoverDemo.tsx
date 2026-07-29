@@ -4,7 +4,7 @@ import { PlaybackControls } from '../../dp-engine/playback/PlaybackControls'
 import { useStepPlayer } from '../../dp-engine/playback/useStepPlayer'
 import { solveCover, toBits } from './coverSolver'
 import type { Choice } from './coverSolver'
-import '../knapsack/knapsack-demo.css'
+import '../shared/demo-workbench.css'
 import './bitmask-demo.css'
 
 const N = 4 // 全集：元素 0..3

@@ -5,7 +5,7 @@ import { getLesson, getLessonNeighbors } from '../data/catalog'
 import { getLessonEditorial } from '../data/editorial.ts'
 import AnimatedContent from '../components/motion/AnimatedContent'
 import PartGlyph from '../components/PartGlyph'
-import { KnapsackLessonPlate } from '../components/art/PolygonBackpack'
+import { FamilyLessonPlate } from '../components/art/FamilyArtSlots.tsx'
 import { useStaticLessonContents } from '../app/StaticLessonContent.ts'
 import './typepage.css'
 
@@ -136,11 +136,14 @@ export default function TypePage() {
                 </div>
                 <p className="typehead__blurb">{type.blurb}</p>
               </div>
-              <div className="typehead__art" aria-hidden="true">
+              <div className="typehead__art">
                 <div className="typehead__glyph">
-                  {part.id === 'a'
-                    ? <KnapsackLessonPlate slug={type.slug} />
-                    : <PartGlyph id={part.id} size={320} />}
+                  <FamilyLessonPlate
+                    partId={part.id}
+                    slug={type.slug}
+                    title={type.title}
+                    fallback={<PartGlyph id={part.id} size={320} />}
+                  />
                 </div>
                 {part.id !== 'a' && <span className="typehead__art-code">{part.code}</span>}
               </div>

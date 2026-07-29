@@ -52,3 +52,7 @@ Both visual layouts expose the same controls:
 Prefer small default examples that fit on laptop screens. Keep input editing bounded so the model remains readable and fast. If a topic needs a richer specialized view, keep its teaching Adapter local to `site/src/components/demos/<topic>/` and still reuse `DPViz` where practical. Do not put HTML, colors, KaTeX, or `VizModel` into a public algorithm result.
 
 Specialized interactions that are not a finite frame track (for example editable geometry or continuous topic-specific animation) are not forced into `StepPlayer`. If such a view later adopts a frame model, it must use the shared playback Interface instead of adding another transport bar.
+
+# Demo Workbench
+
+Editable demos share their control, stepper, readout, safe-spacing, and responsive layout rules through `site/src/components/demos/shared/demo-workbench.css`. Topic CSS may extend that contract but must not import another topic's stylesheet. Wide state tables scroll inside `.dpviz__scroll`; the lesson page itself must not overflow horizontally. Container-narrow demos stack table, legend, explanation, and playback controls in that order.

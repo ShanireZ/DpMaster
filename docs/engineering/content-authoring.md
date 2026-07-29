@@ -71,3 +71,7 @@ When adding or changing a type:
 4. Run `npm run content:generate` to refresh generated `site/src/data/problems.ts`.
 5. Add or update any demo solvers under `site/src/components/demos/<topic>/`.
 6. Run `npm run verify` from `site/`.
+
+# Lesson Hero Art
+
+Upgraded families register one lazy art module in `site/src/components/art/familyArtRegistry.ts`. The catalog remains the sole source for family and lesson identity; the art registry must not copy titles, slugs, descriptions, or ordering. Each module supplies a category hero, a same-motif journey wireframe, and a `640 × 390` semantic lesson plate selected by the catalog slug. Families not yet upgraded continue to use the shared `PartGlyph` fallback.

@@ -2,7 +2,7 @@ import { useMemo, useState } from 'react'
 import { Plus, X, ChevronLeft, ChevronRight } from 'lucide-react'
 import DPViz from '../../dp-engine/DPViz'
 import { lcs2D } from './lcsSolver'
-import '../knapsack/knapsack-demo.css'
+import '../shared/demo-workbench.css'
 
 // 字符池：够演示又不至于让表太大。改字符只在池内循环。
 const POOL = ['A', 'B', 'C', 'D']

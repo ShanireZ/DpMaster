@@ -2,7 +2,7 @@ import { useMemo, useState } from 'react'
 import { Minus, Plus } from 'lucide-react'
 import DPViz from '../../dp-engine/DPViz'
 import { maxSquare2D } from './maxSquareSolver'
-import '../knapsack/knapsack-demo.css'
+import '../shared/demo-workbench.css'
 
 function Stepper({
   label,

@@ -2,7 +2,7 @@ import { useMemo, useState } from 'react'
 import { Minus, Plus, RotateCcw } from 'lucide-react'
 import DPViz from '../../dp-engine/DPViz'
 import { tspHamilton } from './tspSolver'
-import '../knapsack/knapsack-demo.css'
+import '../shared/demo-workbench.css'
 import './bitmask-demo.css'
 
 interface Pt {

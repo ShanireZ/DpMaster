@@ -3,7 +3,7 @@ import { Minus, Plus, ArrowDownWideNarrow, ArrowUpWideNarrow, X } from 'lucide-r
 import DPViz from '../../dp-engine/DPViz'
 import { stoneMerge } from './stoneSolver'
 import { solveStoneMerge } from '../../../algorithms/stone-merge/index.ts'
-import '../knapsack/knapsack-demo.css'
+import '../shared/demo-workbench.css'
 
 function Stepper({
   label,

@@ -2,7 +2,7 @@ import { useMemo, useState } from 'react'
 import { Minus, Plus, X, Sparkles, RefreshCw } from 'lucide-react'
 import DPViz from '../../dp-engine/DPViz'
 import { kadane, kadaneAnswer, minSegViz, minSegAnswer } from './maxsegSolver'
-import '../knapsack/knapsack-demo.css'
+import '../shared/demo-workbench.css'
 
 function NumStepper({
   value,

@@ -2,6 +2,9 @@ import { readFileSync } from 'node:fs'
 import { fileURLToPath } from 'node:url'
 
 const catalogPath = fileURLToPath(new URL('../src/data/catalog.ts', import.meta.url))
+const familyArtRegistryPath = fileURLToPath(
+  new URL('../src/components/art/familyArtRegistry.ts', import.meta.url),
+)
 
 const PAGE_MODULES = Object.freeze({
   home: 'src/pages/Home.tsx',
@@ -40,16 +43,43 @@ function contentModuleMap() {
 
 const CONTENT_MODULES = contentModuleMap()
 
+function familyArtModuleMap() {
+  const source = readFileSync(familyArtRegistryPath, 'utf8')
+  const modules = new Map()
+  const registrationPattern =
+    /familyArt\(\s*'([a-g])'\s*,\s*'(src\/components\/art\/families\/[^']+\.tsx)'/g
+
+  for (const match of source.matchAll(registrationPattern)) {
+    modules.set(match[1], match[2])
+  }
+
+  if (!modules.has('a')) {
+    throw new Error('Family art registry must include the upgraded A family')
+  }
+  return modules
+}
+
+const FAMILY_ART_MODULES = familyArtModuleMap()
+
+function familyArtModule(pathname) {
+  const match = pathname.match(/^\/part\/([a-g])(?:\/|$)/)
+  return match ? FAMILY_ART_MODULES.get(match[1]) : undefined
+}
+
 export function routeModuleIds(pathname) {
   if (pathname === '/') return [PAGE_MODULES.home]
   if (pathname === '/method') return [PAGE_MODULES.method]
   if (pathname === '/problems') return [PAGE_MODULES.problems]
   if (pathname === '/about') return [PAGE_MODULES.about]
   if (pathname === '/__dp-not-found__') return [PAGE_MODULES.notFound]
-  if (/^\/part\/[a-g]$/.test(pathname)) return [PAGE_MODULES.family]
+  if (/^\/part\/[a-g]$/.test(pathname)) {
+    return [PAGE_MODULES.family, familyArtModule(pathname)].filter(Boolean)
+  }
 
   const contentModule = CONTENT_MODULES.get(pathname)
-  if (contentModule) return [PAGE_MODULES.lesson, contentModule]
+  if (contentModule) {
+    return [PAGE_MODULES.lesson, contentModule, familyArtModule(pathname)].filter(Boolean)
+  }
   throw new Error(`No client asset module mapping for ${pathname}`)
 }
 

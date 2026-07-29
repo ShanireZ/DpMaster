@@ -10,6 +10,15 @@ test('lesson routes map to the shell page chunk and their exact content chunk', 
   assert.deepEqual(routeModuleIds('/part/a/01'), [
     'src/pages/TypePage.tsx',
     'src/content/a/Knapsack01.tsx',
+    'src/components/art/families/backpack.tsx',
+  ])
+  assert.deepEqual(routeModuleIds('/part/a'), [
+    'src/pages/PartPage.tsx',
+    'src/components/art/families/backpack.tsx',
+  ])
+  assert.deepEqual(routeModuleIds('/part/b/lis'), [
+    'src/pages/TypePage.tsx',
+    'src/content/b/LIS.tsx',
   ])
   assert.deepEqual(routeModuleIds('/problems'), ['src/pages/ProblemsPage.tsx'])
 })
@@ -26,6 +35,11 @@ test('route CSS links include page, content, and imported shared CSS before hydr
       css: ['assets/lesson-01.css'],
       imports: ['src/shared.ts'],
     },
+    'src/components/art/families/backpack.tsx': {
+      file: 'assets/family-a.js',
+      css: ['assets/family-a.css'],
+      imports: ['src/shared.ts'],
+    },
     'src/shared.ts': {
       file: 'assets/shared.js',
       css: ['assets/shared.css'],
@@ -35,10 +49,12 @@ test('route CSS links include page, content, and imported shared CSS before hydr
 
   assert.match(links, /assets\/type\.css/)
   assert.match(links, /assets\/lesson-01\.css/)
+  assert.match(links, /assets\/family-a\.css/)
   assert.match(links, /assets\/shared\.css/)
-  assert.equal((links.match(/data-dp-route-css/g) || []).length, 3)
+  assert.equal((links.match(/data-dp-route-css/g) || []).length, 4)
 
   const assets = renderRouteAssetLinks(manifest, '/part/a/01')
-  assert.equal((assets.match(/data-dp-route-module/g) || []).length, 3)
+  assert.equal((assets.match(/data-dp-route-module/g) || []).length, 4)
   assert.match(assets, /assets\/lesson-01\.js/)
+  assert.match(assets, /assets\/family-a\.js/)
 })

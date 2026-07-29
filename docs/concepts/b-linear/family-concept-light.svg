@@ -1,0 +1,191 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1600" height="1000" viewBox="0 0 1600 1000" role="img" aria-labelledby="title desc">
+  <title id="title">B 线性 DP 浅色概念板</title>
+  <desc id="desc">Warm Ink 浅色界面中的索引轨道主雕塑、课程路径结构稿，以及 LIS 和编辑距离课程图版原子；几何与深色版一致。</desc>
+  <defs>
+    <linearGradient id="accent" x1="0" y1="0" x2="1" y2="1">
+      <stop stop-color="#37796a"/>
+      <stop offset="1" stop-color="#2b6153"/>
+    </linearGradient>
+    <linearGradient id="plane" x1="0" y1="0" x2="0" y2="1">
+      <stop stop-color="#37796a" stop-opacity=".3"/>
+      <stop offset="1" stop-color="#2b6153" stop-opacity=".025"/>
+    </linearGradient>
+    <filter id="soft" x="-30%" y="-30%" width="160%" height="160%">
+      <feGaussianBlur stdDeviation="18"/>
+    </filter>
+    <pattern id="grid" width="72" height="72" patternUnits="userSpaceOnUse">
+      <path d="M72 0H0V72" fill="none" stroke="#281e12" stroke-opacity=".045"/>
+    </pattern>
+    <marker id="arrow" markerWidth="8" markerHeight="8" refX="7" refY="4" orient="auto">
+      <path d="M0 0L8 4L0 8Z" fill="#468797"/>
+    </marker>
+    <style>
+      .ui{font-family:"Noto Sans SC","Microsoft YaHei",sans-serif}
+      .display{font-family:"Space Grotesk","Noto Sans SC","Microsoft YaHei",sans-serif}
+      .mono{font-family:"JetBrains Mono","Cascadia Code",monospace}
+      .hair{stroke:#281e12;stroke-opacity:.12;fill:none}
+      .muted{fill:#5a5347}
+      .faint{fill:#8a8276}
+      .ink{fill:#1d1812}
+      .accent{fill:#37796a}
+    </style>
+  </defs>
+
+  <rect width="1600" height="1000" fill="#f4f1ea"/>
+  <rect x="260" width="1340" height="1000" fill="url(#grid)"/>
+  <rect x="260" width="1" height="1000" fill="#281e12" opacity=".1"/>
+  <rect x="260" y="64" width="1340" height="1" fill="#281e12" opacity=".1"/>
+
+  <g class="ui">
+    <g transform="translate(28 28)">
+      <rect width="34" height="34" rx="9" fill="#fffdf8" stroke="#37796a" stroke-opacity=".5"/>
+      <path d="M17 7L21 13L28 17L21 21L17 28L13 21L6 17L13 13Z" fill="url(#accent)"/>
+      <circle cx="17" cy="17" r="3" fill="#fffdf8"/>
+      <text x="48" y="17" class="display ink" font-size="20" font-weight="700">DP大师</text>
+      <text x="48" y="36" class="mono faint" font-size="11" letter-spacing="1.5">DP MASTER</text>
+    </g>
+    <text x="34" y="128" class="display accent" font-size="15" font-weight="700">B</text>
+    <text x="68" y="128" class="ink" font-size="15" font-weight="650">线性 DP</text>
+    <circle cx="226" cy="123" r="3" fill="#37796a"/>
+    <g class="muted" font-size="13">
+      <text x="68" y="174">路径型 / 递推入门</text>
+      <text x="68" y="216">最大子段和</text>
+      <text x="68" y="258" fill="#1d1812" font-weight="650">最长上升子序列 LIS</text>
+      <text x="68" y="300">最长公共子序列 LCS</text>
+      <text x="68" y="342">编辑距离</text>
+      <text x="68" y="384">线性状态机 DP</text>
+      <text x="68" y="426">计数 / 划分型</text>
+    </g>
+    <g font-size="14" font-weight="650">
+      <text x="34" y="510" fill="#9a6716">A</text><text x="68" y="510" class="muted">背包 DP</text>
+      <text x="34" y="552" fill="#b25a3c">C</text><text x="68" y="552" class="muted">区间 DP</text>
+      <text x="34" y="594" fill="#5f6f34">D</text><text x="68" y="594" class="muted">矩阵 DP</text>
+      <text x="34" y="636" fill="#6f579a">E</text><text x="68" y="636" class="muted">换根 DP</text>
+      <text x="34" y="678" fill="#8a6a1f">F</text><text x="68" y="678" class="muted">树形 DP</text>
+      <text x="34" y="720" fill="#9c5069">G</text><text x="68" y="720" class="muted">状压 DP</text>
+    </g>
+  </g>
+
+  <g class="ui" transform="translate(298 0)">
+    <text x="0" y="40" class="faint" font-size="13">首页</text>
+    <text x="42" y="40" class="faint" font-size="13">/</text>
+    <text x="62" y="40" class="ink" font-size="13" font-weight="650">线性 DP</text>
+    <text x="1190" y="39" class="mono faint" font-size="10" text-anchor="end" letter-spacing="1.4">FAMILY CONCEPT · LIGHT</text>
+  </g>
+
+  <g transform="translate(360 188)">
+    <text class="mono accent" font-size="13" letter-spacing="3">PART B · INDEXED RECURRENCE</text>
+    <text y="102" class="display ink" font-size="92" font-weight="720" letter-spacing="-4">线性 DP</text>
+    <text y="151" class="ui muted" font-size="22">沿索引推进，让当前状态接住最合适的前驱。</text>
+    <path d="M0 197H384" stroke="#281e12" stroke-opacity=".14"/>
+    <text y="231" class="mono faint" font-size="11" letter-spacing="1.5">STATE  →  PREDECESSOR  →  AGGREGATE</text>
+    <g transform="translate(0 274)" class="ui">
+      <rect width="210" height="54" rx="11" fill="url(#accent)"/>
+      <text x="26" y="34" fill="#fbf7ef" font-size="15" font-weight="720">从第一课开始</text>
+      <path d="M163 27H184M176 19L184 27L176 35" fill="none" stroke="#fbf7ef" stroke-width="2"/>
+      <text x="236" y="33" class="muted" font-size="13">7 门课程</text>
+    </g>
+  </g>
+
+  <g transform="translate(905 104)">
+    <ellipse cx="330" cy="290" rx="292" ry="248" fill="#37796a" opacity=".05" filter="url(#soft)"/>
+    <circle cx="330" cy="290" r="248" class="hair"/>
+    <circle cx="330" cy="290" r="174" class="hair"/>
+    <path d="M40 485L607 28M84 28V542M178 28V542M272 28V542M366 28V542M460 28V542M554 28V542" class="hair"/>
+    <path d="M24 464H630M24 370H630M24 276H630M24 182H630M24 88H630" class="hair"/>
+
+    <path d="M75 420L155 330L235 376L315 226L395 286L475 152L555 206L555 430L75 430Z" fill="url(#plane)" stroke="#37796a" stroke-opacity=".34"/>
+    <path d="M75 420L155 330L235 376L315 226L395 286L475 152L555 206" fill="none" stroke="url(#accent)" stroke-width="6" stroke-linejoin="round"/>
+    <path d="M75 440H555" stroke="#37796a" stroke-width="2" stroke-opacity=".8"/>
+
+    <g class="mono" text-anchor="middle" font-size="11">
+      <g fill="#8a8276">
+        <text x="75" y="462">0</text><text x="155" y="462">1</text><text x="235" y="462">2</text>
+        <text x="315" y="462">3</text><text x="395" y="462">4</text><text x="475" y="462">5</text><text x="555" y="462">6</text>
+      </g>
+      <g fill="#1d1812">
+        <text x="75" y="402">2</text><text x="155" y="312">5</text><text x="235" y="358">3</text>
+        <text x="315" y="208">8</text><text x="395" y="268">6</text><text x="475" y="134">10</text><text x="555" y="188">9</text>
+      </g>
+    </g>
+
+    <g>
+      <circle cx="75" cy="420" r="10" fill="#fffdf8" stroke="#37796a" stroke-width="3"/>
+      <circle cx="155" cy="330" r="10" fill="#fffdf8" stroke="#37796a" stroke-width="3"/>
+      <circle cx="235" cy="376" r="10" fill="#fffdf8" stroke="#37796a" stroke-width="3"/>
+      <circle cx="315" cy="226" r="13" fill="#c76b2f" stroke="#f4f1ea" stroke-width="4"/>
+      <circle cx="395" cy="286" r="10" fill="#fffdf8" stroke="#37796a" stroke-width="3"/>
+      <circle cx="475" cy="152" r="13" fill="#618f3d" stroke="#f4f1ea" stroke-width="4"/>
+      <circle cx="555" cy="206" r="10" fill="#fffdf8" stroke="#37796a" stroke-width="3"/>
+    </g>
+
+    <path d="M85 412C135 380 256 294 304 235" fill="none" stroke="#468797" stroke-width="2" stroke-dasharray="7 8" marker-end="url(#arrow)"/>
+    <path d="M165 323C240 294 257 252 304 229" fill="none" stroke="#468797" stroke-width="2" marker-end="url(#arrow)"/>
+    <path d="M326 216C385 180 418 164 461 154" fill="none" stroke="#618f3d" stroke-width="3" marker-end="url(#arrow)"/>
+
+    <g class="mono">
+      <text x="328" y="194" fill="#a34f20" font-size="11">CURRENT i</text>
+      <text x="493" y="123" fill="#4b7b2f" font-size="11">BEST CHAIN</text>
+      <text x="80" y="505" fill="#37796a" font-size="11" letter-spacing="2">INDEX RAIL / SEQUENCE SPINE</text>
+    </g>
+  </g>
+
+  <g transform="translate(300 690)">
+    <path d="M38 18V258" stroke="#37796a" stroke-opacity=".48"/>
+    <g class="ui">
+      <circle cx="38" cy="28" r="8" fill="#37796a"/>
+      <circle cx="38" cy="100" r="6" fill="#f4f1ea" stroke="#37796a"/>
+      <circle cx="38" cy="172" r="6" fill="#f4f1ea" stroke="#37796a"/>
+      <circle cx="38" cy="244" r="6" fill="#f4f1ea" stroke="#37796a"/>
+      <text x="74" y="20" class="mono accent" font-size="12">01</text>
+      <text x="126" y="22" class="ink" font-size="17" font-weight="650">路径型 / 递推入门</text>
+      <text x="126" y="47" class="muted" font-size="12">上一层来源汇入当前格</text>
+      <text x="74" y="93" class="mono accent" font-size="12">02</text>
+      <text x="126" y="95" class="ink" font-size="17" font-weight="650">最大子段和</text>
+      <text x="126" y="120" class="muted" font-size="12">延续前段，或从当前位置重启</text>
+      <text x="74" y="165" class="mono accent" font-size="12">03</text>
+      <text x="126" y="167" class="ink" font-size="17" font-weight="650">最长上升子序列</text>
+      <text x="126" y="192" class="muted" font-size="12">上升前驱链与 tails 层叠</text>
+      <text x="74" y="237" class="mono accent" font-size="12">04—07</text>
+      <text x="126" y="239" class="ink" font-size="17" font-weight="650">双序列 · 状态轨 · 汇流</text>
+    </g>
+
+    <g transform="translate(600 8)">
+      <rect width="284" height="252" rx="18" fill="#fffdf8" stroke="#281e12" stroke-opacity=".12"/>
+      <text x="22" y="30" class="mono accent" font-size="10" letter-spacing="1.6">LESSON PLATE / LIS</text>
+      <path d="M26 188H258" stroke="#281e12" stroke-opacity=".14"/>
+      <path d="M44 161L92 126L140 140L188 84L236 58" fill="none" stroke="#468797" stroke-width="2"/>
+      <g fill="#fffdf8" stroke="#37796a" stroke-width="2">
+        <circle cx="44" cy="161" r="7"/><circle cx="92" cy="126" r="7"/><circle cx="140" cy="140" r="7"/><circle cx="188" cy="84" r="7"/><circle cx="236" cy="58" r="7"/>
+      </g>
+      <circle cx="188" cy="84" r="7" fill="#c76b2f"/>
+      <circle cx="236" cy="58" r="7" fill="#618f3d"/>
+      <g transform="translate(44 210)">
+        <rect width="36" height="12" rx="6" fill="#37796a" opacity=".2"/>
+        <rect x="44" y="-10" width="36" height="22" rx="6" fill="#37796a" opacity=".32"/>
+        <rect x="88" y="-22" width="36" height="34" rx="6" fill="#37796a" opacity=".44"/>
+        <rect x="132" y="-34" width="36" height="46" rx="6" fill="#37796a" opacity=".58"/>
+        <text x="218" y="9" class="mono faint" font-size="9" text-anchor="end">tails[len]</text>
+      </g>
+    </g>
+
+    <g transform="translate(906 8)">
+      <rect width="284" height="252" rx="18" fill="#fffdf8" stroke="#281e12" stroke-opacity=".12"/>
+      <text x="22" y="30" class="mono accent" font-size="10" letter-spacing="1.6">LESSON PLATE / EDIT</text>
+      <g transform="translate(58 58)">
+        <g fill="none" stroke="#281e12" stroke-opacity=".16">
+          <path d="M0 0H176M0 34H176M0 68H176M0 102H176M0 136H176"/>
+          <path d="M0 0V136M44 0V136M88 0V136M132 0V136M176 0V136"/>
+        </g>
+        <rect x="88" y="68" width="44" height="34" fill="#c76b2f" opacity=".2" stroke="#c76b2f"/>
+        <rect x="44" y="34" width="44" height="34" fill="#468797" opacity=".16"/>
+        <rect x="88" y="34" width="44" height="34" fill="#468797" opacity=".16"/>
+        <rect x="44" y="68" width="44" height="34" fill="#468797" opacity=".16"/>
+        <path d="M68 50L106 80M110 51V79M69 84H104" fill="none" stroke="#468797" stroke-width="2" marker-end="url(#arrow)"/>
+        <text x="-15" y="56" class="mono muted" font-size="11">a</text>
+        <text x="104" y="-12" class="mono muted" font-size="11">b</text>
+        <text x="154" y="122" class="mono accent" font-size="9">min + cost</text>
+      </g>
+    </g>
+  </g>
+</svg>

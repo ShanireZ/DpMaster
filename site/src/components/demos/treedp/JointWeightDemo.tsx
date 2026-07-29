@@ -2,7 +2,7 @@ import { useMemo, useState } from 'react'
 import { Minus, Plus } from 'lucide-react'
 import { buildTree, layoutTree, solveJointWeight } from './treedpSolver'
 import type { NodePaint } from './TreeCanvas'
-import '../knapsack/knapsack-demo.css'
+import '../shared/demo-workbench.css'
 import './treedp-demo.css'
 
 //          1

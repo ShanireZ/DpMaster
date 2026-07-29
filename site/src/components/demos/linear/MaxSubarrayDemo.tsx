@@ -2,7 +2,7 @@ import { useMemo, useState } from 'react'
 import { Minus, Plus, X, RotateCcw } from 'lucide-react'
 import DPViz from '../../dp-engine/DPViz'
 import { kadane, kadaneAnswer } from './maxsegSolver'
-import '../knapsack/knapsack-demo.css'
+import '../shared/demo-workbench.css'
 
 /** 单个数值的增减控件（允许负数）。 */
 function NumStepper({

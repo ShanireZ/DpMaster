@@ -1,4 +1,4 @@
-import { useId } from 'react'
+import { useId, type CSSProperties } from 'react'
 import './polygon-backpack.css'
 
 type BackpackMode = 'solid' | 'wireframe'
@@ -10,11 +10,14 @@ interface BackpackGeometryProps {
 
 interface PolygonBackpackProps extends BackpackGeometryProps {
   className?: string
+  dataFamilyArt?: string
+  dataFamilyMode?: string
   decorative?: boolean
 }
 
 interface KnapsackLessonPlateProps {
   slug: string
+  title?: string
   className?: string
 }
 
@@ -106,6 +109,8 @@ function BackpackGeometry({ mode = 'solid', textureId }: BackpackGeometryProps) 
 export default function PolygonBackpack({
   mode = 'solid',
   className = '',
+  dataFamilyArt,
+  dataFamilyMode,
   decorative = true,
 }: PolygonBackpackProps) {
   const instanceId = useId().replace(/:/g, '')
@@ -118,6 +123,8 @@ export default function PolygonBackpack({
       role={decorative ? undefined : 'img'}
       aria-hidden={decorative ? true : undefined}
       aria-labelledby={decorative ? undefined : titleId}
+      data-family-art={dataFamilyArt}
+      data-family-mode={dataFamilyMode}
     >
       {!decorative && <title id={titleId}>多面体背包结构图</title>}
       <defs>
@@ -167,7 +174,7 @@ function CapacityRail({
         d={direction === 'forward'
           ? `M${startX} ${y + 55}H${startX + values.length * cellW - 3}`
           : `M${startX + values.length * cellW} ${y + 55}H${startX + 3}`}
-        markerEnd="url(#kp-arrow)"
+        markerEnd="var(--knapsack-arrow-id)"
       />
     </g>
   )
@@ -236,7 +243,7 @@ function PlateMultiple() {
   return (
     <g>
       <ItemParcel x={48} y={136} label="m 件" />
-      <path className="knapsack-plate__accent-line" d="M126 165H176" markerEnd="url(#kp-arrow)" />
+      <path className="knapsack-plate__accent-line" d="M126 165H176" markerEnd="var(--knapsack-arrow-id)" />
       <ItemParcel x={196} y={72} label="1" />
       <ItemParcel x={276} y={112} label="2" />
       <ItemParcel x={356} y={152} label="4" />
@@ -277,7 +284,7 @@ function PlateMixed() {
       {items.map((item, index) => (
         <g key={item.label}>
           <ItemParcel x={44} y={item.y} label={item.label} />
-          <path className="knapsack-plate__accent-line" d={`M118 ${item.y + 28}H202`} markerEnd="url(#kp-arrow)" />
+          <path className="knapsack-plate__accent-line" d={`M118 ${item.y + 28}H202`} markerEnd="var(--knapsack-arrow-id)" />
           <rect x="218" y={item.y + 4} width="118" height="48" className="knapsack-plate__result" />
           <text x="277" y={item.y + 34} textAnchor="middle" className="knapsack-plate__label">{item.route}</text>
           <path className="knapsack-plate__line" d={`M336 ${item.y + 28}H390V184H446`} />
@@ -304,7 +311,7 @@ function PlateCost2D() {
       <rect x="98" y="270" width="92" height="42" className="knapsack-plate__result is-active" />
       <text x="144" y="296" textAnchor="middle" className="knapsack-plate__formula">价值 vᵢ</text>
 
-      <path className="knapsack-plate__accent-line" d="M198 132H270" markerEnd="url(#kp-arrow)" />
+      <path className="knapsack-plate__accent-line" d="M198 132H270" markerEnd="var(--knapsack-arrow-id)" />
 
       <g className="knapsack-plate__axis">
         <path d="M294 320V58M294 320H566" />
@@ -338,7 +345,7 @@ function PlateCost2D() {
           />
         )),
       )}
-      <path className="knapsack-plate__accent-line" d="M381 245 481 145" markerEnd="url(#kp-arrow)" />
+      <path className="knapsack-plate__accent-line" d="M381 245 481 145" markerEnd="var(--knapsack-arrow-id)" />
       <text x="328" y="278" className="knapsack-plate__formula">(x−a, y−b)</text>
       <text x="492" y="132" className="knapsack-plate__formula">(x, y)</text>
     </g>
@@ -357,7 +364,7 @@ function PlateDependency() {
         <text x="164" y="159" textAnchor="middle">附件</text>
         <path d="M74 74 38 125M114 74l36 51" />
       </g>
-      <path className="knapsack-plate__accent-line" d="M288 176H342" markerEnd="url(#kp-arrow)" />
+      <path className="knapsack-plate__accent-line" d="M288 176H342" markerEnd="var(--knapsack-arrow-id)" />
       {[
         { y: 58, label: '主件' },
         { y: 138, label: '主件 + 附件' },
@@ -385,7 +392,7 @@ function PlateVariant() {
       <text x="62" y="119" textAnchor="middle" className="knapsack-plate__label">容量骨架</text>
       {rows.map((row) => (
         <g key={row.op}>
-          <path className="knapsack-plate__accent-line" d={`M130 184Q160 184 178 ${row.y + 24}H212`} markerEnd="url(#kp-arrow)" />
+          <path className="knapsack-plate__accent-line" d={`M130 184Q160 184 178 ${row.y + 24}H212`} markerEnd="var(--knapsack-arrow-id)" />
           <rect x="226" y={row.y} width="76" height="48" className="knapsack-plate__result" />
           <text x="264" y={row.y + 31} textAnchor="middle" className="knapsack-plate__formula">{row.op}</text>
           <text x="342" y={row.y + 30} className="knapsack-plate__label">{row.label}</text>
@@ -403,7 +410,7 @@ function PlateFractional() {
   return (
     <g>
       <text x="60" y="48" className="knapsack-plate__label">按 v/w 从高到低</text>
-      <path className="knapsack-plate__accent-line" d="M62 75H520" markerEnd="url(#kp-arrow)" />
+      <path className="knapsack-plate__accent-line" d="M62 75H520" markerEnd="var(--knapsack-arrow-id)" />
       {[0, 1, 2, 3].map((index) => (
         <g key={index} transform={`translate(${78 + index * 108},102)`}>
           <ItemParcel x={0} y={0} />
@@ -436,20 +443,31 @@ function LessonFocus({ slug }: { slug: string }) {
   }
 }
 
-export function KnapsackLessonPlate({ slug, className = '' }: KnapsackLessonPlateProps) {
-  const titleId = useId()
-  const title = lessonTitles[slug] ?? lessonTitles['01']
+export function KnapsackLessonPlate({
+  slug,
+  title: lessonTitle,
+  className = '',
+}: KnapsackLessonPlateProps) {
+  const instanceId = useId().replace(/:/g, '')
+  const titleId = `knapsack-plate-title-${instanceId}`
+  const descriptionId = `knapsack-plate-description-${instanceId}`
+  const arrowId = `knapsack-plate-arrow-${instanceId}`
+  const title = lessonTitles[slug] ?? lessonTitle ?? lessonTitles['01']
   return (
     <svg
       className={`knapsack-plate ${className}`.trim()}
       viewBox="0 0 640 390"
       role="img"
-      aria-labelledby={titleId}
+      aria-labelledby={`${titleId} ${descriptionId}`}
+      data-family-art="a"
+      data-family-mode="lesson"
       data-lesson-plate={slug}
+      style={{ '--knapsack-arrow-id': `url(#${arrowId})` } as CSSProperties}
     >
       <title id={titleId}>{title}</title>
+      <desc id={descriptionId}>{lessonTitle ?? title}的核心状态与转移示意图</desc>
       <defs>
-        <marker id="kp-arrow" markerWidth="9" markerHeight="9" refX="7" refY="4" orient="auto">
+        <marker id={arrowId} markerWidth="9" markerHeight="9" refX="7" refY="4" orient="auto">
           <path d="M0 0 8 4 0 8Z" />
         </marker>
       </defs>

@@ -3,7 +3,7 @@ import { Minus, Plus, X, Shuffle } from 'lucide-react'
 import DPViz from '../../dp-engine/DPViz'
 import { lisNaive } from './lisSolver'
 import { solveLis } from '../../../algorithms/lis/index.ts'
-import '../knapsack/knapsack-demo.css'
+import '../shared/demo-workbench.css'
 
 // 三组预设：默认题最优 LIS=5；「已排好序」全升 → LIS=n；「递减」→ LIS=1。
 const PRESETS: { label: string; a: number[] }[] = [

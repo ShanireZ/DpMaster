@@ -3,7 +3,7 @@ import { PlaybackControls } from '../../dp-engine/playback/PlaybackControls'
 import { useStepPlayer } from '../../dp-engine/playback/useStepPlayer'
 import { editTrace } from './editTrace'
 import type { Op, Step } from './editTrace'
-import '../knapsack/knapsack-demo.css'
+import '../shared/demo-workbench.css'
 import './edit-traceback.css'
 
 function sanitize(s: string): string {

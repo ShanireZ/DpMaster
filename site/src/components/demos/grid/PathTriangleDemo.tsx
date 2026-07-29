@@ -2,7 +2,7 @@ import { useMemo, useState } from 'react'
 import { Minus, Plus } from 'lucide-react'
 import DPViz from '../../dp-engine/DPViz'
 import { triangle2D } from './pathSolver'
-import '../knapsack/knapsack-demo.css'
+import '../shared/demo-workbench.css'
 
 function Stepper({
   label,

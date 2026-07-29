@@ -3,7 +3,7 @@ import { RotateCcw } from 'lucide-react'
 import DPViz from '../../dp-engine/DPViz'
 import { palindromeLps, normalize } from './palindromeSolver'
 import { solvePalindromeLps } from '../../../algorithms/palindrome/index.ts'
-import '../knapsack/knapsack-demo.css'
+import '../shared/demo-workbench.css'
 import './palindrome-demo.css'
 
 const PRESETS = ['bcabb', 'google', 'character', 'aebcbda']

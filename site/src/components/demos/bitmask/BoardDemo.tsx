@@ -5,7 +5,7 @@ import { PlaybackControls } from '../../dp-engine/playback/PlaybackControls'
 import { useStepPlayer } from '../../dp-engine/playback/useStepPlayer'
 import { layoutFrames } from './boardSolver'
 import { solveKingsBoard } from '../../../algorithms/bitmask-board/index.ts'
-import '../knapsack/knapsack-demo.css'
+import '../shared/demo-workbench.css'
 import './bitmask-demo.css'
 
 export default function BoardDemo() {
