@@ -51,7 +51,3 @@ export async function loadInitialRouteViews(pathname: string): Promise<RouteView
   const module = await PAGE_LOADERS[key]()
   return { ...CLIENT_ROUTE_VIEWS, [key]: module.default }
 }
-
-export async function preloadRouteViews() {
-  await Promise.all(Object.values(PAGE_LOADERS).map((load) => load()))
-}

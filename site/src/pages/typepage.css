@@ -1038,19 +1038,13 @@
 
 /* ---------------- A 背包 DP：科学图谱原子 ---------------- */
 .typepage[data-part-id='a'] .typehead__canvas {
-  grid-template-columns: minmax(390px, 0.86fr) minmax(480px, 1.14fr);
+  grid-template-columns: minmax(0, 0.86fr) minmax(0, 1.14fr);
   min-height: clamp(390px, 43vw, 548px);
 }
 
-.typepage[data-part-id='a'] .typehead__canvas::before {
-  top: -6%;
-  right: -2%;
-  width: min(52vw, 660px);
-}
-
+.typepage[data-part-id='a'] .typehead__canvas::before,
 .typepage[data-part-id='a'] .typehead__canvas::after {
-  top: 7%;
-  right: 13%;
+  display: none;
 }
 
 .typepage[data-part-id='a'] .typehead__copy {
@@ -1064,6 +1058,12 @@
   letter-spacing: -0.05em;
 }
 
+.typepage[data-part-id='a'][data-lesson-slug='01'] .typehead h1 {
+  max-width: none;
+  font-size: clamp(54px, 5.5vw, 70px);
+  white-space: nowrap;
+}
+
 .typepage[data-part-id='a'][data-lesson-slug='cost2d'] .typehead h1,
 .typepage[data-part-id='a'][data-lesson-slug='dep'] .typehead h1,
 .typepage[data-part-id='a'][data-lesson-slug='variant'] .typehead h1 {
@@ -1072,11 +1072,32 @@
 
 .typepage[data-part-id='a'] .typehead__art {
   min-height: 360px;
+  isolation: isolate;
 }
 
 .typepage[data-part-id='a'] .typehead__art::before,
 .typepage[data-part-id='a'] .typehead__art::after {
-  display: none;
+  z-index: 0;
+  top: 50%;
+  right: auto;
+  bottom: auto;
+  left: 50%;
+  height: auto;
+  aspect-ratio: 1;
+  border: 1px solid color-mix(in srgb, var(--accent-1) 16%, transparent);
+  border-radius: 50%;
+  background: none;
+  box-shadow: none;
+  transform: translate(-50%, -50%);
+}
+
+.typepage[data-part-id='a'] .typehead__art::before {
+  width: min(96%, 590px);
+}
+
+.typepage[data-part-id='a'] .typehead__art::after {
+  width: min(68%, 420px);
+  border-color: color-mix(in srgb, var(--text-3) 11%, transparent);
 }
 
 .typepage[data-part-id='a'] .typehead__glyph {
@@ -1142,6 +1163,8 @@
 }
 
 .typepage[data-part-id='a'] .demo {
+  container-name: lesson-demo;
+  container-type: inline-size;
   border: 1px solid var(--border-strong);
   background:
     linear-gradient(90deg, color-mix(in srgb, var(--accent-1) 4%, transparent), transparent 40%),
@@ -1159,7 +1182,9 @@
 
 .typepage[data-part-id='a'] .demo__body {
   padding-top: clamp(var(--sp-4), 2.4vw, var(--sp-6));
+  padding-right: clamp(var(--sp-4), 2.8vw, var(--sp-6));
   padding-bottom: clamp(var(--sp-4), 2.4vw, var(--sp-6));
+  padding-left: clamp(var(--sp-4), 2.8vw, var(--sp-6));
 }
 
 .typepage[data-part-id='a'] .kd__toolbar,
@@ -1173,17 +1198,18 @@
 }
 
 .typepage[data-part-id='a'] .dpviz {
-  grid-template-columns: max-content minmax(240px, 1fr);
+  grid-template-columns: minmax(0, 1fr) minmax(220px, 0.48fr);
 }
 
 .typepage[data-part-id='a'] .dpviz__scroll {
-  width: max-content;
+  width: auto;
+  max-width: 100%;
   min-width: 0;
 }
 
 .typepage[data-part-id='a'] .dpviz__panel {
   min-width: 0;
-  padding-right: var(--sp-4);
+  padding-right: 0;
 }
 
 .typepage[data-part-id='a'] .exercise,
@@ -1193,7 +1219,27 @@
 
 @media (max-width: 980px) {
   .typepage[data-part-id='a'] .typehead__canvas {
-    grid-template-columns: minmax(300px, 0.9fr) minmax(390px, 1.1fr);
+    grid-template-columns: minmax(0, 0.9fr) minmax(0, 1.1fr);
+  }
+}
+
+@container lesson-demo (max-width: 740px) {
+  .typepage[data-part-id='a'] .dpviz {
+    grid-template-columns: 1fr;
+    grid-template-areas:
+      'table'
+      'legend'
+      'panel'
+      'playback';
+  }
+
+  .typepage[data-part-id='a'] .dpviz__scroll {
+    border-right: 0;
+  }
+
+  .typepage[data-part-id='a'] .dpviz__panel {
+    padding: var(--sp-4) 0;
+    border-top: 1px solid var(--border);
   }
 }
 
@@ -1243,6 +1289,11 @@
   .typepage[data-part-id='a'] .typehead__glyph {
     width: 112%;
     margin-left: -6%;
+  }
+
+  .typepage[data-part-id='a'] .demo__body {
+    padding-right: var(--sp-3);
+    padding-left: var(--sp-3);
   }
 
   .typepage[data-part-id='a'] .figure {

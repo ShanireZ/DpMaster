@@ -438,6 +438,7 @@ Invoke-WebRequest `
 | EdgeOne `/api/feedback` 返回 HTML      | catch-all 函数没有接住反馈分支，检查 `postbuild` 产物和 EdgeOne 函数日志。                          |
 | `/api/analytics` 返回 403              | 请求带了非本站 `Origin`；统计端点只允许同源浏览器请求。                                            |
 | `.cn` 页面 canonical 指向 `.cc`        | 错把 `dist/cloudflare/` 发布到了 EdgeOne；应重新发布 `dist/edgeone/`。                              |
+| `Failed to fetch dynamically imported module` / `Unable to preload CSS` | 先确认 HTML 为 `max-age=0` / `no-cache` 且报错的哈希资源返回正确的 JS/CSS；客户端会按 build + path 自动恢复刷新一次，重复告警说明资源/CDN 仍不可用，需查 EdgeOne 静态资源请求日志。 |
 | 端点返回 502 / 503                   | 检查生产环境的 `FEEDBACK_WEBHOOK_URL`，再按 `requestId` 查 `feedback_delivery_failed` / `feedback_delivery_unavailable`。 |
 | 端点返回 429                         | 同一来源在 30 分钟窗口已提交 10 条；按 `Retry-After` 等待，或核对平台限流规则。                       |
 | 钉钉签名错误                           | `FEEDBACK_WEBHOOK_SECRET` 是否与机器人加签密钥一致。                                                |
