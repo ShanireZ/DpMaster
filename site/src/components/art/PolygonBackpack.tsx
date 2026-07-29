@@ -186,38 +186,34 @@ function ItemParcel({ x, y, label }: { x: number; y: number; label?: string }) {
 }
 
 function Plate01() {
-  const path = new Set(['0-3', '1-3', '2-3', '2-2', '3-2', '3-1'])
   return (
     <g>
-      <g className="knapsack-plate__axis">
-        <path d="M86 304V56M86 304H382" />
-        <text
-          x="47"
-          y="180"
-          textAnchor="middle"
-          transform="rotate(-90 47 180)"
-          className="knapsack-plate__label"
-        >
-          物品 i
-        </text>
-        <text x="382" y="332" textAnchor="end" className="knapsack-plate__label">容量 j</text>
+      <text x="64" y="38" className="knapsack-plate__label">一件物品 · 一次决策</text>
+      <ItemParcel x={76} y={116} label="第 i 件" />
+
+      <circle cx="184" cy="144" r="7" className="is-active" />
+      <path className="knapsack-plate__line" d="M140 144H177M191 144Q214 144 228 98H244M191 144Q214 144 228 216H244" />
+
+      <g className="knapsack-plate__choice">
+        <rect x="244" y="62" width="168" height="72" className="knapsack-plate__result" />
+        <text x="264" y="88" className="knapsack-plate__label">0 · 不取</text>
+        <text x="264" y="115" className="knapsack-plate__formula">f[j]</text>
       </g>
-      {Array.from({ length: 4 }, (_, row) =>
-        Array.from({ length: 5 }, (_, col) => {
-          const active = path.has(`${row}-${col}`)
-          return (
-            <g key={`${row}-${col}`} transform={`translate(${112 + col * 60},${76 + row * 60})`}>
-              <circle r={active ? 6 : 4} className={active ? 'is-active' : ''} />
-              {col < 4 && <line x1="6" x2="54" />}
-              {row < 3 && <line y1="6" y2="54" />}
-            </g>
-          )
-        }),
-      )}
-      <path className="knapsack-plate__accent-line" d="M292 76v60H232v60H172v60" markerEnd="url(#kp-arrow)" />
-      <path className="knapsack-plate__result-link" d="M180 256H404Q418 256 418 242V192H430" />
-      <rect x="430" y="170" width="116" height="44" className="knapsack-plate__result" />
-      <text x="488" y="198" textAnchor="middle" className="knapsack-plate__formula">f[i][j]</text>
+
+      <g className="knapsack-plate__choice">
+        <rect x="244" y="180" width="168" height="72" className="knapsack-plate__result is-active" />
+        <text x="264" y="206" className="knapsack-plate__label">1 · 装入</text>
+        <text x="264" y="233" className="knapsack-plate__formula">f[j−w] + v</text>
+      </g>
+
+      <path className="knapsack-plate__line" d="M412 98H448Q464 98 464 116V139M412 216H448Q464 216 464 198V169" />
+      <rect x="464" y="128" width="116" height="52" className="knapsack-plate__result" />
+      <text x="522" y="150" textAnchor="middle" className="knapsack-plate__label">保留较优</text>
+      <text x="522" y="169" textAnchor="middle" className="knapsack-plate__formula">f[j]</text>
+
+      <CapacityRail y={286} direction="reverse" />
+      <text x="500" y="316" textAnchor="middle" className="knapsack-plate__label">容量倒序</text>
+      <text x="500" y="339" textAnchor="middle" className="knapsack-plate__formula">m → w</text>
     </g>
   )
 }
@@ -298,22 +294,53 @@ function PlateMixed() {
 function PlateCost2D() {
   return (
     <g>
-      <text x="60" y="49" className="knapsack-plate__label">费用 B</text>
-      <text x="372" y="354" className="knapsack-plate__label">费用 A</text>
-      {Array.from({ length: 6 }, (_, row) =>
-        Array.from({ length: 7 }, (_, col) => (
+      <text x="52" y="38" className="knapsack-plate__label">一件物品 · 同时扣除两种费用</text>
+      <ItemParcel x={72} y={102} label="第 i 件" />
+
+      <rect x="48" y="218" width="92" height="42" className="knapsack-plate__result" />
+      <text x="94" y="244" textAnchor="middle" className="knapsack-plate__formula">费用 aᵢ</text>
+      <rect x="148" y="218" width="92" height="42" className="knapsack-plate__result" />
+      <text x="194" y="244" textAnchor="middle" className="knapsack-plate__formula">费用 bᵢ</text>
+      <rect x="98" y="270" width="92" height="42" className="knapsack-plate__result is-active" />
+      <text x="144" y="296" textAnchor="middle" className="knapsack-plate__formula">价值 vᵢ</text>
+
+      <path className="knapsack-plate__accent-line" d="M198 132H270" markerEnd="url(#kp-arrow)" />
+
+      <g className="knapsack-plate__axis">
+        <path d="M294 320V58M294 320H566" />
+      </g>
+      <text
+        x="274"
+        y="112"
+        textAnchor="middle"
+        transform="rotate(-90 274 112)"
+        className="knapsack-plate__label"
+      >
+        费用 B
+      </text>
+      <text x="566" y="344" textAnchor="end" className="knapsack-plate__label">费用 A</text>
+
+      {Array.from({ length: 5 }, (_, row) =>
+        Array.from({ length: 5 }, (_, col) => (
           <rect
             key={`${row}-${col}`}
-            x={88 + col * 48}
-            y={64 + row * 48}
-            width="48"
-            height="48"
-            className={row === 4 && col === 5 ? 'knapsack-plate__cell is-active' : 'knapsack-plate__cell'}
+            x={306 + col * 50}
+            y={70 + row * 50}
+            width="50"
+            height="50"
+            className={
+              row === 1 && col === 3
+                ? 'knapsack-plate__cell is-active'
+                : row === 3 && col === 1
+                  ? 'knapsack-plate__cell knapsack-plate__source'
+                  : 'knapsack-plate__cell'
+            }
           />
         )),
       )}
-      <path className="knapsack-plate__accent-line" d="M328 280H136M328 280V88" markerEnd="url(#kp-arrow)" />
-      <text x="346" y="303" className="knapsack-plate__formula">f[a][b]</text>
+      <path className="knapsack-plate__accent-line" d="M381 245 481 145" markerEnd="url(#kp-arrow)" />
+      <text x="328" y="278" className="knapsack-plate__formula">(x−a, y−b)</text>
+      <text x="492" y="132" className="knapsack-plate__formula">(x, y)</text>
     </g>
   )
 }

@@ -172,6 +172,16 @@
   stroke: color-mix(in srgb, var(--accent-1) 55%, var(--border-strong)) !important;
 }
 
+.knapsack-plate__source {
+  fill: color-mix(in srgb, var(--accent-1) 6%, var(--surface-2)) !important;
+  stroke: color-mix(in srgb, var(--accent-1) 60%, var(--border-strong)) !important;
+  stroke-dasharray: 4 3;
+}
+
+.knapsack-plate__choice .is-active {
+  fill: color-mix(in srgb, var(--accent-1) 10%, var(--surface-2)) !important;
+}
+
 .knapsack-plate__parcel polygon {
   fill: color-mix(in srgb, var(--surface-3) 88%, transparent);
   stroke: color-mix(in srgb, var(--text-2) 64%, var(--border-strong));

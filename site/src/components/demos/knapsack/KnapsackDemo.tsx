@@ -69,7 +69,7 @@ export default function KnapsackDemo({ variant = '01' }: { variant?: '01' | 'com
     setItems((arr) => arr.map((it, k) => (k === i ? { ...it, ...patch } : it)))
 
   return (
-    <div>
+    <div className="kd kd--editor">
       <div className="kd__toolbar">
         <div>
           <div className="kd__group-label">物品（可改重量 / 价值）</div>

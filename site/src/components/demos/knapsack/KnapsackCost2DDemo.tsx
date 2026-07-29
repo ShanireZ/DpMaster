@@ -59,7 +59,7 @@ export default function KnapsackCost2DDemo() {
   const removeItem = (idx: number) => setItems((arr) => (arr.length > 1 ? arr.filter((_, i) => i !== idx) : arr))
 
   return (
-    <div>
+    <div className="kd kd--editor">
       <div className="kd__toolbar">
         <div>
           <div className="kd__group-label">
