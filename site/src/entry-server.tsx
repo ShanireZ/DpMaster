@@ -3,6 +3,7 @@ import { prerender } from 'react-dom/static'
 import { StaticApp } from './app/StaticApp.tsx'
 import type { StaticLessonContents } from './app/StaticLessonContent.ts'
 import { getLesson } from './data/catalog.ts'
+import { loadFamilyArtForPath } from './components/art/familyArtRegistry.ts'
 
 async function loadLessonContents(pathname: string): Promise<StaticLessonContents> {
   const match = pathname.match(/^\/part\/([a-g])\/([^/]+)$/)
@@ -15,10 +16,17 @@ async function loadLessonContents(pathname: string): Promise<StaticLessonContent
 
 export async function renderRoute(pathname: string): Promise<string> {
   const errors: unknown[] = []
-  const lessonContents = await loadLessonContents(pathname)
+  const [lessonContents, familyArt] = await Promise.all([
+    loadLessonContents(pathname),
+    loadFamilyArtForPath(pathname),
+  ])
   const { prelude } = await prerender(
     <StrictMode>
-      <StaticApp url={pathname} lessonContents={lessonContents} />
+      <StaticApp
+        url={pathname}
+        lessonContents={lessonContents}
+        familyArt={familyArt}
+      />
     </StrictMode>,
     {
       onError(error) {

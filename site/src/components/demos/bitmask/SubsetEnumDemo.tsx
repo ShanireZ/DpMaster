@@ -2,7 +2,7 @@ import { useMemo, useState } from 'react'
 import { PlaybackControls } from '../../dp-engine/playback/PlaybackControls'
 import { useStepPlayer } from '../../dp-engine/playback/useStepPlayer'
 import { enumerateSubsets, toBits, popcount } from './subsetSolver'
-import '../knapsack/knapsack-demo.css'
+import '../shared/demo-workbench.css'
 import './bitmask-demo.css'
 
 const N = 4 // 元素 0..3

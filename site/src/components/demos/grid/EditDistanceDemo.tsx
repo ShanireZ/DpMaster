@@ -2,7 +2,7 @@ import { useMemo, useState } from 'react'
 import { RefreshCw } from 'lucide-react'
 import DPViz from '../../dp-engine/DPViz'
 import { edit2D } from './editSolver'
-import '../knapsack/knapsack-demo.css'
+import '../shared/demo-workbench.css'
 import './edit-traceback.css'
 
 // 只保留字母，转小写，并截到 6 个字符以内——网格 (m+1)×(n+1) 才不至于过大。

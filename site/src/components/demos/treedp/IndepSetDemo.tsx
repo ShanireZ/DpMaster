@@ -3,7 +3,7 @@ import { Minus, Plus } from 'lucide-react'
 import { useStepPlayer } from '../../dp-engine/playback/useStepPlayer'
 import { buildTree, layoutTree, solveIndepSet } from './treedpSolver'
 import { TreeCanvas, StepBar, Legend, Panel, type NodePaint } from './TreeCanvas'
-import '../knapsack/knapsack-demo.css'
+import '../shared/demo-workbench.css'
 import './treedp-demo.css'
 
 // 固定一棵 6 点公司树，用户只改点权（欢乐值）。父亲数组（根 = 0，-1 表示根）。

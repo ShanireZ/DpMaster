@@ -3,7 +3,7 @@ import { Minus, Plus } from 'lucide-react'
 import DPViz from '../../dp-engine/DPViz'
 import { solveGridPathCount } from '../../../algorithms/grid-path/index.ts'
 import { gridCount2D } from './pathSolver'
-import '../knapsack/knapsack-demo.css'
+import '../shared/demo-workbench.css'
 
 function Stepper({
   label,

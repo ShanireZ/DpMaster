@@ -3,7 +3,7 @@ import { Minus, Plus, X } from 'lucide-react'
 import DPViz from '../../dp-engine/DPViz'
 import { merge248 } from './mergeSolver'
 import { solveMerge248 } from '../../../algorithms/interval-merge/index.ts'
-import '../knapsack/knapsack-demo.css'
+import '../shared/demo-workbench.css'
 
 function Stepper({
   label,

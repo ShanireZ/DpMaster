@@ -2,7 +2,7 @@ import { useMemo, useState } from 'react'
 import { Minus, Plus } from 'lucide-react'
 import { buildTree, layoutTree, solveTreeKnapsack } from './treedpSolver'
 import type { NodePaint } from './TreeCanvas'
-import '../knapsack/knapsack-demo.css'
+import '../shared/demo-workbench.css'
 import './treedp-demo.css'
 
 // 一棵二叉苹果树：5 个节点、4 条边。父亲数组 + 每条「连父亲」的边权。

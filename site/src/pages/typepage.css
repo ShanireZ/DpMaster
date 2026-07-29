@@ -635,6 +635,8 @@
 /* ---- 互动演示：状态剧场 ---- */
 .demo {
   position: relative;
+  container-name: lesson-demo;
+  container-type: inline-size;
   margin: clamp(var(--sp-7), 7vw, 88px) 0;
   border-top: 1px solid var(--border-strong);
   border-bottom: 1px solid var(--border-strong);
@@ -657,7 +659,9 @@
   align-items: center;
   gap: var(--sp-3);
   min-height: 56px;
-  padding: var(--sp-3) 0;
+  padding:
+    var(--sp-3)
+    clamp(var(--sp-5), 2.8vw, var(--sp-6));
   border-bottom: 1px solid var(--border);
 }
 
@@ -674,7 +678,21 @@
 .demo__title svg { color: var(--accent-1); }
 
 .demo__body {
-  padding: clamp(var(--sp-5), 4vw, var(--sp-7)) 0;
+  min-width: 0;
+  padding:
+    clamp(var(--sp-5), 3vw, var(--sp-6))
+    clamp(var(--sp-5), 2.8vw, var(--sp-6));
+}
+
+.demo .dpviz__scroll {
+  width: auto;
+  max-width: 100%;
+  min-width: 0;
+}
+
+.demo .dpviz__panel {
+  min-width: 0;
+  padding-right: 0;
 }
 
 /* ---- 章节收束 ---- */
@@ -1163,8 +1181,6 @@
 }
 
 .typepage[data-part-id='a'] .demo {
-  container-name: lesson-demo;
-  container-type: inline-size;
   border: 1px solid var(--border-strong);
   background:
     linear-gradient(90deg, color-mix(in srgb, var(--accent-1) 4%, transparent), transparent 40%),
@@ -1178,13 +1194,6 @@
 
 .typepage[data-part-id='a'] .demo__bar {
   border-bottom-color: var(--border-strong);
-}
-
-.typepage[data-part-id='a'] .demo__body {
-  padding-top: clamp(var(--sp-4), 2.4vw, var(--sp-6));
-  padding-right: clamp(var(--sp-4), 2.8vw, var(--sp-6));
-  padding-bottom: clamp(var(--sp-4), 2.4vw, var(--sp-6));
-  padding-left: clamp(var(--sp-4), 2.8vw, var(--sp-6));
 }
 
 .typepage[data-part-id='a'] .kd__toolbar,
@@ -1224,7 +1233,7 @@
 }
 
 @container lesson-demo (max-width: 740px) {
-  .typepage[data-part-id='a'] .dpviz {
+  .demo .dpviz {
     grid-template-columns: 1fr;
     grid-template-areas:
       'table'
@@ -1233,11 +1242,11 @@
       'playback';
   }
 
-  .typepage[data-part-id='a'] .dpviz__scroll {
+  .demo .dpviz__scroll {
     border-right: 0;
   }
 
-  .typepage[data-part-id='a'] .dpviz__panel {
+  .demo .dpviz__panel {
     padding: var(--sp-4) 0;
     border-top: 1px solid var(--border);
   }
@@ -1291,7 +1300,7 @@
     margin-left: -6%;
   }
 
-  .typepage[data-part-id='a'] .demo__body {
+  .demo__body {
     padding-right: var(--sp-3);
     padding-left: var(--sp-3);
   }

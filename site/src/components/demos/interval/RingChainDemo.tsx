@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { Scissors } from 'lucide-react'
-import '../knapsack/knapsack-demo.css'
+import '../shared/demo-workbench.css'
 
 // 环上固定一组数值；演示“断环为链”的几何直觉：选一个断点，环展开成 2n 直链，
 // 从断点起长度 n 的窗口 = 该断法下要合并的“一整圈”。纯 SVG，不走 DPViz。

@@ -3,7 +3,7 @@ import { Minus, Plus } from 'lucide-react'
 import DPViz from '../../dp-engine/DPViz'
 import { solveIntegerPartition } from '../../../algorithms/linear-count/index.ts'
 import { integerPartition } from './countSolver'
-import '../knapsack/knapsack-demo.css'
+import '../shared/demo-workbench.css'
 
 function Stepper({
   label,

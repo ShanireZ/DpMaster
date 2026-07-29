@@ -3,7 +3,7 @@ import { RotateCcw } from 'lucide-react'
 import { PlaybackControls } from '../../dp-engine/playback/PlaybackControls'
 import { useStepPlayer } from '../../dp-engine/playback/useStepPlayer'
 import { palindromeInsert } from './palindromeSolver'
-import '../knapsack/knapsack-demo.css'
+import '../shared/demo-workbench.css'
 import './palindrome-demo.css'
 
 const PRESETS = ['google', 'abcda', 'raceca', 'aebcbda']

@@ -1,6 +1,6 @@
 /* 树形 DP 系列演示的局部样式（自绘 SVG 有根树 + 后序逐帧动画） */
 
-/* —— 工具条：编辑树的点权 / 结构（复用 knapsack-demo.css 的 .kd__* 骨架，这里补树专属） */
+/* —— 工具条：编辑树的点权 / 结构（复用共享 workbench 的 .kd__* 骨架，这里补树专属） */
 .td__toolbar {
   display: flex;
   flex-wrap: wrap;

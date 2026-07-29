@@ -22,8 +22,10 @@ test('A category renders the solid and wireframe polygon backpack', async ({ pag
   await page.goto('/part/a')
 
   await expect(page.locator('.partcover__backpack')).toBeVisible()
+  await expect(page.locator('[data-family-art="a"][data-family-mode="hero"]')).toBeVisible()
   await expect(page.locator('.partcover__backpack .poly-backpack__face')).toHaveCount(38)
   await expect(page.locator('.partjourney__polygon')).toBeVisible()
+  await expect(page.locator('[data-family-art="a"][data-family-mode="journey"]')).toBeVisible()
   await expect(page.locator('.partjourney__polygon .poly-backpack__geometry--wireframe')).toBeVisible()
   await expect(page.locator('.partjourney--a .typewaypoint')).toHaveCount(9)
   await expect(page.locator('.partcover--a .partcover__glyph')).toHaveCount(0)
@@ -47,6 +49,10 @@ test('all nine A lessons render their own scientific plate', async ({ page }) =>
     await page.goto(`/part/a/${slug}`)
     const plate = page.locator(`.knapsack-plate[data-lesson-plate="${slug}"]`)
     await expect(plate).toBeVisible()
+    await expect(plate).toHaveAttribute('data-family-art', 'a')
+    await expect(plate).toHaveAttribute('data-family-mode', 'lesson')
+    await expect(plate.locator('title')).toHaveCount(1)
+    await expect(plate.locator('desc')).toHaveCount(1)
     await expect(plate.locator('.knapsack-plate__grid')).toHaveCount(0)
     await expect(plate.locator('.knapsack-plate__watermark')).toHaveCount(0)
     await expect(page.locator(`.typepage[data-lesson-slug="${slug}"]`)).toBeVisible()
@@ -106,16 +112,31 @@ test('A lesson cues keep inline copy readable and DP panels use the available wi
           separated: !!table && !!panel && panel.left >= table.right - 1,
         }
       })
+      const demoInsets = [...document.querySelectorAll('.demo__body')].map((body) => {
+        const style = getComputedStyle(body)
+        return {
+          left: Number.parseFloat(style.paddingLeft),
+          right: Number.parseFloat(style.paddingRight),
+        }
+      })
+      const art = document.querySelector('.typehead__art')?.getBoundingClientRect()
+      const glyph = document.querySelector('.typehead__glyph')?.getBoundingClientRect()
 
       return {
         brokenCueChildren,
         dpPanels,
+        demoInsets,
+        heroCenterDelta: art && glyph
+          ? Math.abs((art.left + art.width / 2) - (glyph.left + glyph.width / 2))
+          : Number.POSITIVE_INFINITY,
         noOverflow: document.documentElement.scrollWidth <= document.documentElement.clientWidth + 1,
       }
     })
 
     expect(layout.brokenCueChildren, `${slug}: pointer cue copy should not collapse into the icon column`).toEqual([])
     expect(layout.dpPanels.every(({ aligned, separated }) => aligned && separated), `${slug}: DP table and explanation panel should share the first row`).toBe(true)
+    expect(layout.demoInsets.every(({ left, right }) => left >= 23 && right >= 23), `${slug}: demo content should keep desktop safe spacing`).toBe(true)
+    expect(layout.heroCenterDelta, `${slug}: lesson plate should share the art-column center`).toBeLessThanOrEqual(2)
     expect(layout.noOverflow, `${slug}: desktop page should not overflow horizontally`).toBe(true)
   }
 
@@ -127,16 +148,20 @@ test('A lesson cues keep inline copy readable and DP panels use the available wi
     const cue = document.querySelector('.pointer-cue')?.getBoundingClientRect()
     const table = document.querySelector('.dpviz__scroll')?.getBoundingClientRect()
     const panel = document.querySelector('.dpviz__panel')?.getBoundingClientRect()
+    const body = document.querySelector('.demo__body')
+    const bodyStyle = body ? getComputedStyle(body) : null
     return {
       cueFits: !!cue && cue.right <= document.documentElement.clientWidth + 1,
+      demoInset: bodyStyle
+        ? Math.min(Number.parseFloat(bodyStyle.paddingLeft), Number.parseFloat(bodyStyle.paddingRight))
+        : 0,
       panelBelowTable: !!table && !!panel && panel.top >= table.bottom - 1,
       noOverflow: document.documentElement.scrollWidth <= document.documentElement.clientWidth + 1,
     }
   })
 
-  expect(mobileLayout).toEqual({
-    cueFits: true,
-    panelBelowTable: true,
-    noOverflow: true,
-  })
+  expect(mobileLayout.cueFits).toBe(true)
+  expect(mobileLayout.demoInset).toBeGreaterThanOrEqual(11)
+  expect(mobileLayout.panelBelowTable).toBe(true)
+  expect(mobileLayout.noOverflow).toBe(true)
 })

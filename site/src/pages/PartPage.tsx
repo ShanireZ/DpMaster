@@ -2,7 +2,10 @@ import { lazy, Suspense } from 'react'
 import { Link, useParams } from 'react-router-dom'
 import { ArrowRight, FlaskConical } from 'lucide-react'
 import PartGlyph from '../components/PartGlyph'
-import PolygonBackpack from '../components/art/PolygonBackpack'
+import {
+  FamilyHeroArt,
+  FamilyJourneyArt,
+} from '../components/art/FamilyArtSlots.tsx'
 import { DeferredGame } from '../components/games/runtime/DeferredGame'
 import AnimatedContent from '../components/motion/AnimatedContent'
 import { getPart } from '../data/catalog'
@@ -42,16 +45,18 @@ export default function PartPage() {
               </div>
             </div>
             <div className="partcover__art" aria-hidden="true">
-              {part.id === 'a' ? (
-                <PolygonBackpack className="partcover__backpack" />
-              ) : (
+              <FamilyHeroArt
+                partId={part.id}
+                className="partcover__backpack"
+                fallback={(
                 <>
                   <span className="partcover__ghost">{part.code}</span>
                   <span className="partcover__glyph">
                     <PartGlyph id={part.id} size={360} />
                   </span>
                 </>
-              )}
+                )}
+              />
             </div>
           </div>
         </header>
@@ -63,11 +68,9 @@ export default function PartPage() {
             <h2 id="partjourney-title">沿状态路径学习</h2>
             <p>每一站只解决一个关键转移，前一站的直觉会成为下一站的起点。</p>
           </div>
-          {part.id === 'a' && (
-            <div className="partjourney__polygon" aria-hidden="true">
-              <PolygonBackpack mode="wireframe" />
-            </div>
-          )}
+          <div className="partjourney__polygon" aria-hidden="true">
+            <FamilyJourneyArt partId={part.id} />
+          </div>
           <ol className="typepath">
             {part.types.map((type, index) => {
               const num = String(index + 1).padStart(2, '0')

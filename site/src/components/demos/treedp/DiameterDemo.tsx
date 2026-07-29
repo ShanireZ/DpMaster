@@ -3,7 +3,7 @@ import { Minus, Plus } from 'lucide-react'
 import { useStepPlayer } from '../../dp-engine/playback/useStepPlayer'
 import { buildTree, layoutTree, solveMaxSubtreeChain } from './treedpSolver'
 import { TreeCanvas, StepBar, Legend, Panel, type NodePaint } from './TreeCanvas'
-import '../knapsack/knapsack-demo.css'
+import '../shared/demo-workbench.css'
 import './treedp-demo.css'
 
 //          1

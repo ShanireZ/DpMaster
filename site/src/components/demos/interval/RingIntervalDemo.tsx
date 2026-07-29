@@ -3,7 +3,7 @@ import { Minus, Plus, X } from 'lucide-react'
 import DPViz from '../../dp-engine/DPViz'
 import { ringMerge } from './ringSolver'
 import { solveRingInterval } from '../../../algorithms/ring-interval/index.ts'
-import '../knapsack/knapsack-demo.css'
+import '../shared/demo-workbench.css'
 
 function Stepper({
   label,

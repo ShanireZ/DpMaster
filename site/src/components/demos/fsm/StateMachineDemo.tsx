@@ -3,7 +3,7 @@ import { Minus, Plus, X, Shuffle } from 'lucide-react'
 import DPViz from '../../dp-engine/DPViz'
 import { solveLinearFsm } from '../../../algorithms/linear-fsm/index.ts'
 import { fsmPickTable } from './fsmSolver'
-import '../knapsack/knapsack-demo.css'
+import '../shared/demo-workbench.css'
 
 // 三组预设：默认打家劫舍经典样例 [1,2,3,1] → 最大不相邻和 4（选 a1+a3）；
 // 「间隔明显」凸显跳选；「递增」看它权衡相邻大值。

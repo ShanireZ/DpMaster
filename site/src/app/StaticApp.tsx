@@ -12,6 +12,12 @@ import {
   StaticLessonContentProvider,
 } from './StaticLessonContentContext.tsx'
 import type { StaticLessonContents } from './StaticLessonContent.ts'
+import {
+  StaticFamilyArtProvider,
+} from '../components/art/StaticFamilyArtContext.tsx'
+import type {
+  StaticFamilyArtModules,
+} from '../components/art/familyArtRegistry.ts'
 
 const NotFound = lazy(() => import('../pages/NotFound'))
 
@@ -26,17 +32,21 @@ const STATIC_VIEWS: RouteViews = {
 }
 
 export function StaticApp({
+  familyArt,
   url,
   lessonContents,
 }: {
+  familyArt: StaticFamilyArtModules
   url: string
   lessonContents: StaticLessonContents
 }) {
   return (
     <MemoryRouter initialEntries={[url]}>
-      <StaticLessonContentProvider contents={lessonContents}>
-        <AppContent views={STATIC_VIEWS} />
-      </StaticLessonContentProvider>
+      <StaticFamilyArtProvider modules={familyArt}>
+        <StaticLessonContentProvider contents={lessonContents}>
+          <AppContent views={STATIC_VIEWS} />
+        </StaticLessonContentProvider>
+      </StaticFamilyArtProvider>
     </MemoryRouter>
   )
 }
