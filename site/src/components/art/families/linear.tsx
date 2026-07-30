@@ -1,8 +1,9 @@
+import linearLessonAtlas from '../../../assets/family-art/linear-lessons.avif'
 import {
   LinearHeroArt,
   LinearJourneyArt,
-  LinearLessonPlate,
 } from '../LinearFamilyArt.tsx'
+import { PolyLessonPlate } from '../PolyLessonPlate.tsx'
 import type {
   FamilyArtProps,
   LessonPlateProps,
@@ -17,5 +18,13 @@ export function JourneyArt({ className = '' }: FamilyArtProps) {
 }
 
 export function LessonPlate({ slug, title, className = '' }: LessonPlateProps) {
-  return <LinearLessonPlate slug={slug} title={title} className={className} />
+  return (
+    <PolyLessonPlate
+      family="b"
+      atlas={linearLessonAtlas}
+      slug={slug}
+      title={title}
+      className={className}
+    />
+  )
 }

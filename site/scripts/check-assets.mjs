@@ -3,7 +3,7 @@ import { extname, join, resolve } from 'node:path'
 import { fileURLToPath } from 'node:url'
 
 export const ASSET_BUDGET = Object.freeze({
-  total: 4_700_000,
+  total: 5_050_000,
   file: 760_000,
   css: 80_000,
 })
@@ -54,4 +54,3 @@ function main() {
 }
 
 if (resolve(process.argv[1] ?? '') === fileURLToPath(import.meta.url)) main()
-

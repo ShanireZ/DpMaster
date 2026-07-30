@@ -23,6 +23,11 @@ test('B category renders the high-fidelity polygon index sculpture and an integr
   expect(heroAsset.naturalWidth).toBe(1536)
   expect(heroAsset.naturalHeight).toBe(1024)
   expect(heroAsset.src).toContain('linear-hero')
+  const categoryResources = await page.evaluate(() =>
+    performance.getEntriesByType('resource').map((entry) => entry.name),
+  )
+  expect(categoryResources.some((resource) => resource.includes('backpack-hero'))).toBe(false)
+  expect(categoryResources.some((resource) => resource.includes('knapsack-lessons'))).toBe(false)
   await expect(page.locator('.linear-hero__state')).toHaveCount(0)
   await expect(page.locator('[data-family-art="b"][data-family-mode="journey"]')).toBeVisible()
   await expect(page.locator('.linear-journey__relations path')).toHaveCount(6)
@@ -89,6 +94,7 @@ test('B category renders the high-fidelity polygon index sculpture and an integr
 
 test('all seven B lessons use distinct accessible semantic plates', async ({ page }) => {
   const runtimeErrors: string[] = []
+  const atlasCells = new Set<string>()
   page.on('console', (message) => {
     if (message.type() === 'error') runtimeErrors.push(message.text())
   })
@@ -102,27 +108,38 @@ test('all seven B lessons use distinct accessible semantic plates', async ({ pag
     await expect(plate).toBeVisible()
     await expect(plate).toHaveAttribute('data-family-art', 'b')
     await expect(plate).toHaveAttribute('data-family-mode', 'lesson')
-    await expect(plate.locator('title')).toHaveCount(1)
-    await expect(plate.locator('desc')).toHaveCount(1)
+    await expect(plate).toHaveAttribute('role', 'img')
+    await expect(plate).toHaveAttribute('aria-label', /：.+/)
+    const atlas = plate.locator('.poly-lesson-plate__atlas')
+    await expect(atlas).toHaveJSProperty('complete', true)
+    const atlasAsset = await atlas.evaluate((image: HTMLImageElement) => ({
+      naturalWidth: image.naturalWidth,
+      naturalHeight: image.naturalHeight,
+      src: image.currentSrc,
+    }))
+    expect(atlasAsset.naturalWidth).toBe(1536)
+    expect(atlasAsset.naturalHeight).toBe(1024)
+    expect(atlasAsset.src).toContain('linear-lessons')
+    const routeResources = await page.evaluate(() =>
+      performance.getEntriesByType('resource').map((entry) => entry.name),
+    )
+    expect(routeResources.some((resource) => resource.includes('knapsack-lessons'))).toBe(false)
+    atlasCells.add(
+      `${await plate.getAttribute('data-atlas-column')}:${await plate.getAttribute('data-atlas-row')}`,
+    )
     await expect(page.locator('.typehead__art-code')).toHaveCount(0)
-    const drawingBounds = await plate.evaluate((svg) => {
-      const bounds = (svg as SVGSVGElement).getBBox()
-      return {
-        left: bounds.x,
-        top: bounds.y,
-        right: bounds.x + bounds.width,
-        bottom: bounds.y + bounds.height,
-      }
-    })
-    expect(drawingBounds.left, `${slug} drawing starts inside the 640 × 390 canvas`).toBeGreaterThanOrEqual(0)
-    expect(drawingBounds.top, `${slug} drawing starts inside the 640 × 390 canvas`).toBeGreaterThanOrEqual(0)
-    expect(drawingBounds.right, `${slug} drawing fits the 640 × 390 canvas`).toBeLessThanOrEqual(640)
-    expect(drawingBounds.bottom, `${slug} drawing fits the 640 × 390 canvas`).toBeLessThanOrEqual(390)
+    expect(await plate.locator('.poly-lesson-plate__viewport').evaluate((viewport) => {
+      const style = getComputedStyle(viewport)
+      return style.overflow === 'hidden'
+        && viewport.scrollWidth >= viewport.clientWidth
+        && viewport.scrollHeight >= viewport.clientHeight
+    })).toBe(true)
     expect(
       await page.evaluate(() => document.documentElement.scrollWidth <= document.documentElement.clientWidth + 1),
     ).toBe(true)
     expect(runtimeErrors, `${slug} should hydrate without errors`).toEqual([])
   }
+  expect(atlasCells.size).toBe(7)
 
   await page.setViewportSize({ width: 390, height: 844 })
   for (const slug of ['path', 'maxseg', 'lis', 'lcs', 'edit', 'fsm', 'count'] as const) {
@@ -134,34 +151,8 @@ test('all seven B lessons use distinct accessible semantic plates', async ({ pag
   }
 
   await page.goto('/part/b/edit')
-  const plateLayout = await page.evaluate(() => {
-    const matrixCells = [...document.querySelectorAll('.linear-plate--edit .linear-plate__matrix rect')]
-      .map((cell) => cell.getBoundingClientRect())
-    const matrix = matrixCells.length > 0
-      ? {
-          left: Math.min(...matrixCells.map((cell) => cell.left)),
-          right: Math.max(...matrixCells.map((cell) => cell.right)),
-          bottom: Math.max(...matrixCells.map((cell) => cell.bottom)),
-        }
-      : undefined
-    const operationTexts = [...document.querySelectorAll(
-      '.linear-plate--edit .linear-plate__edit-labels text:not(.linear-plate__label, .linear-plate__formula)',
-    )].map((text) => text.getBoundingClientRect())
-    const formula = document.querySelector('.linear-plate--edit > .linear-plate__formula')?.getBoundingClientRect()
-
-    return {
-      operationGap: matrix && operationTexts.length > 0
-        ? matrix.left - Math.max(...operationTexts.map((text) => text.right))
-        : Number.NEGATIVE_INFINITY,
-      formulaGap: matrix && formula ? formula.top - matrix.bottom : Number.NEGATIVE_INFINITY,
-      formulaCenterDelta: matrix && formula
-        ? Math.abs((matrix.left + matrix.right) / 2 - (formula.left + formula.right) / 2)
-        : Number.POSITIVE_INFINITY,
-    }
-  })
-  expect(plateLayout.operationGap).toBeGreaterThanOrEqual(8)
-  expect(plateLayout.formulaGap).toBeGreaterThanOrEqual(12)
-  expect(plateLayout.formulaCenterDelta).toBeLessThanOrEqual(2)
+  await expect(page.locator('.linear-plate--edit')).toHaveAttribute('data-atlas-column', '0')
+  await expect(page.locator('.linear-plate--edit')).toHaveAttribute('data-atlas-row', '1')
   await expect(page.getByText('当前前缀对', { exact: true })).toHaveCount(0)
   expect(
     await page.evaluate(() => document.documentElement.scrollWidth <= document.documentElement.clientWidth + 1),
