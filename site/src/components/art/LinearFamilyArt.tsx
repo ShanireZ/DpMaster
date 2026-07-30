@@ -1,4 +1,5 @@
 import { useId, type CSSProperties, type ReactElement } from 'react'
+import linearHeroImage from '../../assets/family-art/linear-hero.webp'
 import PartGlyph from '../PartGlyph.tsx'
 import './linear-family-art.css'
 
@@ -11,37 +12,83 @@ interface LinearLessonPlateProps extends LinearArtProps {
   title: string
 }
 
-const heroSpineStates = [
-  { x: 78, y: 350, scale: 0.82 },
-  { x: 168, y: 332, scale: 0.9 },
-  { x: 258, y: 320, scale: 0.96 },
-  { x: 350, y: 316, scale: 1 },
-  { x: 450, y: 325, scale: 1.12, current: true },
-  { x: 550, y: 352, scale: 0.94, future: true },
-  { x: 640, y: 386, scale: 0.82, future: true },
-] as const
-
-const heroRibbonTop = [
-  [42, 422],
-  [130, 410],
-  [224, 405],
-  [322, 409],
-  [424, 424],
-  [532, 452],
-  [662, 492],
-] as const
-
-const heroRibbonBottom = [
-  [52, 468],
-  [138, 454],
-  [230, 448],
-  [324, 454],
-  [420, 470],
-  [524, 500],
-  [650, 540],
-] as const
-
 type HeroPoint = readonly [number, number]
+
+interface HeroFace {
+  points: string
+  tone: number
+}
+
+const heroSpineStates = [
+  { x: 120, y: 302, width: 43, height: 72, railY: 404 },
+  { x: 236, y: 292, width: 45, height: 74, railY: 401 },
+  { x: 351, y: 288, width: 44, height: 72, railY: 410 },
+  { x: 466, y: 294, width: 42, height: 67, railY: 427 },
+  { x: 594, y: 316, width: 55, height: 87, railY: 456, current: true },
+  { x: 718, y: 347, width: 42, height: 67, railY: 486, future: true },
+  { x: 830, y: 380, width: 37, height: 59, railY: 516, future: true },
+] as const
+
+const heroRailTop: HeroPoint[] = [
+  [58, 390], [170, 386], [282, 392], [397, 405],
+  [514, 426], [635, 451], [758, 480], [886, 516],
+]
+
+const heroRailBottom: HeroPoint[] = [
+  [66, 428], [176, 423], [287, 430], [401, 444],
+  [516, 466], [632, 491], [751, 521], [874, 558],
+]
+
+const heroUnderRibbonTop: HeroPoint[] = [
+  [75, 430], [166, 462], [264, 476], [366, 480],
+  [467, 469], [566, 484], [668, 513], [772, 536], [868, 557],
+]
+
+const heroUnderRibbonBottom: HeroPoint[] = [
+  [70, 458], [158, 496], [258, 516], [365, 520],
+  [468, 504], [570, 520], [674, 548], [778, 566], [853, 583],
+]
+
+const heroArchFaces: HeroFace[][] = [
+  [
+    { points: '111,233 123,234 139,184 128,180', tone: 1 },
+    { points: '128,180 139,184 166,139 155,132', tone: 2 },
+    { points: '155,132 166,139 211,103 201,94', tone: 3 },
+    { points: '201,94 211,103 277,72 271,61', tone: 1 },
+    { points: '271,61 277,72 351,57 351,46', tone: 2 },
+    { points: '351,46 351,57 426,64 430,53', tone: 3 },
+    { points: '430,53 426,64 491,91 500,82', tone: 1 },
+    { points: '500,82 491,91 542,132 552,126', tone: 2 },
+    { points: '552,126 542,132 575,179 585,176', tone: 3 },
+    { points: '585,176 575,179 592,224 603,220', tone: 1 },
+  ],
+  [
+    { points: '228,220 240,222 250,163 239,159', tone: 2 },
+    { points: '239,159 250,163 287,117 279,108', tone: 3 },
+    { points: '279,108 287,117 343,86 339,75', tone: 1 },
+    { points: '339,75 343,86 407,83 410,72', tone: 2 },
+    { points: '410,72 407,83 468,104 475,95', tone: 3 },
+    { points: '475,95 468,104 521,141 530,134', tone: 1 },
+    { points: '530,134 521,141 559,180 569,175', tone: 2 },
+    { points: '569,175 559,180 592,225 602,220', tone: 3 },
+  ],
+  [
+    { points: '344,218 356,220 367,167 356,163', tone: 3 },
+    { points: '356,163 367,167 403,130 396,121', tone: 1 },
+    { points: '396,121 403,130 451,112 451,101', tone: 2 },
+    { points: '451,101 451,112 499,121 504,111', tone: 3 },
+    { points: '504,111 499,121 541,151 550,144', tone: 1 },
+    { points: '550,144 541,151 570,185 580,181', tone: 2 },
+    { points: '580,181 570,185 593,225 603,221', tone: 3 },
+  ],
+  [
+    { points: '460,229 471,231 482,190 472,187', tone: 1 },
+    { points: '472,187 482,190 511,170 506,161', tone: 2 },
+    { points: '506,161 511,170 541,171 546,162', tone: 3 },
+    { points: '546,162 541,171 570,190 577,183', tone: 1 },
+    { points: '577,183 570,190 594,225 603,221', tone: 2 },
+  ],
+]
 
 function ribbonSegmentPoints(from: HeroPoint, to: HeroPoint, width: number) {
   const dx = to[0] - from[0]
@@ -50,49 +97,6 @@ function ribbonSegmentPoints(from: HeroPoint, to: HeroPoint, width: number) {
   const nx = (-dy / length) * width / 2
   const ny = (dx / length) * width / 2
   return `${from[0] + nx},${from[1] + ny} ${to[0] + nx},${to[1] + ny} ${to[0] - nx},${to[1] - ny} ${from[0] - nx},${from[1] - ny}`
-}
-
-function FacetedRibbon({
-  points,
-  width,
-  className,
-}: {
-  points: readonly HeroPoint[]
-  width: number
-  className: string
-}) {
-  const last = points[points.length - 1]
-  const beforeLast = points[points.length - 2]
-  const dx = last[0] - beforeLast[0]
-  const dy = last[1] - beforeLast[1]
-  const length = Math.hypot(dx, dy) || 1
-  const ux = dx / length
-  const uy = dy / length
-  const nx = -uy
-  const ny = ux
-  const arrowLength = width * 1.5
-  const arrowHalfWidth = width * 0.9
-
-  return (
-    <g className={className}>
-      {points.slice(0, -1).map((point, index) => (
-        <polygon
-          key={`${point[0]}-${point[1]}`}
-          points={ribbonSegmentPoints(point, points[index + 1], width)}
-          className={`linear-hero__arc-facet linear-hero__arc-facet--${index % 3 + 1}`}
-        />
-      ))}
-      <polyline points={points.map((point) => point.join(',')).join(' ')} />
-      <polygon
-        className="linear-hero__arc-arrow"
-        points={[
-          `${last[0] + ux * arrowLength},${last[1] + uy * arrowLength}`,
-          `${last[0] - ux * width * 0.2 + nx * arrowHalfWidth},${last[1] - uy * width * 0.2 + ny * arrowHalfWidth}`,
-          `${last[0] - ux * width * 0.2 - nx * arrowHalfWidth},${last[1] - uy * width * 0.2 - ny * arrowHalfWidth}`,
-        ].join(' ')}
-      />
-    </g>
-  )
 }
 
 function AxisRod({ from, to }: { from: HeroPoint; to: HeroPoint }) {
@@ -109,21 +113,23 @@ function AxisRod({ from, to }: { from: HeroPoint; to: HeroPoint }) {
 function LinearPolyState({
   x,
   y,
-  scale = 1,
+  width,
+  height,
+  railY,
   current = false,
   future = false,
 }: {
   x: number
   y: number
-  scale?: number
+  width: number
+  height: number
+  railY: number
   current?: boolean
   future?: boolean
 }) {
-  const width = (current ? 45 : 37) * scale
-  const height = (current ? 62 : 50) * scale
-  const shoulderY = -height * 0.08
-  const waistY = height * 0.18
-  const baseY = height + 29 * scale
+  const shoulderY = -height * 0.05
+  const waistY = height * 0.16
+  const baseY = railY - y
   const className = [
     'linear-hero__state',
     current ? 'is-current' : '',
@@ -132,55 +138,74 @@ function LinearPolyState({
 
   return (
     <g transform={`translate(${x} ${y})`} className={className}>
-      <polygon points={`0,${-height} ${-width},${shoulderY} 0,${-4 * scale}`} className="linear-hero__facet linear-hero__facet--1" />
-      <polygon points={`0,${-height} 0,${-4 * scale} ${width},${shoulderY}`} className="linear-hero__facet linear-hero__facet--2" />
-      <polygon points={`${-width},${shoulderY} ${-width * 0.74},${waistY} 0,${-4 * scale}`} className="linear-hero__facet linear-hero__facet--3" />
-      <polygon points={`${width},${shoulderY} 0,${-4 * scale} ${width * 0.74},${waistY}`} className="linear-hero__facet linear-hero__facet--4" />
-      <polygon points={`${-width * 0.74},${waistY} 0,${-4 * scale} 0,${height}`} className="linear-hero__facet linear-hero__facet--5" />
-      <polygon points={`0,${-4 * scale} ${width * 0.74},${waistY} 0,${height}`} className="linear-hero__facet linear-hero__facet--6" />
-      <polygon points={`${-width * 0.74},${waistY} 0,${height} ${-width * 0.24},${baseY}`} className="linear-hero__foot linear-hero__foot--1" />
-      <polygon points={`${width * 0.74},${waistY} ${width * 0.24},${baseY} 0,${height}`} className="linear-hero__foot linear-hero__foot--2" />
-      <polygon points={`${-width * 0.24},${baseY} 0,${height} ${width * 0.24},${baseY} 0,${baseY + 10 * scale}`} className="linear-hero__foot linear-hero__foot--3" />
-      <ellipse cx={-width} cy={shoulderY} rx={5 * scale} ry={9 * scale} className="linear-hero__collar" />
-      <ellipse cx={width} cy={shoulderY} rx={5 * scale} ry={9 * scale} className="linear-hero__collar" />
+      <polygon points={`0,${-height} ${-width},${shoulderY} ${-width * 0.26},${-height * 0.4}`} className="linear-hero__facet linear-hero__facet--1" />
+      <polygon points={`0,${-height} ${-width * 0.26},${-height * 0.4} 0,-4`} className="linear-hero__facet linear-hero__facet--2" />
+      <polygon points={`0,${-height} 0,-4 ${width * 0.28},${-height * 0.38}`} className="linear-hero__facet linear-hero__facet--3" />
+      <polygon points={`0,${-height} ${width * 0.28},${-height * 0.38} ${width},${shoulderY}`} className="linear-hero__facet linear-hero__facet--4" />
+      <polygon points={`${-width},${shoulderY} ${-width * 0.72},${waistY} 0,-4 ${-width * 0.26},${-height * 0.4}`} className="linear-hero__facet linear-hero__facet--5" />
+      <polygon points={`${width},${shoulderY} ${width * 0.28},${-height * 0.38} 0,-4 ${width * 0.72},${waistY}`} className="linear-hero__facet linear-hero__facet--6" />
+      <polygon points={`${-width * 0.72},${waistY} 0,-4 ${-width * 0.18},${height * 0.5}`} className="linear-hero__facet linear-hero__facet--7" />
+      <polygon points={`${-width * 0.72},${waistY} ${-width * 0.18},${height * 0.5} 0,${height}`} className="linear-hero__facet linear-hero__facet--8" />
+      <polygon points={`0,-4 ${width * 0.72},${waistY} ${width * 0.2},${height * 0.48}`} className="linear-hero__facet linear-hero__facet--9" />
+      <polygon points={`${width * 0.72},${waistY} 0,${height} ${width * 0.2},${height * 0.48}`} className="linear-hero__facet linear-hero__facet--10" />
+      <polygon points={`${-width * 0.72},${waistY} 0,${height} ${-width * 0.3},${baseY}`} className="linear-hero__foot linear-hero__foot--1" />
+      <polygon points={`${width * 0.72},${waistY} ${width * 0.3},${baseY} 0,${height}`} className="linear-hero__foot linear-hero__foot--2" />
+      <polygon points={`${-width * 0.3},${baseY} 0,${height} 0,${baseY + 10}`} className="linear-hero__foot linear-hero__foot--3" />
+      <polygon points={`0,${height} ${width * 0.3},${baseY} 0,${baseY + 10}`} className="linear-hero__foot linear-hero__foot--4" />
+      <ellipse cx={-width} cy={shoulderY} rx="6" ry="10" className="linear-hero__collar" />
+      <ellipse cx={width} cy={shoulderY} rx="6" ry="10" className="linear-hero__collar" />
       <path d={`M0 ${-height} ${width} ${shoulderY} ${width * 0.74} ${waistY} 0 ${height} ${-width * 0.74} ${waistY} ${-width} ${shoulderY}Z`} className="linear-hero__state-outline" />
-      <path d={`M${-width} ${shoulderY}H${width}M0 ${-height}V${height}M${-width * 0.74} ${waistY}H${width * 0.74}`} className="linear-hero__state-seam" />
+      <path d={`M${-width} ${shoulderY} 0 -4 ${width} ${shoulderY}M0 ${-height}V${height}M${-width * 0.72} ${waistY}H${width * 0.72}`} className="linear-hero__state-seam" />
     </g>
   )
 }
 
-export function LinearHeroArt({ className = '' }: LinearArtProps) {
+function HeroFaceSet({ faces, className }: { faces: HeroFace[]; className: string }) {
+  return (
+    <g className={className}>
+      {faces.map((face, index) => (
+        <polygon
+          key={`${face.points}-${index}`}
+          points={face.points}
+          className={`linear-hero__arc-facet linear-hero__arc-facet--${face.tone}`}
+        />
+      ))}
+    </g>
+  )
+}
+
+function LegacyLinearHeroArt({ className = '' }: LinearArtProps) {
   return (
     <svg
       className={`linear-hero ${className}`.trim()}
-      viewBox="0 0 720 620"
+      viewBox="0 0 960 600"
       aria-hidden="true"
       data-family-art="b"
       data-family-mode="hero"
     >
       <g className="linear-art__construction">
-        <circle cx="358" cy="306" r="270" />
-        <circle cx="358" cy="306" r="198" />
-        {[78, 168, 258, 350, 450, 550, 640].map((x) => (
-          <path key={x} d={`M${x} 62V536`} />
+        <circle cx="482" cy="302" r="278" />
+        <circle cx="482" cy="302" r="208" />
+        {[120, 236, 351, 466, 594, 718, 830].map((x) => (
+          <path key={x} d={`M${x} 36V570`} />
         ))}
-        {[118, 212, 306, 400, 494].map((y) => (
-          <path key={y} d={`M38 ${y}H682`} />
+        {[96, 196, 296, 396, 496].map((y) => (
+          <path key={y} d={`M36 ${y}H926`} />
         ))}
-        <path d="M42 548 668 48M32 548 686 548M32 574 686 574" />
+        <path d="M34 566 914 48M30 548 930 548M32 578 930 578M48 512 900 106" />
       </g>
 
-      <ellipse className="linear-hero__ground" cx="364" cy="516" rx="326" ry="35" />
+      <ellipse className="linear-hero__ground" cx="488" cy="526" rx="432" ry="37" />
       <g className="linear-hero__ground-hatching">
-        <path d="M44 500 568 574M92 482 632 562M154 470 682 546" />
-        <path d="M88 564 592 470M162 576 656 492M246 582 692 512" />
+        <path d="M42 500 750 584M92 480 838 574M158 466 912 556" />
+        <path d="M72 572 710 460M164 586 810 482M266 592 900 508" />
       </g>
 
       <g className="linear-hero__rolling-ribbon">
-        {heroRibbonTop.slice(0, -1).map(([topX, topY], index) => {
-          const [nextTopX, nextTopY] = heroRibbonTop[index + 1]
-          const [bottomX, bottomY] = heroRibbonBottom[index]
-          const [nextBottomX, nextBottomY] = heroRibbonBottom[index + 1]
+        {heroUnderRibbonTop.slice(0, -1).map(([topX, topY], index) => {
+          const [nextTopX, nextTopY] = heroUnderRibbonTop[index + 1]
+          const [bottomX, bottomY] = heroUnderRibbonBottom[index]
+          const [nextBottomX, nextBottomY] = heroUnderRibbonBottom[index + 1]
           return (
             <polygon
               key={topX}
@@ -189,12 +214,29 @@ export function LinearHeroArt({ className = '' }: LinearArtProps) {
             />
           )
         })}
-        <path d="M42 422 130 410 224 405 322 409 424 424 532 452 662 492" />
-        <path d="M52 468 138 454 230 448 324 454 420 470 524 500 650 540" />
+        <path d="M75 430 166 462 264 476 366 480 467 469 566 484 668 513 772 536 868 557" />
+        <path d="M70 458 158 496 258 516 365 520 468 504 570 520 674 548 778 566 853 583" />
+      </g>
+
+      <g className="linear-hero__support-rail">
+        {heroRailTop.slice(0, -1).map(([topX, topY], index) => {
+          const [nextTopX, nextTopY] = heroRailTop[index + 1]
+          const [bottomX, bottomY] = heroRailBottom[index]
+          const [nextBottomX, nextBottomY] = heroRailBottom[index + 1]
+          return (
+            <polygon
+              key={topX}
+              points={`${topX},${topY} ${nextTopX},${nextTopY} ${nextBottomX},${nextBottomY} ${bottomX},${bottomY}`}
+              className={`linear-hero__rail-facet linear-hero__rail-facet--${index % 4 + 1}`}
+            />
+          )
+        })}
+        <path d="M58 390 170 386 282 392 397 405 514 426 635 451 758 480 886 516" />
+        <path d="M66 428 176 423 287 430 401 444 516 466 632 491 751 521 874 558" />
       </g>
 
       <g className="linear-hero__axis">
-        <AxisRod from={[28, 360]} to={[78, 350]} />
+        <AxisRod from={[43, 302]} to={[120, 302]} />
         {heroSpineStates.slice(0, -1).map((state, index) => (
           <AxisRod
             key={state.x}
@@ -202,33 +244,18 @@ export function LinearHeroArt({ className = '' }: LinearArtProps) {
             to={[heroSpineStates[index + 1].x, heroSpineStates[index + 1].y]}
           />
         ))}
-        <AxisRod from={[640, 386]} to={[692, 409]} />
-        <circle cx="28" cy="360" r="12" />
-        <circle cx="28" cy="360" r="6" />
-        <polygon className="linear-hero__axis-arrow" points="692,397 716,420 684,423" />
+        <AxisRod from={[830, 380]} to={[900, 405]} />
+        <circle cx="43" cy="302" r="14" />
+        <circle cx="43" cy="302" r="7" />
+        <polygon className="linear-hero__axis-arrow" points="900,390 936,420 891,423" />
       </g>
 
       <g className="linear-hero__predecessor-ribbons">
-        <FacetedRibbon
-          points={[[78, 301], [90, 205], [174, 114], [286, 78], [388, 114], [450, 246]]}
-          width={12}
-          className="linear-hero__arc linear-hero__arc--1"
-        />
-        <FacetedRibbon
-          points={[[168, 285], [184, 190], [260, 122], [354, 112], [424, 165], [450, 246]]}
-          width={11}
-          className="linear-hero__arc linear-hero__arc--2"
-        />
-        <FacetedRibbon
-          points={[[258, 268], [278, 193], [338, 150], [402, 174], [450, 246]]}
-          width={10}
-          className="linear-hero__arc linear-hero__arc--3"
-        />
-        <FacetedRibbon
-          points={[[350, 264], [365, 218], [406, 202], [450, 246]]}
-          width={9}
-          className="linear-hero__arc linear-hero__arc--4"
-        />
+        {heroArchFaces.map((faces, index) => (
+          <HeroFaceSet key={index} faces={faces} className={`linear-hero__arc linear-hero__arc--${index + 1}`} />
+        ))}
+        <polygon className="linear-hero__arc-arrow" points="590,218 606,228 592,242" />
+        <polygon className="linear-hero__arc-arrow" points="580,216 595,228 580,239" />
       </g>
 
       <g className="linear-hero__states">
@@ -237,6 +264,22 @@ export function LinearHeroArt({ className = '' }: LinearArtProps) {
         ))}
       </g>
     </svg>
+  )
+}
+
+void LegacyLinearHeroArt
+
+export function LinearHeroArt({ className = '' }: LinearArtProps) {
+  return (
+    <img
+      className={`linear-hero linear-hero--image ${className}`.trim()}
+      src={linearHeroImage}
+      alt=""
+      aria-hidden="true"
+      data-family-art="b"
+      data-family-mode="hero"
+      draggable={false}
+    />
   )
 }
 

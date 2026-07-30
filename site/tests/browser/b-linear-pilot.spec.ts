@@ -1,6 +1,6 @@
 import { expect, test } from '@playwright/test'
 
-test('B category renders the polygon index spine and an integrated two-rail course score', async ({ page }) => {
+test('B category renders the high-fidelity polygon index sculpture and an integrated two-rail course score', async ({ page }) => {
   const runtimeErrors: string[] = []
   page.on('console', (message) => {
     if (message.type() === 'error') runtimeErrors.push(message.text())
@@ -10,14 +10,20 @@ test('B category renders the polygon index spine and an integrated two-rail cour
   await page.setViewportSize({ width: 1440, height: 900 })
   await page.goto('/part/b')
 
-  await expect(page.locator('[data-family-art="b"][data-family-mode="hero"]')).toBeVisible()
-  await expect(page.locator('.linear-hero__state')).toHaveCount(7)
-  await expect(page.locator('.linear-hero__state.is-current')).toHaveCount(1)
-  await expect(page.locator('.linear-hero__predecessor-ribbons polyline')).toHaveCount(4)
-  await expect(page.locator('.linear-hero__predecessor-ribbons .linear-hero__arc-facet')).toHaveCount(17)
-  await expect(page.locator('.linear-hero__axis .linear-hero__rod-segment')).toHaveCount(8)
-  await expect(page.locator('.linear-hero__rolling-ribbon polygon')).toHaveCount(6)
-  await expect(page.locator('.linear-hero__tape')).toHaveCount(0)
+  const hero = page.locator('img.linear-hero--image[data-family-art="b"][data-family-mode="hero"]')
+  await expect(hero).toBeVisible()
+  await expect(hero).toHaveAttribute('alt', '')
+  await expect(hero).toHaveAttribute('aria-hidden', 'true')
+  await expect(hero).toHaveJSProperty('complete', true)
+  const heroAsset = await hero.evaluate((image: HTMLImageElement) => ({
+    naturalWidth: image.naturalWidth,
+    naturalHeight: image.naturalHeight,
+    src: image.currentSrc,
+  }))
+  expect(heroAsset.naturalWidth).toBe(1536)
+  expect(heroAsset.naturalHeight).toBe(1024)
+  expect(heroAsset.src).toContain('linear-hero')
+  await expect(page.locator('.linear-hero__state')).toHaveCount(0)
   await expect(page.locator('[data-family-art="b"][data-family-mode="journey"]')).toBeVisible()
   await expect(page.locator('.linear-journey__relations path')).toHaveCount(6)
   await expect(page.locator('.partjourney--b .typewaypoint')).toHaveCount(7)
@@ -27,32 +33,36 @@ test('B category renders the polygon index spine and an integrated two-rail cour
   ).evaluateAll((items) => items.map((item) => item.getBoundingClientRect().left))
   expect(secondRowOrder[0]).toBeGreaterThan(secondRowOrder[1])
   expect(secondRowOrder[1]).toBeGreaterThan(secondRowOrder[2])
+  await expect(page.locator('.partjourney--b .typepath__transition')).toHaveCount(6)
   const arrowGeometry = await page.locator('.partjourney--b .typewaypoint').evaluateAll((items) => {
     const boxes = items.map((item) => item.getBoundingClientRect())
-    const arrows = items.map((item) => item.querySelector<HTMLElement>('.typewaypoint__arrow')?.getBoundingClientRect())
+    const transitions = Array.from(
+      document.querySelectorAll<HTMLElement>('.partjourney--b .typepath__transition'),
+      (item) => item.getBoundingClientRect(),
+    )
     const center = (box: DOMRect) => ({ x: (box.left + box.right) / 2, y: (box.top + box.bottom) / 2 })
 
     return {
       firstRowBoundaryDeltas: [0, 1, 2].map((index) => {
-        const arrow = arrows[index]
-        return arrow ? Math.abs(center(arrow).x - boxes[index].right) : Number.POSITIVE_INFINITY
+        const arrow = transitions[index]
+        return Math.abs(center(arrow).x - boxes[index].right)
       }),
-      firstRowVerticalSpread: Math.max(...[0, 1, 2].map((index) => center(arrows[index]!).y))
-        - Math.min(...[0, 1, 2].map((index) => center(arrows[index]!).y)),
-      boundaryArrowWidths: [0, 1, 2, 4, 5].map((index) => arrows[index]?.width ?? 0),
-      foldArrow: arrows[3]
+      firstRowVerticalSpread: Math.max(...[0, 1, 2].map((index) => center(transitions[index]).y))
+        - Math.min(...[0, 1, 2].map((index) => center(transitions[index]).y)),
+      boundaryArrowWidths: [0, 1, 2, 4, 5].map((index) => transitions[index]?.width ?? 0),
+      foldArrow: transitions[3]
         ? {
-            y: center(arrows[3]).y,
+            y: center(transitions[3]).y,
             rowGapCenter: (boxes[3].bottom + boxes[4].top) / 2,
-            transform: getComputedStyle(items[3].querySelector<HTMLElement>('.typewaypoint__arrow')!).transform,
+            transform: getComputedStyle(document.querySelector<HTMLElement>('.typepath__transition--4')!).transform,
           }
         : undefined,
       secondRowBoundaryDeltas: [4, 5].map((index) => {
-        const arrow = arrows[index]
-        return arrow ? Math.abs(center(arrow).x - boxes[index].left) : Number.POSITIVE_INFINITY
+        const arrow = transitions[index]
+        return Math.abs(center(arrow).x - boxes[index].left)
       }),
-      secondRowVerticalSpread: Math.abs(center(arrows[4]!).y - center(arrows[5]!).y),
-      finalArrowDisplay: getComputedStyle(items[6].querySelector<HTMLElement>('.typewaypoint__arrow')!).display,
+      secondRowVerticalSpread: Math.abs(center(transitions[4]).y - center(transitions[5]).y),
+      nodeArrowDisplays: items.map((item) => getComputedStyle(item.querySelector<HTMLElement>('.typewaypoint__arrow')!).display),
     }
   })
   expect(Math.max(...arrowGeometry.firstRowBoundaryDeltas)).toBeLessThanOrEqual(1)
@@ -62,7 +72,7 @@ test('B category renders the polygon index spine and an integrated two-rail cour
   expect(Math.min(...arrowGeometry.boundaryArrowWidths)).toBeGreaterThanOrEqual(19)
   expect(Math.abs(arrowGeometry.foldArrow!.y - arrowGeometry.foldArrow!.rowGapCenter)).toBeLessThanOrEqual(2)
   expect(arrowGeometry.foldArrow!.transform).not.toBe('none')
-  expect(arrowGeometry.finalArrowDisplay).toBe('none')
+  expect(arrowGeometry.nodeArrowDisplays).toEqual(Array(7).fill('none'))
   expect(
     await page.evaluate(() => document.documentElement.scrollWidth <= document.documentElement.clientWidth + 1),
   ).toBe(true)
@@ -70,6 +80,7 @@ test('B category renders the polygon index spine and an integrated two-rail cour
   await page.setViewportSize({ width: 390, height: 844 })
   await expect(page.locator('.partcover__family-art')).toBeVisible()
   await expect(page.locator('.partjourney--b .partjourney__art')).toBeHidden()
+  await expect(page.locator('.partjourney--b .typepath__transitions')).toBeHidden()
   expect(
     await page.evaluate(() => document.documentElement.scrollWidth <= document.documentElement.clientWidth + 1),
   ).toBe(true)
