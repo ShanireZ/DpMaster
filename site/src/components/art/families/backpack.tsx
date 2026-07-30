@@ -1,4 +1,5 @@
 import PolygonBackpack, { KnapsackLessonPlate } from '../PolygonBackpack.tsx'
+import BackpackJourneyMap from '../BackpackJourneyMap.tsx'
 import type {
   FamilyArtProps,
   LessonPlateProps,
@@ -15,14 +16,7 @@ export function HeroArt({ className = '' }: FamilyArtProps) {
 }
 
 export function JourneyArt({ className = '' }: FamilyArtProps) {
-  return (
-    <PolygonBackpack
-      className={className}
-      dataFamilyArt="a"
-      dataFamilyMode="journey"
-      mode="wireframe"
-    />
-  )
+  return <BackpackJourneyMap className={className} />
 }
 
 export function LessonPlate({ slug, title, className = '' }: LessonPlateProps) {

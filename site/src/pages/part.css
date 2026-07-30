@@ -208,6 +208,10 @@
   list-style: none;
 }
 
+.partjourney__body {
+  position: relative;
+}
+
 .typepath::before {
   content: '';
   position: absolute;
@@ -607,14 +611,13 @@
   display: none;
 }
 
-.partcover__backpack {
+.partpage[data-part-id='a'] .partcover__family-art {
   width: min(48vw, 660px);
   transform: translate(3%, 1%);
   filter: drop-shadow(0 34px 80px color-mix(in srgb, var(--accent-1) 14%, transparent));
 }
 
 .partjourney--a {
-  min-height: 880px;
   overflow: hidden;
   padding: clamp(var(--sp-6), 4vw, var(--sp-8)) var(--content-px) clamp(var(--sp-7), 6vw, var(--sp-9));
   border-bottom: 1px solid color-mix(in srgb, var(--accent-1) 42%, var(--border));
@@ -633,21 +636,30 @@
   white-space: nowrap;
 }
 
-.partjourney__polygon {
-  position: absolute;
-  z-index: 0;
-  top: 154px;
-  right: max(-120px, calc((100vw - 1440px) / 2 - 80px));
-  width: min(47vw, 650px);
-  opacity: 0.74;
+.partjourney--a .partjourney__body {
+  width: min(100%, 1180px);
+  margin-inline: auto;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 520px;
+  align-items: start;
+  gap: var(--sp-5);
+}
+
+.partjourney--a .partjourney__art {
+  min-width: 0;
+  opacity: 0.88;
   pointer-events: none;
+}
+
+.partjourney--a .partjourney__art svg {
+  width: 100%;
+  height: auto;
 }
 
 .partjourney--a .typepath {
   z-index: 1;
-  width: min(100%, 1110px);
-  margin: 0 auto;
-  padding-right: min(34vw, 390px);
+  width: 100%;
+  margin: 0;
 }
 
 .partjourney--a .typepath::before {
@@ -759,15 +771,15 @@
     grid-template-columns: minmax(300px, 0.9fr) minmax(390px, 1.1fr);
   }
 
-  .partjourney--a .typepath {
-    padding-right: min(29vw, 280px);
+}
+
+@media (max-width: 1280px) {
+  .partjourney--a .partjourney__body {
+    display: block;
   }
 
-  .partjourney__polygon {
-    top: 150px;
-    right: -160px;
-    width: 560px;
-    opacity: 0.46;
+  .partjourney--a .partjourney__art {
+    display: none;
   }
 }
 
@@ -782,7 +794,7 @@
     min-height: 330px;
   }
 
-  .partcover__backpack {
+  .partpage[data-part-id='a'] .partcover__family-art {
     width: min(94vw, 430px);
     transform: translateY(4%);
   }
@@ -805,15 +817,12 @@
     padding-top: var(--sp-5);
   }
 
-  .partjourney--a .typepath {
-    padding-right: 0;
+  .partjourney--a .partjourney__body {
+    display: block;
   }
 
-  .partjourney__polygon {
-    top: 300px;
-    right: -245px;
-    width: 500px;
-    opacity: 0.16;
+  .partjourney--a .partjourney__art {
+    display: none;
   }
 
   .partjourney--a .typewaypoint {
@@ -827,6 +836,237 @@
   }
 
   .partjourney--a .typewaypoint__title {
+    font-size: 19px;
+  }
+}
+
+/* ---------------- B 线性 DP：索引轨道图谱 ---------------- */
+.partpage[data-part-id='b'] .partcover {
+  min-height: clamp(590px, 70dvh, 740px);
+  background:
+    radial-gradient(circle at 78% 46%, color-mix(in srgb, var(--accent-1) 13%, transparent), transparent 36%),
+    linear-gradient(90deg, var(--canvas) 0 43%, color-mix(in srgb, var(--surface-1) 76%, var(--canvas)) 100%);
+}
+
+.partpage[data-part-id='b'] .partcover::before {
+  background-size: 72px 72px;
+  opacity: 0.42;
+  mask-image: linear-gradient(90deg, transparent 4%, #000 52%, #000 100%);
+}
+
+.partpage[data-part-id='b'] .partcover__frame {
+  width: min(100%, 1320px);
+  grid-template-columns: minmax(360px, 0.84fr) minmax(520px, 1.16fr);
+  gap: clamp(var(--sp-5), 3vw, var(--sp-7));
+  padding-top: clamp(var(--sp-6), 5vw, var(--sp-8));
+  padding-bottom: clamp(var(--sp-6), 5vw, var(--sp-8));
+}
+
+.partpage[data-part-id='b'] .partcover h1 {
+  max-width: none;
+  font-size: clamp(72px, 7.2vw, 112px);
+  font-weight: 650;
+  line-height: 0.91;
+}
+
+.partpage[data-part-id='b'] .partcover__tag {
+  max-width: 36em;
+  margin-top: var(--sp-6);
+  font-size: clamp(16px, 1.4vw, 20px);
+}
+
+.partpage[data-part-id='b'] .partcover__actions {
+  margin-top: var(--sp-7);
+}
+
+.partpage[data-part-id='b'] .partcover__art {
+  min-height: 520px;
+}
+
+.partpage[data-part-id='b'] .partcover__art::before,
+.partpage[data-part-id='b'] .partcover__art::after {
+  display: none;
+}
+
+.partpage[data-part-id='b'] .partcover__family-art {
+  width: min(49vw, 680px);
+  transform: translate(2%, 1%);
+  filter: drop-shadow(0 34px 80px color-mix(in srgb, var(--accent-1) 11%, transparent));
+}
+
+.partjourney--b {
+  overflow: hidden;
+  padding: clamp(var(--sp-6), 4vw, var(--sp-8)) var(--content-px) clamp(var(--sp-7), 6vw, var(--sp-9));
+  border-bottom: 1px solid color-mix(in srgb, var(--accent-1) 38%, var(--border));
+  background:
+    linear-gradient(90deg, var(--canvas) 0 54%, color-mix(in srgb, var(--accent-1) 2%, var(--canvas)) 100%);
+}
+
+.partjourney--b .partjourney__header {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  clip-path: inset(50%);
+  white-space: nowrap;
+}
+
+.partjourney--b .partjourney__body {
+  width: min(100%, 1180px);
+  margin-inline: auto;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 500px;
+  align-items: start;
+  gap: var(--sp-5);
+}
+
+.partjourney--b .partjourney__art {
+  min-width: 0;
+  opacity: 0.86;
+  pointer-events: none;
+}
+
+.partjourney--b .typepath {
+  z-index: 1;
+  width: 100%;
+  margin: 0;
+}
+
+.partjourney--b .typepath::before {
+  top: 47px;
+  bottom: 47px;
+  left: 10px;
+  background: linear-gradient(
+    180deg,
+    var(--accent-1),
+    color-mix(in srgb, var(--accent-1) 54%, var(--border))
+  );
+}
+
+.partjourney--b .typewaypoint {
+  min-height: 94px;
+  padding: 0 0 0 54px;
+  justify-content: stretch;
+  contain-intrinsic-size: 0 94px;
+}
+
+.partjourney--b .typewaypoint::before {
+  left: 10px;
+  width: 13px;
+  height: 13px;
+  border-width: 1px;
+}
+
+.partjourney--b .typewaypoint:first-child::before {
+  background: var(--accent-1);
+}
+
+.partjourney--b .typewaypoint::after {
+  display: none;
+}
+
+.partjourney--b .typewaypoint__link {
+  min-height: 94px;
+  grid-template-columns: 46px minmax(0, 1fr) 30px;
+  gap: var(--sp-3);
+  padding: var(--sp-3) 0;
+  border-bottom: 1px solid var(--border);
+  text-align: left;
+  transition:
+    border-color var(--t-fast),
+    transform var(--t-med) var(--ease-out);
+}
+
+.partjourney--b .typewaypoint:last-child .typewaypoint__link {
+  border-bottom: 0;
+}
+
+.partjourney--b .typewaypoint__link:hover,
+.partjourney--b .typewaypoint__link:focus-visible {
+  border-color: color-mix(in srgb, var(--accent-1) 45%, var(--border));
+  transform: translateX(5px);
+}
+
+.partjourney--b .typewaypoint__num {
+  font-size: 18px;
+}
+
+.partjourney--b .typewaypoint__title {
+  font-size: clamp(18px, 1.7vw, 24px);
+}
+
+.partjourney--b .typewaypoint__blurb {
+  margin-top: 4px;
+  font-size: 12.5px;
+}
+
+.partjourney--b .typewaypoint__arrow {
+  justify-self: end;
+}
+
+@media (max-width: 1000px) {
+  .partpage[data-part-id='b'] .partcover__frame {
+    grid-template-columns: minmax(300px, 0.88fr) minmax(400px, 1.12fr);
+  }
+
+}
+
+@media (max-width: 1280px) {
+  .partjourney--b .partjourney__body {
+    display: block;
+  }
+
+  .partjourney--b .partjourney__art {
+    display: none;
+  }
+}
+
+@media (max-width: 700px) {
+  .partpage[data-part-id='b'] .partcover__frame {
+    min-height: 740px;
+    grid-template-columns: 1fr;
+    gap: 0;
+  }
+
+  .partpage[data-part-id='b'] .partcover__art {
+    min-height: 310px;
+  }
+
+  .partpage[data-part-id='b'] .partcover__family-art {
+    width: min(96vw, 450px);
+    transform: translateY(4%);
+  }
+
+  .partpage[data-part-id='b'] .partcover h1 {
+    font-size: clamp(54px, 17vw, 76px);
+  }
+
+  .partpage[data-part-id='b'] .partcover__tag {
+    margin-top: var(--sp-4);
+    font-size: 15px;
+  }
+
+  .partpage[data-part-id='b'] .partcover__actions {
+    margin-top: var(--sp-5);
+  }
+
+  .partjourney--b {
+    padding-top: var(--sp-5);
+  }
+
+  .partjourney--b .typewaypoint {
+    min-height: 100px;
+    padding-left: 42px;
+  }
+
+  .partjourney--b .typewaypoint__link {
+    min-height: 100px;
+    grid-template-columns: 38px minmax(0, 1fr) 22px;
+  }
+
+  .partjourney--b .typewaypoint__title {
     font-size: 19px;
   }
 }

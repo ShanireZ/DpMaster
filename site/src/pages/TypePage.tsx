@@ -6,6 +6,7 @@ import { getLessonEditorial } from '../data/editorial.ts'
 import AnimatedContent from '../components/motion/AnimatedContent'
 import PartGlyph from '../components/PartGlyph'
 import { FamilyLessonPlate } from '../components/art/FamilyArtSlots.tsx'
+import { hasFamilyArt } from '../components/art/familyArtRegistry.ts'
 import { useStaticLessonContents } from '../app/StaticLessonContent.ts'
 import './typepage.css'
 
@@ -145,7 +146,7 @@ export default function TypePage() {
                     fallback={<PartGlyph id={part.id} size={320} />}
                   />
                 </div>
-                {part.id !== 'a' && <span className="typehead__art-code">{part.code}</span>}
+                {!hasFamilyArt(part.id) && <span className="typehead__art-code">{part.code}</span>}
               </div>
             </div>
             {editorial && (

@@ -18,6 +18,7 @@ test('family art owns upgraded route visuals without duplicating catalog content
   const typePage = source('src/pages/TypePage.tsx')
 
   assert.match(registry, /familyArt\(\s*'a'/)
+  assert.match(registry, /familyArt\(\s*'b'/)
   assert.doesNotMatch(registry, /\btitle:\s*['"]/)
   assert.doesNotMatch(registry, /\bslug:\s*['"]/)
   assert.match(partPage, /FamilyHeroArt/)
