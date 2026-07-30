@@ -21,6 +21,11 @@ interface KnapsackLessonPlateProps {
   className?: string
 }
 
+interface BackpackFace {
+  points: string
+  tone: number
+}
+
 const lessonTitles: Record<string, string> = {
   '01': '01 背包状态图',
   complete: '完全背包正序状态图',
@@ -33,74 +38,184 @@ const lessonTitles: Record<string, string> = {
   fractional: '分数背包比例排序图',
 }
 
+const handleFaces: BackpackFace[] = [
+  { points: '278,180 291,120 318,88 332,110 316,178', tone: 3 },
+  { points: '291,120 318,88 332,110 314,137', tone: 2 },
+  { points: '318,88 395,76 425,96 332,110', tone: 1 },
+  { points: '332,110 425,96 407,124 350,132', tone: 4 },
+  { points: '395,76 425,96 448,157 420,170', tone: 3 },
+  { points: '425,96 448,157 420,170 407,124', tone: 5 },
+  { points: '278,180 314,137 350,132 316,178', tone: 4 },
+  { points: '350,132 407,124 420,170 382,151', tone: 6 },
+  { points: '316,178 350,132 382,151 352,185', tone: 2 },
+  { points: '382,151 420,170 407,193 352,185', tone: 3 },
+]
+
+const shoulderFaces: BackpackFace[] = [
+  { points: '474,174 526,180 570,216 532,244 496,224', tone: 2 },
+  { points: '526,180 570,216 596,270 558,292 532,244', tone: 1 },
+  { points: '532,244 558,292 542,340 514,298', tone: 7 },
+  { points: '558,292 596,270 620,344 584,373', tone: 4 },
+  { points: '542,340 584,373 566,424 530,392', tone: 8 },
+  { points: '584,373 620,344 634,432 599,458', tone: 3 },
+  { points: '566,424 599,458 584,510 548,480', tone: 8 },
+  { points: '599,458 634,432 631,515 594,544', tone: 4 },
+  { points: '584,510 594,544 567,578 550,546', tone: 7 },
+  { points: '594,544 631,515 613,574 581,606 567,578', tone: 3 },
+  { points: '567,578 581,606 553,626 526,607', tone: 5 },
+  { points: '526,607 553,626 526,636 494,620', tone: 7 },
+  { points: '494,620 526,607 508,566 482,580', tone: 4 },
+  { points: '482,580 508,566 492,516 468,536', tone: 6 },
+]
+
+const sideFaces: BackpackFace[] = [
+  { points: '455,184 500,191 535,231 486,247', tone: 1 },
+  { points: '500,191 535,231 550,309 511,286', tone: 2 },
+  { points: '486,247 511,286 491,351 459,317', tone: 4 },
+  { points: '511,286 550,309 549,390 512,370', tone: 3 },
+  { points: '459,317 491,351 470,425 442,382', tone: 5 },
+  { points: '491,351 512,370 507,455 470,425', tone: 2 },
+  { points: '512,370 549,390 545,474 507,455', tone: 4 },
+  { points: '470,425 507,455 486,522 454,489', tone: 5 },
+  { points: '507,455 545,474 532,547 486,522', tone: 3 },
+  { points: '454,489 486,522 455,582 420,544', tone: 6 },
+  { points: '486,522 532,547 495,594 455,582', tone: 4 },
+  { points: '455,582 495,594 438,620 420,544', tone: 5 },
+  { points: '486,247 535,231 511,286', tone: 2 },
+  { points: '459,317 486,247 491,351', tone: 3 },
+  { points: '442,382 459,317 470,425', tone: 5 },
+  { points: '420,544 454,489 455,582', tone: 6 },
+]
+
+const bodyFaces: BackpackFace[] = [
+  { points: '166,306 230,292 214,372 151,395', tone: 6 },
+  { points: '230,292 302,316 265,384 214,372', tone: 5 },
+  { points: '302,316 376,300 350,382 265,384', tone: 4 },
+  { points: '376,300 448,288 421,364 350,382', tone: 5 },
+  { points: '448,288 486,247 459,317 421,364', tone: 4 },
+  { points: '151,395 214,372 201,454 145,480', tone: 6 },
+  { points: '214,372 265,384 244,452 201,454', tone: 5 },
+  { points: '265,384 350,382 317,459 244,452', tone: 4 },
+  { points: '350,382 421,364 399,447 317,459', tone: 5 },
+  { points: '421,364 459,317 442,382 399,447', tone: 4 },
+  { points: '145,480 201,454 210,534 169,559', tone: 5 },
+  { points: '201,454 244,452 263,522 210,534', tone: 4 },
+  { points: '244,452 317,459 304,536 263,522', tone: 5 },
+  { points: '317,459 399,447 383,530 304,536', tone: 4 },
+  { points: '399,447 442,382 454,489 383,530', tone: 5 },
+  { points: '169,559 210,534 272,590 205,603', tone: 6 },
+  { points: '210,534 263,522 304,536 272,590', tone: 5 },
+  { points: '304,536 383,530 355,605 272,590', tone: 4 },
+  { points: '383,530 454,489 420,544 355,605', tone: 5 },
+  { points: '355,605 420,544 438,620 380,632', tone: 4 },
+  { points: '205,603 272,590 355,605 300,632', tone: 5 },
+  { points: '300,632 355,605 380,632', tone: 4 },
+]
+
+const flapFaces: BackpackFace[] = [
+  { points: '170,207 251,183 235,252 151,276', tone: 6 },
+  { points: '251,183 333,170 310,242 235,252', tone: 5 },
+  { points: '333,170 399,164 385,235 310,242', tone: 6 },
+  { points: '399,164 455,184 430,250 385,235', tone: 5 },
+  { points: '455,184 500,191 486,247 430,250', tone: 4 },
+  { points: '151,276 235,252 206,321 143,304', tone: 5 },
+  { points: '235,252 310,242 286,314 206,321', tone: 6 },
+  { points: '310,242 385,235 361,305 286,314', tone: 5 },
+  { points: '385,235 430,250 421,304 361,305', tone: 6 },
+  { points: '430,250 486,247 448,288 421,304', tone: 4 },
+  { points: '143,304 206,321 191,344 158,330', tone: 5 },
+  { points: '206,321 286,314 265,350 191,344', tone: 4 },
+  { points: '286,314 361,305 350,344 265,350', tone: 5 },
+  { points: '361,305 421,304 402,337 350,344', tone: 4 },
+  { points: '421,304 448,288 433,321 402,337', tone: 5 },
+  { points: '251,183 333,170 310,242', tone: 6 },
+  { points: '399,164 455,184 385,235', tone: 5 },
+]
+
+const frontStrapFaces: BackpackFace[] = [
+  { points: '204,249 235,244 232,309 198,317', tone: 2 },
+  { points: '198,317 232,309 226,383 190,394', tone: 3 },
+  { points: '190,394 226,383 218,455 181,468', tone: 2 },
+  { points: '181,468 218,455 211,511 175,525', tone: 4 },
+  { points: '364,235 396,238 402,304 368,304', tone: 1 },
+  { points: '368,304 402,304 413,378 377,381', tone: 3 },
+  { points: '377,381 413,378 423,451 386,458', tone: 2 },
+  { points: '386,458 423,451 430,510 394,519', tone: 4 },
+]
+
+const pocketFaces: BackpackFace[] = [
+  { points: '211,447 280,427 350,435 277,463', tone: 6 },
+  { points: '280,427 350,435 403,453 329,470', tone: 5 },
+  { points: '211,447 277,463 244,500 192,482', tone: 4 },
+  { points: '277,463 329,470 304,510 244,500', tone: 3 },
+  { points: '329,470 403,453 398,505 304,510', tone: 2 },
+  { points: '192,482 244,500 236,558 183,536', tone: 3 },
+  { points: '244,500 304,510 284,566 236,558', tone: 2 },
+  { points: '304,510 398,505 382,559 284,566', tone: 1 },
+  { points: '183,536 236,558 284,566 225,579', tone: 4 },
+  { points: '284,566 382,559 349,581 225,579', tone: 3 },
+  { points: '350,435 403,453 398,505 329,470', tone: 2 },
+]
+
+function FaceMesh({ faces, className = '' }: { faces: BackpackFace[]; className?: string }) {
+  return (
+    <g className={className}>
+      {faces.map((face, index) => (
+        <polygon
+          key={`${face.points}-${index}`}
+          points={face.points}
+          className={`poly-backpack__face poly-backpack__face--${face.tone}`}
+        />
+      ))}
+    </g>
+  )
+}
+
 function BackpackGeometry({ mode = 'solid', textureId }: BackpackGeometryProps) {
   const wire = mode === 'wireframe'
   return (
     <g className={`poly-backpack__geometry poly-backpack__geometry--${mode}`}>
+      <ellipse className="poly-backpack__ground" cx="367" cy="623" rx="280" ry="30" />
+      <g className="poly-backpack__ground-hatching">
+        <path d="M72 612 489 666M104 596 548 654M150 582 605 638M208 568 650 622" />
+        <path d="M112 654 560 572M170 664 610 585M232 670 652 601" />
+      </g>
       <g
         className="poly-backpack__material"
         style={!wire && textureId ? { filter: `url(#${textureId})` } : undefined}
       >
-        <g className="poly-backpack__handle">
-          <polygon points="318,126 337,82 423,82 446,126 424,145 335,145" className="poly-backpack__face poly-backpack__face--1" />
-          <polygon points="318,126 337,82 337,111 332,167 302,177 302,139" className="poly-backpack__face poly-backpack__face--5" />
-          <polygon points="423,82 446,126 449,169 420,157 420,111" className="poly-backpack__face poly-backpack__face--3" />
-          <polygon points="337,82 423,82 420,111 337,111" className="poly-backpack__face poly-backpack__face--2" />
-          <polygon points="337,111 420,111 420,157 399,146 354,146 332,167" className="poly-backpack__face poly-backpack__face--6" />
-          <polygon points="302,139 332,167 354,146 337,111 318,126" className="poly-backpack__face poly-backpack__face--4" />
-          <polygon points="420,111 446,126 449,169 420,157" className="poly-backpack__face poly-backpack__face--5" />
-        </g>
+        <FaceMesh faces={shoulderFaces} className="poly-backpack__shoulder is-dark" />
+        <FaceMesh faces={handleFaces} className="poly-backpack__handle is-gold" />
+        <FaceMesh faces={bodyFaces} className="poly-backpack__shell" />
+        <FaceMesh faces={sideFaces} className="poly-backpack__side is-gold" />
+        <FaceMesh faces={flapFaces} className="poly-backpack__flap is-light" />
+        <FaceMesh faces={frontStrapFaces} className="poly-backpack__front-straps is-gold" />
+        <FaceMesh faces={pocketFaces} className="poly-backpack__pocket is-gold" />
 
-        <g className="poly-backpack__shell">
-          <polygon points="230,176 302,177 251,237 185,260" className="poly-backpack__face poly-backpack__face--4" />
-          <polygon points="449,169 481,174 532,234 492,233" className="poly-backpack__face poly-backpack__face--3" />
-          <polygon points="185,260 251,237 270,340 223,431 193,376" className="poly-backpack__face poly-backpack__face--5" />
-          <polygon points="193,376 223,431 273,438 356,595 205,565" className="poly-backpack__face poly-backpack__face--6" />
-          <polygon points="251,237 270,340 370,318" className="poly-backpack__face poly-backpack__face--3" />
-          <polygon points="430,250 492,233 509,365 392,359 370,318" className="poly-backpack__face poly-backpack__face--5" />
-          <polygon points="492,233 532,234 548,374 509,365" className="poly-backpack__face poly-backpack__face--6" />
-          <polygon points="509,365 548,374 555,542 438,513 415,466" className="poly-backpack__face poly-backpack__face--5" />
-          <polygon points="415,466 438,513 555,542 356,595" className="poly-backpack__face poly-backpack__face--4" />
-          <polygon points="273,438 415,466 356,595" className="poly-backpack__face poly-backpack__face--3" />
-          <polygon points="205,565 356,595 273,438" className="poly-backpack__face poly-backpack__face--5" />
-        </g>
-
-        <g className="poly-backpack__front">
-          <polygon points="230,176 481,174 492,233 430,250 251,237" className="poly-backpack__face poly-backpack__face--1" />
-          <polygon points="230,176 251,237 185,260" className="poly-backpack__face poly-backpack__face--2" />
-          <polygon points="481,174 532,234 492,233" className="poly-backpack__face poly-backpack__face--4" />
-          <polygon points="251,237 430,250 370,318" className="poly-backpack__face poly-backpack__face--2" />
-          <polygon points="251,237 370,318 270,340" className="poly-backpack__face poly-backpack__face--3" />
-          <polygon points="370,318 430,250 392,359" className="poly-backpack__face poly-backpack__face--4" />
-          <polygon points="270,340 370,318 415,466 273,438" className="poly-backpack__face poly-backpack__face--2" />
-          <polygon points="370,318 392,359 415,466" className="poly-backpack__face poly-backpack__face--3" />
-        </g>
-
-        <g className="poly-backpack__buckle">
-          <polygon points="221,406 272,418 263,454 214,442" className="poly-backpack__face poly-backpack__face--1" />
-          <polygon points="214,442 263,454 255,513 206,499" className="poly-backpack__face poly-backpack__face--3" />
-          <polygon points="226,454 251,461 247,489 221,482" className="poly-backpack__face poly-backpack__face--6" />
-          <polygon points="206,499 255,513 242,534 200,518" className="poly-backpack__face poly-backpack__face--4" />
-        </g>
-
-        <g className="poly-backpack__strap">
-          <polygon points="476,181 526,184 558,207 532,236 492,220" className="poly-backpack__face poly-backpack__face--2" />
-          <polygon points="532,236 558,207 590,248 562,278" className="poly-backpack__face poly-backpack__face--1" />
-          <polygon points="562,278 590,248 619,330 587,356" className="poly-backpack__face poly-backpack__face--3" />
-          <polygon points="587,356 619,330 638,423 603,451" className="poly-backpack__face poly-backpack__face--4" />
-          <polygon points="603,451 638,423 638,504 600,529" className="poly-backpack__face poly-backpack__face--5" />
-          <polygon points="600,529 638,504 613,556 574,573" className="poly-backpack__face poly-backpack__face--3" />
-          <polygon points="574,573 613,556 570,590 534,578" className="poly-backpack__face poly-backpack__face--2" />
-          <polygon points="534,578 574,573 555,542 519,542" className="poly-backpack__face poly-backpack__face--6" />
+        <g className="poly-backpack__buckles is-metal">
+          <polygon points="184,320 239,309 242,354 187,366" className="poly-backpack__face poly-backpack__face--1" />
+          <polygon points="192,329 231,321 233,344 194,353" className="poly-backpack__face poly-backpack__face--7" />
+          <polygon points="361,302 414,300 419,344 365,348" className="poly-backpack__face poly-backpack__face--1" />
+          <polygon points="370,311 405,310 409,335 373,338" className="poly-backpack__face poly-backpack__face--7" />
+          <polygon points="184,320 192,329 194,353 187,366" className="poly-backpack__face poly-backpack__face--3" />
+          <polygon points="239,309 231,321 233,344 242,354" className="poly-backpack__face poly-backpack__face--2" />
+          <polygon points="361,302 370,311 373,338 365,348" className="poly-backpack__face poly-backpack__face--3" />
+          <polygon points="414,300 405,310 409,335 419,344" className="poly-backpack__face poly-backpack__face--2" />
         </g>
       </g>
 
-      <path className="poly-backpack__outline" d="M230 176 302 139 318 126 337 82h86l23 44 3 43 32 5 51 60 16 140 7 168-199 53-151-30-20-189-8-116Z" />
-      <path className="poly-backpack__strap-outline" d="M476 181 526 184 558 207 590 248 619 330 638 423v81l-25 52-39 17-19-31-36 36" />
-      <path className="poly-backpack__handle-cutout" d="M337 111h83v46l-21-11h-45l-22 21Z" />
+      <path className="poly-backpack__outline" d="M170 207 278 180 291 120 318 88 395 76 425 96 448 157 500 191 535 231 550 309 549 390 545 474 532 547 495 594 438 620 380 632 300 632 205 603 169 559 145 480 151 395 143 304Z" />
+      <path className="poly-backpack__strap-outline" d="M474 174 526 180 570 216 596 270 620 344 634 432 631 515 613 574 581 606 553 626 526 636 494 620 468 536" />
+      <path className="poly-backpack__handle-cutout" d="M316 178 332 110 425 96 407 124 350 132 352 185Z" />
+      <path className="poly-backpack__flap-outline" d="M170 207 251 183 333 170 399 164 455 184 500 191 486 247 448 288 433 321 402 337 350 344 265 350 191 344 158 330 143 304 151 276Z" />
+      <path className="poly-backpack__pocket-outline" d="M211 447 280 427 350 435 403 453 398 505 382 559 349 581 225 579 183 536 192 482Z" />
+      <g className="poly-backpack__buckle-frames">
+        <path d="M184 320 239 309 242 354 187 366ZM192 329 231 321 233 344 194 353Z" />
+        <path d="M361 302 414 300 419 344 365 348ZM370 311 405 310 409 335 373 338Z" />
+      </g>
       <g className="poly-backpack__seams">
-        <path d="M251 237 430 250 392 359 415 466 273 438 270 340Z" />
-        <path d="M185 260 270 340 193 376M492 233 509 365 548 374M205 565 273 438M356 595 415 466M438 513 555 542" />
+        <path d="M151 395 214 372 265 384 350 382 421 364M145 480 201 454 244 452 317 459 399 447M169 559 210 534 263 522 304 536 383 530" />
+        <path d="M486 247 459 317 442 382 454 489 420 544M535 231 511 286 512 370 507 455 486 522 455 582" />
       </g>
     </g>
   )
@@ -139,9 +254,13 @@ export default function PolygonBackpack({
         </filter>
       </defs>
       <g className="poly-backpack__construction">
-        <circle cx="378" cy="344" r="286" />
-        <circle cx="378" cy="344" r="218" />
-        <path d="M42 680 692 22M0 602 720 250M378 0V680M0 344H720" />
+        <circle cx="376" cy="350" r="292" />
+        <circle cx="376" cy="350" r="224" />
+        <path d="M30 672 700 24M0 608 720 252M376 0V680M0 350H720" />
+        <path d="M70 126 665 572M42 534 642 86M52 640 690 640M92 596 620 596" />
+        <circle cx="94" cy="596" r="5" />
+        <circle cx="642" cy="86" r="5" />
+        <circle cx="665" cy="572" r="5" />
       </g>
       <g className="poly-backpack__silhouette">
         <BackpackGeometry mode={mode} textureId={textureId} />

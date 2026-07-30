@@ -1,6 +1,6 @@
 import { expect, test } from '@playwright/test'
 
-test('B category renders the index tape and an integrated two-rail course score', async ({ page }) => {
+test('B category renders the polygon index spine and an integrated two-rail course score', async ({ page }) => {
   const runtimeErrors: string[] = []
   page.on('console', (message) => {
     if (message.type() === 'error') runtimeErrors.push(message.text())
@@ -11,8 +11,11 @@ test('B category renders the index tape and an integrated two-rail course score'
   await page.goto('/part/b')
 
   await expect(page.locator('[data-family-art="b"][data-family-mode="hero"]')).toBeVisible()
-  await expect(page.locator('.linear-hero__tape rect')).toHaveCount(7)
-  await expect(page.locator('.linear-hero__predecessors path')).toHaveCount(4)
+  await expect(page.locator('.linear-hero__state')).toHaveCount(7)
+  await expect(page.locator('.linear-hero__state.is-current')).toHaveCount(1)
+  await expect(page.locator('.linear-hero__predecessor-ribbons polyline')).toHaveCount(4)
+  await expect(page.locator('.linear-hero__rolling-ribbon polygon')).toHaveCount(6)
+  await expect(page.locator('.linear-hero__tape')).toHaveCount(0)
   await expect(page.locator('[data-family-art="b"][data-family-mode="journey"]')).toBeVisible()
   await expect(page.locator('.linear-journey__relations path')).toHaveCount(6)
   await expect(page.locator('.partjourney--b .typewaypoint')).toHaveCount(7)
@@ -22,6 +25,42 @@ test('B category renders the index tape and an integrated two-rail course score'
   ).evaluateAll((items) => items.map((item) => item.getBoundingClientRect().left))
   expect(secondRowOrder[0]).toBeGreaterThan(secondRowOrder[1])
   expect(secondRowOrder[1]).toBeGreaterThan(secondRowOrder[2])
+  const arrowGeometry = await page.locator('.partjourney--b .typewaypoint').evaluateAll((items) => {
+    const boxes = items.map((item) => item.getBoundingClientRect())
+    const arrows = items.map((item) => item.querySelector<HTMLElement>('.typewaypoint__arrow')?.getBoundingClientRect())
+    const center = (box: DOMRect) => ({ x: (box.left + box.right) / 2, y: (box.top + box.bottom) / 2 })
+
+    return {
+      firstRowBoundaryDeltas: [0, 1, 2].map((index) => {
+        const arrow = arrows[index]
+        return arrow ? Math.abs(center(arrow).x - boxes[index].right) : Number.POSITIVE_INFINITY
+      }),
+      firstRowVerticalSpread: Math.max(...[0, 1, 2].map((index) => center(arrows[index]!).y))
+        - Math.min(...[0, 1, 2].map((index) => center(arrows[index]!).y)),
+      boundaryArrowWidths: [0, 1, 2, 4, 5].map((index) => arrows[index]?.width ?? 0),
+      foldArrow: arrows[3]
+        ? {
+            y: center(arrows[3]).y,
+            rowGapCenter: (boxes[3].bottom + boxes[4].top) / 2,
+            transform: getComputedStyle(items[3].querySelector<HTMLElement>('.typewaypoint__arrow')!).transform,
+          }
+        : undefined,
+      secondRowBoundaryDeltas: [4, 5].map((index) => {
+        const arrow = arrows[index]
+        return arrow ? Math.abs(center(arrow).x - boxes[index].left) : Number.POSITIVE_INFINITY
+      }),
+      secondRowVerticalSpread: Math.abs(center(arrows[4]!).y - center(arrows[5]!).y),
+      finalArrowDisplay: getComputedStyle(items[6].querySelector<HTMLElement>('.typewaypoint__arrow')!).display,
+    }
+  })
+  expect(Math.max(...arrowGeometry.firstRowBoundaryDeltas)).toBeLessThanOrEqual(1)
+  expect(arrowGeometry.firstRowVerticalSpread).toBeLessThanOrEqual(1)
+  expect(Math.max(...arrowGeometry.secondRowBoundaryDeltas)).toBeLessThanOrEqual(1)
+  expect(arrowGeometry.secondRowVerticalSpread).toBeLessThanOrEqual(1)
+  expect(Math.min(...arrowGeometry.boundaryArrowWidths)).toBeGreaterThanOrEqual(19)
+  expect(Math.abs(arrowGeometry.foldArrow!.y - arrowGeometry.foldArrow!.rowGapCenter)).toBeLessThanOrEqual(2)
+  expect(arrowGeometry.foldArrow!.transform).not.toBe('none')
+  expect(arrowGeometry.finalArrowDisplay).toBe('none')
   expect(
     await page.evaluate(() => document.documentElement.scrollWidth <= document.documentElement.clientWidth + 1),
   ).toBe(true)
@@ -35,14 +74,14 @@ test('B category renders the index tape and an integrated two-rail course score'
   expect(runtimeErrors).toEqual([])
 })
 
-test('LIS and edit-distance use distinct accessible B pilot plates', async ({ page }) => {
+test('all seven B lessons use distinct accessible semantic plates', async ({ page }) => {
   const runtimeErrors: string[] = []
   page.on('console', (message) => {
     if (message.type() === 'error') runtimeErrors.push(message.text())
   })
   page.on('pageerror', (error) => runtimeErrors.push(error.message))
 
-  for (const slug of ['edit', 'lis'] as const) {
+  for (const slug of ['path', 'maxseg', 'lis', 'lcs', 'edit', 'fsm', 'count'] as const) {
     await page.setViewportSize({ width: 1440, height: 900 })
     await page.goto(`/part/b/${slug}`)
 
@@ -53,18 +92,35 @@ test('LIS and edit-distance use distinct accessible B pilot plates', async ({ pa
     await expect(plate.locator('title')).toHaveCount(1)
     await expect(plate.locator('desc')).toHaveCount(1)
     await expect(page.locator('.typehead__art-code')).toHaveCount(0)
+    const drawingBounds = await plate.evaluate((svg) => {
+      const bounds = (svg as SVGSVGElement).getBBox()
+      return {
+        left: bounds.x,
+        top: bounds.y,
+        right: bounds.x + bounds.width,
+        bottom: bounds.y + bounds.height,
+      }
+    })
+    expect(drawingBounds.left, `${slug} drawing starts inside the 640 × 390 canvas`).toBeGreaterThanOrEqual(0)
+    expect(drawingBounds.top, `${slug} drawing starts inside the 640 × 390 canvas`).toBeGreaterThanOrEqual(0)
+    expect(drawingBounds.right, `${slug} drawing fits the 640 × 390 canvas`).toBeLessThanOrEqual(640)
+    expect(drawingBounds.bottom, `${slug} drawing fits the 640 × 390 canvas`).toBeLessThanOrEqual(390)
     expect(
       await page.evaluate(() => document.documentElement.scrollWidth <= document.documentElement.clientWidth + 1),
     ).toBe(true)
     expect(runtimeErrors, `${slug} should hydrate without errors`).toEqual([])
   }
 
-  await page.goto('/part/b/path')
-  await expect(page.locator('[data-family-art="b"][data-family-mode="fallback"][data-lesson-plate="path"]')).toBeVisible()
-
   await page.setViewportSize({ width: 390, height: 844 })
+  for (const slug of ['path', 'maxseg', 'lis', 'lcs', 'edit', 'fsm', 'count'] as const) {
+    await page.goto(`/part/b/${slug}`)
+    await expect(page.locator(`.linear-plate--${slug}`)).toBeVisible()
+    expect(
+      await page.evaluate(() => document.documentElement.scrollWidth <= document.documentElement.clientWidth + 1),
+    ).toBe(true)
+  }
+
   await page.goto('/part/b/edit')
-  await expect(page.locator('.linear-plate--edit')).toBeVisible()
   const plateLayout = await page.evaluate(() => {
     const matrixCells = [...document.querySelectorAll('.linear-plate--edit .linear-plate__matrix rect')]
       .map((cell) => cell.getBoundingClientRect())
