@@ -23,14 +23,25 @@ test('A category renders the solid backpack and an integrated three-band course 
   await page.goto('/part/a')
 
   await expect(page.locator('.partcover__family-art')).toBeVisible()
-  await expect(page.locator('[data-family-art="a"][data-family-mode="hero"]')).toBeVisible()
-  await expect(page.locator('.partcover__family-art .poly-backpack__face')).toHaveCount(106)
-  await expect(page.locator('.partcover__family-art .poly-backpack__handle')).toHaveCount(1)
-  await expect(page.locator('.partcover__family-art .poly-backpack__front-straps')).toHaveCount(1)
-  await expect(page.locator('.partcover__family-art .poly-backpack__buckles .poly-backpack__face')).toHaveCount(8)
-  await expect(page.locator('.partcover__family-art .poly-backpack__pocket')).toHaveCount(1)
-  await expect(page.locator('.partcover__family-art .poly-backpack__shoulder')).toHaveCount(1)
-  await expect(page.locator('.partcover__family-art .poly-backpack__side .poly-backpack__face')).toHaveCount(16)
+  const hero = page.locator('img.poly-backpack--image[data-family-art="a"][data-family-mode="hero"]')
+  await expect(hero).toBeVisible()
+  await expect(hero).toHaveAttribute('alt', '')
+  await expect(hero).toHaveAttribute('aria-hidden', 'true')
+  await expect(hero).toHaveJSProperty('complete', true)
+  const heroAsset = await hero.evaluate((image: HTMLImageElement) => ({
+    naturalWidth: image.naturalWidth,
+    naturalHeight: image.naturalHeight,
+    src: image.currentSrc,
+  }))
+  expect(heroAsset.naturalWidth).toBe(1371)
+  expect(heroAsset.naturalHeight).toBe(1147)
+  expect(heroAsset.src).toContain('backpack-hero')
+  const categoryResources = await page.evaluate(() =>
+    performance.getEntriesByType('resource').map((entry) => entry.name),
+  )
+  expect(categoryResources.some((resource) => resource.includes('linear-hero'))).toBe(false)
+  expect(categoryResources.some((resource) => resource.includes('linear-lessons'))).toBe(false)
+  await expect(page.locator('.partcover__family-art .poly-backpack__face')).toHaveCount(0)
   await expect(page.locator('.partjourney__art')).toBeVisible()
   await expect(page.locator('[data-family-art="a"][data-family-mode="journey"]')).toBeVisible()
   await expect(page.locator('.partjourney__art .backpack-journey__rails > path')).toHaveCount(6)
@@ -52,6 +63,7 @@ test('A category renders the solid backpack and an integrated three-band course 
 
 test('all nine A lessons render their own scientific plate', async ({ page }) => {
   const runtimeErrors: string[] = []
+  const atlasCells = new Set<string>()
   page.on('console', (message) => {
     if (message.type() === 'error') runtimeErrors.push(message.text())
   })
@@ -63,8 +75,31 @@ test('all nine A lessons render their own scientific plate', async ({ page }) =>
     await expect(plate).toBeVisible()
     await expect(plate).toHaveAttribute('data-family-art', 'a')
     await expect(plate).toHaveAttribute('data-family-mode', 'lesson')
-    await expect(plate.locator('title')).toHaveCount(1)
-    await expect(plate.locator('desc')).toHaveCount(1)
+    await expect(plate).toHaveAttribute('role', 'img')
+    await expect(plate).toHaveAttribute('aria-label', /：.+/)
+    const atlas = plate.locator('.poly-lesson-plate__atlas')
+    await expect(atlas).toHaveJSProperty('complete', true)
+    const atlasAsset = await atlas.evaluate((image: HTMLImageElement) => ({
+      naturalWidth: image.naturalWidth,
+      naturalHeight: image.naturalHeight,
+      src: image.currentSrc,
+    }))
+    expect(atlasAsset.naturalWidth).toBe(1536)
+    expect(atlasAsset.naturalHeight).toBe(1024)
+    expect(atlasAsset.src).toContain('knapsack-lessons')
+    const routeResources = await page.evaluate(() =>
+      performance.getEntriesByType('resource').map((entry) => entry.name),
+    )
+    expect(routeResources.some((resource) => resource.includes('linear-lessons'))).toBe(false)
+    atlasCells.add(
+      `${await plate.getAttribute('data-atlas-column')}:${await plate.getAttribute('data-atlas-row')}`,
+    )
+    expect(await plate.locator('.poly-lesson-plate__viewport').evaluate((viewport) => {
+      const style = getComputedStyle(viewport)
+      return style.overflow === 'hidden'
+        && viewport.scrollWidth >= viewport.clientWidth
+        && viewport.scrollHeight >= viewport.clientHeight
+    })).toBe(true)
     await expect(plate.locator('.knapsack-plate__grid')).toHaveCount(0)
     await expect(plate.locator('.knapsack-plate__watermark')).toHaveCount(0)
     await expect(page.locator(`.typepage[data-lesson-slug="${slug}"]`)).toBeVisible()
@@ -74,6 +109,7 @@ test('all nine A lessons render their own scientific plate', async ({ page }) =>
       await page.evaluate(() => document.documentElement.scrollWidth <= document.documentElement.clientWidth + 1),
     ).toBe(true)
   }
+  expect(atlasCells.size).toBe(9)
 
   const desktopOutline = page.locator('.lesson-outline--desktop')
   expect(await desktopOutline.evaluate((outline) => {

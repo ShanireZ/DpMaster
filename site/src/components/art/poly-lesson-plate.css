@@ -1,0 +1,53 @@
+.poly-lesson-plate {
+  position: relative;
+  z-index: 1;
+  display: block;
+  width: min(100%, 640px);
+  margin-inline: auto;
+  color: var(--accent-1);
+  filter: drop-shadow(0 26px 54px color-mix(in srgb, var(--accent-1) 13%, transparent));
+}
+
+.poly-lesson-plate__viewport {
+  position: relative;
+  display: block;
+  width: 100%;
+  overflow: hidden;
+  aspect-ratio: 3 / 2;
+  isolation: isolate;
+}
+
+.poly-lesson-plate__atlas {
+  position: absolute;
+  top: 0;
+  left: 0;
+  display: block;
+  max-width: none;
+  height: auto;
+  pointer-events: none;
+  user-select: none;
+  transform-origin: top left;
+}
+
+.poly-lesson-plate--a .poly-lesson-plate__atlas {
+  width: 300%;
+  transform: translate(var(--atlas-x), var(--atlas-y));
+}
+
+.poly-lesson-plate--b .poly-lesson-plate__atlas {
+  width: 400%;
+  transform: translate(var(--atlas-x), var(--atlas-y));
+}
+
+@media (max-width: 600px) {
+  .poly-lesson-plate {
+    width: 112%;
+    margin-left: -6%;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .poly-lesson-plate {
+    filter: none;
+  }
+}

@@ -3,7 +3,7 @@
 > 版本：`v0.2`
 > 基线：`main@070ac55d6624`
 > 更新日期：2026-07-30
-> 状态：公共层与 A 类迁移完成；B 第二次评审与完整实现均已完成；A 主雕塑已重做，B 主雕塑已按授权改用透明高保真图像资产，等待视觉确认后再进入 B 独立发布确认
+> 状态：公共层与 A 类迁移完成；B 第二次评审与完整实现均已完成；A/B 分类主雕塑与 16 门课程图版已按授权升级为透明高保真 poly 资产，等待视觉确认后再进入 B 独立发布确认
 > 适用范围：`B 线性 DP`、`C 区间 DP`、`D 矩阵 DP`、`E 换根 DP`、`F 树形 DP`、`G 状压 DP` 的分类主页、课程内容页、算法图形、交互实验与响应式体验。  
 > 目标：把 A 类“背包 DP”的改造经验沉淀为可复用方法，避免六类页面变成 A 类的换色复制，也避免重新退回卡片式 SaaS、PPT 或 Markdown 文档站。
 
@@ -15,7 +15,7 @@
 - 每个家族经过两次视觉评审：概念板确认后进入实现，分类页与两个代表图版确认后自动完成该家族。
 - 每个家族达到 Definition of Done 后独立发布；发布前仍需取得明确确认。
 - 配色继续使用 Warm Ink。章节身份只使用 `--accent-*` 与 `--grad-a..g`，DP 状态只使用跨章节一致的 `--viz-*`。
-- 课程语义图版、课程路径和交互结构继续使用 React、SVG、CSS 与真实 DOM；分类页纯装饰性主雕塑在手工 SVG 无法达到已确认效果图保真度、且获得明确授权时，可使用透明高保真图像资产，但不得承载唯一语义或文字。
+- 课程路径和交互结构继续使用 React、SVG、CSS 与真实 DOM。经本轮明确授权，分类主雕塑与课程页头图版均可使用透明高保真 poly 图像资产；图像内不得嵌入课程文字，课程图版必须由 slug 唯一映射，并用 DOM 可访问名称完整说明状态或转移。
 
 ### 0.2 进度表
 
@@ -63,6 +63,10 @@
 - 完整 `npm run verify` 通过：227 项 Node 测试、33 项组件单元测试、25 项 Chromium 浏览器测试、双区域构建、SSR/SEO、Analytics 与资源预算均通过。
 - 修复 B 课程 SVG `<title>` 在 React 19 静态预渲染中因相邻文本节点变为空标题而产生的水合错误；课程图版标题现为单一确定性字符串节点。
 - 真实浏览器已验证深浅主题、1600×1000 / 1440×900 / 390×844、分类页和课程页直达、LIS Demo 单步状态变化、横向溢出和 console；完整 `npm run verify` 通过，包含 25 项 Chromium 浏览器测试。
+- B 双轨课程列表的 6 个桌面箭头已从课程卡内部移到独立过渡层：首行箭头统一位于相邻节点中点并向右，折返点居中向下，次行箭头统一位于相邻节点中点并向左；移动端仍使用顺序流中的节点箭头。
+- A 分类主雕塑改用透明高保真 poly 背包 `backpack-hero.avif`，保留包身、翻盖、提手、双带扣、前袋、侧面、肩带、地面影和暖棕工程辅助线，避免手工简化几何与已确认效果图继续产生材质差距。
+- 课程页头改为透明 poly 图集：A 使用 3×3 图集覆盖 9 门课程，B 使用 4×2 图集的 7 个有效格；每个 slug 拥有独立构图和语义描述，页面只裁切当前格。图集不含文字，标题与算法含义由 `role="img"` 和 `aria-label` 提供，避免图中文字重叠、缩放裁切和字体水合问题。
+- 新增的 A/B 三项 AVIF 视觉资产共 268,689 bytes；生产 assets 总量为 4,919,069 bytes，因此总资源预算从 4,700,000 调整到 5,050,000 bytes，单文件 760,000 bytes 与 CSS 80,000 bytes 门槛不变。
 
 ## 1. 每次执行前先记住的结论
 
@@ -139,10 +143,13 @@ A 类最终不是“做了一只背包”，而是建立了以下关系：
 | `site/src/pages/TypePage.tsx` | 课程内容页、目录、正文和语义图版 Slot | 继续通过家族注册表取得图版 |
 | `site/src/pages/typepage.css` | 阅读布局、标题区、正文和 A 类科学图版样式 | 阅读规则全局化，家族样式只处理艺术构图 |
 | `site/src/components/art/familyArtRegistry.ts` | 家族艺术契约、懒加载源与当前路由预加载入口 | 只登记 `partId` 和模块，不复制 catalog 文案 |
-| `site/src/components/art/PolygonBackpack.tsx` | A 类主雕塑、线框背包和 9 个课程图版 | 由 A 家族模块适配，后续按收益拆公共 SVG 原语 |
+| `site/src/components/art/PolyLessonPlate.tsx` | A/B 课程 slug 到透明 poly 图集格的唯一映射、语义说明和统一裁切组件 | 后续家族可复用组件，但必须使用自己的图集、构图与一句话语义 |
 | `site/src/components/art/BackpackJourneyMap.tsx` | A 类三条课程谱系带的容量轴、轨道与状态关系背景 | 保持课程顺序来自 catalog；艺术层不复制课程标题和顺序 |
-| `site/src/components/art/LinearFamilyArt.tsx` | B 类透明主雕塑资产入口、课程旅程图和 7 张课程语义图版 | 主雕塑只负责装饰；旅程图与课程语义仍由确定性 SVG 实现 |
+| `site/src/components/art/LinearFamilyArt.tsx` | B 类课程旅程结构图和旧 SVG 图版实现 | 旅程结构继续使用确定性 SVG；课程页头改由 `PolyLessonPlate` 提供 |
+| `site/src/assets/family-art/backpack-hero.avif` | A 分类页高保真透明主雕塑 | 仅由 A 家族模块按需加载；空替代文本且 `aria-hidden` |
 | `site/src/assets/family-art/linear-hero.webp` | B 分类页高保真透明主雕塑 | 仅由 B 家族模块按需加载；不得在首页或其他家族预载 |
+| `site/src/assets/family-art/knapsack-lessons.avif` | A 的 3×3 透明课程图集 | 九格按 catalog slug 唯一裁切；不在图像内放文字 |
+| `site/src/assets/family-art/linear-lessons.avif` | B 的 4×2 透明课程图集 | 七个有效格按 catalog slug 唯一裁切；末格保留为空 |
 | `site/src/components/art/polygon-backpack.css` | A 类材质、主题和动效 | 提炼公共材质变量，避免六份近似 CSS |
 | `docs/concepts/a-backpack/README.md` | A 类概念板要求、保真检查和决策说明 | 后续每类建立同等级概念说明 |
 | `site/tests/browser/a-polygon-atlas.spec.ts` | A 类图谱与 9 个课程图版的浏览器回归 | 参数化或增加 B–G 对应回归 |
@@ -150,12 +157,12 @@ A 类最终不是“做了一只背包”，而是建立了以下关系：
 
 ### 4.1 A 类图形组件的关键实现
 
-`PolygonBackpack.tsx` 当前包含：
+`PolyLessonPlate.tsx` 当前为 A/B 课程页头提供统一的透明图集裁切层：
 
-- 实体与线框共用的一套确定性几何。
-- 38 个多边形面组成的背包轮廓。
-- 与背包轮廓分层的构造圆、轴线和辅助线。
-- 9 个按 slug 映射的独立课程图版：
+- A 图集按 3×3 排列，B 图集按 4×2 排列；裁切窗口统一为 3:2，不复制 16 份完整图片。
+- 每个课程保留 `data-family-art`、`data-family-mode`、`data-lesson-plate` 与唯一图集坐标，未知 slug 安全返回空结果。
+- 图像本身 `alt=""` 且不承载文字；外层 `role="img"` 的 `aria-label` 组合 catalog 标题与本课状态/转移说明。
+- A 的 9 个独立课程构图：
   - `01`：物品进入 `0 / 1` 决策分叉，合并到“保留较优”，并标出容量倒序。
   - `complete`：容量正向更新轨道。
   - `multiple`：二进制拆分包裹。
@@ -165,8 +172,8 @@ A 类最终不是“做了一只背包”，而是建立了以下关系：
   - `dep`：主件、附件和合法组合。
   - `variant`：最值、计数、可达性等目标变形。
   - `fractional`：单位价值排序和可分割容器。
-- 使用 `useId` 避免部分滤镜 ID 冲突。
-- 只在允许动画时启用动效，尊重 `prefers-reduced-motion`。
+- B 的 7 个独立课程构图保持“灰青索引轨道、序列脊线、前驱关系”母题，分别表现路径双来源、子段延续/重启、LIS 上升链与 tails、LCS 双轨匹配、编辑三向转移、状态机双轨切换和计数多来源汇总。
+- 装饰影在 `prefers-reduced-motion` 下关闭；课程语义、交互和正文不依赖图像动画。
 
 ### 4.2 A 类页面布局的最终校准点
 
@@ -479,7 +486,7 @@ Demo 样式分为两层：
 - 至少 2–3 个代表性课程图版；
 - `README.md`，记录必须保留、允许变化和禁止出现的元素。
 
-概念图默认只作视觉参考，课程语义、路径关系和交互仍必须由 SVG、CSS 与真实 DOM 重建。只有分类页纯装饰性主雕塑在手工实现无法达到已确认保真标准并获得明确授权时，才允许使用去底色后的高保真图像资产；此类资产必须透明、无文字、`aria-hidden`、按家族懒加载，并通过桌面/移动端、深浅主题和资源预算验收。
+概念图默认只作视觉参考，课程路径关系和交互仍必须由 SVG、CSS 与真实 DOM 重建。经明确授权，分类页主雕塑和课程页头图版都可使用去底色后的高保真 poly 图像资产：主雕塑必须为空替代文本且 `aria-hidden`；课程图版必须无内嵌文字、按 slug 唯一映射并由 DOM 提供完整可访问语义。两者都必须按家族懒加载，并通过桌面/移动端、深浅主题和资源预算验收。
 
 交付物：
 
@@ -941,6 +948,8 @@ npm run verify
 - [x] 修复编辑距离图版文字与矩阵交叠，并补充移动端几何断言。
 - [x] A/B 分类页修订版与编辑距离修订版通过第二次评审。
 - [x] 补齐 `path`、`maxseg`、`lcs`、`fsm`、`count` 五课独立语义图版，B 课程不再使用 `PartGlyph` 回退。
+- [x] 统一 B 双轨课程箭头的中点位置与首行向右、折返向下、次行向左方向。
+- [x] 将 A 分类主雕塑升级为透明高保真 poly 背包，并将 A/B 16 门课程页头升级为无文字的语义化透明 poly 图集。
 - [x] 验证深浅主题、桌面 / 移动端、真实 Demo、SSR 水合、按需资源和完整 `npm run verify`。
 - [ ] 取得 B 家族独立发布确认，依照 `deploy.md` 发布并完成线上观察。
 
@@ -976,6 +985,8 @@ A 类相关提交可用于理解“从首次实现到最终校准”的过程：
 - `docs/concepts/b-linear/family-concept-light.svg`
 - `docs/concepts/b-linear/family-concept-mobile.svg`
 - `site/src/components/art/PolygonBackpack.tsx`
+- `site/src/components/art/PolyLessonPlate.tsx`
+- `site/src/components/art/poly-lesson-plate.css`
 - `site/src/components/art/polygon-backpack.css`
 - `site/src/pages/PartPage.tsx`
 - `site/src/pages/part.css`
@@ -989,7 +1000,7 @@ A 类相关提交可用于理解“从首次实现到最终校准”的过程：
 - `high-end-visual-design`：用于概念板和家族主构图的视觉评审，最终仍以本项目 Warm Ink 与家族语法为准。
 - `browser:control-in-app-browser`：用于真实浏览器中的深浅主题、视口矩阵、控制台和交互验收。
 - `diagnose`：用于资源加载、SSR / 水合、响应式或线上告警出现回归时的证据化定位。
-- `imagegen`：优先用于栅格气氛稿与材质探索；经明确授权也可生成或整理分类页纯装饰性主雕塑，并通过色键去底形成透明资产。课程语义图版、课程路径和交互结构仍优先使用确定性 SVG/DOM，不用位图替代算法信息。
+- `imagegen`：用于栅格气氛稿、材质探索以及获得明确授权的分类主雕塑/课程页头 poly 资产。所有产物须去底、无内嵌文字；课程路径与交互仍使用确定性 SVG/DOM，课程页头位图必须以 slug、可访问名称和测试钩子绑定算法语义，不能只作装饰。
 
 ## 15. 最后的判断标准
 

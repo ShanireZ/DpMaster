@@ -1,6 +1,7 @@
 import backpackHeroImage from '../../../assets/family-art/backpack-hero.avif'
-import { KnapsackLessonPlate } from '../PolygonBackpack.tsx'
+import backpackLessonAtlas from '../../../assets/family-art/knapsack-lessons.avif'
 import BackpackJourneyMap from '../BackpackJourneyMap.tsx'
+import { PolyLessonPlate } from '../PolyLessonPlate.tsx'
 import type {
   FamilyArtProps,
   LessonPlateProps,
@@ -26,7 +27,9 @@ export function JourneyArt({ className = '' }: FamilyArtProps) {
 
 export function LessonPlate({ slug, title, className = '' }: LessonPlateProps) {
   return (
-    <KnapsackLessonPlate
+    <PolyLessonPlate
+      family="a"
+      atlas={backpackLessonAtlas}
       className={className}
       slug={slug}
       title={title}
