@@ -75,6 +75,12 @@ describe('family art registry', () => {
     expect(new Set(cells).size).toBe(7)
     expect(plates.every((plate) => plate.getAttribute('role') === 'img')).toBe(true)
     expect(plates.every((plate) => plate.getAttribute('aria-label')?.includes('：'))).toBe(true)
+    expect(plates.every((plate) => plate.dataset.atlasFrame?.split(' ').length === 4)).toBe(true)
+    expect(plates.every((plate) => plate.style.getPropertyValue('--atlas-width').endsWith('%'))).toBe(true)
+    expect(plates.every((plate) => plate.style.getPropertyValue('--atlas-left').endsWith('%'))).toBe(true)
+    expect(plates.every((plate) => plate.style.getPropertyValue('--atlas-top').endsWith('%'))).toBe(true)
+    expect(plates.every((plate) => plate.style.getPropertyValue('--atlas-clip-right').endsWith('%'))).toBe(true)
+    expect(plates.every((plate) => plate.style.getPropertyValue('--atlas-clip-bottom').endsWith('%'))).toBe(true)
     expect(container.querySelector('[data-family-mode="fallback"]')).toBeNull()
   })
 
