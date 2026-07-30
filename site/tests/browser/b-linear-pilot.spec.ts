@@ -14,6 +14,8 @@ test('B category renders the polygon index spine and an integrated two-rail cour
   await expect(page.locator('.linear-hero__state')).toHaveCount(7)
   await expect(page.locator('.linear-hero__state.is-current')).toHaveCount(1)
   await expect(page.locator('.linear-hero__predecessor-ribbons polyline')).toHaveCount(4)
+  await expect(page.locator('.linear-hero__predecessor-ribbons .linear-hero__arc-facet')).toHaveCount(17)
+  await expect(page.locator('.linear-hero__axis .linear-hero__rod-segment')).toHaveCount(8)
   await expect(page.locator('.linear-hero__rolling-ribbon polygon')).toHaveCount(6)
   await expect(page.locator('.linear-hero__tape')).toHaveCount(0)
   await expect(page.locator('[data-family-art="b"][data-family-mode="journey"]')).toBeVisible()

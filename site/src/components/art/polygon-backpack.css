@@ -94,6 +94,34 @@
   --poly-fill-6: color-mix(in srgb, var(--accent-1) 10%, var(--text-1));
 }
 
+.poly-backpack__shoulder-base {
+  fill: color-mix(in srgb, var(--accent-1) 26%, var(--text-1));
+}
+
+.poly-backpack__shoulder-underlay {
+  fill: none;
+  stroke: color-mix(in srgb, var(--accent-1) 30%, var(--text-1));
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  stroke-width: 64;
+}
+
+.poly-backpack__shoulder .poly-backpack__face--5 {
+  fill: color-mix(in srgb, var(--accent-1) 42%, var(--text-1));
+}
+
+.poly-backpack__shoulder .poly-backpack__face--6 {
+  fill: color-mix(in srgb, var(--accent-1) 34%, var(--text-1));
+}
+
+.poly-backpack__shoulder .poly-backpack__face--7 {
+  fill: color-mix(in srgb, var(--accent-1) 24%, var(--text-1));
+}
+
+.poly-backpack__shoulder .poly-backpack__face--8 {
+  fill: color-mix(in srgb, var(--accent-1) 14%, var(--text-1));
+}
+
 .poly-backpack__outline,
 .poly-backpack__strap-outline,
 .poly-backpack__flap-outline,
