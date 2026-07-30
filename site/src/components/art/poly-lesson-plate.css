@@ -29,11 +29,7 @@
   transform-origin: top left;
 }
 
-.poly-lesson-plate--a .poly-lesson-plate__atlas {
-  width: 300%;
-  transform: translate(var(--atlas-x), var(--atlas-y));
-}
-
+.poly-lesson-plate--a .poly-lesson-plate__atlas,
 .poly-lesson-plate--b .poly-lesson-plate__atlas {
   top: var(--atlas-top);
   left: var(--atlas-left);
@@ -48,8 +44,8 @@
 
 @media (max-width: 600px) {
   .poly-lesson-plate {
-    width: 112%;
-    margin-left: -6%;
+    width: 100%;
+    margin-left: 0;
   }
 }
 

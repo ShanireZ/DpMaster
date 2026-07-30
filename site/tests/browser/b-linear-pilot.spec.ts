@@ -177,7 +177,28 @@ test('all seven B lessons use distinct accessible semantic plates', async ({ pag
   await page.setViewportSize({ width: 390, height: 844 })
   for (const slug of ['path', 'maxseg', 'lis', 'lcs', 'edit', 'fsm', 'count'] as const) {
     await page.goto(`/part/b/${slug}`)
-    await expect(page.locator(`.linear-plate--${slug}`)).toBeVisible()
+    const plate = page.locator(`.linear-plate--${slug}`)
+    await expect(plate).toBeVisible()
+    const mobileFraming = await plate.evaluate((plateElement) => {
+      const atlas = plateElement.querySelector<HTMLImageElement>('.poly-lesson-plate__atlas')!
+      const [x, y, width, height] = plateElement.getAttribute('data-atlas-frame')!
+        .split(' ')
+        .map(Number)
+      const atlasBox = atlas.getBoundingClientRect()
+      const scale = atlasBox.width / atlas.naturalWidth
+
+      return {
+        left: atlasBox.left + x * scale,
+        top: atlasBox.top + y * scale,
+        right: atlasBox.left + (x + width) * scale,
+        bottom: atlasBox.top + (y + height) * scale,
+        documentWidth: document.documentElement.clientWidth,
+      }
+    })
+    expect(mobileFraming.left).toBeGreaterThanOrEqual(0)
+    expect(mobileFraming.right).toBeLessThanOrEqual(mobileFraming.documentWidth)
+    expect(mobileFraming.top).toBeGreaterThanOrEqual(0)
+    expect(mobileFraming.bottom).toBeGreaterThan(mobileFraming.top)
     expect(
       await page.evaluate(() => document.documentElement.scrollWidth <= document.documentElement.clientWidth + 1),
     ).toBe(true)

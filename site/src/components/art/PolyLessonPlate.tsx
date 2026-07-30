@@ -16,46 +16,55 @@ const lessonPlates: Record<FamilyId, Record<string, PlateSpec>> = {
       column: 0,
       row: 0,
       description: '物品在取与不取之间分叉，较优状态进入容量轨道',
+      frame: [38, 40, 456, 282],
     },
     complete: {
       column: 1,
       row: 0,
       description: '同一物品沿正向容量轨道重复参与转移',
+      frame: [565, 76, 455, 246],
     },
     multiple: {
       column: 2,
       row: 0,
       description: '有限件物品按一、二、四件拆成二进制组合',
+      frame: [1090, 66, 398, 258],
     },
     group: {
       column: 0,
       row: 1,
       description: '每个物品组只允许一条选择路径进入背包',
+      frame: [65, 350, 410, 270],
     },
     mixed: {
       column: 1,
       row: 1,
       description: '单次、无限次和有限次三类物品汇入同一容量轨道',
+      frame: [548, 354, 470, 270],
     },
     cost2d: {
       column: 2,
       row: 1,
       description: '状态在费用与体积两条坐标轴约束下由来源格转移到目标格',
+      frame: [1048, 340, 410, 284],
     },
     dep: {
       column: 0,
       row: 2,
       description: '附件先依附主件形成选择树，再作为合法组合进入背包',
+      frame: [100, 640, 340, 344],
     },
     variant: {
       column: 1,
       row: 2,
       description: '容量、分组与依赖结构汇聚成综合背包状态',
+      frame: [520, 664, 440, 320],
     },
     fractional: {
       column: 2,
       row: 2,
       description: '物品按价值密度排列，最后一件允许只取一部分',
+      frame: [1034, 650, 446, 326],
     },
   },
   b: {
@@ -113,8 +122,6 @@ type PolyLessonPlateProps = {
 }
 
 type AtlasStyle = CSSProperties & {
-  '--atlas-x'?: string
-  '--atlas-y'?: string
   '--atlas-width'?: string
   '--atlas-left'?: string
   '--atlas-top'?: string
@@ -124,7 +131,7 @@ type AtlasStyle = CSSProperties & {
   '--atlas-clip-left'?: string
 }
 
-const LINEAR_ATLAS_WIDTH = 1536
+const ATLAS_WIDTH = 1536
 const PLATE_ASPECT_RATIO = 3 / 2
 const PLATE_INLINE_INSET = 0.06
 const PLATE_BLOCK_INSET = 0.06
@@ -138,7 +145,7 @@ function getContainedAtlasStyle(
   const scale = Math.min(availableWidth / width, availableHeight / height)
 
   return {
-    '--atlas-width': `${LINEAR_ATLAS_WIDTH * scale * 100}%`,
+    '--atlas-width': `${ATLAS_WIDTH * scale * 100}%`,
     '--atlas-left': `${(0.5 - (x + width / 2) * scale) * 100}%`,
     '--atlas-top': `${(
       (viewportHeight / 2 - (y + height / 2) * scale)
@@ -161,18 +168,15 @@ export function PolyLessonPlate({
   }
 
   const familyClass = family === 'a' ? 'knapsack-plate' : 'linear-plate'
-  const style: AtlasStyle = family === 'a'
-    ? {
-        '--atlas-x': `${spec.column * (-100 / 3)}%`,
-        '--atlas-y': `${spec.row * (-100 / 3)}%`,
-      }
-    : {
-        ...getContainedAtlasStyle(spec.frame!),
-        '--atlas-clip-top': `${spec.row * 50}%`,
-        '--atlas-clip-right': `${(3 - spec.column) * 25}%`,
-        '--atlas-clip-bottom': `${(1 - spec.row) * 50}%`,
-        '--atlas-clip-left': `${spec.column * 25}%`,
-      }
+  const columns = family === 'a' ? 3 : 4
+  const rows = family === 'a' ? 3 : 2
+  const style: AtlasStyle = {
+    ...getContainedAtlasStyle(spec.frame!),
+    '--atlas-clip-top': `${spec.row * (100 / rows)}%`,
+    '--atlas-clip-right': `${(columns - spec.column - 1) * (100 / columns)}%`,
+    '--atlas-clip-bottom': `${(rows - spec.row - 1) * (100 / rows)}%`,
+    '--atlas-clip-left': `${spec.column * (100 / columns)}%`,
+  }
 
   return (
     <span
