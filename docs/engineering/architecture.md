@@ -3,7 +3,7 @@ type: System Architecture
 title: Site Architecture
 description: Current React/Vite architecture, routing, package stack, and performance strategy.
 tags: [engineering, react, vite, architecture]
-timestamp: 2026-07-07T00:00:00+08:00
+timestamp: 2026-07-30T00:00:00+08:00
 source_paths:
   - site/package.json
   - site/src/app/App.tsx
@@ -11,6 +11,8 @@ source_paths:
   - site/src/algorithms/
   - site/src/components/dp-engine/playback/
   - site/src/components/dp-engine/SafeCaption.tsx
+  - site/src/components/art/familyArtRegistry.ts
+  - site/src/components/art/FamilyArtSlots.tsx
   - site/src/lib/highlighter.ts
   - site/src/components/ui/Math.tsx
   - site/src/components/games/runtime/
@@ -55,7 +57,7 @@ The manifest intentionally keeps only dependencies imported by the current sourc
 | `site/src/content/` | Type lesson content and the problem-corpus source of truth. |
 | `site/src/algorithms/` | Pure typed public results, UI-neutral domain events, and the single transition Implementation behind all 29 teaching solver surfaces. |
 | `site/src/components/demos/` | Editable teaching Adapters that project domain events into visual traces. |
-| `site/src/components/art/familyArtRegistry.ts` | Per-family lazy art modules for category heroes, journey wireframes, and lesson semantic plates. |
+| `site/src/components/art/familyArtRegistry.ts` | Per-family lazy art modules for category heroes, journey maps, and lesson semantic plates; A and B are currently registered. |
 | `site/src/components/dp-engine/` | Shared visualization, playback, controls, and safe-caption rendering. |
 | `site/src/components/games/` | One game per family; games consume public result Interfaces instead of teaching frames. |
 | `site/src/components/games/runtime/` | Shared deterministic random source, round statistics, lazy audio, and viewport gate for the seven games. |
@@ -76,6 +78,8 @@ The manifest intentionally keeps only dependencies imported by the current sourc
 # Routing And Splitting
 
 `App.tsx` uses `BrowserRouter` in the browser and `MemoryRouter` through `StaticApp` at build time. `site/src/data/catalog.ts` owns literal lazy imports for every lesson and family game, so opening one lesson or family should not eagerly load unrelated lessons or games.
+
+Family art is a second, deliberately smaller registry: `familyArtRegistry.ts` maps only `partId` to a lazy module implementing `HeroArt`, `JourneyArt`, and `LessonPlate`. It never owns course titles, slugs, order, or copy. A (backpack) and B (linear) are registered; C–G continue to use the explicit `PartGlyph` fallback until each family reaches its implementation milestone. B's representative pilot provides dedicated LIS and edit-distance plates while its other five lessons intentionally remain on the fallback until the second visual review.
 
 `npm run build` produces `site/dist/cloudflare/` for `dp.betaoi.cc` and `site/dist/edgeone/` for `dp.betaoi.cn`. For each region, Vite first emits the client and an isolated production SSR entry; a fresh Node production process calls React 19 `prerender()` for all 48 paths and writes both clean-URL variants. The prerender pass resolves the current lesson and upgraded family-art module synchronously, injects that route's exact CSS and module-preload graph, and rejects unresolved streamed Suspense segments. Before `hydrateRoot`, the browser explicitly prepares the current route view, current lesson module, and current upgraded family-art module while leaving the prerendered DOM visible; hydration therefore attaches to identical content instead of replacing the page with a lazy fallback. The client does not eagerly import unrelated route views or family art after hydration. If a deployment changes a hashed dynamic asset while an older document is still open, `preloadRecovery.ts` handles Vite's `vite:preloadError` before route imports run and performs at most one recovery reload per build and path. Development-only empty roots still use `createRoot`.
 

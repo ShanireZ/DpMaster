@@ -39,6 +39,11 @@ const FAMILY_ART = Object.fromEntries([
     'src/components/art/families/backpack.tsx',
     () => import('./families/backpack.tsx'),
   ),
+  familyArt(
+    'b',
+    'src/components/art/families/linear.tsx',
+    () => import('./families/linear.tsx'),
+  ),
 ]) as Partial<Record<PartId, FamilyArtRegistration>>
 
 function lazyFamilyArt(registration: FamilyArtRegistration): ClientFamilyArtModule {

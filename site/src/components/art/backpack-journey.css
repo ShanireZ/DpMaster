@@ -1,0 +1,64 @@
+.backpack-journey {
+  display: block;
+  width: 100%;
+  height: auto;
+  color: color-mix(in srgb, var(--accent-1) 70%, var(--text-2));
+}
+
+.backpack-journey text {
+  fill: var(--text-3);
+  font-family: var(--font-mono);
+  font-size: 11px;
+  letter-spacing: 0.08em;
+}
+
+.backpack-journey__construction {
+  fill: none;
+  stroke: color-mix(in srgb, var(--accent-1) 10%, transparent);
+  stroke-width: 0.8;
+  vector-effect: non-scaling-stroke;
+}
+
+.backpack-journey__capacity-axis,
+.backpack-journey__rails,
+.backpack-journey__states {
+  fill: none;
+  stroke: currentColor;
+  stroke-linecap: square;
+  stroke-linejoin: miter;
+  stroke-width: 1;
+  vector-effect: non-scaling-stroke;
+}
+
+.backpack-journey__capacity-axis {
+  stroke: color-mix(in srgb, var(--accent-1) 46%, transparent);
+}
+
+.backpack-journey__capacity-axis text,
+.backpack-journey__states text {
+  stroke: none;
+}
+
+.backpack-journey__rails > path:nth-child(-n + 3) {
+  stroke: color-mix(in srgb, var(--accent-1) 62%, transparent);
+  stroke-width: 1.4;
+}
+
+.backpack-journey__rails > path:nth-child(n + 4) {
+  stroke: color-mix(in srgb, var(--viz-source) 34%, transparent);
+  stroke-dasharray: 5 7;
+}
+
+.backpack-journey__states {
+  stroke: color-mix(in srgb, var(--accent-1) 30%, transparent);
+}
+
+.backpack-journey__states > g,
+.backpack-journey__states > circle {
+  fill: color-mix(in srgb, var(--accent-1) 5%, var(--canvas));
+}
+
+.backpack-journey__states .backpack-journey__boundary {
+  stroke: var(--viz-chosen);
+  stroke-width: 1.8;
+}

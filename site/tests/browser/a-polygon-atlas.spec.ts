@@ -12,26 +12,30 @@ const lessons = [
   'fractional',
 ] as const
 
-test('A category renders the solid and wireframe polygon backpack', async ({ page }) => {
+test('A category renders the solid backpack and a distinct nine-model journey map', async ({ page }) => {
   const runtimeErrors: string[] = []
   page.on('console', (message) => {
     if (message.type() === 'error') runtimeErrors.push(message.text())
   })
   page.on('pageerror', (error) => runtimeErrors.push(error.message))
 
+  await page.setViewportSize({ width: 1440, height: 900 })
   await page.goto('/part/a')
 
-  await expect(page.locator('.partcover__backpack')).toBeVisible()
+  await expect(page.locator('.partcover__family-art')).toBeVisible()
   await expect(page.locator('[data-family-art="a"][data-family-mode="hero"]')).toBeVisible()
-  await expect(page.locator('.partcover__backpack .poly-backpack__face')).toHaveCount(38)
-  await expect(page.locator('.partjourney__polygon')).toBeVisible()
+  await expect(page.locator('.partcover__family-art .poly-backpack__face')).toHaveCount(38)
+  await expect(page.locator('.partjourney__art')).toBeVisible()
   await expect(page.locator('[data-family-art="a"][data-family-mode="journey"]')).toBeVisible()
-  await expect(page.locator('.partjourney__polygon .poly-backpack__geometry--wireframe')).toBeVisible()
+  await expect(page.locator('.partjourney__art .backpack-journey__models')).toBeVisible()
+  await expect(page.locator('.partjourney__art .backpack-journey__spine > g > circle')).toHaveCount(9)
+  await expect(page.locator('.partjourney__art .poly-backpack__geometry--wireframe')).toHaveCount(0)
   await expect(page.locator('.partjourney--a .typewaypoint')).toHaveCount(9)
   await expect(page.locator('.partcover--a .partcover__glyph')).toHaveCount(0)
 
   await page.setViewportSize({ width: 390, height: 844 })
-  await expect(page.locator('.partcover__backpack')).toBeVisible()
+  await expect(page.locator('.partcover__family-art')).toBeVisible()
+  await expect(page.locator('.partjourney--a .partjourney__art')).toBeHidden()
   expect(
     await page.evaluate(() => document.documentElement.scrollWidth <= document.documentElement.clientWidth + 1),
   ).toBe(true)

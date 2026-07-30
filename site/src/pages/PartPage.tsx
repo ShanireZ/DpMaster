@@ -13,6 +13,12 @@ import './part.css'
 
 const NotFound = lazy(() => import('./NotFound'))
 
+const BACKPACK_JOURNEY_GROUPS = new Map([
+  [0, { title: '物品件数', note: '从单件选择到混合调度' }],
+  [5, { title: '约束结构', note: '容量从一维走向结构约束' }],
+  [7, { title: '目标与边界', note: '改变目标，并辨清 DP 的边界' }],
+] as const)
+
 export default function PartPage() {
   const { pid } = useParams()
   const part = pid ? getPart(pid) : undefined
@@ -47,7 +53,7 @@ export default function PartPage() {
             <div className="partcover__art" aria-hidden="true">
               <FamilyHeroArt
                 partId={part.id}
-                className="partcover__backpack"
+                className="partcover__family-art"
                 fallback={(
                 <>
                   <span className="partcover__ghost">{part.code}</span>
@@ -68,50 +74,67 @@ export default function PartPage() {
             <h2 id="partjourney-title">沿状态路径学习</h2>
             <p>每一站只解决一个关键转移，前一站的直觉会成为下一站的起点。</p>
           </div>
-          <div className="partjourney__polygon" aria-hidden="true">
-            <FamilyJourneyArt partId={part.id} />
-          </div>
-          <ol className="typepath">
-            {part.types.map((type, index) => {
-              const num = String(index + 1).padStart(2, '0')
-              const title = type.title.startsWith(`${num} `)
-                ? type.title.slice(num.length + 1)
-                : type.title
-              const content = (
-                <>
-                  <span className="typewaypoint__num">{num}</span>
-                  <span className="typewaypoint__copy">
-                    <span className="typewaypoint__title">{title}</span>
-                    <span className="typewaypoint__blurb">{type.blurb}</span>
-                  </span>
-                  {type.status === 'ready' ? (
-                    <span className="typewaypoint__arrow" aria-hidden="true">
-                      <ArrowRight size={19} />
+          <div className="partjourney__body">
+            <ol className="typepath">
+              {part.types.map((type, index) => {
+                const num = String(index + 1).padStart(2, '0')
+                const journeyGroup = part.id === 'a'
+                  ? BACKPACK_JOURNEY_GROUPS.get(index)
+                  : undefined
+                const title = type.title.startsWith(`${num} `)
+                  ? type.title.slice(num.length + 1)
+                  : type.title
+                const content = (
+                  <>
+                    {journeyGroup && (
+                      <span className="typewaypoint__group">
+                        <strong>{journeyGroup.title}</strong>
+                        <small>{journeyGroup.note}</small>
+                      </span>
+                    )}
+                    <span className="typewaypoint__num">{num}</span>
+                    <span className="typewaypoint__copy">
+                      <span className="typewaypoint__title">{title}</span>
+                      <span className="typewaypoint__blurb">{type.blurb}</span>
                     </span>
-                  ) : (
-                    <span className="typewaypoint__planned">待建</span>
-                  )}
-                </>
-              )
+                    {type.status === 'ready' ? (
+                      <span className="typewaypoint__arrow" aria-hidden="true">
+                        <ArrowRight size={19} />
+                      </span>
+                    ) : (
+                      <span className="typewaypoint__planned">待建</span>
+                    )}
+                  </>
+                )
 
-              return (
-                <li
-                  key={type.slug}
-                  className={`typewaypoint typewaypoint--${part.id === 'a' ? 'left' : (index % 2 === 0 ? 'left' : 'right')}`}
-                >
-                  {type.status === 'ready' ? (
-                    <Link to={`/part/${part.id}/${type.slug}`} className="typewaypoint__link">
-                      {content}
-                    </Link>
-                  ) : (
-                    <div className="typewaypoint__link is-planned" aria-disabled="true">
-                      {content}
-                    </div>
-                  )}
-                </li>
-              )
-            })}
-          </ol>
+                return (
+                  <li
+                    key={type.slug}
+                    data-journey-position={index + 1}
+                    className={[
+                      'typewaypoint',
+                      `typewaypoint--pos-${index + 1}`,
+                      journeyGroup ? 'typewaypoint--group-start' : '',
+                      `typewaypoint--${part.id === 'a' || part.id === 'b' ? 'left' : (index % 2 === 0 ? 'left' : 'right')}`,
+                    ].filter(Boolean).join(' ')}
+                  >
+                    {type.status === 'ready' ? (
+                      <Link to={`/part/${part.id}/${type.slug}`} className="typewaypoint__link">
+                        {content}
+                      </Link>
+                    ) : (
+                      <div className="typewaypoint__link is-planned" aria-disabled="true">
+                        {content}
+                      </div>
+                    )}
+                  </li>
+                )
+              })}
+            </ol>
+            <div className="partjourney__art" aria-hidden="true">
+              <FamilyJourneyArt partId={part.id} />
+            </div>
+          </div>
         </section>
       </AnimatedContent>
 
