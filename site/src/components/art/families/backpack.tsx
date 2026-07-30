@@ -1,4 +1,5 @@
-import PolygonBackpack, { KnapsackLessonPlate } from '../PolygonBackpack.tsx'
+import backpackHeroImage from '../../../assets/family-art/backpack-hero.avif'
+import { KnapsackLessonPlate } from '../PolygonBackpack.tsx'
 import BackpackJourneyMap from '../BackpackJourneyMap.tsx'
 import type {
   FamilyArtProps,
@@ -7,10 +8,14 @@ import type {
 
 export function HeroArt({ className = '' }: FamilyArtProps) {
   return (
-    <PolygonBackpack
-      className={className}
-      dataFamilyArt="a"
-      dataFamilyMode="hero"
+    <img
+      className={`poly-backpack poly-backpack--image ${className}`.trim()}
+      src={backpackHeroImage}
+      alt=""
+      aria-hidden="true"
+      data-family-art="a"
+      data-family-mode="hero"
+      draggable={false}
     />
   )
 }

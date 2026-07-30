@@ -19,6 +19,12 @@
   overflow: visible;
 }
 
+.poly-backpack--image {
+  object-fit: contain;
+  object-position: center;
+  user-select: none;
+}
+
 .poly-backpack__silhouette {
   transform: translate(10px, -2px) scale(1.04);
   transform-box: fill-box;
