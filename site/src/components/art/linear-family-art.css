@@ -17,6 +17,15 @@
   font-size: 11px;
 }
 
+.linear-hero--image {
+  display: block;
+  width: 100%;
+  height: auto;
+  object-fit: contain;
+  object-position: center;
+  user-select: none;
+}
+
 .linear-art__construction {
   fill: none;
   stroke: var(--linear-soft);
@@ -60,6 +69,36 @@
   fill: none;
   stroke: color-mix(in srgb, var(--accent-1) 62%, var(--text-2));
   stroke-width: 1.2;
+  vector-effect: non-scaling-stroke;
+}
+
+.linear-hero__support-rail polygon {
+  stroke: color-mix(in srgb, var(--accent-1) 26%, var(--text-2));
+  stroke-linejoin: miter;
+  stroke-width: 0.85;
+  vector-effect: non-scaling-stroke;
+}
+
+.linear-hero__rail-facet--1 {
+  fill: color-mix(in srgb, var(--text-2) 10%, var(--surface-1));
+}
+
+.linear-hero__rail-facet--2 {
+  fill: color-mix(in srgb, var(--text-2) 18%, var(--surface-2));
+}
+
+.linear-hero__rail-facet--3 {
+  fill: color-mix(in srgb, var(--accent-1) 14%, var(--surface-2));
+}
+
+.linear-hero__rail-facet--4 {
+  fill: color-mix(in srgb, var(--text-1) 24%, var(--surface-3));
+}
+
+.linear-hero__support-rail path {
+  fill: none;
+  stroke: color-mix(in srgb, var(--accent-1) 46%, var(--text-2));
+  stroke-width: 1;
   vector-effect: non-scaling-stroke;
 }
 
@@ -148,27 +187,43 @@
 }
 
 .linear-hero__facet--1 {
-  fill: color-mix(in srgb, var(--accent-1) 12%, var(--surface-1));
+  fill: color-mix(in srgb, var(--text-2) 5%, var(--surface-1));
 }
 
 .linear-hero__facet--2 {
-  fill: color-mix(in srgb, var(--accent-1) 24%, var(--surface-2));
+  fill: color-mix(in srgb, var(--text-2) 12%, var(--surface-1));
 }
 
 .linear-hero__facet--3 {
-  fill: color-mix(in srgb, var(--accent-1) 34%, var(--surface-3));
+  fill: color-mix(in srgb, var(--text-2) 18%, var(--surface-2));
 }
 
 .linear-hero__facet--4 {
-  fill: color-mix(in srgb, var(--accent-1) 48%, var(--surface-2));
+  fill: color-mix(in srgb, var(--text-2) 26%, var(--surface-2));
 }
 
 .linear-hero__facet--5 {
-  fill: color-mix(in srgb, var(--accent-1) 42%, var(--surface-3));
+  fill: color-mix(in srgb, var(--text-1) 30%, var(--surface-3));
 }
 
 .linear-hero__facet--6 {
-  fill: color-mix(in srgb, var(--accent-1) 56%, var(--surface-2));
+  fill: color-mix(in srgb, var(--text-1) 38%, var(--surface-2));
+}
+
+.linear-hero__facet--7 {
+  fill: color-mix(in srgb, var(--text-1) 36%, var(--surface-3));
+}
+
+.linear-hero__facet--8 {
+  fill: color-mix(in srgb, var(--text-1) 48%, var(--surface-2));
+}
+
+.linear-hero__facet--9 {
+  fill: color-mix(in srgb, var(--text-1) 43%, var(--surface-3));
+}
+
+.linear-hero__facet--10 {
+  fill: color-mix(in srgb, var(--text-1) 56%, var(--surface-2));
 }
 
 .linear-hero__state .linear-hero__foot {
@@ -221,6 +276,16 @@
 
 .linear-hero__state.is-current .linear-hero__facet--6 {
   fill: color-mix(in srgb, var(--accent-1) 90%, var(--surface-2));
+}
+
+.linear-hero__state.is-current .linear-hero__facet--7,
+.linear-hero__state.is-current .linear-hero__facet--9 {
+  fill: color-mix(in srgb, var(--accent-1) 76%, var(--surface-3));
+}
+
+.linear-hero__state.is-current .linear-hero__facet--8,
+.linear-hero__state.is-current .linear-hero__facet--10 {
+  fill: color-mix(in srgb, var(--accent-1) 92%, var(--surface-2));
 }
 
 .linear-hero__state.is-current .linear-hero__foot {
