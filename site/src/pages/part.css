@@ -1056,6 +1056,7 @@
   min-height: 280px;
   padding: 0;
   display: block;
+  content-visibility: visible;
   contain-intrinsic-size: 0 280px;
 }
 
@@ -1125,8 +1126,16 @@
 
 .partjourney--b .typewaypoint__arrow {
   position: absolute;
-  right: var(--sp-4);
-  bottom: var(--sp-4);
+  z-index: 2;
+  width: 19px;
+  height: 19px;
+  display: grid;
+  place-items: center;
+  top: 75%;
+  right: auto;
+  bottom: auto;
+  left: 100%;
+  transform: translate(-50%, -50%);
 }
 
 .partjourney--b .typewaypoint--pos-1 { grid-column: 1 / 4; grid-row: 1; }
@@ -1145,10 +1154,41 @@
   padding-top: 168px;
 }
 
-.partjourney--b .typewaypoint:nth-child(n + 5) .typewaypoint__arrow {
-  right: auto;
-  left: var(--sp-4);
-  transform: rotate(180deg);
+.partjourney--b .typewaypoint--pos-4 .typewaypoint__arrow {
+  top: 100%;
+  left: 85.8%;
+  transform: translate(-50%, -50%) rotate(90deg);
+}
+
+.partjourney--b .typewaypoint--pos-5 .typewaypoint__arrow,
+.partjourney--b .typewaypoint--pos-6 .typewaypoint__arrow {
+  left: 0;
+  transform: translate(-50%, -50%) rotate(180deg);
+}
+
+.partjourney--b .typewaypoint--pos-7 .typewaypoint__arrow {
+  display: none;
+}
+
+.partjourney--b .typewaypoint--pos-1 .typewaypoint__link:not(.is-planned):hover .typewaypoint__arrow,
+.partjourney--b .typewaypoint--pos-1 .typewaypoint__link:not(.is-planned):focus-visible .typewaypoint__arrow,
+.partjourney--b .typewaypoint--pos-2 .typewaypoint__link:not(.is-planned):hover .typewaypoint__arrow,
+.partjourney--b .typewaypoint--pos-2 .typewaypoint__link:not(.is-planned):focus-visible .typewaypoint__arrow,
+.partjourney--b .typewaypoint--pos-3 .typewaypoint__link:not(.is-planned):hover .typewaypoint__arrow,
+.partjourney--b .typewaypoint--pos-3 .typewaypoint__link:not(.is-planned):focus-visible .typewaypoint__arrow {
+  transform: translate(calc(-50% + 5px), -50%);
+}
+
+.partjourney--b .typewaypoint--pos-4 .typewaypoint__link:not(.is-planned):hover .typewaypoint__arrow,
+.partjourney--b .typewaypoint--pos-4 .typewaypoint__link:not(.is-planned):focus-visible .typewaypoint__arrow {
+  transform: translate(-50%, calc(-50% + 5px)) rotate(90deg);
+}
+
+.partjourney--b .typewaypoint--pos-5 .typewaypoint__link:not(.is-planned):hover .typewaypoint__arrow,
+.partjourney--b .typewaypoint--pos-5 .typewaypoint__link:not(.is-planned):focus-visible .typewaypoint__arrow,
+.partjourney--b .typewaypoint--pos-6 .typewaypoint__link:not(.is-planned):hover .typewaypoint__arrow,
+.partjourney--b .typewaypoint--pos-6 .typewaypoint__link:not(.is-planned):focus-visible .typewaypoint__arrow {
+  transform: translate(calc(-50% - 5px), -50%) rotate(180deg);
 }
 
 @media (max-width: 1000px) {
@@ -1193,10 +1233,18 @@
     padding: var(--sp-5);
   }
 
-  .partjourney--b .typewaypoint:nth-child(n + 5) .typewaypoint__arrow {
+  .partjourney--b .typewaypoint .typewaypoint__arrow {
+    display: inline-flex;
+    top: auto;
     right: var(--sp-4);
+    bottom: var(--sp-4);
     left: auto;
     transform: none;
+  }
+
+  .partjourney--b .typewaypoint .typewaypoint__link:not(.is-planned):hover .typewaypoint__arrow,
+  .partjourney--b .typewaypoint .typewaypoint__link:not(.is-planned):focus-visible .typewaypoint__arrow {
+    transform: translateX(5px);
   }
 }
 

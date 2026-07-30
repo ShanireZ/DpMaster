@@ -56,11 +56,16 @@ describe('family art registry', () => {
     expect(plates.every((plate) => plate.querySelector('title') && plate.querySelector('desc'))).toBe(true)
   })
 
-  it('gives both B pilot plates unique accessible SVG definitions', () => {
+  it('gives every B lesson an accessible semantic plate with unique SVG definitions', () => {
     const { container } = render(
       <>
+        <LinearLessonPlate slug="path" title="路径型 / 递推入门" />
+        <LinearLessonPlate slug="maxseg" title="最大子段和" />
         <LinearLessonPlate slug="lis" title="最长上升子序列 LIS" />
+        <LinearLessonPlate slug="lcs" title="最长公共子序列 LCS" />
         <LinearLessonPlate slug="edit" title="编辑距离" />
+        <LinearLessonPlate slug="fsm" title="线性状态机 DP" />
+        <LinearLessonPlate slug="count" title="计数 / 划分型" />
       </>,
     )
 
@@ -68,15 +73,16 @@ describe('family art registry', () => {
     const markerIds = plates.map((plate) => plate.querySelector('marker')?.id)
     const labelledBy = plates.map((plate) => plate.getAttribute('aria-labelledby'))
 
-    expect(plates).toHaveLength(2)
-    expect(new Set(markerIds).size).toBe(2)
-    expect(new Set(labelledBy).size).toBe(2)
+    expect(plates).toHaveLength(7)
+    expect(new Set(markerIds).size).toBe(7)
+    expect(new Set(labelledBy).size).toBe(7)
     expect(plates.every((plate) => plate.querySelector('title') && plate.querySelector('desc'))).toBe(true)
+    expect(container.querySelector('[data-family-mode="fallback"]')).toBeNull()
   })
 
-  it('keeps unfinished B lesson plates on an explicit fallback', () => {
+  it('keeps unknown B lesson slugs on an explicit safe fallback', () => {
     const { container } = render(
-      <LinearLessonPlate slug="path" title="路径型 / 递推入门" />,
+      <LinearLessonPlate slug="unknown" title="未知课程" />,
     )
 
     expect(container.querySelector('[data-family-mode="fallback"]')).not.toBeNull()

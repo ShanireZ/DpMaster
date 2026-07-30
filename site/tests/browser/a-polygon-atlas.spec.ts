@@ -24,7 +24,12 @@ test('A category renders the solid backpack and an integrated three-band course 
 
   await expect(page.locator('.partcover__family-art')).toBeVisible()
   await expect(page.locator('[data-family-art="a"][data-family-mode="hero"]')).toBeVisible()
-  await expect(page.locator('.partcover__family-art .poly-backpack__face')).toHaveCount(38)
+  await expect(page.locator('.partcover__family-art .poly-backpack__face')).toHaveCount(63)
+  await expect(page.locator('.partcover__family-art .poly-backpack__handle')).toHaveCount(1)
+  await expect(page.locator('.partcover__family-art .poly-backpack__front-straps')).toHaveCount(1)
+  await expect(page.locator('.partcover__family-art .poly-backpack__buckles .poly-backpack__face')).toHaveCount(4)
+  await expect(page.locator('.partcover__family-art .poly-backpack__pocket')).toHaveCount(1)
+  await expect(page.locator('.partcover__family-art .poly-backpack__shoulder')).toHaveCount(1)
   await expect(page.locator('.partjourney__art')).toBeVisible()
   await expect(page.locator('[data-family-art="a"][data-family-mode="journey"]')).toBeVisible()
   await expect(page.locator('.partjourney__art .backpack-journey__rails > path')).toHaveCount(6)
