@@ -12,7 +12,7 @@ const lessons = [
   'fractional',
 ] as const
 
-test('A category renders the solid backpack and a distinct nine-model journey map', async ({ page }) => {
+test('A category renders the solid backpack and an integrated three-band course spectrum', async ({ page }) => {
   const runtimeErrors: string[] = []
   page.on('console', (message) => {
     if (message.type() === 'error') runtimeErrors.push(message.text())
@@ -27,8 +27,10 @@ test('A category renders the solid backpack and a distinct nine-model journey ma
   await expect(page.locator('.partcover__family-art .poly-backpack__face')).toHaveCount(38)
   await expect(page.locator('.partjourney__art')).toBeVisible()
   await expect(page.locator('[data-family-art="a"][data-family-mode="journey"]')).toBeVisible()
-  await expect(page.locator('.partjourney__art .backpack-journey__models')).toBeVisible()
-  await expect(page.locator('.partjourney__art .backpack-journey__spine > g > circle')).toHaveCount(9)
+  await expect(page.locator('.partjourney__art .backpack-journey__rails > path')).toHaveCount(6)
+  await expect(page.locator('.partjourney--a .typewaypoint__group')).toHaveCount(3)
+  await expect(page.getByText('DP → GREEDY', { exact: true })).toHaveCount(0)
+  await expect(page.locator('.backpack-journey__boundary')).toHaveCount(0)
   await expect(page.locator('.partjourney__art .poly-backpack__geometry--wireframe')).toHaveCount(0)
   await expect(page.locator('.partjourney--a .typewaypoint')).toHaveCount(9)
   await expect(page.locator('.partcover--a .partcover__glyph')).toHaveCount(0)

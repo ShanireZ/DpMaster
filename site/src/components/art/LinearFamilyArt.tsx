@@ -11,20 +11,19 @@ interface LinearLessonPlateProps extends LinearArtProps {
   title: string
 }
 
-const HERO_POINTS = [
-  [82, 470],
-  [164, 374],
-  [246, 420],
-  [328, 248],
-  [410, 318],
-  [492, 156],
-  [574, 222],
-] as const
-
 export function LinearHeroArt({ className = '' }: LinearArtProps) {
   const instanceId = useId().replace(/:/g, '')
   const gradientId = `linear-hero-gradient-${instanceId}`
   const arrowId = `linear-hero-arrow-${instanceId}`
+  const cells: Array<{ x: number; label: string; value: string; current?: boolean }> = [
+    { x: 62, label: 'i−3', value: 'sᵢ₋₃' },
+    { x: 146, label: 'i−2', value: 'sᵢ₋₂' },
+    { x: 230, label: 'i−1', value: 'sᵢ₋₁' },
+    { x: 314, label: 'i', value: 'sᵢ', current: true },
+    { x: 398, label: 'i+1', value: 'sᵢ₊₁' },
+    { x: 482, label: 'i+2', value: 'sᵢ₊₂' },
+    { x: 566, label: 'i+3', value: 'sᵢ₊₃' },
+  ]
 
   return (
     <svg
@@ -35,9 +34,9 @@ export function LinearHeroArt({ className = '' }: LinearArtProps) {
       data-family-mode="hero"
     >
       <defs>
-        <linearGradient id={gradientId} x1="0" y1="0" x2="1" y2="1">
+        <linearGradient id={gradientId} x1="0" y1="0" x2="0" y2="1">
           <stop stopColor="var(--accent-1)" />
-          <stop offset="1" stopColor="var(--accent-2)" />
+          <stop offset="1" stopColor="var(--surface-2)" />
         </linearGradient>
         <marker id={arrowId} markerWidth="9" markerHeight="9" refX="8" refY="4.5" orient="auto">
           <path d="M0 0 9 4.5 0 9Z" className="linear-art__source-fill" />
@@ -47,62 +46,41 @@ export function LinearHeroArt({ className = '' }: LinearArtProps) {
       <g className="linear-art__construction">
         <circle cx="360" cy="302" r="254" />
         <circle cx="360" cy="302" r="182" />
-        {[82, 164, 246, 328, 410, 492, 574].map((x) => (
-          <path key={x} d={`M${x} 52V554`} />
+        {[104, 188, 272, 356, 440, 524, 608].map((x) => (
+          <path key={x} d={`M${x} 72V538`} />
         ))}
-        {[116, 218, 320, 422, 524].map((y) => (
-          <path key={y} d={`M52 ${y}H664`} />
+        {[126, 210, 294, 378, 462].map((y) => (
+          <path key={y} d={`M38 ${y}H682`} />
         ))}
         <path d="M44 548 654 38" />
       </g>
 
-      <path
-        className="linear-hero__plane"
-        d="M82 470 164 374 246 420 328 248 410 318 492 156 574 222V496H82Z"
-        fill={`url(#${gradientId})`}
-      />
-      <path
-        className="linear-hero__ridge"
-        d="M82 470 164 374 246 420 328 248 410 318 492 156 574 222"
-      />
-      <path className="linear-hero__rail" d="M82 498H574" />
-
-      <path
-        className="linear-art__source linear-art__source--dash"
-        d="M92 460C161 431 259 326 314 260"
-        markerEnd={`url(#${arrowId})`}
-      />
-      <path
-        className="linear-art__source"
-        d="M174 366C234 344 272 285 314 254"
-        markerEnd={`url(#${arrowId})`}
-      />
-      <path
-        className="linear-art__chosen"
-        d="M340 236C399 190 439 166 477 158"
-        markerEnd={`url(#${arrowId})`}
-      />
-
-      <g className="linear-hero__nodes">
-        {HERO_POINTS.map(([x, y], index) => (
-          <g key={x}>
-            <circle
-              cx={x}
-              cy={y}
-              r={index === 3 || index === 5 ? 13 : 10}
-              className={index === 3 ? 'is-current' : index === 5 ? 'is-chosen' : undefined}
-            />
-            <text x={x} y={y - 20}>{[2, 5, 3, 8, 6, 10, 9][index]}</text>
-            <text x={x} y="522" className="linear-art__index">{index}</text>
+      <g className="linear-hero__tape">
+        <path d="M34 250H686M34 350H686" />
+        {cells.map(({ x, label, value, current }) => (
+          <g key={x} className={current ? 'is-current' : undefined}>
+            <rect x={x} y="250" width="84" height="100" fill={current ? `url(#${gradientId})` : undefined} />
+            <text x={x + 42} y="225" className="linear-art__index">{label}</text>
+            <text x={x + 42} y="309">{value}</text>
+            <circle cx={x + 42} cy="350" r={current ? 9 : 5} />
           </g>
         ))}
       </g>
-      <text x="92" y="568" className="linear-art__caption">INDEX RAIL / SEQUENCE SPINE</text>
+
+      <g className="linear-hero__predecessors">
+        <path d="M104 350C120 464 310 474 356 360" markerEnd={`url(#${arrowId})`} />
+        <path d="M188 350C208 426 316 432 356 360" markerEnd={`url(#${arrowId})`} />
+        <path d="M272 350C290 392 330 398 356 360" markerEnd={`url(#${arrowId})`} />
+        <path d="M608 350C582 470 406 472 364 360" className="linear-art__source--dash" markerEnd={`url(#${arrowId})`} />
+      </g>
+
+      <text x="46" y="178" className="linear-art__caption">INDEX TAPE / PREDECESSOR FIELD</text>
+      <text x="360" y="516" textAnchor="middle" className="linear-hero__formula">
+        f[i] = best(f[j] + g(j, i))
+      </text>
     </svg>
   )
 }
-
-const JOURNEY_Y = [47, 141, 235, 329, 423, 517, 611] as const
 
 export function LinearJourneyArt({ className = '' }: LinearArtProps) {
   const instanceId = useId().replace(/:/g, '')
@@ -111,7 +89,8 @@ export function LinearJourneyArt({ className = '' }: LinearArtProps) {
   return (
     <svg
       className={`linear-journey ${className}`.trim()}
-      viewBox="0 0 500 658"
+      viewBox="0 0 1180 560"
+      preserveAspectRatio="none"
       aria-hidden="true"
       data-family-art="b"
       data-family-mode="journey"
@@ -123,36 +102,22 @@ export function LinearJourneyArt({ className = '' }: LinearArtProps) {
         </marker>
       </defs>
       <g className="linear-art__construction">
-        {[92, 186, 280, 374, 468, 562].map((y) => <path key={y} d={`M0 ${y}H500`} />)}
-        {[80, 176, 272, 368, 464].map((x) => <path key={x} d={`M${x} 0V658`} />)}
-        <path d="M26 638 474 16" />
+        {[140, 420].map((y) => <path key={y} d={`M30 ${y}H1150`} />)}
+        {[160, 420, 680, 940].map((x) => <path key={x} d={`M${x} 30V530`} />)}
+        <path d="M46 520 1130 30" />
       </g>
 
-      <path className="linear-journey__spine" d="M74 47 136 141 110 235 228 329 198 423 334 517 414 611" />
-      {JOURNEY_Y.map((y, index) => {
-        const x = [74, 136, 110, 228, 198, 334, 414][index]
-        return (
-          <g key={y} className="linear-journey__node">
-            <path d={`M0 ${y}H${x - 12}`} />
-            <circle cx={x} cy={y} r={index === 2 || index === 4 ? 9 : 7} className={index === 2 ? 'is-chosen' : index === 4 ? 'is-current' : undefined} />
-            <text x={x + 18} y={y + 4}>{['PATH', 'SEGMENT', 'LIS', 'LCS', 'EDIT', 'FSM', 'COUNT'][index]}</text>
-          </g>
-        )
-      })}
+      <g className="linear-journey__spine">
+        <path d="M72 140H1033C1100 140 1138 196 1138 254S1098 350 1034 350H1018C997 350 983 371 983 420H197" />
+      </g>
 
       <g className="linear-journey__relations">
-        <path d="M146 141C188 166 183 209 122 232" markerEnd={`url(#${arrowId})`} />
-        <path d="M119 229C159 228 198 265 219 316" markerEnd={`url(#${arrowId})`} />
-        <path d="M238 322C278 332 270 396 210 418" markerEnd={`url(#${arrowId})`} />
-        <path d="M208 429C248 472 284 498 322 512" markerEnd={`url(#${arrowId})`} />
-      </g>
-
-      <g className="linear-journey__lanes">
-        <path d="M294 35V623" />
-        <path d="M314 235H466M314 329H466M314 423H466" />
-        <text x="306" y="20">INDEX</text>
-        <text x="326" y="220">DOUBLE SEQUENCE</text>
-        <text x="326" y="408">STATE LANES</text>
+        <path d="M148 140C210 32 378 34 443 140" markerEnd={`url(#${arrowId})`} />
+        <path d="M443 140C506 52 674 52 738 140" markerEnd={`url(#${arrowId})`} />
+        <path d="M738 140C802 38 972 38 1033 140" markerEnd={`url(#${arrowId})`} />
+        <path d="M1033 140C1100 210 1050 348 983 420" markerEnd={`url(#${arrowId})`} />
+        <path d="M983 420C910 322 672 322 590 420" markerEnd={`url(#${arrowId})`} />
+        <path d="M590 420C518 328 278 328 197 420" markerEnd={`url(#${arrowId})`} />
       </g>
     </svg>
   )
@@ -206,9 +171,9 @@ function LisPlate() {
 }
 
 function EditPlate() {
-  const cell = 42
-  const ox = 208
-  const oy = 74
+  const cell = 36
+  const ox = 288
+  const oy = 62
   const rows = 6
   const cols = 8
   const current = { row: 4, col: 5 }
@@ -217,21 +182,26 @@ function EditPlate() {
   return (
     <>
       <g className="linear-plate__edit-labels">
-        <text x="42" y="72" className="linear-plate__label">两个前缀</text>
-        <text x="42" y="101" className="linear-plate__formula">s[1..i]</text>
-        <text x="42" y="130" className="linear-plate__formula">t[1..j]</text>
-        <path d="M42 154H160" className="linear-plate__brace" />
-        <text x="42" y="191">删除：dp[i−1][j] + 1</text>
-        <text x="42" y="222">插入：dp[i][j−1] + 1</text>
-        <text x="42" y="253">替换：dp[i−1][j−1] + cost</text>
+        <text x="34" y="58" className="linear-plate__label">比较两个前缀</text>
+        <text x="34" y="88" className="linear-plate__formula">s[1..i]</text>
+        <text x="126" y="88" className="linear-plate__formula">t[1..j]</text>
+        <path d="M34 110H222" className="linear-plate__brace" />
+        <text x="34" y="153" className="linear-plate__operation">删</text>
+        <text x="70" y="153">dp[i−1][j] + 1</text>
+        <text x="34" y="203" className="linear-plate__operation">插</text>
+        <text x="70" y="203">dp[i][j−1] + 1</text>
+        <text x="34" y="253" className="linear-plate__operation">改</text>
+        <text x="70" y="253">dp[i−1][j−1] + δ</text>
+        <text x="70" y="275" className="linear-plate__cost-note">δ = [sᵢ ≠ tⱼ]</text>
+        <path d="M250 38V282" className="linear-plate__separator" />
       </g>
 
       <g className="linear-plate__matrix">
         {'sitting'.split('').map((char, col) => (
-          <text key={char + col} x={ox + (col + 1) * cell + cell / 2} y={oy - 13} textAnchor="middle">{char}</text>
+          <text key={char + col} x={ox + (col + 1) * cell + cell / 2} y={oy - 12} textAnchor="middle">{char}</text>
         ))}
         {'kitte'.split('').map((char, row) => (
-          <text key={char + row} x={ox - 15} y={oy + (row + 1) * cell + 27} textAnchor="middle">{char}</text>
+          <text key={char + row} x={ox - 15} y={oy + (row + 1) * cell + 24} textAnchor="middle">{char}</text>
         ))}
         {Array.from({ length: rows * cols }, (_, index) => {
           const row = Math.floor(index / cols)
@@ -263,8 +233,8 @@ function EditPlate() {
         />
       </g>
 
-      <text x="42" y="316" className="linear-plate__formula">dp[i][j] = min(删, 插, 改)</text>
-      <text x="418" y="354" className="linear-plate__current-label">当前前缀对</text>
+      <path d="M288 306H576" className="linear-plate__brace" />
+      <text x="432" y="342" textAnchor="middle" className="linear-plate__formula">dp[i][j] = min(删除, 插入, 替换)</text>
     </>
   )
 }

@@ -13,11 +13,11 @@ import './part.css'
 
 const NotFound = lazy(() => import('./NotFound'))
 
-const BACKPACK_JOURNEY_GROUPS = new Map([
+const BACKPACK_JOURNEY_GROUPS = new Map<number, { title: string; note: string }>([
   [0, { title: '物品件数', note: '从单件选择到混合调度' }],
   [5, { title: '约束结构', note: '容量从一维走向结构约束' }],
   [7, { title: '目标与边界', note: '改变目标，并辨清 DP 的边界' }],
-] as const)
+])
 
 export default function PartPage() {
   const { pid } = useParams()
