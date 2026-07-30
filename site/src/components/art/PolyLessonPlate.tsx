@@ -7,6 +7,7 @@ type PlateSpec = {
   column: number
   row: number
   description: string
+  frame?: readonly [x: number, y: number, width: number, height: number]
 }
 
 const lessonPlates: Record<FamilyId, Record<string, PlateSpec>> = {
@@ -62,36 +63,43 @@ const lessonPlates: Record<FamilyId, Record<string, PlateSpec>> = {
       column: 0,
       row: 0,
       description: '格点路径的两个前驱状态汇聚到当前状态',
+      frame: [15, 168, 369, 272],
     },
     maxseg: {
       column: 1,
       row: 0,
       description: '序列轨道在延续当前子段与重新开始之间选择',
+      frame: [384, 231, 384, 227],
     },
     lis: {
       column: 2,
       row: 0,
       description: '上升链跨越序列节点，并由分层的 tails 状态压缩记录',
+      frame: [768, 175, 362, 268],
     },
     lcs: {
       column: 3,
       row: 0,
       description: '两条序列轨道用保持相对次序的匹配桥连接',
+      frame: [1152, 192, 384, 249],
     },
     edit: {
       column: 0,
       row: 1,
       description: '删除、插入与替换三种转移沿矩阵边缘汇入当前前缀状态',
+      frame: [31, 535, 338, 307],
     },
     fsm: {
       column: 1,
       row: 1,
       description: '选择与跳过两条状态轨道通过受限转移互相切换',
+      frame: [384, 583, 384, 242],
     },
     count: {
       column: 2,
       row: 1,
       description: '多个合法前驱的方案流汇总为当前计数状态',
+      frame: [768, 560, 384, 296],
     },
   },
 }
@@ -105,8 +113,38 @@ type PolyLessonPlateProps = {
 }
 
 type AtlasStyle = CSSProperties & {
-  '--atlas-x': string
-  '--atlas-y': string
+  '--atlas-x'?: string
+  '--atlas-y'?: string
+  '--atlas-width'?: string
+  '--atlas-left'?: string
+  '--atlas-top'?: string
+  '--atlas-clip-top'?: string
+  '--atlas-clip-right'?: string
+  '--atlas-clip-bottom'?: string
+  '--atlas-clip-left'?: string
+}
+
+const LINEAR_ATLAS_WIDTH = 1536
+const PLATE_ASPECT_RATIO = 3 / 2
+const PLATE_INLINE_INSET = 0.06
+const PLATE_BLOCK_INSET = 0.06
+
+function getContainedAtlasStyle(
+  [x, y, width, height]: NonNullable<PlateSpec['frame']>,
+): AtlasStyle {
+  const viewportHeight = 1 / PLATE_ASPECT_RATIO
+  const availableWidth = 1 - PLATE_INLINE_INSET * 2
+  const availableHeight = viewportHeight * (1 - PLATE_BLOCK_INSET * 2)
+  const scale = Math.min(availableWidth / width, availableHeight / height)
+
+  return {
+    '--atlas-width': `${LINEAR_ATLAS_WIDTH * scale * 100}%`,
+    '--atlas-left': `${(0.5 - (x + width / 2) * scale) * 100}%`,
+    '--atlas-top': `${(
+      (viewportHeight / 2 - (y + height / 2) * scale)
+      / viewportHeight
+    ) * 100}%`,
+  }
 }
 
 export function PolyLessonPlate({
@@ -129,8 +167,11 @@ export function PolyLessonPlate({
         '--atlas-y': `${spec.row * (-100 / 3)}%`,
       }
     : {
-        '--atlas-x': `${spec.column * -25}%`,
-        '--atlas-y': `${-12.5 + spec.row * -50}%`,
+        ...getContainedAtlasStyle(spec.frame!),
+        '--atlas-clip-top': `${spec.row * 50}%`,
+        '--atlas-clip-right': `${(3 - spec.column) * 25}%`,
+        '--atlas-clip-bottom': `${(1 - spec.row) * 50}%`,
+        '--atlas-clip-left': `${spec.column * 25}%`,
       }
 
   return (
@@ -149,6 +190,7 @@ export function PolyLessonPlate({
       data-lesson-plate={slug}
       data-atlas-column={spec.column}
       data-atlas-row={spec.row}
+      data-atlas-frame={spec.frame?.join(' ')}
       style={style}
     >
       <span className="poly-lesson-plate__viewport" aria-hidden="true">

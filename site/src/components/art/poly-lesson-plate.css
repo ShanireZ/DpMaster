@@ -35,8 +35,15 @@
 }
 
 .poly-lesson-plate--b .poly-lesson-plate__atlas {
-  width: 400%;
-  transform: translate(var(--atlas-x), var(--atlas-y));
+  top: var(--atlas-top);
+  left: var(--atlas-left);
+  width: var(--atlas-width);
+  clip-path: inset(
+    var(--atlas-clip-top)
+    var(--atlas-clip-right)
+    var(--atlas-clip-bottom)
+    var(--atlas-clip-left)
+  );
 }
 
 @media (max-width: 600px) {

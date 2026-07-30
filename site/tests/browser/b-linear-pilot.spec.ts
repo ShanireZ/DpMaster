@@ -128,12 +128,45 @@ test('all seven B lessons use distinct accessible semantic plates', async ({ pag
       `${await plate.getAttribute('data-atlas-column')}:${await plate.getAttribute('data-atlas-row')}`,
     )
     await expect(page.locator('.typehead__art-code')).toHaveCount(0)
-    expect(await plate.locator('.poly-lesson-plate__viewport').evaluate((viewport) => {
-      const style = getComputedStyle(viewport)
-      return style.overflow === 'hidden'
-        && viewport.scrollWidth >= viewport.clientWidth
-        && viewport.scrollHeight >= viewport.clientHeight
-    })).toBe(true)
+    const framing = await plate.evaluate((plateElement) => {
+      const viewport = plateElement.querySelector<HTMLElement>('.poly-lesson-plate__viewport')!
+      const atlas = plateElement.querySelector<HTMLImageElement>('.poly-lesson-plate__atlas')!
+      const frame = plateElement.getAttribute('data-atlas-frame')!
+        .split(' ')
+        .map(Number)
+      const [x, y, width, height] = frame
+      const viewportBox = viewport.getBoundingClientRect()
+      const atlasBox = atlas.getBoundingClientRect()
+      const scale = atlasBox.width / atlas.naturalWidth
+      const contentBox = {
+        left: atlasBox.left + x * scale,
+        top: atlasBox.top + y * scale,
+        right: atlasBox.left + (x + width) * scale,
+        bottom: atlasBox.top + (y + height) * scale,
+        width: width * scale,
+        height: height * scale,
+      }
+
+      return {
+        overflow: getComputedStyle(viewport).overflow,
+        clipPath: getComputedStyle(atlas).clipPath,
+        inset: {
+          left: contentBox.left - viewportBox.left,
+          top: contentBox.top - viewportBox.top,
+          right: viewportBox.right - contentBox.right,
+          bottom: viewportBox.bottom - contentBox.bottom,
+        },
+        dominantOccupancy: Math.max(
+          contentBox.width / viewportBox.width,
+          contentBox.height / viewportBox.height,
+        ),
+      }
+    })
+    expect(framing.overflow).toBe('hidden')
+    expect(framing.clipPath).not.toBe('none')
+    expect(Math.min(...Object.values(framing.inset))).toBeGreaterThanOrEqual(18)
+    expect(framing.dominantOccupancy).toBeGreaterThanOrEqual(0.87)
+    expect(framing.dominantOccupancy).toBeLessThanOrEqual(0.89)
     expect(
       await page.evaluate(() => document.documentElement.scrollWidth <= document.documentElement.clientWidth + 1),
     ).toBe(true)
