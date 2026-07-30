@@ -184,6 +184,14 @@ function BackpackGeometry({ mode = 'solid', textureId }: BackpackGeometryProps) 
         className="poly-backpack__material"
         style={!wire && textureId ? { filter: `url(#${textureId})` } : undefined}
       >
+        <path
+          className="poly-backpack__shoulder-base"
+          d="M474 174 526 180 570 216 596 270 620 344 634 432 631 515 613 574 581 606 553 626 526 636 494 620 468 536 492 516 508 566 526 607 567 578 594 544 599 458 584 373 558 292 532 244 496 224Z"
+        />
+        <path
+          className="poly-backpack__shoulder-underlay"
+          d="M500 205C555 226 588 313 603 405S620 535 582 584 543 618 516 614"
+        />
         <FaceMesh faces={shoulderFaces} className="poly-backpack__shoulder is-dark" />
         <FaceMesh faces={handleFaces} className="poly-backpack__handle is-gold" />
         <FaceMesh faces={bodyFaces} className="poly-backpack__shell" />
