@@ -24,22 +24,51 @@
   vector-effect: non-scaling-stroke;
 }
 
-.linear-hero__plane {
-  opacity: 0.22;
-}
-
-.linear-hero__ridge,
-.linear-hero__rail {
+.linear-hero__tape,
+.linear-hero__predecessors {
   fill: none;
   stroke: var(--linear-line);
   stroke-linecap: square;
   stroke-linejoin: miter;
-  stroke-width: 5;
+  stroke-width: 1.4;
   vector-effect: non-scaling-stroke;
 }
 
-.linear-hero__rail {
-  stroke-width: 1.5;
+.linear-hero__tape rect {
+  fill: color-mix(in srgb, var(--surface-2) 84%, transparent);
+  stroke: color-mix(in srgb, var(--accent-1) 38%, var(--border));
+}
+
+.linear-hero__tape .is-current rect {
+  fill-opacity: 0.22;
+  stroke: var(--accent-1);
+  stroke-width: 2;
+}
+
+.linear-hero__tape circle {
+  fill: var(--canvas);
+  stroke: var(--accent-1);
+}
+
+.linear-hero__tape .is-current circle {
+  fill: var(--viz-current);
+  stroke: var(--canvas);
+}
+
+.linear-hero__tape text {
+  fill: var(--text-1);
+  font-size: 17px;
+  text-anchor: middle;
+}
+
+.linear-hero__predecessors {
+  stroke: var(--viz-source);
+  stroke-width: 1.8;
+}
+
+.linear-hero__formula {
+  fill: color-mix(in srgb, var(--accent-1) 82%, var(--text-1)) !important;
+  font-size: 16px !important;
 }
 
 .linear-art__source,
@@ -64,7 +93,6 @@
   stroke: none;
 }
 
-.linear-hero__nodes circle,
 .linear-plate__nodes circle {
   fill: var(--canvas);
   stroke: var(--linear-line);
@@ -72,19 +100,16 @@
   vector-effect: non-scaling-stroke;
 }
 
-.linear-hero__nodes circle.is-current,
 .linear-plate__nodes circle.is-current {
   fill: var(--viz-current);
   stroke: var(--canvas);
 }
 
-.linear-hero__nodes circle.is-chosen,
 .linear-plate__nodes circle.is-chosen {
   fill: var(--viz-chosen);
   stroke: var(--canvas);
 }
 
-.linear-hero__nodes text,
 .linear-plate__nodes text {
   fill: var(--text-1);
   font-size: 12px;
@@ -103,9 +128,7 @@
 }
 
 .linear-journey__spine,
-.linear-journey__node,
-.linear-journey__relations,
-.linear-journey__lanes {
+.linear-journey__relations {
   fill: none;
   stroke: color-mix(in srgb, var(--accent-1) 66%, var(--text-3));
   stroke-width: 1.2;
@@ -113,36 +136,12 @@
 }
 
 .linear-journey__spine {
-  stroke-width: 2.4;
-}
-
-.linear-journey__node circle {
-  fill: var(--canvas);
-  stroke: var(--accent-1);
-}
-
-.linear-journey__node circle.is-current {
-  fill: var(--viz-current);
-}
-
-.linear-journey__node circle.is-chosen {
-  fill: var(--viz-chosen);
-}
-
-.linear-journey__node text,
-.linear-journey__lanes text {
-  fill: var(--accent-1);
-  stroke: none;
-  font-size: 9.5px;
-  letter-spacing: 0.08em;
+  stroke-width: 1.6;
 }
 
 .linear-journey__relations {
   stroke: var(--viz-source);
-}
-
-.linear-journey__lanes {
-  stroke: color-mix(in srgb, var(--accent-1) 25%, transparent);
+  stroke-dasharray: 5 7;
 }
 
 .linear-plate {
@@ -190,10 +189,6 @@
   fill: var(--viz-chosen) !important;
 }
 
-.linear-plate__current-label {
-  fill: var(--viz-current) !important;
-}
-
 .linear-plate__matrix rect {
   fill: color-mix(in srgb, var(--surface-2) 78%, transparent);
   stroke: var(--border-strong);
@@ -216,6 +211,24 @@
   stroke: var(--viz-source);
   stroke-width: 1.7;
   marker-end: var(--linear-plate-arrow);
+}
+
+.linear-plate__separator {
+  fill: none;
+  stroke: color-mix(in srgb, var(--accent-1) 24%, var(--border));
+  stroke-width: 1;
+  vector-effect: non-scaling-stroke;
+}
+
+.linear-plate__operation {
+  fill: var(--accent-1) !important;
+  font-family: var(--font-body) !important;
+  font-size: 13px !important;
+  font-weight: 700;
+}
+
+.linear-plate--edit .linear-plate__edit-labels text:not(.linear-plate__label, .linear-plate__formula, .linear-plate__operation) {
+  font-size: 10.5px;
 }
 
 .linear-plate-fallback {

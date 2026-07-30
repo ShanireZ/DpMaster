@@ -57,8 +57,3 @@
 .backpack-journey__states > circle {
   fill: color-mix(in srgb, var(--accent-1) 5%, var(--canvas));
 }
-
-.backpack-journey__states .backpack-journey__boundary {
-  stroke: var(--viz-chosen);
-  stroke-width: 1.8;
-}

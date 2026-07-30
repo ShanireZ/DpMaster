@@ -5,6 +5,7 @@ export default function BackpackJourneyMap({ className = '' }: { className?: str
     <svg
       className={`backpack-journey ${className}`.trim()}
       viewBox="0 0 1180 720"
+      preserveAspectRatio="none"
       aria-hidden="true"
       data-family-art="a"
       data-family-mode="journey"
@@ -44,8 +45,6 @@ export default function BackpackJourneyMap({ className = '' }: { className?: str
         <path d="M780 368 820 338 860 368 820 398Z" />
         <circle cx="404" cy="618" r="16" />
         <path d="M388 618H420M404 602V634" />
-        <path d="M864 640 928 574" className="backpack-journey__boundary" />
-        <text x="940" y="580">DP → GREEDY</text>
       </g>
     </svg>
   )
