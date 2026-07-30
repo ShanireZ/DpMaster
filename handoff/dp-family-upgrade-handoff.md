@@ -1014,3 +1014,85 @@ A 类相关提交可用于理解“从首次实现到最终校准”的过程：
 - 工程上新增或修复一个公共能力不需要复制修改七遍。
 
 如果某个方案只能回答“更炫了”，却不能回答“更清楚地解释了什么”，就还没有达到 DP大师后续改造的标准。
+
+## 16. 2026-07-30 A/B 课程页头全量排版与图例复核
+
+### 16.1 本轮结论
+
+- 已逐页复核 A 类 9 课、B 类 7 课，共 16 个课程页。
+- 每页同时检查 `1440 × 900` 与 `390 × 844`，合计 32 个页面状态。
+- 标题、页头图例、图集裁切、横向溢出和相对位置均已纳入自动化断言。
+- 本轮只完成本地实现与验证，没有部署；发布仍需按既有确认流程执行。
+
+### 16.2 修复前确认的问题
+
+- 桌面端统一的大标题字号没有考虑标题长度，短标题也经常被挤成两行，长标题会达到三至四行。
+- `最长上升子序列 LIS`、`最长公共子序列 LCS`、`路径型 / 递推入门` 等完整术语在移动端被拆开。
+- A 类移动端同时放大 `.typehead__glyph` 和 `.poly-lesson-plate`，形成二次放大；分数背包、背包综合变形等图例出现贴边和裁切风险。
+- A 类原逻辑只按固定 3 × 3 图集单元裁切，没有依据每张图形的真实内容框做缩放和居中。
+
+### 16.3 实现内容
+
+- `site/src/pages/TypePage.tsx`
+  - 根据中英文、数字、空格和标点的视觉宽度计算标题单位。
+  - 只在渲染阶段派生 CSS 自定义属性，没有新增状态、Effect 或额外注册表。
+- `site/src/pages/typepage.css`
+  - 使用标题容器宽度和视觉单位自适应字号。
+  - 桌面字号范围为 `36–70px`，390 宽移动端为 `32–52px`。
+  - A/B 16 个标题均保持单行，完整课程术语不再被任意拆开。
+  - 移除 A/B 针对个别 slug 的字号补丁和移动端二次放大。
+- `site/src/components/art/PolyLessonPlate.tsx`
+  - 为 A 类 9 张图例补齐真实内容框坐标。
+  - A/B 共用“内容框 contain + 安全留白 + 相邻图集单元遮罩”的定位逻辑。
+  - 保留 slug、可访问名称、图集列/行和内容框测试钩子。
+- `site/src/components/art/poly-lesson-plate.css`
+  - A/B 统一使用内容框定位变量。
+  - 390 宽时图版保持 `100%`，不再额外扩张到容器之外。
+- `site/tests/browser/ab-lesson-hero.spec.ts`
+  - 新增 16 页 × 2 视口的全量回归。
+  - 检查标题单行与最小字号、标题/图例相对位置、内容框安全边距、占框比例、居中、裁切遮罩和页面横向溢出。
+
+### 16.4 视觉证据
+
+逐页截图和汇总图保存在 Codex 可视化目录：
+
+- 修复前：`C:\Users\SkySa\.codex\visualizations\2026\07\30\019fb341-be70-7632-a8f8-4ea623495d14\ab-title-audit-before`
+- 修复后：`C:\Users\SkySa\.codex\visualizations\2026\07\30\019fb341-be70-7632-a8f8-4ea623495d14\ab-title-audit-after`
+- 桌面汇总：`ab-title-audit-after\desktop-montage.png`
+- 移动端汇总：`ab-title-audit-after\mobile-montage.png`
+
+修复后截图确认：
+
+- A/B 全部标题均为单行；
+- 图例完整，没有对象被视口边缘切断；
+- 390 宽页面没有横向滚动；
+- 桌面图例保持在文案右侧，移动端按标题、说明、图例顺序垂直排列；
+- A/B 图例均居中，内容主轴占图版约 `87%–89%`。
+
+### 16.5 已通过验证
+
+从 `site/` 执行：
+
+- `npm run lint`：通过，零 warning。
+- `npm run test:unit`：6 个测试文件、33 条测试通过。
+- `npm run build`：通过，同时生成 `dist/cloudflare/` 与 `dist/edgeone/`。
+- A/B 聚焦 Playwright：7 条通过，包含新全量页头回归、A 图集回归、B 图集回归和 LIS 真实交互。
+- Browser Plugin 生产预览复核：390 宽打开移动导航并进入 B 类成功；相关 Playwright 运行未发现 console error 或 page error。
+
+聚焦浏览器命令：
+
+```powershell
+npx playwright test tests/browser/ab-lesson-hero.spec.ts tests/browser/a-polygon-atlas.spec.ts tests/browser/b-linear-pilot.spec.ts --config "C:\Users\SkySa\.codex\visualizations\2026\07\30\019fb341-be70-7632-a8f8-4ea623495d14\playwright-no-webserver.config.mjs"
+```
+
+### 16.6 当前未提交文件
+
+- `site/src/components/art/PolyLessonPlate.tsx`
+- `site/src/components/art/poly-lesson-plate.css`
+- `site/src/pages/TypePage.tsx`
+- `site/src/pages/typepage.css`
+- `site/tests/browser/ab-lesson-hero.spec.ts`
+- `site/tests/browser/b-linear-pilot.spec.ts`
+- `handoff/dp-family-upgrade-handoff.md`
+
+接手时先运行 `git status --short`；不要丢弃其中已经完成的 B 类移动端边界断言。当前无需再做视觉修复，下一步是代码审阅、提交和按既有发布确认流程处理。

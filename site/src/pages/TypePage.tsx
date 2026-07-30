@@ -1,4 +1,4 @@
-import { lazy, Suspense, useEffect, useRef, useState } from 'react'
+import { lazy, Suspense, useEffect, useRef, useState, type CSSProperties } from 'react'
 import { Link, useParams } from 'react-router-dom'
 import { ListTree } from 'lucide-react'
 import { getLesson, getLessonNeighbors } from '../data/catalog'
@@ -24,6 +24,21 @@ function headingId(label: string, index: number): string {
     .replace(/^-|-$/g, '')
     .slice(0, 48)
   return `section-${slug || index + 1}`
+}
+
+type TitleStyle = CSSProperties & {
+  '--title-units': number
+}
+
+function getTitleVisualUnits(title: string): number {
+  const units = Array.from(title).reduce((sum, character) => {
+    if (/\s/u.test(character)) return sum + 0.35
+    if (/[A-Za-z0-9]/u.test(character)) return sum + 0.62
+    if (/[:：/=/()（）]/u.test(character)) return sum + 0.45
+    return sum + 1
+  }, 0)
+
+  return Number(units.toFixed(2))
 }
 
 function OutlineLinks({
@@ -63,6 +78,9 @@ export default function TypePage() {
   const neighbors = pid && slug
     ? getLessonNeighbors(pid, slug)
     : { previous: undefined, next: undefined }
+  const titleStyle = type
+    ? { '--title-units': getTitleVisualUnits(type.title) } as TitleStyle
+    : undefined
 
   useEffect(() => {
     if (!path) return
@@ -133,7 +151,7 @@ export default function TypePage() {
                   {part.title}
                 </span>
                 <div className="typehead__titleline">
-                  <h1>{type.title}</h1>
+                  <h1 style={titleStyle}>{type.title}</h1>
                 </div>
                 <p className="typehead__blurb">{type.blurb}</p>
               </div>
