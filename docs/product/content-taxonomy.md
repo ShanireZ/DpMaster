@@ -52,7 +52,7 @@ The live taxonomy and route order are `site/src/data/catalog.ts`. Older planning
 
 ## G 状压 DP
 
-棋盘 / 轮廓状压; 集合状压 / TSP; 状压 + 覆盖; 综合技巧; 插头 DP（选修）.
+棋盘 / 轮廓状压; 集合状压 / TSP; 状压 + 覆盖; 综合技巧; 插头 DP.
 
 # Cross-Family Reuse
 

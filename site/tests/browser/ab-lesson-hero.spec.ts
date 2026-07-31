@@ -3,6 +3,11 @@ import { expect, test, type Page } from '@playwright/test'
 const lessons = {
   a: ['01', 'complete', 'multiple', 'group', 'mixed', 'cost2d', 'dep', 'variant', 'fractional'],
   b: ['path', 'maxseg', 'lis', 'lcs', 'edit', 'fsm', 'count'],
+  c: ['stone', 'ring', 'palindrome', 'tree', 'merge'],
+  d: ['grid', 'matpow'],
+  e: ['basic', 'distsum', 'inout', 'center'],
+  f: ['select', 'knapsack', 'diameter', 'cover', 'count'],
+  g: ['board', 'tsp', 'cover', 'subset', 'plug'],
 } as const
 
 type Viewport = {
@@ -110,7 +115,8 @@ async function inspectHero(page: Page) {
   })
 }
 
-test('all A and B lesson titles and plates fit at desktop and 390px mobile', async ({ page }) => {
+test('all 37 lesson titles and plates fit at desktop and 390px mobile', async ({ page }) => {
+  test.setTimeout(90_000)
   const runtimeErrors: string[] = []
   page.on('console', (message) => {
     if (message.type() === 'error') runtimeErrors.push(message.text())

@@ -1300,3 +1300,233 @@
     font-size: 19px;
   }
 }
+
+/* ---------------- C–G：同一工坊、不同状态空间 ---------------- */
+.partpage:is([data-part-id='c'], [data-part-id='d'], [data-part-id='e'], [data-part-id='f'], [data-part-id='g']) .partcover {
+  min-height: clamp(600px, 72dvh, 760px);
+  background:
+    radial-gradient(circle at 76% 48%, color-mix(in srgb, var(--accent-1) 13%, transparent), transparent 40%),
+    linear-gradient(90deg, var(--canvas) 0 42%, color-mix(in srgb, var(--surface-1) 74%, var(--canvas)) 100%);
+}
+
+.partpage:is([data-part-id='c'], [data-part-id='d'], [data-part-id='e'], [data-part-id='f'], [data-part-id='g']) .partcover__frame {
+  width: min(100%, 1320px);
+  grid-template-columns: minmax(350px, 0.82fr) minmax(500px, 1.18fr);
+  gap: clamp(var(--sp-5), 3vw, var(--sp-8));
+}
+
+.partpage:is([data-part-id='c'], [data-part-id='d'], [data-part-id='e'], [data-part-id='f'], [data-part-id='g']) .partcover__art {
+  min-height: 520px;
+}
+
+.partpage:is([data-part-id='c'], [data-part-id='d'], [data-part-id='e'], [data-part-id='f'], [data-part-id='g']) .partcover__family-art {
+  width: min(50vw, 690px);
+  max-height: 590px;
+  transform: translate(2%, 1%);
+}
+
+.partpage[data-part-id='c'] .partcover__family-art {
+  width: min(54vw, 740px);
+}
+
+.partpage[data-part-id='e'] .partcover__family-art,
+.partpage[data-part-id='f'] .partcover__family-art {
+  width: min(45vw, 620px);
+}
+
+.partjourney:is(.partjourney--c, .partjourney--d, .partjourney--e, .partjourney--f, .partjourney--g) {
+  padding-top: clamp(var(--sp-8), 8vw, 118px);
+}
+
+.partjourney:is(.partjourney--c, .partjourney--d, .partjourney--e, .partjourney--f, .partjourney--g) .partjourney__body {
+  width: min(100%, 1180px);
+  min-height: 680px;
+  margin-inline: auto;
+}
+
+.partjourney:is(.partjourney--c, .partjourney--d, .partjourney--e, .partjourney--f, .partjourney--g) .typepath {
+  z-index: 2;
+  width: 100%;
+  min-height: 680px;
+}
+
+.partjourney:is(.partjourney--c, .partjourney--d, .partjourney--e, .partjourney--f, .partjourney--g) .typepath::before,
+.partjourney:is(.partjourney--c, .partjourney--d, .partjourney--e, .partjourney--f, .partjourney--g) .typewaypoint::before,
+.partjourney:is(.partjourney--c, .partjourney--d, .partjourney--e, .partjourney--f, .partjourney--g) .typewaypoint::after {
+  display: none;
+}
+
+.partjourney:is(.partjourney--c, .partjourney--d, .partjourney--e, .partjourney--f, .partjourney--g) .partjourney__art {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  opacity: 0.68;
+  pointer-events: none;
+}
+
+.partjourney:is(.partjourney--c, .partjourney--d, .partjourney--e, .partjourney--f, .partjourney--g) .partjourney__art svg {
+  width: 100%;
+  height: 100%;
+}
+
+.partjourney:is(.partjourney--c, .partjourney--d, .partjourney--e, .partjourney--f, .partjourney--g) .typewaypoint {
+  position: absolute;
+  min-height: 112px;
+  padding: 0;
+  display: block;
+  contain-intrinsic-size: 0 112px;
+}
+
+.partjourney:is(.partjourney--c, .partjourney--d, .partjourney--e, .partjourney--f, .partjourney--g) .typewaypoint__link {
+  min-height: 112px;
+  padding: var(--sp-4);
+  border-top: 1px solid color-mix(in srgb, var(--accent-1) 52%, var(--border));
+  border-bottom: 1px solid color-mix(in srgb, var(--accent-1) 20%, var(--border));
+  background: linear-gradient(120deg, color-mix(in srgb, var(--canvas) 90%, transparent), color-mix(in srgb, var(--accent-1) 5%, transparent));
+  text-align: left;
+  transition:
+    transform var(--t-med) var(--ease-out),
+    background var(--t-fast);
+}
+
+.partjourney:is(.partjourney--c, .partjourney--d, .partjourney--e, .partjourney--f, .partjourney--g) .typewaypoint__link:hover,
+.partjourney:is(.partjourney--c, .partjourney--d, .partjourney--e, .partjourney--f, .partjourney--g) .typewaypoint__link:focus-visible {
+  background: linear-gradient(120deg, var(--canvas), color-mix(in srgb, var(--accent-1) 11%, var(--canvas)));
+  transform: translateY(-5px);
+}
+
+.partjourney:is(.partjourney--c, .partjourney--d, .partjourney--e, .partjourney--f, .partjourney--g) .typewaypoint__title {
+  font-size: clamp(19px, 1.65vw, 25px);
+}
+
+/* C：课程链接成为嵌套区间的端点站。 */
+.partjourney--c .typewaypoint {
+  width: min(38%, 410px);
+}
+
+.partjourney--c .typewaypoint--pos-1 { top: 92px; left: 3%; }
+.partjourney--c .typewaypoint--pos-2 { top: 198px; right: 3%; }
+.partjourney--c .typewaypoint--pos-3 { top: 304px; left: 14%; }
+.partjourney--c .typewaypoint--pos-4 { top: 410px; right: 14%; }
+.partjourney--c .typewaypoint--pos-5 { top: 516px; left: 31%; }
+
+/* D：两课使用紧凑双平面，不制造虚假的长路径。 */
+.partjourney--d .partjourney__body,
+.partjourney--d .typepath {
+  min-height: 520px;
+}
+
+.partjourney--d .typewaypoint {
+  top: 188px;
+  width: min(40%, 430px);
+  min-height: 150px;
+}
+
+.partjourney--d .typewaypoint--pos-1 { left: 3%; }
+.partjourney--d .typewaypoint--pos-2 { right: 3%; }
+.partjourney--d .typewaypoint__link { min-height: 150px; }
+
+/* E：四课围绕同一棵树的巡根轨道。 */
+.partjourney--e .typewaypoint {
+  width: min(34%, 360px);
+}
+
+.partjourney--e .typewaypoint--pos-1 { top: 60px; left: 4%; }
+.partjourney--e .typewaypoint--pos-2 { top: 60px; right: 4%; }
+.partjourney--e .typewaypoint--pos-3 { top: 470px; right: 7%; }
+.partjourney--e .typewaypoint--pos-4 { top: 470px; left: 7%; }
+
+/* F：固定根、两层子树，路径视觉从叶向根汇聚。 */
+.partjourney--f .typewaypoint {
+  width: min(31%, 330px);
+}
+
+.partjourney--f .typewaypoint--pos-1 { top: 20px; left: 34.5%; }
+.partjourney--f .typewaypoint--pos-2 { top: 222px; left: 4%; }
+.partjourney--f .typewaypoint--pos-3 { top: 222px; right: 4%; }
+.partjourney--f .typewaypoint--pos-4 { top: 480px; left: 12%; }
+.partjourney--f .typewaypoint--pos-5 { top: 480px; right: 12%; }
+
+/* G：五课成为稀疏状态星座中的可访问状态。 */
+.partjourney--g .typewaypoint {
+  width: min(30%, 320px);
+}
+
+.partjourney--g .typewaypoint--pos-1 { top: 48px; left: 1%; }
+.partjourney--g .typewaypoint--pos-2 { top: 28px; left: 35%; }
+.partjourney--g .typewaypoint--pos-3 { top: 74px; right: 1%; }
+.partjourney--g .typewaypoint--pos-4 { top: 460px; left: 15%; }
+.partjourney--g .typewaypoint--pos-5 { top: 460px; right: 15%; }
+
+@media (max-width: 900px) {
+  .partpage:is([data-part-id='c'], [data-part-id='d'], [data-part-id='e'], [data-part-id='f'], [data-part-id='g']) .partcover__frame {
+    grid-template-columns: minmax(0, 0.88fr) minmax(360px, 1.12fr);
+  }
+
+  .partjourney:is(.partjourney--c, .partjourney--d, .partjourney--e, .partjourney--f, .partjourney--g) .partjourney__body,
+  .partjourney:is(.partjourney--c, .partjourney--d, .partjourney--e, .partjourney--f, .partjourney--g) .typepath {
+    min-height: auto;
+  }
+
+  .partjourney:is(.partjourney--c, .partjourney--d, .partjourney--e, .partjourney--f, .partjourney--g) .partjourney__art {
+    display: none;
+  }
+
+  .partjourney:is(.partjourney--c, .partjourney--d, .partjourney--e, .partjourney--f, .partjourney--g) .typepath {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: var(--sp-5) 0;
+  }
+
+  .partjourney:is(.partjourney--c, .partjourney--d, .partjourney--e, .partjourney--f, .partjourney--g) .typewaypoint {
+    position: relative;
+    top: auto;
+    right: auto;
+    bottom: auto;
+    left: auto;
+    width: auto;
+    min-height: 168px;
+    border-top: 1px solid var(--border);
+  }
+
+  .partjourney:is(.partjourney--c, .partjourney--d, .partjourney--e, .partjourney--f, .partjourney--g) .typewaypoint__link {
+    min-height: 168px;
+    border: 0;
+    background: transparent;
+  }
+}
+
+@media (max-width: 700px) {
+  .partpage:is([data-part-id='c'], [data-part-id='d'], [data-part-id='e'], [data-part-id='f'], [data-part-id='g']) .partcover__frame {
+    min-height: 740px;
+    grid-template-columns: 1fr;
+  }
+
+  .partpage:is([data-part-id='c'], [data-part-id='d'], [data-part-id='e'], [data-part-id='f'], [data-part-id='g']) .partcover__art {
+    min-height: 310px;
+  }
+
+  .partpage:is([data-part-id='c'], [data-part-id='d'], [data-part-id='e'], [data-part-id='f'], [data-part-id='g']) .partcover__family-art {
+    width: min(96vw, 460px);
+    max-height: 330px;
+    transform: translateY(3%);
+  }
+
+  .partpage[data-part-id='c'] .partcover__family-art {
+    width: min(100vw, 500px);
+  }
+
+  .partjourney:is(.partjourney--c, .partjourney--d, .partjourney--e, .partjourney--f, .partjourney--g) .typepath {
+    display: block;
+  }
+
+  .partjourney:is(.partjourney--c, .partjourney--d, .partjourney--e, .partjourney--f, .partjourney--g) .typewaypoint {
+    min-height: 138px;
+    padding: 0;
+  }
+
+  .partjourney:is(.partjourney--c, .partjourney--d, .partjourney--e, .partjourney--f, .partjourney--g) .typewaypoint__link {
+    min-height: 138px;
+    padding: var(--sp-5) var(--sp-4);
+  }
+}

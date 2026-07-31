@@ -1,0 +1,7 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1600" height="1000" viewBox="0 0 1600 1000" role="img" aria-labelledby="title desc">
+  <title id="title">F 树形 DP 浅色概念板</title><desc id="desc">同几何暖纸面汇聚树冠方案。</desc>
+  <rect width="1600" height="1000" fill="#f5eee3"/><text x="80" y="92" fill="#6c5216" font-family="sans-serif" font-size="18" letter-spacing="5">F · TREE DP</text>
+  <text x="80" y="174" fill="#2d241d" font-family="sans-serif" font-size="64" font-weight="600">汇聚树冠</text><text x="80" y="220" fill="#68594e" font-family="sans-serif" font-size="20">固定根 · 子树容器 · 自底向上</text>
+  <g fill="none" stroke="#6c5216" stroke-width="3"><path d="M370 340L220 500M370 340L520 500M220 500L130 670M220 500L300 670M520 500L440 670M520 500L610 670"/><path d="M130 650L210 520M300 650L230 520M440 650L510 520M610 650L530 520" stroke="#37796a"/></g>
+  <image href="../../../site/src/assets/family-art/tree-hero.webp" x="720" y="10" width="820" height="570" preserveAspectRatio="xMidYMid meet"/><image href="../../../site/src/assets/family-art/tree-lessons.webp" x="720" y="520" width="820" height="470" preserveAspectRatio="xMidYMid meet"/>
+</svg>

@@ -1,5 +1,6 @@
 import { render } from '@testing-library/react'
 import { describe, expect, it } from 'vitest'
+import { PARTS, type PartId } from '../../data/catalog.ts'
 import { PolyLessonPlate } from './PolyLessonPlate.tsx'
 import {
   getFamilyArtSource,
@@ -8,30 +9,26 @@ import {
 } from './familyArtRegistry.ts'
 
 describe('family art registry', () => {
-  it('upgrades A and registers the approved B pilot without claiming later families', async () => {
-    expect(hasFamilyArt('a')).toBe(true)
-    expect(hasFamilyArt('b')).toBe(true)
-    expect(hasFamilyArt('c')).toBe(false)
-    expect(getFamilyArtSource('a')).toBe(
-      'src/components/art/families/backpack.tsx',
-    )
-    expect(getFamilyArtSource('b')).toBe(
-      'src/components/art/families/linear.tsx',
-    )
+  it('registers all seven families behind independent lazy modules', async () => {
+    const sources: Record<PartId, string> = {
+      a: 'src/components/art/families/backpack.tsx',
+      b: 'src/components/art/families/linear.tsx',
+      c: 'src/components/art/families/interval.tsx',
+      d: 'src/components/art/families/matrix.tsx',
+      e: 'src/components/art/families/reroot.tsx',
+      f: 'src/components/art/families/tree.tsx',
+      g: 'src/components/art/families/bitmask.tsx',
+    }
 
-    const module = await loadFamilyArt('a')
-    expect(module).toMatchObject({
-      HeroArt: expect.any(Function),
-      JourneyArt: expect.any(Function),
-      LessonPlate: expect.any(Function),
-    })
-
-    const linearModule = await loadFamilyArt('b')
-    expect(linearModule).toMatchObject({
-      HeroArt: expect.any(Function),
-      JourneyArt: expect.any(Function),
-      LessonPlate: expect.any(Function),
-    })
+    for (const part of PARTS) {
+      expect(hasFamilyArt(part.id)).toBe(true)
+      expect(getFamilyArtSource(part.id)).toBe(sources[part.id])
+      await expect(loadFamilyArt(part.id)).resolves.toMatchObject({
+        HeroArt: expect.any(Function),
+        JourneyArt: expect.any(Function),
+        LessonPlate: expect.any(Function),
+      })
+    }
   })
 
   it('maps A lessons to distinct accessible atlas cells', () => {
@@ -91,5 +88,33 @@ describe('family art registry', () => {
 
     expect(container.childElementCount).toBe(0)
     expect(container.querySelector('.linear-plate')).toBeNull()
+  })
+
+  it('maps all 37 catalog lessons to distinct accessible family atlas cells', () => {
+    const { container } = render(
+      <>
+        {PARTS.flatMap((part) => part.types.map((lesson) => (
+          <PolyLessonPlate
+            key={`${part.id}-${lesson.slug}`}
+            family={part.id}
+            slug={lesson.slug}
+            title={lesson.title}
+            atlas={`/${part.id}-lessons.webp`}
+          />
+        )))}
+      </>,
+    )
+
+    const plates = [...container.querySelectorAll<HTMLElement>('.poly-lesson-plate')]
+    expect(plates).toHaveLength(37)
+
+    for (const part of PARTS) {
+      const familyPlates = plates.filter((plate) => plate.dataset.familyArt === part.id)
+      const cells = familyPlates.map((plate) => `${plate.dataset.atlasColumn}:${plate.dataset.atlasRow}`)
+      expect(familyPlates).toHaveLength(part.types.length)
+      expect(new Set(cells).size).toBe(part.types.length)
+      expect(familyPlates.every((plate) => plate.dataset.atlasFrame?.split(' ').length === 4)).toBe(true)
+      expect(familyPlates.every((plate) => plate.getAttribute('aria-label')?.includes('：'))).toBe(true)
+    }
   })
 })

@@ -84,9 +84,9 @@ export default function BitPlug() {
   return (
     <>
       <section className="lesson">
-        <h2 className="section-title">选修 · 插头 DP</h2>
-        <InfoBox kind="key" title="选修 · 挑战区">
-          这是全站状压部分的<strong>最后一类，也是难度最高的一类</strong>——建议先学完前四类（棋盘 / TSP / 覆盖 / 综合技巧），对「把状态压进整数、在 mask 间转移」足够熟练后再来。它把状压推向<strong>轮廓线上的连通性</strong>，思想优美但实现繁琐，作为进阶延伸了解即可。
+        <h2 className="section-title">插头 DP</h2>
+        <InfoBox kind="key" title="学习定位 · 轮廓线连通性">
+          这是全站状压部分的<strong>最后一类，也是难度最高的一类</strong>。建议先学完前四类（棋盘 / TSP / 覆盖 / 综合技巧），对「把状态压进整数、在 mask 间转移」足够熟练后再来。它把状压推进到<strong>轮廓线上的连通性</strong>：状态更稀疏、转移更精细，也是完整掌握状压 DP 必须理解的正式课程。
         </InfoBox>
         <div className="prose">
           <p>
@@ -160,7 +160,7 @@ export default function BitPlug() {
           <MB>{'state \\leftarrow state\\,{<}{<}\\,2'}</MB>
         </div>
         <InfoBox kind="warn" title="常见陷阱：这是模板级难题，别急于手推转移">
-          插头 DP 的六类转移（新建 / 延续 / 合并 / 闭合 + 障碍 + 换行）细节极多，括号匹配还要正确维护「哪一对属于同一环」。初学<strong>务必对着模板题反复调试</strong>，把每类 <M>{'(p,q)'}</M> 组合列表逐一验证，而不是凭直觉写。它是状压的天花板，<strong>掌握前四类已足以应对绝大多数竞赛状压题</strong>——这一类留给行有余力时深挖。
+          插头 DP 的六类转移（新建 / 延续 / 合并 / 闭合 + 障碍 + 换行）细节极多，括号匹配还要正确维护「哪一对属于同一环」。学习时<strong>务必对着模板题反复调试</strong>，把每类 <M>{'(p,q)'}</M> 组合列表逐一验证，而不是凭直觉写。它位于状压 DP 的高阶位置，应先建立轮廓线与括号编码的稳定模型，再逐类验证转移。
         </InfoBox>
       </section>
 
