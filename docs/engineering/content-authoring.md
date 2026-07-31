@@ -3,12 +3,13 @@ type: Engineering Contract
 title: Content Authoring Contract
 description: How to maintain DP大师 type pages, examples, formulas, code, and registration.
 tags: [content, authoring, lessons]
-timestamp: 2026-07-07T00:00:00+08:00
-source_paths:
-  - site/src/content/a/Knapsack01.tsx
-  - site/src/content/a/KnapsackComplete.tsx
-  - site/src/components/ui/ProblemBits.tsx
-  - site/src/components/ui/CodeBlock.tsx
+status: stable
+generated: { by: openai/codex, at: 2026-07-31T15:32:38+08:00 }
+sources:
+  - resource: ../../site/src/content/a/Knapsack01.tsx
+  - resource: ../../site/src/content/a/KnapsackComplete.tsx
+  - resource: ../../site/src/components/ui/ProblemBits.tsx
+  - resource: ../../site/src/components/ui/CodeBlock.tsx
 ---
 
 # Golden Flow
@@ -68,9 +69,9 @@ When adding or changing a type:
 1. Place the lesson implementation under `site/src/content/<part>/`.
 2. Register its metadata and literal lazy import once in `site/src/data/catalog.ts`.
 3. Keep example/exercise metadata as literal props on lesson `ExampleCard` / `Exercise` entries.
-4. Run `npm run content:generate` to refresh generated `site/src/data/problems.ts`.
+4. Run `pnpm content:generate` to refresh generated `site/src/data/problems.ts`.
 5. Add or update any demo solvers under `site/src/components/demos/<topic>/`.
-6. Run `npm run verify` from `site/`.
+6. Run `pnpm verify` from `site/`.
 
 # Lesson Hero Art
 

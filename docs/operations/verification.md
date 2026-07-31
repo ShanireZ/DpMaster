@@ -3,11 +3,12 @@ type: Runbook
 title: Verification Runbook
 description: Build, lint, route, documentation, and deployment verification gates for DP大师.
 tags: [operations, verification, build]
-timestamp: 2026-07-07T00:00:00+08:00
-source_paths:
-  - site/package.json
-  - docs/
-  - deploy.md
+status: stable
+generated: { by: openai/codex, at: 2026-07-31T15:32:38+08:00 }
+sources:
+  - resource: ../../site/package.json
+  - resource: ../
+  - resource: ../../deploy.md
 ---
 
 # Local Checks
@@ -15,19 +16,19 @@ source_paths:
 Run from `site/`:
 
 ```bash
-npm run verify
+pnpm verify
 ```
 
-`npm run verify` checks generated content and discovery artifacts, runs Node tests and zero-warning lint, builds and prerenders both regional targets, writes the EdgeOne API/404 Adapter, verifies that every EdgeOne HTML contains exactly one static Web Analytics beacon while Cloudflare HTML contains none, runs Chromium against the international production target through the strict custom preview server, and enforces the asset budget on both regional asset directories.
+`pnpm verify` checks generated content and discovery artifacts, runs Node and React tests, runs TypeScript-aware zero-warning lint with deprecated API rejection, builds and prerenders both regional targets with TypeScript 7, writes the EdgeOne API/404 Adapter, verifies regional analytics, runs the browser matrix, and enforces the asset budget on both regional asset directories.
 
 To rerun only the browser smoke suite after a production build:
 
 ```bash
-npm run build
-npm run test:browser
+pnpm build
+pnpm test:browser
 ```
 
-Install its local Chromium runtime once with `npx playwright install chromium`. CI installs Chromium and its system dependencies before invoking the complete verification gate.
+Install the local browser runtimes once with `pnpm exec playwright install chromium firefox webkit`. CI installs all three engines and their system dependencies before invoking the complete verification gate. Chromium runs all browser specifications; Firefox and WebKit run tests tagged `@cross-browser`.
 
 Algorithm verification runs directly on Node 24's TypeScript stripping support and includes:
 
@@ -43,7 +44,7 @@ Pure TypeScript Modules imported by Node tests must use explicit `.ts` extension
 
 # SEO And Accessibility Checks
 
-`npm run check:seo` verifies the 48-path catalog, route metadata, the checked-in international sitemap/robots baseline, real `llms.txt`, 48-entry route summaries, and Git-derived `lastmod` data. It also checks the source contracts for dual-region outputs, React prerender/hydration, route CSS injection, host-aware metadata, and real 404 handling. When routes, lesson readiness, or route-owned source files change, run `npm run seo:generate` and review the generated files before committing them.
+`pnpm check:seo` verifies the 47-path catalog, route metadata, the checked-in international sitemap/robots baseline, real `llms.txt`, 47-entry route summaries, and Git-derived `lastmod` data. It also checks the source contracts for dual-region outputs, React prerender/hydration, route CSS injection, host-aware metadata, removed-route 404 behavior, and host-aware metadata. When routes, lesson readiness, or route-owned source files change, run `pnpm seo:generate` and review the generated files before committing them.
 
 The browser gate runs Chromium against built `dist/cloudflare` through a strict, non-reused custom preview server. Route tests directly open `/`, `/part/a`, `/part/a/01`, `/method`, and `/part/g/plug`, then exercise live client navigation and keyboard focus. They check HTTP status, prerendered HTML, absence of pending streamed-Suspense placeholders, route CSS at first paint, hydration without errors, CLS below `0.05`, title/description/abstract/canonical/hreflang/Open Graph/JSON-LD metadata, one visible `h1`, route announcements, current-page semantics, initial-load focus, changed-route focus, and skip-link focus. An unknown path must return 404 with `noindex,nofollow`, no canonical, and the themed not-found heading.
 
@@ -71,18 +72,19 @@ Game runtime tests prove equal displayed seeds produce equal rounds for all six 
 
 For OKF bundle changes:
 
-* `docs/index.md` and `docs/log.md` are reserved files.
+* `docs/index.md` is the bundle index and declares `okf_version: "0.2"`; no chronological `log.md` is maintained.
 * Every other `docs/**/*.md` file must start with YAML frontmatter.
-* Every concept frontmatter must include a non-empty `type`.
-* Prefer `title`, `description`, `tags`, and `timestamp`.
+* Every concept frontmatter must include non-empty `type`, current lifecycle `status`, and `generated.by` / `generated.at`.
+* Use `sources[].resource` for provenance; do not restore v0.1 `timestamp` or custom `source_paths`.
 * Use bundle-root links such as `/product/scope.md` for concept links where possible.
+* Keep only durable current truth. Task progress, completed plans, resolved drift, and review history belong in `handoff/` or Git history.
 
 # Content Consistency Checks
 
 When changing lesson content:
 
 * Treat `site/src/data/catalog.ts` as the family/type/route authority.
-* Run `npm run check:content` to compare generated `site/src/data/problems.ts` against lesson cards.
+* Run `pnpm check:content` to compare generated `site/src/data/problems.ts` against lesson cards.
 * Check that all official problem IDs still use P/B prefixes.
 * Verify formula strings contain no Chinese inside TeX.
 * Do not reintroduce `opacity: 0` entrance animations.

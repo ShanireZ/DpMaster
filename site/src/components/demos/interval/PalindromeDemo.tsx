@@ -21,7 +21,7 @@ export default function PalindromeDemo() {
     <div>
       <div className="pal__toolbar">
         <div style={{ flex: 1 }}>
-          <div className="kd__group-label">字符串（可编辑 · 取前 8 个字母/数字 · 大小写不敏感）</div>
+          <div className="demo-control__group-label">字符串（可编辑 · 取前 8 个字母/数字 · 大小写不敏感）</div>
           <div className="pal__inrow">
             <input
               className="pal__input"
@@ -49,7 +49,7 @@ export default function PalindromeDemo() {
         </div>
       </div>
 
-      <div className="fbug__readout">
+      <div className="demo-contrast__readout">
         当前串 <b className="you">"{chars.join('')}"</b>（长度 {chars.length}）· 最长回文子序列长度{' '}
         <b className="ok">dp[0][{chars.length - 1}] = {lps}</b> · 表内每格 dp[i][j] = 子串 s[i..j] 的最长回文子序列长。
       </div>

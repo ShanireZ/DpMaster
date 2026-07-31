@@ -232,7 +232,10 @@ test('C–G representative lesson demos perform a real state change', async ({ p
   test.setTimeout(60_000)
 
   await page.goto('/part/c/stone')
-  const stoneValue = page.locator('.kd__item').first().locator('.stepper__val')
+  const stoneValue = page
+    .locator('.demo-control__item')
+    .first()
+    .locator('.stepper__val')
   await expect(stoneValue).toHaveText('7')
   await page.getByRole('button', { name: '石子数 a 加' }).first().click()
   await expect(stoneValue).toHaveText('8')

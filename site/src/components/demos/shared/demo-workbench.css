@@ -1,6 +1,6 @@
-/* Shared editable-demo controls. Keep legacy kd__/fbug__ selectors until each
+/* Shared editable-demo controls. Keep legacy demo-control__/demo-contrast__ selectors until each
    family can migrate markup without coupling its algorithms to a visual rename. */
-.kd__toolbar {
+.demo-control__toolbar {
   display: flex;
   flex-wrap: wrap;
   align-items: flex-end;
@@ -11,7 +11,7 @@
   border-bottom: 1px solid var(--border);
 }
 
-.kd__group-label {
+.demo-control__group-label {
   margin-bottom: 10px;
   color: var(--text-3);
   font-size: 10px;
@@ -19,13 +19,13 @@
   letter-spacing: 0.14em;
 }
 
-.kd__items {
+.demo-control__items {
   display: flex;
   flex-wrap: wrap;
   gap: 1px;
 }
 
-.kd__item {
+.demo-control__item {
   position: relative;
   display: flex;
   min-width: 168px;
@@ -35,7 +35,7 @@
   background: color-mix(in srgb, var(--surface-3) 56%, transparent);
 }
 
-.kd__item-i {
+.demo-control__item-i {
   position: absolute;
   top: -1px;
   left: -1px;
@@ -50,7 +50,7 @@
   font-weight: 700;
 }
 
-.kd__remove {
+.demo-control__remove {
   position: absolute;
   top: -1px;
   right: -1px;
@@ -65,7 +65,7 @@
   background: var(--surface-1);
 }
 
-.kd__remove:hover {
+.demo-control__remove:hover {
   border-color: var(--viz-invalid);
   color: var(--viz-invalid);
 }
@@ -111,7 +111,7 @@
   text-align: center;
 }
 
-.kd__add {
+.demo-control__add {
   display: inline-flex;
   min-height: 48px;
   align-self: center;
@@ -124,16 +124,16 @@
   font-weight: 650;
 }
 
-.kd__add:hover {
+.demo-control__add:hover {
   border-color: var(--accent-2);
   color: var(--text-1);
 }
 
-.kd__add:disabled {
+.demo-control__add:disabled {
   opacity: 0.4;
 }
 
-.kd__modes {
+.demo-control__modes {
   display: flex;
   flex-wrap: wrap;
   gap: 0;
@@ -141,7 +141,7 @@
   border-bottom: 1px solid var(--border);
 }
 
-.kd__mode {
+.demo-control__mode {
   padding: 9px 15px;
   border: 0;
   border-right: 1px solid var(--border);
@@ -154,20 +154,20 @@
     background var(--t-fast);
 }
 
-.kd__mode:hover {
+.demo-control__mode:hover {
   color: var(--text-1);
 }
 
-.kd__mode.on {
+.demo-control__mode.on {
   color: var(--text-on-accent);
   background: var(--accent-1);
 }
 
-.kd__mode.danger.on {
+.demo-control__mode.danger.on {
   background: var(--viz-invalid);
 }
 
-.fbug__toolbar {
+.demo-contrast__toolbar {
   display: flex;
   flex-wrap: wrap;
   align-items: flex-end;
@@ -178,12 +178,12 @@
   border-bottom: 1px solid var(--border);
 }
 
-.fbug__steppers {
+.demo-contrast__steppers {
   display: flex;
   gap: var(--sp-4);
 }
 
-.fbug__readout {
+.demo-contrast__readout {
   margin-bottom: var(--sp-5);
   padding: var(--sp-3) 0;
   border-top: 1px solid var(--border);
@@ -192,30 +192,30 @@
   font-size: 14px;
 }
 
-.fbug__readout b {
+.demo-contrast__readout b {
   font-family: var(--font-mono);
   font-weight: 700;
 }
 
-.fbug__readout .ok {
+.demo-contrast__readout .ok {
   color: var(--viz-chosen);
 }
 
-.fbug__readout .bad {
+.demo-contrast__readout .bad {
   color: var(--viz-invalid);
 }
 
-.fbug__readout .you {
+.demo-contrast__readout .you {
   color: var(--text-1);
 }
 
-.fbug__pair {
+.demo-contrast__pair {
   display: flex;
   flex-direction: column;
   gap: var(--sp-6);
 }
 
-.fbug__side-label {
+.demo-contrast__side-label {
   display: flex;
   align-items: center;
   gap: 7px;
@@ -224,33 +224,33 @@
   font-weight: 600;
 }
 
-.fbug__side-label.ok {
+.demo-contrast__side-label.ok {
   color: var(--viz-chosen);
 }
 
-.fbug__side-label.bad {
+.demo-contrast__side-label.bad {
   color: var(--viz-invalid);
 }
 
-.fbug__side-label.you {
+.demo-contrast__side-label.you {
   color: var(--text-2);
 }
 
 @media (max-width: 600px) {
-  .kd__toolbar {
+  .demo-control__toolbar {
     gap: var(--sp-4);
   }
 
-  .kd__items {
+  .demo-control__items {
     gap: var(--sp-2);
   }
 
-  .kd__item {
+  .demo-control__item {
     min-width: 148px;
     padding: 12px 9px;
   }
 
-  .kd__mode {
+  .demo-control__mode {
     padding-inline: 10px;
   }
 }

@@ -44,8 +44,8 @@ test('non-backpack demos consume the shared workbench stylesheet', () => {
     32,
   )
   assert.match(sharedCss, /\.stepper__row/)
-  assert.match(sharedCss, /\.kd__toolbar/)
+  assert.match(sharedCss, /\.demo-control__toolbar/)
   assert.match(knapsackCss, /@import '\.\.\/shared\/demo-workbench\.css'/)
-  assert.match(knapsackCss, /\.kd--editor/)
+  assert.match(knapsackCss, /\.demo-editor/)
   assert.doesNotMatch(knapsackCss, /^\.stepper__row/m)
 })

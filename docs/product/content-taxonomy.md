@@ -3,9 +3,10 @@ type: Product Reference
 title: DP Content Taxonomy
 description: The current A-G family taxonomy and type inventory used by the live site.
 tags: [content, taxonomy, routing]
-timestamp: 2026-07-07T00:00:00+08:00
-source_paths:
-  - site/src/data/catalog.ts
+status: stable
+generated: { by: openai/codex, at: 2026-07-31T15:32:38+08:00 }
+sources:
+  - resource: ../../site/src/data/catalog.ts
 ---
 
 # Authority

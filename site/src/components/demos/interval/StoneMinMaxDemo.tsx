@@ -52,15 +52,15 @@ export default function StoneMinMaxDemo() {
 
   return (
     <div>
-      <div className="fbug__toolbar">
+      <div className="demo-contrast__toolbar">
         <div>
-          <div className="kd__group-label">同一排石子（两侧共用 · 可改数值 / 增删堆）</div>
-          <div className="kd__items">
+          <div className="demo-control__group-label">同一排石子（两侧共用 · 可改数值 / 增删堆）</div>
+          <div className="demo-control__items">
             {stones.map((s, i) => (
-              <div className="kd__item" key={i}>
-                <span className="kd__item-i">{i}</span>
+              <div className="demo-control__item" key={i}>
+                <span className="demo-control__item-i">{i}</span>
                 {stones.length > 3 && (
-                  <button className="kd__remove" onClick={() => removeStone(i)} aria-label="删除该堆">
+                  <button className="demo-control__remove" onClick={() => removeStone(i)} aria-label="删除该堆">
                     <X size={12} />
                   </button>
                 )}
@@ -68,7 +68,7 @@ export default function StoneMinMaxDemo() {
               </div>
             ))}
             {stones.length < 5 && (
-              <button className="kd__add" onClick={addStone}>
+              <button className="demo-control__add" onClick={addStone}>
                 <Plus size={14} /> 加一堆
               </button>
             )}
@@ -76,21 +76,21 @@ export default function StoneMinMaxDemo() {
         </div>
       </div>
 
-      <div className="fbug__readout">
+      <div className="demo-contrast__readout">
         最小合并代价 <b className="ok">dp[0][{stones.length - 1}] = {aMin}</b> · 最大合并代价{' '}
         <b className="you">dp[0][{stones.length - 1}] = {aMax}</b> · 同一组石子、同一套转移，只把{' '}
         <b>opt</b> 从 <b>min</b> 换成 <b>max</b>，两问差 <b>{aMax - aMin}</b>。
       </div>
 
-      <div className="fbug__pair">
+      <div className="demo-contrast__pair">
         <div>
-          <div className="fbug__side-label ok">
+          <div className="demo-contrast__side-label ok">
             <ArrowDownWideNarrow size={15} /> 最小合并代价（opt = min）
           </div>
           <DPViz key={`min${k}`} model={minModel} />
         </div>
         <div>
-          <div className="fbug__side-label you">
+          <div className="demo-contrast__side-label you">
             <ArrowUpWideNarrow size={15} /> 最大合并代价（opt = max）
           </div>
           <DPViz key={`max${k}`} model={maxModel} />

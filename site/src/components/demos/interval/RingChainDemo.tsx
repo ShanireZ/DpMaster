@@ -34,14 +34,14 @@ export default function RingChainDemo() {
 
   return (
     <div>
-      <div className="kd__toolbar">
+      <div className="demo-control__toolbar">
         <div>
-          <div className="kd__group-label">选一个断点，看环怎样展开成 2n 直链</div>
-          <div className="kd__modes">
+          <div className="demo-control__group-label">选一个断点，看环怎样展开成 2n 直链</div>
+          <div className="demo-control__modes">
             {Array.from({ length: n }, (_, i) => (
               <button
                 key={i}
-                className={`kd__mode ${cut === i ? 'on' : ''}`}
+                className={`demo-control__mode ${cut === i ? 'on' : ''}`}
                 onClick={() => setCut(i)}
               >
                 <Scissors size={12} style={{ verticalAlign: '-1px', marginRight: 4 }} />
@@ -144,7 +144,7 @@ export default function RingChainDemo() {
         </text>
       </svg>
 
-      <div className="fbug__readout">
+      <div className="demo-contrast__readout">
         换个断点，窗口就在 2n 链上<b>整体平移</b>一格，覆盖的仍是环上的<b>同一圈 {n} 堆</b>、只是起止不同。
         <b>因此环形答案不能只看一个 dp[0][{n - 1}]</b>——要把这 {n} 个平移窗口都试一遍，取最优。链一旦复制成 2n，
         <b className="ok">任何一种“从哪儿断”都变成链上一个现成的连续区间</b>，环形问题就此化归为已会的链形区间 DP。

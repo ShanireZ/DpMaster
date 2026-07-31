@@ -71,9 +71,9 @@ export default function TwoPathDemo() {
 
   return (
     <div>
-      <div className="kd__toolbar">
+      <div className="demo-control__toolbar">
         <div>
-          <div className="kd__group-label">权值网格（点数字上的 ± 改值 · 两条路都从左上走到右下，只能右 / 下 · 同格只算一次）</div>
+          <div className="demo-control__group-label">权值网格（点数字上的 ± 改值 · 两条路都从左上走到右下，只能右 / 下 · 同格只算一次）</div>
           <div style={{ display: 'flex', flexDirection: 'column', gap: 6, alignItems: 'flex-start' }}>
             {shown.map((row, i) => (
               <div key={i} style={{ display: 'flex', gap: 6 }}>
@@ -139,11 +139,11 @@ export default function TwoPathDemo() {
         </div>
         <div style={{ display: 'flex', gap: 'var(--sp-4)' }}>
           <div>
-            <div className="kd__group-label">行数</div>
+            <div className="demo-control__group-label">行数</div>
             <Stepper label="行" value={rows} min={2} max={4} onChange={setRows} />
           </div>
           <div>
-            <div className="kd__group-label">列数</div>
+            <div className="demo-control__group-label">列数</div>
             <Stepper label="列" value={cols} min={2} max={4} onChange={setCols} />
           </div>
         </div>

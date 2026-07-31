@@ -52,15 +52,15 @@ export default function MaxSubarrayDemo() {
 
   return (
     <div>
-      <div className="kd__toolbar">
+      <div className="demo-control__toolbar">
         <div>
-          <div className="kd__group-label">数组 a[]（可增删 · 可为负数）</div>
-          <div className="kd__items">
+          <div className="demo-control__group-label">数组 a[]（可增删 · 可为负数）</div>
+          <div className="demo-control__items">
             {a.map((v, i) => (
-              <div className="kd__item" key={i}>
-                <span className="kd__item-i">{i}</span>
+              <div className="demo-control__item" key={i}>
+                <span className="demo-control__item-i">{i}</span>
                 {a.length > 2 && (
-                  <button className="kd__remove" onClick={() => removeAt(i)} aria-label="删除元素">
+                  <button className="demo-control__remove" onClick={() => removeAt(i)} aria-label="删除元素">
                     <X size={12} />
                   </button>
                 )}
@@ -68,7 +68,7 @@ export default function MaxSubarrayDemo() {
               </div>
             ))}
             {a.length < 8 && (
-              <button className="kd__add" onClick={addOne}>
+              <button className="demo-control__add" onClick={addOne}>
                 <Plus size={15} /> 加一位
               </button>
             )}
@@ -76,23 +76,23 @@ export default function MaxSubarrayDemo() {
         </div>
       </div>
 
-      <div className="kd__modes">
+      <div className="demo-control__modes">
         {PRESETS.map((p) => (
           <button
             key={p.label}
-            className={`kd__mode ${a.join(',') === p.a.join(',') ? 'on' : ''}`}
+            className={`demo-control__mode ${a.join(',') === p.a.join(',') ? 'on' : ''}`}
             onClick={() => setA(p.a)}
           >
             {p.label}
           </button>
         ))}
-        <button className="kd__mode" onClick={() => setA(PRESETS[0].a)} title="回到默认">
+        <button className="demo-control__mode" onClick={() => setA(PRESETS[0].a)} title="回到默认">
           <RotateCcw size={13} style={{ verticalAlign: '-2px', marginRight: 4 }} />
           复位
         </button>
       </div>
 
-      <div className="fbug__readout">
+      <div className="demo-contrast__readout">
         最大子段和 = dp[] 的全局最大值：<b className="ok">{answer}</b>
         {a.every((x) => x < 0) && <>（全为负数时，答案就是其中最大的那个单个元素）</>}
       </div>

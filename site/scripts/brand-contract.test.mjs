@@ -22,7 +22,7 @@ function collectTextFiles(dir) {
       if (!ignoredDirectories.has(entry.name)) files.push(...collectTextFiles(join(dir, entry.name)))
       continue
     }
-    if (entry.name === 'package-lock.json') continue
+    if (entry.name === 'pnpm-lock.yaml') continue
     if (textExtensions.has(extname(entry.name))) files.push(join(dir, entry.name))
   }
   return files

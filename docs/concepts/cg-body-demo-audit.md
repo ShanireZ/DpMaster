@@ -1,3 +1,12 @@
+---
+type: Design Audit
+title: C–G Body Visualization and Demo Audit
+description: Current C–G lesson-body visualization and Demo consistency findings pending the A–G standardization task.
+tags: [design, visualization, demos, audit]
+status: draft
+generated: { by: openai/codex, at: 2026-07-31T15:32:38+08:00 }
+---
+
 # C–G 正文图解与 Demo 一致性审计
 
 > 本轮范围：只审计，不进行全课程正文视觉重做。

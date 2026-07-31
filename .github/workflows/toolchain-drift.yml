@@ -1,0 +1,73 @@
+name: DP大师工具链版本巡检
+
+on:
+  schedule:
+    - cron: '0 2 * * 1'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  issues: write
+
+jobs:
+  report:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: site
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v7
+
+      - name: Set up pnpm
+        uses: pnpm/action-setup@v6
+
+      - name: Set up Node 24
+        uses: actions/setup-node@v7
+        with:
+          node-version-file: site/.node-version
+          cache: pnpm
+          cache-dependency-path: site/pnpm-lock.yaml
+
+      - name: Install locked dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Generate drift report
+        id: drift
+        shell: bash
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+        run: |
+          set +e
+          pnpm maintenance:check > "$RUNNER_TEMP/toolchain-drift.md"
+          status=$?
+          set -e
+          if [ "$status" -eq 0 ]; then
+            echo "found=false" >> "$GITHUB_OUTPUT"
+          else
+            echo "found=true" >> "$GITHUB_OUTPUT"
+          fi
+          cat "$RUNNER_TEMP/toolchain-drift.md" >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Update rolling issue
+        shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
+          DRIFT_FOUND: ${{ steps.drift.outputs.found }}
+        run: |
+          title="工具链与依赖漂移"
+          issue_number="$(gh issue list --state all --limit 100 --json number,title \
+            --jq ".[] | select(.title == \"$title\") | .number" | head -n 1)"
+          if [ "$DRIFT_FOUND" = "true" ]; then
+            if [ -z "$issue_number" ]; then
+              gh issue create --title "$title" --body-file "$RUNNER_TEMP/toolchain-drift.md"
+            else
+              gh issue reopen "$issue_number" >/dev/null 2>&1 || true
+              gh issue edit "$issue_number" --body-file "$RUNNER_TEMP/toolchain-drift.md"
+            fi
+          elif [ -n "$issue_number" ]; then
+            state="$(gh issue view "$issue_number" --json state --jq .state)"
+            if [ "$state" = "OPEN" ]; then
+              gh issue close "$issue_number" --comment "本周巡检已全部对齐，自动关闭。"
+            fi
+          fi

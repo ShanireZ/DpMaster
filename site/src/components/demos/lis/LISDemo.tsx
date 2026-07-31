@@ -28,9 +28,9 @@ function NumStepper({
   removable: boolean
 }) {
   return (
-    <div className="kd__item">
+    <div className="demo-control__item">
       {removable && (
-        <button className="kd__remove" onClick={onRemove} aria-label="删除元素">
+        <button className="demo-control__remove" onClick={onRemove} aria-label="删除元素">
           <X size={12} />
         </button>
       )}
@@ -69,26 +69,26 @@ export default function LISDemo() {
 
   return (
     <div>
-      <div className="kd__modes">
+      <div className="demo-control__modes">
         {PRESETS.map((p) => (
           <button
             key={p.label}
-            className={`kd__mode${a.join(',') === p.a.join(',') ? ' on' : ''}`}
+            className={`demo-control__mode${a.join(',') === p.a.join(',') ? ' on' : ''}`}
             onClick={() => setA(p.a)}
           >
             {p.label}
           </button>
         ))}
-        <button className="kd__mode" onClick={() => setA(shuffle(a))} title="打乱当前数组">
+        <button className="demo-control__mode" onClick={() => setA(shuffle(a))} title="打乱当前数组">
           <Shuffle size={13} style={{ verticalAlign: '-2px', marginRight: 4 }} />
           打乱
         </button>
       </div>
 
-      <div className="kd__toolbar">
+      <div className="demo-control__toolbar">
         <div>
-          <div className="kd__group-label">数组 a[]（每个值可增减；上升即可，重复值不算「上升」）</div>
-          <div className="kd__items">
+          <div className="demo-control__group-label">数组 a[]（每个值可增减；上升即可，重复值不算「上升」）</div>
+          <div className="demo-control__items">
             {a.map((v, i) => (
               <NumStepper
                 key={i}
@@ -101,7 +101,7 @@ export default function LISDemo() {
               />
             ))}
             {a.length < 10 && (
-              <button className="kd__add" onClick={addOne}>
+              <button className="demo-control__add" onClick={addOne}>
                 <Plus size={15} /> 加元素
               </button>
             )}
@@ -109,7 +109,7 @@ export default function LISDemo() {
         </div>
       </div>
 
-      <div className="fbug__readout">
+      <div className="demo-contrast__readout">
         当前数组的最长上升子序列长度：<b className="ok">LIS = {ans}</b>
         <span className="you"> （= dp[] 全行最大值，可在任意位置结尾）</span>
       </div>

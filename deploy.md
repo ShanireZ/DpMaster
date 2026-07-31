@@ -7,49 +7,43 @@ DP大师是一个 React + Vite 预渲染静态站。生产采用区域双站：
 - **国际站 `https://dp.betaoi.cc`**：发布 `site/dist/cloudflare/` 到 Cloudflare Workers Static Assets，入口是 `site/worker.js`。
 - **国内站 `https://dp.betaoi.cn`**：发布 `site/dist/edgeone/` 到 Tencent EdgeOne Pages/Makers，并生成 EdgeOne 专用的 API 与真实 404 函数。
 
-两个产物都包含 48 个预渲染公开路由、React 水合、区域 canonical/sitemap/robots/llms.txt、互指 hreflang 和 JSON-LD。站内反馈统一走同源 `POST /api/feedback`；有限的页面与反馈统计事件走同源 `POST /api/analytics`。
+两个产物都包含 47 个预渲染公开路由、React 水合、区域 canonical/sitemap/robots/llms.txt、互指 hreflang 和 JSON-LD。站内反馈统一走同源 `POST /api/feedback`；有限的页面与反馈统计事件走同源 `POST /api/analytics`。
 
 ## 一页流程
 
 ```bash
-npm ci        # 按 lockfile 精确安装（需要 Node.js ≥ 24、npm ≥ 11）
-npm run lint
-npm run build
+corepack install --global pnpm@11.18.0
+pnpm install --frozen-lockfile
+pnpm release
 ```
 
 首次部署前登录两家平台：
 
 ```bash
-npx wrangler login
-npx edgeone login
+pnpm exec wrangler login
+pnpm dlx edgeone@1.6.18 login
 ```
 
-发布：
+`pnpm release` 是唯一完整双区发布入口：先执行完整 `pnpm verify`，只构建一次，再依次发布 Cloudflare 与 EdgeOne。
 
 ```bash
-npm run deploy
+pnpm release
 ```
 
-`npm run deploy` 等价于：
+只发单个平台时，必须先自行完成完整验证，再部署已生成的对应区域产物：
 
 ```bash
-npm run build
-npm run deploy:cf
-npm run deploy:eo
-```
-
-只发单个平台时使用：
-
-```bash
-npm run deploy:cf
-npm run deploy:eo
+pnpm verify
+pnpm deploy:cf
+# 或
+pnpm deploy:eo
 ```
 
 ## 部署前准备
 
 需要准备：
 
-- Node.js ≥ 24 与 npm ≥ 11。仓库使用 `package-lock.json` 锁版，`packageManager` 固定为 npm 11（见 `site/package.json` 的 `engines`），推荐用 npm。
+- Node.js 24.18.1 与 pnpm 11.18.0。仓库使用 `pnpm-lock.yaml` 锁版，版本权威是 `site/.node-version`、`site/package.json` 和 `site/pnpm-workspace.yaml`。
 - Cloudflare 账号，已允许 Wrangler 发布 Workers。
 - 腾讯云 EdgeOne 账号，已允许 EdgeOne Pages 发布。
 - 如果需要站内反馈，准备一个钉钉群自定义机器人 webhook，或按后文规划迁移到钉钉应用机器人。
@@ -67,16 +61,17 @@ npm run deploy:eo
 ## 本地构建
 
 ```bash
-npm ci        # 按 lockfile 精确安装（需要 Node.js ≥ 24、npm ≥ 11）
-npm run lint
-npm run build
+corepack install --global pnpm@11.18.0
+pnpm install --frozen-lockfile
+pnpm lint
+pnpm build
 ```
 
-构建输出在 `site/dist/cloudflare/` 与 `site/dist/edgeone/`，`dist/` 不入仓库。`npm run build` 会执行：
+构建输出在 `site/dist/cloudflare/` 与 `site/dist/edgeone/`，`dist/` 不入仓库。`pnpm build` 会执行：
 
 1. `tsc -b`
 2. 为国际站和国内站分别执行 Vite 客户端构建。
-3. 在隔离的 production Node 进程中用 React 19 `prerender()` 渲染 48 个公开路由。
+3. 在隔离的 production Node 进程中用 React 19 `prerender()` 渲染 47 个公开路由。
 4. 为每个区域写入自有 canonical、sitemap、robots、`llms.txt`、`route-summaries.json` 与 `404.html`。
 5. 生成 EdgeOne catch-all Adapter。
 
@@ -87,8 +82,8 @@ npm run build
 本地分别预览：
 
 ```bash
-npm run preview
-npm run preview -- --region china --port 4174
+pnpm preview
+pnpm preview -- --region china --port 4174
 ```
 
 ## Cloudflare 部署
@@ -123,9 +118,9 @@ npm run preview -- --region china --port 4174
 ### 首次发布到 Cloudflare
 
 ```bash
-npx wrangler login
-npm run build
-npm run deploy:cf
+pnpm exec wrangler login
+pnpm build
+pnpm deploy:cf
 ```
 
 发布成功后，到 Cloudflare Dashboard 检查：
@@ -163,8 +158,8 @@ npm run deploy:cf
 CLI 设置 Secret：
 
 ```bash
-npx wrangler secret put FEEDBACK_WEBHOOK_URL
-npx wrangler secret put FEEDBACK_WEBHOOK_SECRET
+pnpm exec wrangler secret put FEEDBACK_WEBHOOK_URL
+pnpm exec wrangler secret put FEEDBACK_WEBHOOK_SECRET
 ```
 
 `FEEDBACK_WEBHOOK_KIND` 不敏感，推荐在 Dashboard 里作为 Text variable 添加。如果完全用 CLI，也可以临时用 `wrangler secret put FEEDBACK_WEBHOOK_KIND` 输入 `dingtalk`，但它语义上不是 secret。
@@ -206,7 +201,7 @@ Invoke-RestMethod `
 可以用 Wrangler 看实时日志：
 
 ```bash
-npx wrangler tail dpmaster
+pnpm exec wrangler tail dpmaster
 ```
 
 ## EdgeOne 部署
@@ -234,9 +229,9 @@ edgeone makers deploy ./dist/edgeone -n dpmaster -e production
 ### 首次发布到 EdgeOne
 
 ```bash
-npx edgeone login
-npm run build
-npm run deploy:eo
+pnpm dlx edgeone@1.6.18 login
+pnpm build
+pnpm deploy:eo
 ```
 
 如果控制台还没有 `dpmaster` 项目，先在 EdgeOne Pages/Makers 控制台创建同名项目，或按 CLI 提示创建。项目创建后，保持发布目录为 `dist/edgeone/`。
@@ -257,7 +252,7 @@ EdgeOne 的变量要配置到生产环境的边缘函数运行时。控制台入
 2. 进入 **Project Settings**、**Environment Variables**，或对应 Edge Function 的 **Environment Variables / Secret** 模块。
 3. 添加下面的变量。
 4. 环境选择 `production`。
-5. 保存后点击 **Deploy**，或重新执行 `npm run deploy:eo`。
+5. 保存后点击 **Deploy**，或重新执行 `pnpm deploy:eo`。
 
 | 名称                      | 类型   |         必填 | 值                                           |
 | ------------------------- | ------ | -----------: | -------------------------------------------- |
@@ -278,7 +273,7 @@ EdgeOne 变量保存后需要部署才会生效。只保存不部署，线上函
 curl.exe -I https://dp.betaoi.cn/part/a/01
 ```
 
-已登记的 48 个路由必须返回 HTTP 200。任意未登记路径必须返回 HTTP 404，并包含 `noindex,nofollow`；若未知路径返回 200，说明平台仍在使用旧 SPA 回退规则，需要检查 `dist/edgeone/edge-functions/[[default]].js` 是否已发布并生效。
+已登记的 47 个路由必须返回 HTTP 200。任意未登记路径必须返回 HTTP 404，并包含 `noindex,nofollow`；若未知路径返回 200，说明平台仍在使用旧 SPA 回退规则，需要检查 `dist/edgeone/edge-functions/[[default]].js` 是否已发布并生效。
 
 反馈：
 
@@ -311,7 +306,7 @@ Invoke-RestMethod `
 - 国际站：`https://dp.betaoi.cc/sitemap.xml`
 - 国内站：`https://dp.betaoi.cn/sitemap.xml`
 
-两份 sitemap 都列出同一组 48 个页面，但 `<loc>` 使用当前区域域名，并为每个 URL 输出 `zh-Hans`、`zh-CN` 与 `x-default` 互指。不要把 `.cc` sitemap 文件复制覆盖 `.cn` 产物。
+两份 sitemap 都列出同一组 47 个页面，但 `<loc>` 使用当前区域域名，并为每个 URL 输出 `zh-Hans`、`zh-CN` 与 `x-default` 互指。不要把 `.cc` sitemap 文件复制覆盖 `.cn` 产物。
 
 首次上线和 URL 集合变化后分别提交：
 
@@ -331,7 +326,7 @@ Invoke-RestMethod `
 前端只调用统一的 `trackAnalyticsEvent`。当前允许的事件是 `page_view`、`feedback_opened`、`feedback_submitted`、`feedback_succeeded`、`feedback_failed`。
 
 - 国际站 Provider 只在真实 `dp.betaoi.cc` 主机动态加载 Cloudflare Web Analytics beacon，使用 token `c113fb69d7e84d38a645c5160f6f1bda`；localhost 和预览域名不会动态加载。
-- 国内站构建会在 `dist/edgeone/` 的全部 96 个 HTML 文件（48 个公开路由的 clean-URL 变体与真实 404）中各静态注入一次相同 token 的 Cloudflare Web Analytics snippet。EdgeOne 控制台的访问日志/数据分析仍负责请求、地域、状态码和性能观察；React 路由、学习与反馈漏斗事件仍发送到同源 `/api/analytics`。
+- 国内站构建会在 `dist/edgeone/` 的全部 94 个 HTML 文件（47 个公开路由的 clean-URL 变体与真实 404）中各静态注入一次相同 token 的 Cloudflare Web Analytics snippet。EdgeOne 控制台的访问日志/数据分析仍负责请求、地域、状态码和性能观察；React 路由、学习与反馈漏斗事件仍发送到同源 `/api/analytics`。
 - 两个 Provider 都把有限事件写到同源 `/api/analytics`，成功返回 204。接收器拒绝跨站请求、未知事件、未知 Provider、非 JSON 和过大请求；只记录裁剪后的路径、标题及少量原始类型元数据，不读取反馈内容、联系方式、Cookie 或账号标识。
 - 统计失败由客户端静默降级，不影响课程、小游戏、导航或反馈提交。
 
@@ -356,7 +351,7 @@ Invoke-WebRequest `
 
 国内站测试时把 URL 换成 `.cn`，并把 `provider` 改成 `tencent-edgeone`。期望 HTTP 204，并在相应平台日志中看到 `analytics_event`。
 
-构建后运行 `npm run check:analytics`。检查必须确认 96 个 EdgeOne HTML 各包含且只包含一份静态 beacon，同时 Cloudflare HTML 不含静态片段（国际站仍由运行时 Provider 加载）。
+构建后运行 `pnpm check:analytics`。检查必须确认 94 个 EdgeOne HTML 各包含且只包含一份静态 beacon，同时 Cloudflare HTML 不含静态片段（国际站仍由运行时 Provider 加载）。
 
 ## 钉钉反馈机器人
 

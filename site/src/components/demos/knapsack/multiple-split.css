@@ -1,5 +1,5 @@
 /* 多重背包 · 二进制拆包可视化的自建轻量样式。
-   不引用 knapsack-demo.css / fractional-demo.css；工具条沿用 kd__/stepper__ 视觉
+   不引用 knapsack-demo.css / fractional-demo.css；工具条沿用 demo-control__/stepper__ 视觉
    但独立命名前缀 msp__，配色只用设计令牌。 */
 
 .msp__toolbar {

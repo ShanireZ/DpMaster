@@ -3,14 +3,26 @@
   "private": true,
   "version": "0.0.0",
   "type": "module",
-  "packageManager": "npm@11.13.0",
+  "packageManager": "pnpm@11.18.0",
   "engines": {
-    "node": ">=24",
-    "npm": ">=11"
+    "node": ">=24.18.1 <25",
+    "pnpm": ">=11.18.0 <12"
+  },
+  "devEngines": {
+    "runtime": {
+      "name": "node",
+      "version": "24.18.1",
+      "onFail": "error"
+    },
+    "packageManager": {
+      "name": "pnpm",
+      "version": "11.18.0",
+      "onFail": "error"
+    }
   },
   "scripts": {
     "dev": "vite",
-    "prebuild": "npm run content:generate && npm run seo:generate",
+    "prebuild": "pnpm content:generate && pnpm seo:generate",
     "build": "tsc -b && node scripts/build-regions.mjs",
     "postbuild": "node scripts/postbuild.mjs",
     "test": "node --test scripts/*.test.mjs",
@@ -24,39 +36,42 @@
     "check:analytics": "node scripts/check-regional-analytics.mjs",
     "check:assets": "node scripts/check-assets.mjs dist/cloudflare/assets && node scripts/check-assets.mjs dist/edgeone/assets",
     "test:browser": "playwright test",
-    "verify": "npm run check:content && npm run check:seo && npm run test && npm run test:unit && npm run lint && npm run build && npm run check:analytics && npm run test:browser && npm run check:assets",
+    "verify": "pnpm check:content && pnpm check:seo && pnpm test && pnpm test:unit && pnpm lint && pnpm build && pnpm check:analytics && pnpm test:browser && pnpm check:assets",
+    "maintenance:check": "node scripts/check-toolchain-drift.mjs",
     "preview": "node scripts/preview.mjs",
     "deploy:cf": "wrangler deploy",
-    "deploy:eo": "npx -y edgeone@1.6.11 makers deploy ./dist/edgeone -n dpmaster -e production",
-    "deploy": "npm run build && npm run deploy:cf && npm run deploy:eo"
+    "deploy:eo": "pnpm dlx edgeone@1.6.18 makers deploy ./dist/edgeone -n dpmaster -e production",
+    "release": "pnpm verify && pnpm deploy:cf && pnpm deploy:eo"
   },
   "dependencies": {
-    "@fontsource/jetbrains-mono": "^5.2.8",
-    "@fontsource/space-grotesk": "^5.2.10",
+    "@fontsource/jetbrains-mono": "^5.3.0",
+    "@fontsource/space-grotesk": "^5.3.0",
     "gsap": "^3.15.0",
-    "katex": "^0.17.0",
-    "lucide-react": "^1.23.0",
-    "motion": "^12.42.2",
-    "react": "^19.2.7",
-    "react-dom": "^19.2.7",
-    "react-router-dom": "^7.18.1",
+    "katex": "^0.18.1",
+    "lucide-react": "^1.27.0",
+    "motion": "^12.43.0",
+    "react": "^19.2.8",
+    "react-dom": "^19.2.8",
+    "react-router-dom": "^7.18.2",
     "shiki": "^4.3.1",
-    "web-vitals": "^5.3.0"
+    "web-vitals": "^6.0.1"
   },
   "devDependencies": {
-    "@playwright/test": "1.61.1",
-    "@testing-library/jest-dom": "^6.9.1",
+    "@playwright/test": "^1.62.0",
+    "@testing-library/jest-dom": "^7.0.0",
     "@testing-library/react": "^16.3.2",
     "@testing-library/user-event": "^14.6.1",
-    "@types/node": "^24.13.2",
+    "@types/node": "^24.13.3",
     "@types/react": "^19.2.17",
     "@types/react-dom": "^19.2.3",
-    "@vitejs/plugin-react": "^6.0.3",
-    "jsdom": "^25.0.1",
-    "oxlint": "^1.71.0",
-    "typescript": "~6.0.2",
-    "vite": "^8.1.1",
-    "vitest": "^3.2.7",
-    "wrangler": "^4.107.0"
+    "@vitejs/plugin-react": "^6.0.4",
+    "jsdom": "^30.0.1",
+    "oxlint": "^1.76.0",
+    "oxlint-tsgolint": "^7.0.2001",
+    "oxc-parser": "^0.142.0",
+    "typescript": "^7.0.2",
+    "vite": "^8.1.5",
+    "vitest": "^4.1.10",
+    "wrangler": "^4.115.0"
   }
 }

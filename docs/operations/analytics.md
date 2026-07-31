@@ -3,15 +3,16 @@ type: Runbook
 title: Analytics and Alerting Runbook
 description: Privacy-bounded RUM, event dashboards, feedback delivery, and error-alert operations for both DP大师 regions.
 tags: [operations, analytics, rum, alerting]
-timestamp: 2026-07-25T00:00:00+08:00
-source_paths:
-  - site/src/analytics/
-  - site/scripts/prerender.mjs
-  - site/scripts/check-regional-analytics.mjs
-  - site/functions/_analytics-core.js
-  - site/functions/_feedback-core.js
-  - site/worker.js
-  - site/wrangler.jsonc
+status: stable
+generated: { by: openai/codex, at: 2026-07-31T15:32:38+08:00 }
+sources:
+  - resource: ../../site/src/analytics/
+  - resource: ../../site/scripts/prerender.mjs
+  - resource: ../../site/scripts/check-regional-analytics.mjs
+  - resource: ../../site/functions/_analytics-core.js
+  - resource: ../../site/functions/_feedback-core.js
+  - resource: ../../site/worker.js
+  - resource: ../../site/wrangler.jsonc
 ---
 
 # Event Contract
@@ -70,7 +71,7 @@ Keep Cloudflare Web Analytics enabled for independent request/page-view trends; 
 
 # EdgeOne Dashboard
 
-Every HTML document published from `dist/edgeone/`, including the real 404 page, contains one statically rendered Cloudflare Web Analytics beacon using the shared production token. This supplies an independent page-view trend for `dp.betaoi.cn`; `npm run check:analytics` verifies the complete HTML set and rejects missing or duplicate snippets.
+Every HTML document published from `dist/edgeone/`, including the real 404 page, contains one statically rendered Cloudflare Web Analytics beacon using the shared production token. This supplies an independent page-view trend for `dp.betaoi.cn`; `pnpm check:analytics` verifies the complete HTML set and rejects missing or duplicate snippets.
 
 The China Adapter writes the identical structured event object to Edge Function logs. In EdgeOne Log Analysis, create saved searches for `analytics_event` and group by `name`, `path`, `metadata.name`, and `metadata.rating`. Create widgets for:
 

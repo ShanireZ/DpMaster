@@ -167,7 +167,7 @@ test('discovery files expose the 47 approved URLs and real summaries', async () 
   assert.match(publicRoutes, /\.\.\/data\/catalog\.ts/)
   assert.equal(packageJson.scripts['check:seo'], 'node scripts/generate-seo.mjs --check')
   assert.match(packageJson.scripts.prebuild, /seo:generate/)
-  assert.match(packageJson.scripts.verify, /check:content && npm run check:seo && npm run test/)
+  assert.match(packageJson.scripts.verify, /check:content && pnpm check:seo && pnpm test/)
 })
 
 test('static HTML gives crawlers complete homepage metadata before React runs', async () => {

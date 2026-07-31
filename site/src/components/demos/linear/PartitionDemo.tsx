@@ -49,14 +49,14 @@ export default function PartitionDemo() {
 
   return (
     <div>
-      <div className="kd__toolbar">
+      <div className="demo-control__toolbar">
         <div>
-          <div className="kd__group-label">要拆分的自然数</div>
+          <div className="demo-control__group-label">要拆分的自然数</div>
           <Stepper label="N" value={n} min={2} max={8} onChange={setN} />
         </div>
       </div>
 
-      <div className="fbug__readout">
+      <div className="demo-contrast__readout">
         把 <b className="you">N = {n}</b> 拆成若干正整数（无序）的方案数：<b className="ok">dp[{n}][{n}] = {answer}</b>
         <span style={{ color: 'var(--text-3)' }}>（行 = 拆的数 i，列 = 允许的最大零件 j）</span>
       </div>

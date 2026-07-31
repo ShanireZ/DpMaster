@@ -72,9 +72,9 @@ export default function MaxSquareDemo() {
 
   return (
     <div>
-      <div className="kd__toolbar">
+      <div className="demo-control__toolbar">
         <div>
-          <div className="kd__group-label">0 / 1 矩阵（点格子翻转 · 1 = 可用，0 = 空洞 · 找最大全 1 正方形）</div>
+          <div className="demo-control__group-label">0 / 1 矩阵（点格子翻转 · 1 = 可用，0 = 空洞 · 找最大全 1 正方形）</div>
           <div style={{ display: 'flex', flexDirection: 'column', gap: 6, alignItems: 'flex-start' }}>
             {shown.map((row, i) => (
               <div key={i} style={{ display: 'flex', gap: 6 }}>
@@ -108,11 +108,11 @@ export default function MaxSquareDemo() {
         </div>
         <div style={{ display: 'flex', gap: 'var(--sp-4)' }}>
           <div>
-            <div className="kd__group-label">行数</div>
+            <div className="demo-control__group-label">行数</div>
             <Stepper label="行" value={rows} min={2} max={6} onChange={setRows} />
           </div>
           <div>
-            <div className="kd__group-label">列数</div>
+            <div className="demo-control__group-label">列数</div>
             <Stepper label="列" value={cols} min={2} max={6} onChange={setCols} />
           </div>
         </div>

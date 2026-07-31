@@ -50,15 +50,15 @@ export default function RingIntervalDemo() {
 
   return (
     <div>
-      <div className="kd__toolbar">
+      <div className="demo-control__toolbar">
         <div>
-          <div className="kd__group-label">环上石子（首尾相邻 · 可改每堆数值 · 3～4 堆）</div>
-          <div className="kd__items">
+          <div className="demo-control__group-label">环上石子（首尾相邻 · 可改每堆数值 · 3～4 堆）</div>
+          <div className="demo-control__items">
             {stones.map((s, i) => (
-              <div className="kd__item" key={i}>
-                <span className="kd__item-i">{i}</span>
+              <div className="demo-control__item" key={i}>
+                <span className="demo-control__item-i">{i}</span>
                 {stones.length > 3 && (
-                  <button className="kd__remove" onClick={() => removeStone(i)} aria-label="删除该堆">
+                  <button className="demo-control__remove" onClick={() => removeStone(i)} aria-label="删除该堆">
                     <X size={12} />
                   </button>
                 )}
@@ -66,7 +66,7 @@ export default function RingIntervalDemo() {
               </div>
             ))}
             {stones.length < 4 && (
-              <button className="kd__add" onClick={addStone}>
+              <button className="demo-control__add" onClick={addStone}>
                 <Plus size={14} /> 加一堆
               </button>
             )}
@@ -74,7 +74,7 @@ export default function RingIntervalDemo() {
         </div>
       </div>
 
-      <div className="fbug__readout">
+      <div className="demo-contrast__readout">
         断环为链后在 <b>2n = {stones.length * 2}</b> 长的链上填三角表，扫 {stones.length} 个长度{' '}
         {stones.length} 的窗口 → 环形<b className="ok">最小合并代价 = {ans}</b>。默认{' '}
         <b>a=[3,9,3,4]</b> 时答案 <b className="ok">36</b>，落在起点 <b>1</b> 的窗口（即环上从第 1 堆断开、绕过尾首那一整圈），

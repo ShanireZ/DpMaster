@@ -3,11 +3,12 @@ type: Project
 title: DP大师 Project Overview
 description: DP大师 is an independent interactive dynamic-programming teaching site built as a React and Vite static app.
 tags: [project, identity, status]
-timestamp: 2026-07-07T00:00:00+08:00
-source_paths:
-  - README.md
-  - site/src/data/catalog.ts
-  - site/src/data/problems.ts
+status: stable
+generated: { by: openai/codex, at: 2026-07-31T15:32:38+08:00 }
+sources:
+  - resource: ../../README.md
+  - resource: ../../site/src/data/catalog.ts
+  - resource: ../../site/src/data/problems.ts
 ---
 
 # Identity

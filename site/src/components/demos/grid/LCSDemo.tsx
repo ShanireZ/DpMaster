@@ -29,10 +29,10 @@ function CharCell({
   idx: number
 }) {
   return (
-    <div className="kd__item" style={{ paddingTop: 14 }}>
-      <span className="kd__item-i">{idx + 1}</span>
+    <div className="demo-control__item" style={{ paddingTop: 14 }}>
+      <span className="demo-control__item-i">{idx + 1}</span>
       {removable && (
-        <button className="kd__remove" onClick={onRemove} aria-label="删除字符">
+        <button className="demo-control__remove" onClick={onRemove} aria-label="删除字符">
           <X size={12} />
         </button>
       )}
@@ -102,8 +102,8 @@ function StringRow({
 
   return (
     <div>
-      <div className="kd__group-label">{title}（点箭头换字符 · 可增删 · 长度 ≤ {MAXLEN}）</div>
-      <div className="kd__items">
+      <div className="demo-control__group-label">{title}（点箭头换字符 · 可增删 · 长度 ≤ {MAXLEN}）</div>
+      <div className="demo-control__items">
         {s.split('').map((ch, i) => (
           <CharCell
             key={i}
@@ -115,7 +115,7 @@ function StringRow({
           />
         ))}
         {s.length < MAXLEN && (
-          <button className="kd__add" onClick={addOne}>
+          <button className="demo-control__add" onClick={addOne}>
             <Plus size={15} /> 加字符
           </button>
         )}
@@ -137,11 +137,11 @@ export default function LCSDemo() {
 
   return (
     <div>
-      <div className="kd__modes">
+      <div className="demo-control__modes">
         {PRESETS.map((p) => (
           <button
             key={p.label}
-            className={`kd__mode${a === p.a && b === p.b ? ' on' : ''}`}
+            className={`demo-control__mode${a === p.a && b === p.b ? ' on' : ''}`}
             onClick={() => {
               setA(p.a)
               setB(p.b)
@@ -152,12 +152,12 @@ export default function LCSDemo() {
         ))}
       </div>
 
-      <div className="kd__toolbar" style={{ gap: 'var(--sp-5)' }}>
+      <div className="demo-control__toolbar" style={{ gap: 'var(--sp-5)' }}>
         <StringRow title="串 A（作行）" s={a} setS={setA} />
         <StringRow title="串 B（作列）" s={b} setS={setB} />
       </div>
 
-      <div className="fbug__readout">
+      <div className="demo-contrast__readout">
         当前两串的最长公共子序列：<b className="ok">长度 {len}</b>
         <span className="you">{lcs ? `（一条 LCS = ${lcs}）` : '（没有公共字符）'}</span>
         <span style={{ color: 'var(--text-3)' }}>——绿色斜格是回溯时摘下字符的地方。</span>

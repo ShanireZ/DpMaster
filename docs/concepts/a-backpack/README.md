@@ -1,3 +1,12 @@
+---
+type: Family Visual Specification
+title: A Backpack DP Visual Specification
+description: Current visual grammar, concept references, and fidelity contract for the A family.
+tags: [design, family-art, backpack-dp]
+status: stable
+generated: { by: openai/codex, at: 2026-07-31T15:32:38+08:00 }
+---
+
 # A 背包 DP 视觉规格
 
 本目录保存 A「背包 DP」大类页与 9 个课程子页的已确认概念稿。实现不得把这些图片直接铺到网页中，图片只作为视觉对照，页面使用 React、SVG 与 CSS 原子组件复刻。

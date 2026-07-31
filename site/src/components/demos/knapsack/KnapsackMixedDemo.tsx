@@ -61,21 +61,21 @@ export default function KnapsackMixedDemo() {
 
   return (
     <div>
-      <div className="kd__toolbar">
+      <div className="demo-control__toolbar">
         <div>
-          <div className="kd__group-label">物品（切类型 · 改重量 / 价值 / 件数）</div>
-          <div className="kd__items">
+          <div className="demo-control__group-label">物品（切类型 · 改重量 / 价值 / 件数）</div>
+          <div className="demo-control__items">
             {items.map((it, i) => (
-              <div className="kd__item" key={i} style={{ flexDirection: 'column', gap: 10 }}>
-                <span className="kd__item-i">{i + 1}</span>
+              <div className="demo-control__item" key={i} style={{ flexDirection: 'column', gap: 10 }}>
+                <span className="demo-control__item-i">{i + 1}</span>
                 {items.length > 1 && (
-                  <button className="kd__remove" onClick={() => setItems((a) => a.filter((_, k) => k !== i))} aria-label="删除物品">
+                  <button className="demo-control__remove" onClick={() => setItems((a) => a.filter((_, k) => k !== i))} aria-label="删除物品">
                     <X size={12} />
                   </button>
                 )}
-                <div className="kd__modes" style={{ margin: 0 }}>
+                <div className="demo-control__modes" style={{ margin: 0 }}>
                   {KINDS.map(({ k, label }) => (
-                    <button key={k} className={`kd__mode${it.kind === k ? ' on' : ''}`} onClick={() => setKind(i, k)}>
+                    <button key={k} className={`demo-control__mode${it.kind === k ? ' on' : ''}`} onClick={() => setKind(i, k)}>
                       {label}
                     </button>
                   ))}
@@ -90,19 +90,19 @@ export default function KnapsackMixedDemo() {
               </div>
             ))}
             {items.length < 4 && (
-              <button className="kd__add" onClick={() => setItems((a) => [...a, { kind: '01', w: 2, v: 3 }])}>
+              <button className="demo-control__add" onClick={() => setItems((a) => [...a, { kind: '01', w: 2, v: 3 }])}>
                 <Plus size={15} /> 加物品
               </button>
             )}
           </div>
         </div>
         <div>
-          <div className="kd__group-label">背包容量</div>
+          <div className="demo-control__group-label">背包容量</div>
           <Stepper label="m" value={cap} min={2} max={12} onChange={setCap} />
         </div>
       </div>
 
-      <div className="fbug__readout">
+      <div className="demo-contrast__readout">
         三类物品共用<b className="you"> 同一维 f[j] </b>：01 件<b className="you">倒序</b>、完全件<b className="ok">正序</b>、多重件<b className="you">拆包后倒序</b>。当前共展开{' '}
         <b className="you">{units}</b> 个转移单元（多重件按二进制拆分计）。
       </div>

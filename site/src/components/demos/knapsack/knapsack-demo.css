@@ -1,7 +1,7 @@
 @import '../shared/demo-workbench.css';
 
 /* Backpack-only editor composition. Shared controls live in demo-workbench.css. */
-.kd--editor .kd__toolbar {
+.demo-editor .demo-control__toolbar {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
   align-items: start;
@@ -9,17 +9,17 @@
   padding: 0 0 var(--sp-5);
 }
 
-.kd--editor .kd__toolbar > :first-child {
+.demo-editor .demo-control__toolbar > :first-child {
   grid-column: 1 / -1;
 }
 
-.kd--editor .kd__items {
+.demo-editor .demo-control__items {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(min(100%, 210px), 1fr));
   gap: var(--sp-2);
 }
 
-.kd--editor .kd__item {
+.demo-editor .demo-control__item {
   min-width: 0;
   align-items: end;
   justify-content: space-around;
@@ -27,12 +27,12 @@
   padding: 30px var(--sp-3) var(--sp-3);
 }
 
-.kd--editor .kd__item > div {
+.demo-editor .demo-control__item > div {
   min-width: 0;
   flex: 1;
 }
 
-.kd--editor .kd__add {
+.demo-editor .demo-control__add {
   min-height: 76px;
   align-self: stretch;
   justify-content: center;
@@ -40,12 +40,12 @@
 }
 
 @media (max-width: 600px) {
-  .kd--editor .kd__toolbar,
-  .kd--editor .kd__items {
+  .demo-editor .demo-control__toolbar,
+  .demo-editor .demo-control__items {
     grid-template-columns: 1fr;
   }
 
-  .kd--editor .kd__item {
+  .demo-editor .demo-control__item {
     padding: 30px var(--sp-3) var(--sp-3);
   }
 }

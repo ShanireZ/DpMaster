@@ -48,15 +48,15 @@ export default function StoneMergeDemo() {
 
   return (
     <div>
-      <div className="kd__toolbar">
+      <div className="demo-control__toolbar">
         <div>
-          <div className="kd__group-label">一排石子（相邻可合并 · 可改每堆数值 · 3～5 堆）</div>
-          <div className="kd__items">
+          <div className="demo-control__group-label">一排石子（相邻可合并 · 可改每堆数值 · 3～5 堆）</div>
+          <div className="demo-control__items">
             {stones.map((s, i) => (
-              <div className="kd__item" key={i}>
-                <span className="kd__item-i">{i}</span>
+              <div className="demo-control__item" key={i}>
+                <span className="demo-control__item-i">{i}</span>
                 {stones.length > 3 && (
-                  <button className="kd__remove" onClick={() => removeStone(i)} aria-label="删除该堆">
+                  <button className="demo-control__remove" onClick={() => removeStone(i)} aria-label="删除该堆">
                     <X size={12} />
                   </button>
                 )}
@@ -64,7 +64,7 @@ export default function StoneMergeDemo() {
               </div>
             ))}
             {stones.length < 5 && (
-              <button className="kd__add" onClick={addStone}>
+              <button className="demo-control__add" onClick={addStone}>
                 <Plus size={14} /> 加一堆
               </button>
             )}
