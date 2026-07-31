@@ -59,7 +59,7 @@ export default function EditTracebackDemo() {
     <div>
       <div className="etb__toolbar">
         <div>
-          <div className="kd__group-label">源串 A（改成 B · 仅字母 · ≤6）</div>
+          <div className="demo-control__group-label">源串 A（改成 B · 仅字母 · ≤6）</div>
           <input
             className="ed__input"
             value={a}
@@ -70,7 +70,7 @@ export default function EditTracebackDemo() {
           />
         </div>
         <div>
-          <div className="kd__group-label">目标串 B</div>
+          <div className="demo-control__group-label">目标串 B</div>
           <input
             className="ed__input"
             value={b}
@@ -81,7 +81,7 @@ export default function EditTracebackDemo() {
           />
         </div>
         <div>
-          <div className="kd__group-label">试几组</div>
+          <div className="demo-control__group-label">试几组</div>
           <div className="ed__presets">
             {([
               ['horse', 'ros'],
@@ -90,7 +90,7 @@ export default function EditTracebackDemo() {
             ] as Array<[string, string]>).map(([pa, pb]) => (
               <button
                 key={`${pa}-${pb}`}
-                className={`kd__mode${a === pa && b === pb ? ' on' : ''}`}
+                className={`demo-control__mode${a === pa && b === pb ? ' on' : ''}`}
                 onClick={() => {
                   setA(pa)
                   setB(pb)

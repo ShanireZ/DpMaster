@@ -1,6 +1,15 @@
+---
+type: Family Visual Specification
+title: C Interval DP Visual Specification
+description: Current visual grammar and semantic plate contract for the C family.
+tags: [design, family-art, interval-dp]
+status: stable
+generated: { by: openai/codex, at: 2026-07-31T15:32:38+08:00 }
+---
+
 # C 区间 DP 视觉概念板
 
-> 状态：`实现完成，本地验收通过，待发布确认`
+> 状态：`已实现基线`
 > 代表课程：`stone`、`ring`
 
 ## 家族视觉语法

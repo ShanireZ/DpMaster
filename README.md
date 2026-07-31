@@ -43,12 +43,14 @@ DpMaster/
 
 ## 本地运行
 
-需要 Node.js 24 或更高版本、npm 11 或更高版本。
+需要 Node.js 24.18.1 与 pnpm 11.18.0；版本权威分别是
+`site/.node-version` 和 `site/package.json`。
 
 ```bash
 cd site
-npm ci
-npm run dev
+corepack install --global pnpm@11.18.0
+pnpm install --frozen-lockfile
+pnpm dev
 ```
 
 启动后访问终端显示的本地地址。

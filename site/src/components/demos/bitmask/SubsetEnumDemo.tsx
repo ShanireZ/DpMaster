@@ -39,7 +39,7 @@ export default function SubsetEnumDemo() {
     <div>
       <div className="bm__toolbar bm__toolbar--subset">
         <div>
-          <div className="kd__group-label">母集 S（点方块把元素放入 / 移出）</div>
+          <div className="demo-control__group-label">母集 S（点方块把元素放入 / 移出）</div>
           <div className="bm__toggle-row">
             {Array.from({ length: N }, (_, i) => {
               const on = ((S >> i) & 1) === 1

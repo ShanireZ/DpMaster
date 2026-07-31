@@ -59,13 +59,13 @@ export default function CompleteContrastDemo() {
 
   return (
     <div>
-      <div className="fbug__toolbar">
+      <div className="demo-contrast__toolbar">
         <div>
-          <div className="kd__group-label">物品（可改重量 / 价值）</div>
-          <div className="fbug__steppers">
+          <div className="demo-control__group-label">物品（可改重量 / 价值）</div>
+          <div className="demo-contrast__steppers">
             {items.map((it, i) => (
-              <div className="kd__item" key={i}>
-                <span className="kd__item-i">{i + 1}</span>
+              <div className="demo-control__item" key={i}>
+                <span className="demo-control__item-i">{i + 1}</span>
                 <Stepper label="重量 w" value={it.w} min={1} max={cap} onChange={(w) => setItem(i, { w })} />
                 <Stepper label="价值 v" value={it.v} min={1} max={30} onChange={(v) => setItem(i, { v })} />
               </div>
@@ -73,7 +73,7 @@ export default function CompleteContrastDemo() {
           </div>
         </div>
         <div>
-          <div className="kd__group-label">背包容量</div>
+          <div className="demo-control__group-label">背包容量</div>
           <Stepper
             label="m"
             value={cap}
@@ -87,7 +87,7 @@ export default function CompleteContrastDemo() {
         </div>
       </div>
 
-      <div className="fbug__readout">
+      <div className="demo-contrast__readout">
         01 最优 <b className="you">f[{cap}] = {v01}</b>（每种至多 1 件） · 完全最优 <b className="ok">f[{cap}] = {vFull}</b>
         {vFull > v01 ? (
           <>
@@ -98,13 +98,13 @@ export default function CompleteContrastDemo() {
         )}
       </div>
 
-      <div className="fbug__pair">
+      <div className="demo-contrast__pair">
         <div>
-          <div className="fbug__side-label you">01 背包 · 逆推（每种一件）</div>
+          <div className="demo-contrast__side-label you">01 背包 · 逆推（每种一件）</div>
           <DPViz key={`o${k}`} model={only01} />
         </div>
         <div>
-          <div className="fbug__side-label ok">完全背包 · 正推（每种无限件）</div>
+          <div className="demo-contrast__side-label ok">完全背包 · 正推（每种无限件）</div>
           <DPViz key={`c${k}`} model={full} />
         </div>
       </div>

@@ -1272,8 +1272,8 @@
   border-bottom-color: var(--border-strong);
 }
 
-.typepage[data-part-id='a'] .kd__toolbar,
-.typepage[data-part-id='a'] .fbug__toolbar {
+.typepage[data-part-id='a'] .demo-control__toolbar,
+.typepage[data-part-id='a'] .demo-contrast__toolbar {
   justify-content: space-between;
 }
 

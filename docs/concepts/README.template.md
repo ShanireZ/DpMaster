@@ -1,3 +1,12 @@
+---
+type: Documentation Template
+title: DP Family Visual Concept Template
+description: Required structure for durable A–G family visual concept documents.
+tags: [documentation, design, template]
+status: stable
+generated: { by: openai/codex, at: 2026-07-31T15:32:38+08:00 }
+---
+
 # {代码} {家族名} 视觉概念板
 
 > 状态：`概念板待评审`

@@ -97,15 +97,15 @@ export default function ScoreTreeBuildDemo() {
 
   return (
     <div>
-      <div className="kd__toolbar">
+      <div className="demo-control__toolbar">
         <div>
-          <div className="kd__group-label">节点按中序排开（与上一个演示同一组分数 · 3～5 个）</div>
-          <div className="kd__items">
+          <div className="demo-control__group-label">节点按中序排开（与上一个演示同一组分数 · 3～5 个）</div>
+          <div className="demo-control__items">
             {scores.map((s, i) => (
-              <div className="kd__item" key={i}>
-                <span className="kd__item-i">{i + 1}</span>
+              <div className="demo-control__item" key={i}>
+                <span className="demo-control__item-i">{i + 1}</span>
                 {scores.length > 3 && (
-                  <button className="kd__remove" onClick={() => removeNode(i)} aria-label="删除该节点">
+                  <button className="demo-control__remove" onClick={() => removeNode(i)} aria-label="删除该节点">
                     <X size={12} />
                   </button>
                 )}
@@ -113,7 +113,7 @@ export default function ScoreTreeBuildDemo() {
               </div>
             ))}
             {scores.length < 5 && (
-              <button className="kd__add" onClick={addNode}>
+              <button className="demo-control__add" onClick={addNode}>
                 <Plus size={14} /> 加一个节点
               </button>
             )}

@@ -52,16 +52,16 @@ export default function KnapsackVariantDemo() {
 
   return (
     <div>
-      <div className="kd__toolbar">
+      <div className="demo-control__toolbar">
         <div>
-          <div className="kd__group-label">物品（只需重量，方案数与价值无关）</div>
-          <div className="kd__items">
+          <div className="demo-control__group-label">物品（只需重量，方案数与价值无关）</div>
+          <div className="demo-control__items">
             {items.map((it, i) => (
-              <div className="kd__item" key={i}>
-                <span className="kd__item-i">{i + 1}</span>
+              <div className="demo-control__item" key={i}>
+                <span className="demo-control__item-i">{i + 1}</span>
                 {items.length > 1 && (
                   <button
-                    className="kd__remove"
+                    className="demo-control__remove"
                     onClick={() => setItems((a) => a.filter((_, k) => k !== i))}
                     aria-label="删除物品"
                   >
@@ -72,19 +72,19 @@ export default function KnapsackVariantDemo() {
               </div>
             ))}
             {items.length < 5 && (
-              <button className="kd__add" onClick={() => setItems((a) => [...a, { w: 2 }])}>
+              <button className="demo-control__add" onClick={() => setItems((a) => [...a, { w: 2 }])}>
                 <Plus size={15} /> 加物品
               </button>
             )}
           </div>
         </div>
         <div>
-          <div className="kd__group-label">目标容量</div>
+          <div className="demo-control__group-label">目标容量</div>
           <Stepper label="W" value={cap} min={2} max={12} onChange={setCap} />
         </div>
       </div>
 
-      <div className="fbug__readout">
+      <div className="demo-contrast__readout">
         恰好装满容量 <b className="you">W = {cap}</b> 的方案数：<b className="ok">f[{cap}] = {answer}</b>
         {answer === 0 && <>（当前物品凑不出 {cap}，没有任何子集和恰好等于它）</>}
       </div>

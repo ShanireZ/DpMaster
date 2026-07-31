@@ -49,15 +49,15 @@ export default function TwoFourEightDemo() {
 
   return (
     <div>
-      <div className="kd__toolbar">
+      <div className="demo-control__toolbar">
         <div>
-          <div className="kd__group-label">一排数字（相邻两个相等可并成 +1 · 可改数值 · 3～6 个）</div>
-          <div className="kd__items">
+          <div className="demo-control__group-label">一排数字（相邻两个相等可并成 +1 · 可改数值 · 3～6 个）</div>
+          <div className="demo-control__items">
             {nums.map((s, i) => (
-              <div className="kd__item" key={i}>
-                <span className="kd__item-i">{i}</span>
+              <div className="demo-control__item" key={i}>
+                <span className="demo-control__item-i">{i}</span>
                 {nums.length > 3 && (
-                  <button className="kd__remove" onClick={() => removeNum(i)} aria-label="删除该数">
+                  <button className="demo-control__remove" onClick={() => removeNum(i)} aria-label="删除该数">
                     <X size={12} />
                   </button>
                 )}
@@ -65,7 +65,7 @@ export default function TwoFourEightDemo() {
               </div>
             ))}
             {nums.length < 6 && (
-              <button className="kd__add" onClick={addNum}>
+              <button className="demo-control__add" onClick={addNum}>
                 <Plus size={14} /> 加一个
               </button>
             )}
@@ -73,7 +73,7 @@ export default function TwoFourEightDemo() {
         </div>
       </div>
 
-      <div className="fbug__readout">
+      <div className="demo-contrast__readout">
         整排能合成的<b className="ok">最大数字 = {best}</b> · 每格 dp[l][r] = 该区间能缩成的单一值（
         <b>0</b> 表示这段无法合成一个数）· 答案取三角表里<b>所有格的最大值</b>，未必在右上角。
       </div>

@@ -76,7 +76,7 @@ export default function PalindromeInsertDemo() {
     <div>
       <div className="pal__toolbar">
         <div style={{ flex: 1 }}>
-          <div className="kd__group-label">字符串（可编辑 · 取前 8 个字母/数字）</div>
+          <div className="demo-control__group-label">字符串（可编辑 · 取前 8 个字母/数字）</div>
           <div className="pal__inrow">
             <input
               className="pal__input"
@@ -117,7 +117,7 @@ export default function PalindromeInsertDemo() {
         </div>
       </div>
 
-      <div className="fbug__readout">
+      <div className="demo-contrast__readout">
         原串 <b className="you">"{s.join('')}"</b>（长度 {n}）· 最长回文子序列 <b>{res.lps}</b> · 最少插入{' '}
         <b className="ok">{res.insertCount}</b> 次 = 长度 {n} − 最长回文子序列 {res.lps} · 补齐后回文{' '}
         <b className="you">"{res.palindrome}"</b>。

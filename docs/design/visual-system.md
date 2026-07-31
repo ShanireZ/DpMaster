@@ -3,11 +3,12 @@ type: Design System
 title: Warm Ink Visual System
 description: Current DP大师 visual system, including tokens, motion constraints, and superseded palette guidance.
 tags: [design, css, accessibility]
-timestamp: 2026-07-07T00:00:00+08:00
-source_paths:
-  - site/src/styles/tokens.css
-  - site/src/styles/global.css
-  - site/src/components/GeometryBackdrop.tsx
+status: stable
+generated: { by: openai/codex, at: 2026-07-31T15:32:38+08:00 }
+sources:
+  - resource: ../../site/src/styles/tokens.css
+  - resource: ../../site/src/styles/global.css
+  - resource: ../../site/src/components/GeometryBackdrop.tsx
 ---
 
 # Current Direction

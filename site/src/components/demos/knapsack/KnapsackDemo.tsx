@@ -69,16 +69,16 @@ export default function KnapsackDemo({ variant = '01' }: { variant?: '01' | 'com
     setItems((arr) => arr.map((it, k) => (k === i ? { ...it, ...patch } : it)))
 
   return (
-    <div className="kd kd--editor">
-      <div className="kd__toolbar">
+    <div className="kd demo-editor">
+      <div className="demo-control__toolbar">
         <div>
-          <div className="kd__group-label">物品（可改重量 / 价值）</div>
-          <div className="kd__items">
+          <div className="demo-control__group-label">物品（可改重量 / 价值）</div>
+          <div className="demo-control__items">
             {items.map((it, i) => (
-              <div className="kd__item" key={i}>
-                <span className="kd__item-i">{i + 1}</span>
+              <div className="demo-control__item" key={i}>
+                <span className="demo-control__item-i">{i + 1}</span>
                 {items.length > 1 && (
-                  <button className="kd__remove" onClick={() => setItems((a) => a.filter((_, k) => k !== i))} aria-label="删除物品">
+                  <button className="demo-control__remove" onClick={() => setItems((a) => a.filter((_, k) => k !== i))} aria-label="删除物品">
                     <X size={12} />
                   </button>
                 )}
@@ -87,24 +87,24 @@ export default function KnapsackDemo({ variant = '01' }: { variant?: '01' | 'com
               </div>
             ))}
             {items.length < 5 && (
-              <button className="kd__add" onClick={() => setItems((a) => [...a, { w: 2, v: 3 }])}>
+              <button className="demo-control__add" onClick={() => setItems((a) => [...a, { w: 2, v: 3 }])}>
                 <Plus size={15} /> 加物品
               </button>
             )}
           </div>
         </div>
         <div>
-          <div className="kd__group-label">背包容量</div>
+          <div className="demo-control__group-label">背包容量</div>
           <Stepper label="m" value={cap} min={2} max={12} onChange={setCap} />
         </div>
       </div>
 
       {variant === '01' && (
-        <div className="kd__modes">
+        <div className="demo-control__modes">
           {MODES_01.map((m) => (
             <button
               key={m.id}
-              className={`kd__mode${m.danger ? ' danger' : ''}${mode === m.id ? ' on' : ''}`}
+              className={`demo-control__mode${m.danger ? ' danger' : ''}${mode === m.id ? ' on' : ''}`}
               onClick={() => setMode(m.id)}
             >
               {m.label}

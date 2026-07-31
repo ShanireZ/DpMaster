@@ -55,9 +55,9 @@ export default function KnapsackDependencyDemo() {
 
   return (
     <div>
-      <div className="kd__toolbar">
+      <div className="demo-control__toolbar">
         <div>
-          <div className="kd__group-label">主件（必选前提）· 可改 w / v</div>
+          <div className="demo-control__group-label">主件（必选前提）· 可改 w / v</div>
           <div
             style={{
               display: 'inline-flex',
@@ -73,11 +73,11 @@ export default function KnapsackDependencyDemo() {
           </div>
         </div>
         <div>
-          <div className="kd__group-label">附件（依主件而选）· 可改 w / v</div>
+          <div className="demo-control__group-label">附件（依主件而选）· 可改 w / v</div>
           <div style={{ display: 'flex', gap: 'var(--sp-3)' }}>
             {acc.map((a, i) => (
-              <div className="kd__item" key={i}>
-                <span className="kd__item-i">附{i + 1}</span>
+              <div className="demo-control__item" key={i}>
+                <span className="demo-control__item-i">附{i + 1}</span>
                 <Stepper label="w" value={a.w} min={1} max={cap} onChange={(w) => setAccItem(i, { w })} />
                 <Stepper label="v" value={a.v} min={1} max={30} onChange={(v) => setAccItem(i, { v })} />
               </div>
@@ -85,7 +85,7 @@ export default function KnapsackDependencyDemo() {
           </div>
         </div>
         <div>
-          <div className="kd__group-label">背包容量</div>
+          <div className="demo-control__group-label">背包容量</div>
           <Stepper label="W" value={cap} min={2} max={12} onChange={setCap} />
         </div>
       </div>

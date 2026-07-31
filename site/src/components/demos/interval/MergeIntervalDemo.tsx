@@ -47,15 +47,15 @@ export default function MergeIntervalDemo() {
 
   return (
     <div>
-      <div className="kd__toolbar">
+      <div className="demo-control__toolbar">
         <div>
-          <div className="kd__group-label">一排数字（两人轮流从两端取 · 可改每个数值 · 3～6 个）</div>
-          <div className="kd__items">
+          <div className="demo-control__group-label">一排数字（两人轮流从两端取 · 可改每个数值 · 3～6 个）</div>
+          <div className="demo-control__items">
             {nums.map((s, i) => (
-              <div className="kd__item" key={i}>
-                <span className="kd__item-i">{i}</span>
+              <div className="demo-control__item" key={i}>
+                <span className="demo-control__item-i">{i}</span>
                 {nums.length > 3 && (
-                  <button className="kd__remove" onClick={() => removeNum(i)} aria-label="删除该数">
+                  <button className="demo-control__remove" onClick={() => removeNum(i)} aria-label="删除该数">
                     <X size={12} />
                   </button>
                 )}
@@ -63,7 +63,7 @@ export default function MergeIntervalDemo() {
               </div>
             ))}
             {nums.length < 6 && (
-              <button className="kd__add" onClick={addNum}>
+              <button className="demo-control__add" onClick={addNum}>
                 <Plus size={14} /> 加一个
               </button>
             )}

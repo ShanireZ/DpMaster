@@ -1,7 +1,16 @@
+---
+type: Family Visual Specification
+title: B Linear DP Visual Specification
+description: Current visual grammar and semantic plate contract for the B family.
+tags: [design, family-art, linear-dp]
+status: stable
+generated: { by: openai/codex, at: 2026-07-31T15:32:38+08:00 }
+---
+
 # B 线性 DP 视觉概念板
 
-> 状态：`概念板待评审`  
-> 用途：第一次视觉评审；尚未接入产品页面  
+> 状态：`已实现基线`
+> 用途：实现与回归对照
 > 代表性试点：`LIS` 与 `编辑距离`
 
 本目录定义 B「线性 DP」的家族视觉语法。概念板只作设计与实现对照，最终页面仍使用 React、SVG、CSS 与真实 DOM，不把概念图作为页面背景图片。
@@ -69,4 +78,3 @@
 3. 路径结构稿是否与主雕塑同源，但不会抢课程列表？
 4. LIS 与编辑距离是否一眼能读出不同的状态结构？
 5. 390px 方案是否保留了主语义，而不是桌面图的缩小裁切？
-

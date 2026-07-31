@@ -1,5 +1,5 @@
 /* 分数背包（辨析课）自建轻量可视化的样式。
-   不引用 knapsack-demo.css；工具条沿用 kd__/stepper__ 视觉但独立命名前缀 frd__。 */
+   不引用 knapsack-demo.css；工具条沿用 demo-control__/stepper__ 视觉但独立命名前缀 frd__。 */
 
 .frd__toolbar {
   display: flex;

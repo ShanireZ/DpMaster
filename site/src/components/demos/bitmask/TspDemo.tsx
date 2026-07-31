@@ -55,7 +55,7 @@ export default function TspDemo() {
     <div>
       <div className="bm__toolbar">
         <div className="bm__map-wrap">
-          <div className="kd__group-label">点位（点 0 = 起点 · 可移动 · 曼哈顿距离）</div>
+          <div className="demo-control__group-label">点位（点 0 = 起点 · 可移动 · 曼哈顿距离）</div>
           <svg className="bm__map" viewBox={`0 0 ${mapW} ${mapW}`} role="img" aria-label="TSP 点位小地图">
             {Array.from({ length: 8 }, (_, g) => (
               <g key={g}>
@@ -80,7 +80,7 @@ export default function TspDemo() {
         </div>
 
         <div className="bm__controls">
-          <div className="kd__group-label">移动每个点</div>
+          <div className="demo-control__group-label">移动每个点</div>
           <div className="bm__movers">
             {pts.map((p, i) => (
               <div className="bm__mover" key={i}>
@@ -100,7 +100,7 @@ export default function TspDemo() {
             ))}
           </div>
           <div className="bm__count">
-            <span className="kd__group-label" style={{ margin: 0 }}>点数 {n}</span>
+            <span className="demo-control__group-label" style={{ margin: 0 }}>点数 {n}</span>
             <button onClick={removePt} disabled={n <= 3} aria-label="减少点">
               <Minus size={13} />
             </button>

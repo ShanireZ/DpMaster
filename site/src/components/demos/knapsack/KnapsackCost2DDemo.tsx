@@ -59,20 +59,20 @@ export default function KnapsackCost2DDemo() {
   const removeItem = (idx: number) => setItems((arr) => (arr.length > 1 ? arr.filter((_, i) => i !== idx) : arr))
 
   return (
-    <div className="kd kd--editor">
-      <div className="kd__toolbar">
+    <div className="kd demo-editor">
+      <div className="demo-control__toolbar">
         <div>
-          <div className="kd__group-label">
+          <div className="demo-control__group-label">
             {count
               ? '物品（每件两种费用 a / b · 价值恒 1 只数个数 · 可改可增删）'
               : '物品（每件两种费用 a / b 与价值 v · 可改可增删）'}
           </div>
-          <div className="kd__items">
+          <div className="demo-control__items">
             {items.map((it, idx) => (
-              <div className="kd__item" key={idx}>
-                <span className="kd__item-i">{idx + 1}</span>
+              <div className="demo-control__item" key={idx}>
+                <span className="demo-control__item-i">{idx + 1}</span>
                 {items.length > 1 && (
-                  <button className="kd__remove" onClick={() => removeItem(idx)} aria-label="删除物品">
+                  <button className="demo-control__remove" onClick={() => removeItem(idx)} aria-label="删除物品">
                     <X size={12} />
                   </button>
                 )}
@@ -91,27 +91,27 @@ export default function KnapsackCost2DDemo() {
               </div>
             ))}
             {items.length < 3 && (
-              <button className="kd__add" onClick={addItem}>
+              <button className="demo-control__add" onClick={addItem}>
                 <Plus size={15} /> 加件
               </button>
             )}
           </div>
         </div>
         <div>
-          <div className="kd__group-label">费用1 上限 A</div>
+          <div className="demo-control__group-label">费用1 上限 A</div>
           <Stepper label="A" value={capA} min={2} max={6} onChange={setCapA} />
         </div>
         <div>
-          <div className="kd__group-label">费用2 上限 B</div>
+          <div className="demo-control__group-label">费用2 上限 B</div>
           <Stepper label="B" value={capB} min={2} max={6} onChange={setCapB} />
         </div>
       </div>
 
-      <div className="kd__modes">
+      <div className="demo-control__modes">
         {MODES.map((m) => (
           <button
             key={m.id}
-            className={`kd__mode${mode === m.id ? ' on' : ''}`}
+            className={`demo-control__mode${mode === m.id ? ' on' : ''}`}
             onClick={() => setMode(m.id)}
           >
             {m.label}

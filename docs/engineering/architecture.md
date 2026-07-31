@@ -3,31 +3,32 @@ type: System Architecture
 title: Site Architecture
 description: Current React/Vite architecture, routing, package stack, and performance strategy.
 tags: [engineering, react, vite, architecture]
-timestamp: 2026-07-30T00:00:00+08:00
-source_paths:
-  - site/package.json
-  - site/src/app/App.tsx
-  - site/src/data/catalog.ts
-  - site/src/algorithms/
-  - site/src/components/dp-engine/playback/
-  - site/src/components/dp-engine/SafeCaption.tsx
-  - site/src/components/art/familyArtRegistry.ts
-  - site/src/components/art/FamilyArtSlots.tsx
-  - site/src/lib/highlighter.ts
-  - site/src/components/ui/Math.tsx
-  - site/src/components/games/runtime/
-  - site/src/lib/pageMeta.ts
-  - site/src/lib/publicRoutes.ts
-  - site/src/lib/discovery.ts
-  - site/src/lib/seoHead.ts
-  - site/src/config/site.ts
-  - site/src/analytics/
-  - site/src/components/seo/RouteMeta.tsx
-  - site/src/entry-server.tsx
-  - site/scripts/build-regions.mjs
-  - site/scripts/prerender.mjs
-  - site/scripts/generate-seo.mjs
-  - site/tests/browser/
+status: stable
+generated: { by: openai/codex, at: 2026-07-31T15:32:38+08:00 }
+sources:
+  - resource: ../../site/package.json
+  - resource: ../../site/src/app/App.tsx
+  - resource: ../../site/src/data/catalog.ts
+  - resource: ../../site/src/algorithms/
+  - resource: ../../site/src/components/dp-engine/playback/
+  - resource: ../../site/src/components/dp-engine/SafeCaption.tsx
+  - resource: ../../site/src/components/art/familyArtRegistry.ts
+  - resource: ../../site/src/components/art/FamilyArtSlots.tsx
+  - resource: ../../site/src/lib/highlighter.ts
+  - resource: ../../site/src/components/ui/Math.tsx
+  - resource: ../../site/src/components/games/runtime/
+  - resource: ../../site/src/lib/pageMeta.ts
+  - resource: ../../site/src/lib/publicRoutes.ts
+  - resource: ../../site/src/lib/discovery.ts
+  - resource: ../../site/src/lib/seoHead.ts
+  - resource: ../../site/src/config/site.ts
+  - resource: ../../site/src/analytics/
+  - resource: ../../site/src/components/seo/RouteMeta.tsx
+  - resource: ../../site/src/entry-server.tsx
+  - resource: ../../site/scripts/build-regions.mjs
+  - resource: ../../site/scripts/prerender.mjs
+  - resource: ../../site/scripts/generate-seo.mjs
+  - resource: ../../site/tests/browser/
 ---
 
 # Stack
@@ -37,27 +38,29 @@ DP大师 is a prerendered static React app in `site/`. Build-time React renderin
 Key dependencies actively used by current source:
 
 * React 19 and React DOM 19.
-* Vite 8 and TypeScript.
+* Vite 8 and TypeScript 7.
 * React Router 7.
 * KaTeX for formula rendering.
 * Shiki for C++ highlighting.
 * Lucide React for icons.
+* Motion for shell and component interaction, plus lazily loaded GSAP for the home-page sequence.
+* Web Vitals for the bounded runtime performance events.
 * `@fontsource` packages for JetBrains Mono and Space Grotesk.
 
-The manifest intentionally keeps only dependencies imported by the current source. Do not document react-three-fiber, react-bits, anime.js, D3, React Flow, GSAP, Motion, or `react-katex` as installed unless the package manifest changes.
+The manifest intentionally keeps only dependencies imported by current source. Do not document react-three-fiber, react-bits, anime.js, D3, React Flow, or `react-katex` as installed unless the package manifest changes.
 
 # Directory Roles
 
 | Path | Role |
 |---|---|
 | `site/src/app/App.tsx` | Router registration and app shell. |
-| `site/src/pages/` | Home, family pages, type page host, method, problems, about, not-found. |
+| `site/src/pages/` | Home, family pages, type page host, method, problems, and not-found. |
 | `site/src/data/catalog.ts` | Family/type metadata, route order, and lazy lesson/game implementations. |
 | `site/src/data/problems.ts` | Generated searchable problem-index projection. |
 | `site/src/content/` | Type lesson content and the problem-corpus source of truth. |
 | `site/src/algorithms/` | Pure typed public results, UI-neutral domain events, and the single transition Implementation behind all 29 teaching solver surfaces. |
 | `site/src/components/demos/` | Editable teaching Adapters that project domain events into visual traces. |
-| `site/src/components/art/familyArtRegistry.ts` | Per-family lazy art modules for category heroes, journey maps, and lesson semantic plates; A and B are currently registered. |
+| `site/src/components/art/familyArtRegistry.ts` | Per-family lazy A–G art modules for category heroes, journey maps, and lesson semantic plates. |
 | `site/src/components/dp-engine/` | Shared visualization, playback, controls, and safe-caption rendering. |
 | `site/src/components/games/` | One game per family; games consume public result Interfaces instead of teaching frames. |
 | `site/src/components/games/runtime/` | Shared deterministic random source, round statistics, lazy audio, and viewport gate for the seven games. |
@@ -79,13 +82,13 @@ The manifest intentionally keeps only dependencies imported by the current sourc
 
 `App.tsx` uses `BrowserRouter` in the browser and `MemoryRouter` through `StaticApp` at build time. `site/src/data/catalog.ts` owns literal lazy imports for every lesson and family game, so opening one lesson or family should not eagerly load unrelated lessons or games.
 
-Family art is a second, deliberately smaller registry: `familyArtRegistry.ts` maps only `partId` to a lazy module implementing `HeroArt`, `JourneyArt`, and `LessonPlate`. It never owns course titles, slugs, order, or copy. A (backpack) and B (linear) are registered; C–G continue to use the explicit `PartGlyph` fallback until each family reaches its implementation milestone. B's representative pilot provides dedicated LIS and edit-distance plates while its other five lessons intentionally remain on the fallback until the second visual review.
+Family art is a second, deliberately smaller registry: `familyArtRegistry.ts` maps each A–G `partId` to a lazy module implementing `HeroArt`, `JourneyArt`, and `LessonPlate`. It never owns course titles, slugs, order, or copy. Every ready lesson has a unique semantic plate; `PartGlyph` remains a defensive unknown-family fallback rather than a production course path.
 
-`npm run build` produces `site/dist/cloudflare/` for `dp.betaoi.cc` and `site/dist/edgeone/` for `dp.betaoi.cn`. For each region, Vite first emits the client and an isolated production SSR entry; a fresh Node production process calls React 19 `prerender()` for all 48 paths and writes both clean-URL variants. The prerender pass resolves the current lesson and upgraded family-art module synchronously, injects that route's exact CSS and module-preload graph, and rejects unresolved streamed Suspense segments. Before `hydrateRoot`, the browser explicitly prepares the current route view, current lesson module, and current upgraded family-art module while leaving the prerendered DOM visible; hydration therefore attaches to identical content instead of replacing the page with a lazy fallback. The client does not eagerly import unrelated route views or family art after hydration. If a deployment changes a hashed dynamic asset while an older document is still open, `preloadRecovery.ts` handles Vite's `vite:preloadError` before route imports run and performs at most one recovery reload per build and path. Development-only empty roots still use `createRoot`.
+`pnpm build` produces `site/dist/cloudflare/` for `dp.betaoi.cc` and `site/dist/edgeone/` for `dp.betaoi.cn`. For each region, Vite first emits the client and an isolated production SSR entry; a fresh Node production process calls React 19 `prerender()` for all 47 paths and writes both clean-URL variants. The prerender pass resolves the current lesson and family-art module synchronously, injects that route's exact CSS and module-preload graph, and rejects unresolved streamed Suspense segments. Before `hydrateRoot`, the browser explicitly prepares the current route view, current lesson module, and current family-art module while leaving the prerendered DOM visible; hydration therefore attaches to identical content instead of replacing the page with a lazy fallback. The client does not eagerly import unrelated route views or family art after hydration. If a deployment changes a hashed dynamic asset while an older document is still open, `preloadRecovery.ts` handles Vite's `vite:preloadError` before route imports run and performs at most one recovery reload per build and path. Development-only empty roots still use `createRoot`.
 
 Family pages wrap the catalog-owned lazy game in `DeferredGame`. Its one-way `IntersectionObserver` gate starts rendering about 400 px before the game reaches the viewport; there is no manual load path, and browsers without IntersectionObserver render immediately. Creating a lazy React element does not invoke its dynamic import until the gate renders it, so the game JS/CSS chunks stay off the initial family-page request when the section is not yet near.
 
-Problem metadata is extracted from lesson JSX by `site/scripts/generate-problems.mjs`. Run `npm run content:generate` after changing `ExampleCard` or `Exercise`; `npm run check:content` rejects drift.
+Problem metadata is extracted from lesson JSX by `site/scripts/generate-problems.mjs`. Run `pnpm content:generate` after changing `ExampleCard` or `Exercise`; `pnpm check:content` rejects drift.
 
 All 29 teaching solver surfaces are Adapters over the algorithm boundary: public callers import `site/src/algorithms/<domain>/index.ts`, while the adjacent internal Module owns the sole transition loop and emits UI-neutral domain events. Teaching code records those events and adapts them to `VizModel`; games and ordinary readouts use public typed results and must not import internal Modules or recover answers from teaching frames. Executable architecture tests enumerate the 29 Adapters. The 39 public solver entry points that return one of the 38 named `*Result` Interfaces each have an independent small-case oracle or property for their primary outcome. Key witness and auxiliary fields also have explicit legality or consistency invariants, including `chosen`, `guards`, and `layout`, plus representative path, index, argument, and ordering fields; this coverage claim does not extend to every incidental field. The UI-only `solveRerootDistanceBrute` helper returns an anonymous object and is outside this 39-entry named-Result count.
 
@@ -97,7 +100,7 @@ Known deep links are physical prerendered HTML assets. Cloudflare uses Static As
 
 `seoHead.ts` renders the same head contract at build time that `RouteMeta` maintains after client navigation: title, description, citable abstract, robots, canonical, hreflang, Open Graph, Twitter, and a Schema.org graph. Every indexable page includes Organization and WebSite nodes; lessons add Course, family pages add CollectionPage, other pages add WebPage, and routes with hierarchy add BreadcrumbList.
 
-`site/scripts/generate-seo.mjs` writes the international checked-in baseline. The regional prerender step regenerates `sitemap.xml`, `robots.txt`, `llms.txt`, and `route-summaries.json` inside each deployment target. All four artifacts derive from the same 48-path catalog contract: home, seven families, 37 completed lessons, method, problem index, and about. `npm run check:seo` rejects drift.
+`site/scripts/generate-seo.mjs` writes the international checked-in baseline. The regional prerender step regenerates `sitemap.xml`, `robots.txt`, `llms.txt`, and `route-summaries.json` inside each deployment target. All four artifacts derive from the same 47-path catalog contract: home, seven families, 37 completed lessons, method, and problem index. `pnpm check:seo` rejects drift.
 
 # Regional Analytics
 
@@ -138,10 +141,10 @@ Shiki is lazy-loaded via `site/src/lib/highlighter.ts` with only C++ and two Git
 Run commands from `site/`:
 
 ```bash
-npm ci
-npm run dev
-npm run lint
-npm run build
+pnpm install --frozen-lockfile
+pnpm dev
+pnpm lint
+pnpm build
 ```
 
 The root workspace is not the package root.

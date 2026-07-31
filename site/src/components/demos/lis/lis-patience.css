@@ -1,5 +1,5 @@
 /* LIS · O(n log n) 耐心排序 / 二分维护 tails 的自建轻量可视化样式。
-   不引用 knapsack-demo.css / dp-viz.css；工具条沿用 kd__/stepper__ 视觉，
+   不引用 knapsack-demo.css / dp-viz.css；工具条沿用 demo-control__/stepper__ 视觉，
    但独立命名前缀 lp__，配色只用设计令牌。★不做 opacity:0 起步动画。 */
 
 .lp__toolbar {

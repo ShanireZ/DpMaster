@@ -68,7 +68,7 @@ export default function CoverDemo() {
   return (
     <div>
       <div className="bm__toolbar bm__toolbar--cover">
-        <div className="kd__group-label" style={{ width: '100%' }}>
+        <div className="demo-control__group-label" style={{ width: '100%' }}>
           选择（点元素格切换是否覆盖 · 调代价）· 全集 = {'{0,1,2,3}'}
         </div>
         <div className="bm__choices">

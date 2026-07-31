@@ -1,8 +1,18 @@
 {
   "$schema": "./node_modules/oxlint/configuration_schema.json",
   "plugins": ["react", "typescript", "oxc"],
+  "options": {
+    "typeAware": true
+  },
   "rules": {
     "react/rules-of-hooks": "error",
-    "react/only-export-components": ["warn", { "allowConstantExport": true }]
+    "react/only-export-components": ["warn", { "allowConstantExport": true }],
+    "typescript/no-deprecated": "error",
+    "typescript/await-thenable": "off",
+    "typescript/no-base-to-string": "off",
+    "typescript/no-floating-promises": "off",
+    "typescript/no-misused-spread": "off",
+    "typescript/require-array-sort-compare": "off",
+    "typescript/unbound-method": "off"
   }
 }

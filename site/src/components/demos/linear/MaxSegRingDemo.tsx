@@ -59,15 +59,15 @@ export default function MaxSegRingDemo() {
 
   return (
     <div>
-      <div className="kd__toolbar">
+      <div className="demo-control__toolbar">
         <div>
-          <div className="kd__group-label">环形数组 a[]（首尾相接 · 可为负数）</div>
-          <div className="kd__items">
+          <div className="demo-control__group-label">环形数组 a[]（首尾相接 · 可为负数）</div>
+          <div className="demo-control__items">
             {a.map((v, i) => (
-              <div className="kd__item" key={i}>
-                <span className="kd__item-i">{i}</span>
+              <div className="demo-control__item" key={i}>
+                <span className="demo-control__item-i">{i}</span>
                 {a.length > 3 && (
-                  <button className="kd__remove" onClick={() => removeAt(i)} aria-label="删除元素">
+                  <button className="demo-control__remove" onClick={() => removeAt(i)} aria-label="删除元素">
                     <X size={12} />
                   </button>
                 )}
@@ -75,7 +75,7 @@ export default function MaxSegRingDemo() {
               </div>
             ))}
             {a.length < 7 && (
-              <button className="kd__add" onClick={() => setA((arr) => [...arr, 1])}>
+              <button className="demo-control__add" onClick={() => setA((arr) => [...arr, 1])}>
                 <Plus size={15} /> 加一位
               </button>
             )}
@@ -83,11 +83,11 @@ export default function MaxSegRingDemo() {
         </div>
       </div>
 
-      <div className="kd__modes">
+      <div className="demo-control__modes">
         {PRESETS.map((p) => (
           <button
             key={p.label}
-            className={`kd__mode ${a.join(',') === p.a.join(',') ? 'on' : ''}`}
+            className={`demo-control__mode ${a.join(',') === p.a.join(',') ? 'on' : ''}`}
             onClick={() => setA(p.a)}
           >
             {p.label}
@@ -95,7 +95,7 @@ export default function MaxSegRingDemo() {
         ))}
       </div>
 
-      <div className="fbug__readout">
+      <div className="demo-contrast__readout">
         普通 Kadane <b className="you">{normal}</b> · 环形（total − minSeg = {total} − ({minSeg})）
         {allPos ? <b className="you"> 不适用</b> : <b className="ok"> {wrap}</b>} · 取较大 → 答案{' '}
         <b className="ok">{ans}</b>
@@ -110,15 +110,15 @@ export default function MaxSegRingDemo() {
         )}
       </div>
 
-      <div className="fbug__pair">
+      <div className="demo-contrast__pair">
         <div>
-          <div className="fbug__side-label you">
+          <div className="demo-contrast__side-label you">
             <Sparkles size={15} /> 普通 Kadane · 不跨首尾的最大子段
           </div>
           <DPViz key={`n${k}`} model={normalModel} />
         </div>
         <div>
-          <div className="fbug__side-label ok">
+          <div className="demo-contrast__side-label ok">
             <RefreshCw size={15} /> 环形补集 · 求最小子段，再 total − minSeg
           </div>
           <DPViz key={`m${k}`} model={minModel} />

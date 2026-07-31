@@ -1,0 +1,9 @@
+minimumReleaseAge: 1440
+minimumReleaseAgeIgnoreMissingTime: false
+minimumReleaseAgeStrict: true
+nodeVersion: 24.18.1
+engineStrict: true
+verifyDepsBeforeRun: error
+allowBuilds:
+  esbuild: true
+  workerd: true

@@ -71,9 +71,9 @@ export default function PathTriangleDemo() {
 
   return (
     <div>
-      <div className="kd__toolbar">
+      <div className="demo-control__toolbar">
         <div>
-          <div className="kd__group-label">数字三角形（点数字上的 ± 改值 · 每步只能去正下方或右下方）</div>
+          <div className="demo-control__group-label">数字三角形（点数字上的 ± 改值 · 每步只能去正下方或右下方）</div>
           <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--sp-3)', alignItems: 'center' }}>
             {shown.map((row, i) => (
               <div key={i} style={{ display: 'flex', gap: 'var(--sp-3)' }}>
@@ -138,7 +138,7 @@ export default function PathTriangleDemo() {
           </div>
         </div>
         <div>
-          <div className="kd__group-label">层数</div>
+          <div className="demo-control__group-label">层数</div>
           <Stepper label="行" value={rows} min={2} max={5} onChange={setRowsClamped} />
         </div>
       </div>

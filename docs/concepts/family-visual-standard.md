@@ -1,6 +1,17 @@
+---
+type: Design Standard
+title: DP Family Visual Standard
+description: Durable visual contract for A–G family heroes, course journeys, and lesson semantic plates.
+tags: [design, family-art, polygon, accessibility]
+status: stable
+generated: { by: openai/codex, at: 2026-07-31T15:32:38+08:00 }
+sources:
+  - resource: ../../site/src/components/art/
+---
+
 # DP 家族视觉标准
 
-> 状态：C–G 设计基线已锁定
+> 状态：A–G 设计与实现基线已锁定
 > 适用：分类主雕塑、课程路径、课程页头图例
 > 产品基线：Warm Ink；catalog 是标题、slug、顺序与内容的唯一来源
 

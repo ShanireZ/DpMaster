@@ -7,35 +7,54 @@
 - 产品与文档显示名是 **DP大师**。
 - 为兼容现有发布链路，保留目录名 `DpMaster`、GitHub 仓库 `ShanireZ/DpMaster`、Cloudflare/EdgeOne 项目名 `dpmaster`；国际站 `dp.betaoi.cc` 发布到 Cloudflare，国内站 `dp.betaoi.cn` 发布到 Tencent EdgeOne，不要把显示名改动机械扩散到这些标识。
 - 站点是 `site/` 下的静态 React/Vite 应用，不引入账号、数据库或在线评测后端。
-- `npm run build` 必须保持两个区域产物：`site/dist/cloudflare/` 与 `site/dist/edgeone/`。两个产物共享课程功能，但 canonical、sitemap、robots、llms.txt 与统计 Provider 必须按区域生成。
+- `pnpm build` 必须保持两个区域产物：`site/dist/cloudflare/` 与 `site/dist/edgeone/`。两个产物共享课程功能，但 canonical、sitemap、robots、llms.txt 与统计 Provider 必须按区域生成。
 
 ## Source of truth
 
 - `site/src/data/catalog.ts` 是 DP 家族、课程顺序、正文懒加载和家族游戏懒加载的权威 Module。
 - 题目语料以课程正文中的 `ExampleCard` / `Exercise` 为准。
-- `site/src/data/problems.ts` 是生成文件；不要手改。课程题目变化后运行 `npm run content:generate`。
+- `site/src/data/problems.ts` 是生成文件；不要手改。课程题目变化后运行 `pnpm content:generate`。
 - 部署与反馈操作以根目录 `deploy.md` 为准；长期工程知识维护在 `docs/` OKF 文档包。
 
 ## Commands
 
-所有 npm 命令从 `site/` 执行，要求 Node 24 和 npm 11。
+所有包管理命令从 `site/` 执行。运行时精确基线见 `site/.node-version` 与
+`site/package.json`；当前要求 Node 24.18.1、pnpm 11.18.0。使用 Corepack
+提供 pnpm，不得混用 npm、yarn 或 bun。
 
 ```bash
-npm ci
-npm run dev
-npm run test
-npm run lint
-npm run build
-npm run verify
+pnpm install --frozen-lockfile
+pnpm dev
+pnpm test
+pnpm lint
+pnpm build
+pnpm verify
 ```
 
-`npm run verify` 是完整本地 gate：内容与 SEO 一致性、Node 内容测试、React 组件测试、零 warning lint、TypeScript/Vite 构建、Playwright 浏览器路由检查和资产预算。
+`pnpm verify` 是完整本地 gate：内容与 SEO 一致性、Node 内容测试、React 组件测试、零 warning lint、TypeScript/Vite 构建、Playwright 浏览器路由检查和资产预算。
+
+`pnpm release` 是唯一完整生产发布入口：先通过 `pnpm verify` 并复用该次构建产物，再依次发布 Cloudflare 与 EdgeOne。GitHub Actions 只运行 CI，不保存生产密钥，也不部署。
+
+## Toolchain and compatibility
+
+- Node 固定在 24 LTS 最新成熟补丁，pnpm 固定在 11 最新成熟版本；直接依赖使用当前稳定主线的 `^` 范围，`pnpm-lock.yaml` 是 CI 的精确解析合同。
+- `site/pnpm-workspace.yaml` 强制 24 小时发布隔离、Node 引擎、依赖构建脚本白名单和依赖状态检查。不得通过排除项、宽松模式或其他包管理器绕过。
+- TypeScript、React、Vite、Oxlint、Vitest、Playwright 和其余依赖保持当前稳定主线。版本升级作为独立 task，经完整验证后形成一个 commit。
+- 禁止废弃 API、CommonJS 兼容层、旧浏览器 polyfill、已弃用 CLI、过渡选择器和 lint 豁免。必须使用现代替代方案；没有可行替代时停止工作并通过无倒计时弹窗请用户拍板。
+- 浏览器合同是 Chrome、Edge、Firefox、Safari 当前稳定版和上一主版本；CI 中 Chromium 跑全量，Firefox/WebKit 跑关键冒烟，真实 Edge/Safari 由发布前人工抽检补足。
+
+## Task and documentation governance
+
+- 一个用户确认的 task 只创建一个聚焦 commit。完成后自动总结全部完成项并 commit；不 push，push 由用户执行。
+- 遇到会改变视觉方向、产品规则、兼容策略或发布合同的选择，提供对比证据并使用无倒计时弹窗确认，不得静默代替用户拍板。
+- `docs/` 是 Google Open Knowledge Format v0.2 的长期当前事实包，不保存临时进度、流水日志或已完成计划。`handoff/` 保存当前任务计划、评审门和勾选清单。
+- 任务清单只能在对应工作通过验证后改为 `[x]`。行为、架构或命令变化必须同步更新 `AGENTS.md`、OKF 概念和公开文档，并及时删除漂移内容。
 
 ## Public README & license
 
 - 根目录 `README.md` 是公开入口；badge 必须遵循 [`../badgestd.md`](../badgestd.md)，并从 `site/package.json`、`site/src/data/catalog.ts` 和 `deploy.md` 的当前事实取值。
 - `LICENSE` 提供 GNU GPL v3 正文，但没有机器可读的 `only` / `or-later` 声明；README、badge 和新增文档统一使用通用 `GPL-3.0`，不要猜测具体 SPDX variant。
-- README 的 `lessons` 数量来自 catalog；课程变更后先运行 `npm run content:generate`，再同步 README/OKF 文档中的数量与状态。
+- README 的 `lessons` 数量来自 catalog；课程变更后先运行 `pnpm content:generate`，再同步 README/OKF 文档中的数量与状态。
 
 ## Change rules
 

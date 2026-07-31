@@ -60,21 +60,21 @@ export default function ForwardBugDemo() {
 
   return (
     <div>
-      <div className="fbug__toolbar">
+      <div className="demo-contrast__toolbar">
         <div>
-          <div className="kd__group-label">一件物品（可改重量 / 价值）</div>
-          <div className="fbug__steppers">
+          <div className="demo-control__group-label">一件物品（可改重量 / 价值）</div>
+          <div className="demo-contrast__steppers">
             <Stepper label="重量 w" value={w} min={1} max={cap} onChange={setW} />
             <Stepper label="价值 v" value={v} min={1} max={30} onChange={setV} />
           </div>
         </div>
         <div>
-          <div className="kd__group-label">背包容量</div>
+          <div className="demo-control__group-label">背包容量</div>
           <Stepper label="m" value={cap} min={2} max={12} onChange={setCapClamped} />
         </div>
       </div>
 
-      <div className="fbug__readout">
+      <div className="demo-contrast__readout">
         逆推 <b className="ok">f[{cap}] = {fRev}</b>（只装 1 件） · 正推 <b className="bad">f[{cap}] = {fFwd}</b>
         {times > 1 ? (
           <>
@@ -85,15 +85,15 @@ export default function ForwardBugDemo() {
         )}
       </div>
 
-      <div className="fbug__pair">
+      <div className="demo-contrast__pair">
         <div>
-          <div className="fbug__side-label ok">
+          <div className="demo-contrast__side-label ok">
             <Check size={15} /> 逆推 · 正确（每件至多一次）
           </div>
           <DPViz key={`r${k}`} model={reverse} />
         </div>
         <div>
-          <div className="fbug__side-label bad">
+          <div className="demo-contrast__side-label bad">
             <X size={15} /> 正推 · 错误（同一件被重复计入）
           </div>
           <DPViz key={`f${k}`} model={forward} />

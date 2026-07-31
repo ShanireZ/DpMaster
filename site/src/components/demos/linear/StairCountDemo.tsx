@@ -48,14 +48,14 @@ export default function StairCountDemo() {
 
   return (
     <div>
-      <div className="kd__toolbar">
+      <div className="demo-control__toolbar">
         <div>
-          <div className="kd__group-label">台阶总数（每步跨 1 或 2 级）</div>
+          <div className="demo-control__group-label">台阶总数（每步跨 1 或 2 级）</div>
           <Stepper label="n" value={n} min={2} max={12} onChange={setN} />
         </div>
       </div>
 
-      <div className="fbug__readout">
+      <div className="demo-contrast__readout">
         跳到第 <b className="you">n = {n}</b> 级的走法数：<b className="ok">f[{n}] = {answer}</b>
         <span style={{ color: 'var(--text-3)' }}>（f[i] = f[i−1] + f[i−2]，即斐波那契）</span>
       </div>

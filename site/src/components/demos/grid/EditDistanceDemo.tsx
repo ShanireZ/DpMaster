@@ -30,9 +30,9 @@ export default function EditDistanceDemo() {
 
   return (
     <div>
-      <div className="kd__toolbar">
+      <div className="demo-control__toolbar">
         <div>
-          <div className="kd__group-label">源串 A（改成 B · 仅字母 · ≤6）</div>
+          <div className="demo-control__group-label">源串 A（改成 B · 仅字母 · ≤6）</div>
           <input
             className="ed__input"
             value={a}
@@ -43,7 +43,7 @@ export default function EditDistanceDemo() {
           />
         </div>
         <div>
-          <div className="kd__group-label">目标串 B</div>
+          <div className="demo-control__group-label">目标串 B</div>
           <input
             className="ed__input"
             value={b}
@@ -54,12 +54,12 @@ export default function EditDistanceDemo() {
           />
         </div>
         <div>
-          <div className="kd__group-label">试几组</div>
+          <div className="demo-control__group-label">试几组</div>
           <div className="ed__presets">
             {PRESETS.map(([pa, pb]) => (
               <button
                 key={`${pa}-${pb}`}
-                className={`kd__mode${a === pa && b === pb ? ' on' : ''}`}
+                className={`demo-control__mode${a === pa && b === pb ? ' on' : ''}`}
                 onClick={() => {
                   setA(pa)
                   setB(pb)
@@ -69,7 +69,7 @@ export default function EditDistanceDemo() {
               </button>
             ))}
             <button
-              className="kd__mode"
+              className="demo-control__mode"
               onClick={() => {
                 setA('horse')
                 setB('ros')

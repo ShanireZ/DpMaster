@@ -3,11 +3,12 @@ type: Policy
 title: Luogu Problem Policy
 description: DP大师 only uses Luogu-native P/B problems and records caveats for thin or disputed pools.
 tags: [content, luogu, policy]
-timestamp: 2026-07-07T00:00:00+08:00
-source_paths:
-  - site/src/data/problems.ts
-  - site/src/content/b/LCS.tsx
-  - site/src/content/d/GridDP.tsx
+status: stable
+generated: { by: openai/codex, at: 2026-07-31T15:32:38+08:00 }
+sources:
+  - resource: ../../site/src/data/problems.ts
+  - resource: ../../site/src/content/b/LCS.tsx
+  - resource: ../../site/src/content/d/GridDP.tsx
 ---
 
 # Rule

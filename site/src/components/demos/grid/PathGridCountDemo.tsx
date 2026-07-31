@@ -82,9 +82,9 @@ export default function PathGridCountDemo() {
 
   return (
     <div>
-      <div className="fbug__toolbar">
+      <div className="demo-contrast__toolbar">
         <div>
-          <div className="kd__group-label">点格子设 / 撤障碍（起点终点锁定）</div>
+          <div className="demo-control__group-label">点格子设 / 撤障碍（起点终点锁定）</div>
           <div style={{ display: 'flex', flexDirection: 'column', gap: 5 }}>
             {Array.from({ length: rows }, (_, ri) => (
               <div key={ri} style={{ display: 'flex', gap: 5 }}>
@@ -133,17 +133,17 @@ export default function PathGridCountDemo() {
         </div>
         <div style={{ display: 'flex', gap: 'var(--sp-5)' }}>
           <div>
-            <div className="kd__group-label">行数</div>
+            <div className="demo-control__group-label">行数</div>
             <Stepper label="行" value={rows} min={2} max={5} onChange={setRowsClamped} />
           </div>
           <div>
-            <div className="kd__group-label">列数</div>
+            <div className="demo-control__group-label">列数</div>
             <Stepper label="列" value={cols} min={2} max={6} onChange={setColsClamped} />
           </div>
         </div>
       </div>
 
-      <div className="fbug__readout">
+      <div className="demo-contrast__readout">
         无障碍共 <b className="ok">{openTotal}</b> 条路 · 当前避开 {blocked.size} 个障碍后剩{' '}
         <b className={blocked.size > 0 ? 'bad' : 'ok'}>{curTotal}</b> 条
         {blocked.size > 0 && curTotal < openTotal ? (

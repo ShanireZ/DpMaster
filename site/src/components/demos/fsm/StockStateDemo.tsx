@@ -53,11 +53,11 @@ export default function StockStateDemo() {
   return (
     <div>
       {/* 预设 + 冷却开关 */}
-      <div className="kd__modes">
+      <div className="demo-control__modes">
         {PRESETS.map((pr) => (
           <button
             key={pr.label}
-            className={`kd__mode${prices.join(',') === pr.p.join(',') ? ' on' : ''}`}
+            className={`demo-control__mode${prices.join(',') === pr.p.join(',') ? ' on' : ''}`}
             onClick={() => pickPreset(pr.p)}
           >
             {pr.label}
@@ -73,7 +73,7 @@ export default function StockStateDemo() {
             {prices.map((v, i) => (
               <div className="stk__price-item" key={i}>
                 {prices.length > 2 && (
-                  <button className="kd__remove" onClick={() => removeAt(i)} aria-label="删除这天">
+                  <button className="demo-control__remove" onClick={() => removeAt(i)} aria-label="删除这天">
                     <X size={12} />
                   </button>
                 )}
@@ -90,7 +90,7 @@ export default function StockStateDemo() {
               </div>
             ))}
             {prices.length < 9 && (
-              <button className="kd__add" onClick={addOne}>
+              <button className="demo-control__add" onClick={addOne}>
                 <Plus size={15} /> 加一天
               </button>
             )}

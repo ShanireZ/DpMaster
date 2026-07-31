@@ -3,14 +3,15 @@ type: Product Scope
 title: DP大师 Product Scope
 description: User-facing DP大师 scope, routes, learning flow, and explicit exclusions.
 tags: [product, routes, scope]
-timestamp: 2026-07-07T00:00:00+08:00
-source_paths:
-  - site/src/app/App.tsx
-  - site/src/pages/Home.tsx
-  - site/src/pages/MethodPage.tsx
-  - site/src/pages/ProblemsPage.tsx
-  - site/src/lib/pageMeta.ts
-  - site/public/sitemap.xml
+status: stable
+generated: { by: openai/codex, at: 2026-07-31T15:32:38+08:00 }
+sources:
+  - resource: ../../site/src/app/App.tsx
+  - resource: ../../site/src/pages/Home.tsx
+  - resource: ../../site/src/pages/MethodPage.tsx
+  - resource: ../../site/src/pages/ProblemsPage.tsx
+  - resource: ../../site/src/lib/pageMeta.ts
+  - resource: ../../site/public/sitemap.xml
 ---
 
 # Promise
