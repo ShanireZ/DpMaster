@@ -17,7 +17,7 @@ DP大师 is an independent Chinese interactive teaching site for dynamic program
 
 The current local project root is `D:\WorkSpace\DpMaster`. The public remote is `https://github.com/ShanireZ/DpMaster.git`.
 
-DP大师 is not part of `Cpplearn` or any earlier `cpplearn-animation-lab` work. Treat paths that mention `D:\WorkSpace\dp` as stale historical text.
+DP大师 is not part of `WenTian` or any earlier `wentian-animation-lab` work. Treat paths that mention `D:\WorkSpace\dp` as stale historical text.
 
 # Current Status
 
