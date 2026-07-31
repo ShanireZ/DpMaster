@@ -1,6 +1,6 @@
 import { useMemo, useState } from 'react'
-import { PlaybackControls } from '../../dp-engine/playback/PlaybackControls'
 import { useStepPlayer } from '../../dp-engine/playback/useStepPlayer'
+import { InstrumentRail, VizStateKey } from '../shared'
 import './lcs-lis.css'
 
 // 两个都是 1..n 的排列。第一组取恒等排列 A，映射最直观（值即位置）；第二组 A 打乱，见一般映射。
@@ -169,11 +169,11 @@ export default function LCSToLISDemo() {
         )}
       </div>
 
-      <PlaybackControls
+      <InstrumentRail
         player={player}
-        variant="compact"
         label="排列 LCS 转 LIS 逐帧播放"
         className="ll__ctl"
+        secondary={<VizStateKey />}
       />
     </div>
   )

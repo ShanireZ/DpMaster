@@ -685,10 +685,87 @@
     clamp(var(--sp-5), 2.8vw, var(--sp-6));
 }
 
-.demo .dpviz__scroll {
+.demo .dpviz__viewport {
   width: auto;
   max-width: 100%;
   min-width: 0;
+}
+
+.typepage[data-demo-standard='representative'] .lesson-flow {
+  counter-reset: lesson-instrument;
+}
+
+.typepage[data-demo-standard='representative'] .demo {
+  --instrument-spine: clamp(42px, 6vw, 72px);
+  counter-increment: lesson-instrument;
+  overflow: clip;
+  border-color: color-mix(in srgb, var(--accent-1) 42%, var(--border-strong));
+  background:
+    radial-gradient(circle at 62% 42%, color-mix(in srgb, var(--accent-1) 13%, transparent), transparent 46%),
+    linear-gradient(90deg, transparent 49.9%, color-mix(in srgb, var(--text-3) 7%, transparent) 50%, transparent 50.1%),
+    linear-gradient(0deg, transparent 49.9%, color-mix(in srgb, var(--text-3) 5%, transparent) 50%, transparent 50.1%);
+  background-color: var(--canvas);
+  background-size: auto, 96px 96px, 96px 96px;
+  box-shadow:
+    inset var(--instrument-spine) 0 color-mix(in srgb, var(--accent-1) 5%, transparent),
+    inset calc(var(--instrument-spine) + 1px) 0 var(--border);
+}
+
+.typepage[data-demo-standard='representative'] .demo::before {
+  width: min(240px, 42%);
+  height: 3px;
+  box-shadow: 0 0 22px color-mix(in srgb, var(--accent-1) 44%, transparent);
+}
+
+.typepage[data-demo-standard='representative'] .demo::after {
+  position: absolute;
+  z-index: 2;
+  top: 18px;
+  left: 14px;
+  width: calc(var(--instrument-spine) - 28px);
+  color: var(--accent-1);
+  content: counter(lesson-instrument, decimal-leading-zero);
+  font-family: var(--font-display);
+  font-size: clamp(20px, 3vw, 34px);
+  font-weight: 650;
+  line-height: 1;
+  text-align: center;
+}
+
+.typepage[data-demo-standard='representative'] .demo__body {
+  position: relative;
+  padding:
+    clamp(var(--sp-8), 5vw, 68px)
+    clamp(var(--sp-5), 3vw, var(--sp-7))
+    clamp(var(--sp-6), 4vw, var(--sp-8))
+    calc(var(--instrument-spine) + clamp(var(--sp-4), 2vw, var(--sp-6)));
+}
+
+.typepage[data-demo-standard='representative'] .demo__body::before {
+  position: absolute;
+  top: 22px;
+  left: calc(var(--instrument-spine) + clamp(var(--sp-4), 2vw, var(--sp-6)));
+  color: var(--accent-1);
+  content: 'ALGORITHM INSTRUMENT';
+  font-family: var(--font-mono);
+  font-size: 9px;
+  font-weight: 700;
+  letter-spacing: .17em;
+}
+
+.typepage[data-demo-standard='representative'] .demo :is(button, input, select):focus-visible {
+  outline: 2px solid var(--accent-2);
+  outline-offset: 2px;
+}
+
+.typepage[data-demo-standard='representative'] .demo button {
+  min-width: 44px;
+  min-height: 44px;
+}
+
+.typepage[data-demo-intensity='enhanced'] .demo .dp-cell.is-current,
+.typepage[data-demo-intensity='enhanced'] .demo .dp-cell.is-chosen {
+  filter: drop-shadow(0 0 8px color-mix(in srgb, currentColor 30%, transparent));
 }
 
 .demo .dpviz__panel {
@@ -1028,6 +1105,24 @@
     padding-left: var(--sp-3);
   }
 
+  .typepage[data-demo-standard='representative'] .demo {
+    --instrument-spine: 38px;
+    margin-right: -8px;
+    margin-left: -8px;
+  }
+
+  .typepage[data-demo-standard='representative'] .demo__body {
+    padding:
+      var(--sp-8)
+      var(--sp-3)
+      var(--sp-6)
+      calc(var(--instrument-spine) + var(--sp-3));
+  }
+
+  .typepage[data-demo-standard='representative'] .demo__body::before {
+    left: calc(var(--instrument-spine) + var(--sp-3));
+  }
+
   .type-nav {
     grid-template-columns: 1fr;
   }
@@ -1286,7 +1381,7 @@
   grid-template-columns: minmax(0, 1fr) minmax(220px, 0.48fr);
 }
 
-.typepage[data-part-id='a'] .dpviz__scroll {
+.typepage[data-part-id='a'] .dpviz__viewport {
   width: auto;
   max-width: 100%;
   min-width: 0;
@@ -1417,7 +1512,7 @@
       'playback';
   }
 
-  .demo .dpviz__scroll {
+  .demo .dpviz__viewport {
     border-right: 0;
   }
 
@@ -1458,7 +1553,7 @@
       'playback';
   }
 
-  .typepage[data-part-id='a'] .dpviz__scroll {
+  .typepage[data-part-id='a'] .dpviz__viewport {
     width: auto;
   }
 }

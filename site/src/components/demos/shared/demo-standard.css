@@ -172,6 +172,11 @@
   padding: var(--sp-2) clamp(var(--sp-4), 4vw, var(--sp-8));
 }
 
+.instrument-rail {
+  container-name: instrument-rail;
+  container-type: inline-size;
+}
+
 .instrument-rail .playback {
   flex-wrap: nowrap;
 }
@@ -209,6 +214,35 @@
   padding: var(--sp-4) clamp(var(--sp-4), 4vw, var(--sp-8));
   border-top: 1px solid var(--border);
   background: color-mix(in srgb, var(--surface-2) 72%, transparent);
+}
+
+@container instrument-rail (max-width: 860px) {
+  .instrument-rail__primary {
+    display: block;
+    padding-inline: var(--sp-4);
+  }
+
+  .instrument-rail .playback {
+    flex-wrap: wrap;
+  }
+
+  .instrument-rail__secondary-toggle {
+    width: 100%;
+    justify-content: center;
+    border-top: 1px solid var(--border);
+    border-left: 0;
+  }
+}
+
+@container instrument-rail (max-width: 560px) {
+  .instrument-rail .playback__progress {
+    order: 3;
+    flex-basis: 100%;
+  }
+
+  .instrument-rail .playback__speed {
+    margin-left: auto;
+  }
 }
 
 .viz-state-key {

@@ -3,6 +3,7 @@ import InfoBox from '../../components/ui/InfoBox'
 import CodeBlock from '../../components/ui/CodeBlock'
 import { ExampleCard, Field, Exercise } from '../../components/ui/ProblemBits'
 import { ContourFigure, BitLattice } from './BitArt'
+import PlugContourDemo from '../../components/demos/bitmask/PlugContourDemo'
 
 const CODE_P5056 = `
 #include <iostream>
@@ -127,6 +128,7 @@ export default function BitPlug() {
             推进一格时，看它的<strong>左插头 <M>{'p'}</M></strong>（左边界）与<strong>上插头 <M>{'q'}</M></strong>（上边界）的组合，决定这一格里回路怎么走。核心分几类情形：
           </p>
         </div>
+        <PlugContourDemo />
         <div className="steps">
           <div className="step">
             <span className="step__n">1</span>

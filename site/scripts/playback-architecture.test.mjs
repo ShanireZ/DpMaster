@@ -65,21 +65,26 @@ test('one playback Adapter exposes full and compact controls with keyboard seman
   assert.match(controls, /isContentEditable/)
 })
 
-test('grid and tree carriers delegate rendering to the common playback Adapter', async () => {
-  const [grid, tree] = await Promise.all([
+test('the instrument rail is the only Demo-facing Adapter over playback controls', async () => {
+  const [rail, grid, tree] = await Promise.all([
+    component('demos/shared/InstrumentRail.tsx'),
     component('dp-engine/DPViz.tsx'),
     component('demos/treedp/TreeCanvas.tsx'),
   ])
 
-  assert.match(grid, /PlaybackControls/)
-  assert.match(grid, /variant="full"/)
+  assert.match(rail, /dp-engine\/playback\/PlaybackControls/)
+  assert.match(rail, /<PlaybackControls/)
+  assert.match(rail, /secondaryOpen/)
+  assert.match(rail, /aria-expanded=/)
+  assert.match(grid, /InstrumentRail/)
+  assert.doesNotMatch(grid, /PlaybackControls/)
   assert.doesNotMatch(grid, /className="dpctl/)
-  assert.match(tree, /PlaybackControls/)
-  assert.match(tree, /variant="compact"/)
+  assert.match(tree, /InstrumentRail/)
+  assert.doesNotMatch(tree, /PlaybackControls/)
   assert.doesNotMatch(tree, /<button/)
 })
 
-test('board, subset, cover, and reroot carriers share compact playback semantics', async () => {
+test('board, subset, cover, and reroot carriers share the responsive instrument rail', async () => {
   const paths = [
     'demos/bitmask/BoardDemo.tsx',
     'demos/bitmask/SubsetEnumDemo.tsx',
@@ -88,8 +93,8 @@ test('board, subset, cover, and reroot carriers share compact playback semantics
   ]
   for (const path of paths) {
     const text = await component(path)
-    assert.match(text, /PlaybackControls/, `${path} must use the common Adapter`)
-    assert.match(text, /variant="compact"/, `${path} must keep the compact layout`)
+    assert.match(text, /InstrumentRail/, `${path} must use the common instrument rail`)
+    assert.doesNotMatch(text, /PlaybackControls/, `${path} must not bypass the instrument rail`)
     assert.doesNotMatch(text, /className="dpctl/, `${path} must remove its duplicated transport`)
     assert.doesNotMatch(text, /className="rr__transport/, `${path} must remove its duplicated transport`)
   }
@@ -100,8 +105,8 @@ for (const path of remainingTransports) {
     const text = await component(path)
 
     assert.match(text, /dp-engine\/playback\/useStepPlayer/)
-    assert.match(text, /dp-engine\/playback\/PlaybackControls/)
-    assert.match(text, /variant="compact"/)
+    assert.match(text, /InstrumentRail/)
+    assert.doesNotMatch(text, /PlaybackControls/)
     assert.doesNotMatch(text, LOCAL_TRANSPORT_STATE)
     assert.doesNotMatch(text, LOCAL_TIMER_API)
     assert.doesNotMatch(text, /className="(?:lp|ll|etb)__ctl-btns"/)

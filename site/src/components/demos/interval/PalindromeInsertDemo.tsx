@@ -1,7 +1,7 @@
 import { useMemo, useState } from 'react'
 import { RotateCcw } from 'lucide-react'
-import { PlaybackControls } from '../../dp-engine/playback/PlaybackControls'
 import { useStepPlayer } from '../../dp-engine/playback/useStepPlayer'
+import { InstrumentRail, VizStateKey } from '../shared'
 import { palindromeInsert } from './palindromeSolver'
 import '../shared/demo-workbench.css'
 import './palindrome-demo.css'
@@ -187,11 +187,11 @@ export default function PalindromeInsertDemo() {
         )}
       </div>
 
-      <PlaybackControls
+      <InstrumentRail
         player={player}
-        variant="compact"
         label="最少插入构回文逐帧播放"
         className="ll__ctl"
+        secondary={<VizStateKey />}
       />
     </div>
   )

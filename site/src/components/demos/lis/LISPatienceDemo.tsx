@@ -1,7 +1,7 @@
 import { useMemo, useState } from 'react'
 import { Shuffle } from 'lucide-react'
-import { PlaybackControls } from '../../dp-engine/playback/PlaybackControls'
 import { useStepPlayer } from '../../dp-engine/playback/useStepPlayer'
+import { InstrumentRail, VizStateKey } from '../shared'
 import './lis-patience.css'
 
 // 与主演示同源的预设，方便两处对照（经典乱序最终 LIS=5）。
@@ -161,11 +161,11 @@ export default function LISPatienceDemo() {
         )}
       </div>
 
-      <PlaybackControls
+      <InstrumentRail
         player={player}
-        variant="compact"
         label="耐心排序逐帧播放"
         className="lp__ctl"
+        secondary={<VizStateKey />}
       />
     </div>
   )

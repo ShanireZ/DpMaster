@@ -59,6 +59,10 @@
   min-width: 86px;
 }
 
+.playback__primary span {
+  white-space: nowrap;
+}
+
 .playback__progress {
   flex: 1;
   gap: 10px;

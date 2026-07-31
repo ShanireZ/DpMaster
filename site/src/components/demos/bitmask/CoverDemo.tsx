@@ -1,7 +1,7 @@
 import { useMemo, useState } from 'react'
 import { RotateCcw, Minus, Plus } from 'lucide-react'
-import { PlaybackControls } from '../../dp-engine/playback/PlaybackControls'
 import { useStepPlayer } from '../../dp-engine/playback/useStepPlayer'
+import { InstrumentRail, VizStateKey } from '../shared'
 import { solveCover, toBits } from './coverSolver'
 import type { Choice } from './coverSolver'
 import '../shared/demo-workbench.css'
@@ -135,7 +135,11 @@ export default function CoverDemo() {
         </div>
       )}
 
-      <PlaybackControls player={p} variant="compact" label="集合覆盖逐帧播放" />
+      <InstrumentRail
+        player={p}
+        label="集合覆盖逐帧播放"
+        secondary={<VizStateKey />}
+      />
 
       <div className="bm__note">
         终态 <b className="mono">{toBits(full, N).slice().reverse().join('')}</b>（全集）的最小代价 ={' '}

@@ -8,13 +8,18 @@
   gap: 0 var(--sp-5);
 }
 
-.dpviz__scroll {
+.dpviz__viewport {
   grid-area: table;
-  overflow-x: auto;
-  overflow-y: hidden;
   padding: var(--sp-4) 0 var(--sp-5);
   border-right: 1px solid var(--border);
 }
+
+.dpviz__viewport .demo-table-viewport__scroller {
+  overflow-x: auto;
+  overflow-y: hidden;
+  border-block: 0;
+}
+
 .dpviz__grid { position: relative; display: grid; width: max-content; }
 
 .dp-corner, .dp-colh, .dp-rowh {
@@ -37,10 +42,16 @@
   transition: background var(--t-fast), border-color var(--t-fast), color var(--t-fast), transform var(--t-fast);
 }
 .dp-cell.blank { color: var(--text-3); font-weight: 400; opacity: 0.5; }
-.dp-cell.is-settled { color: var(--text-1); background: var(--viz-cell-2); }
+.dp-cell.is-settled {
+  color: var(--text-1);
+  background:
+    repeating-linear-gradient(135deg, transparent 0 7px, color-mix(in srgb, var(--viz-settled) 8%, transparent) 7px 8px),
+    var(--viz-cell-2);
+}
 .dp-cell.is-source {
   border-color: var(--viz-source);
   color: var(--text-1);
+  border-style: dashed;
   box-shadow: inset 0 0 0 1px var(--viz-source);
 }
 .dp-cell.is-chosen {
@@ -55,7 +66,12 @@
   color: var(--text-1);
   box-shadow: inset 0 0 0 2px var(--viz-current);
 }
-.dp-cell.is-invalid { color: var(--viz-invalid); border-color: var(--viz-invalid-border); }
+.dp-cell.is-invalid {
+  border-color: var(--viz-invalid-border);
+  color: var(--viz-invalid);
+  background-image:
+    linear-gradient(45deg, transparent 47%, color-mix(in srgb, var(--viz-invalid) 28%, transparent) 48% 52%, transparent 53%);
+}
 
 .dpviz__arrows { position: absolute; pointer-events: none; overflow: visible; }
 
@@ -94,7 +110,7 @@
 .dpviz__legend span { display: inline-flex; align-items: center; gap: 6px; }
 .dpviz__legend i { width: 10px; height: 10px; border: 1px solid; }
 
-.dpviz > .playback {
+.dpviz > .instrument-rail {
   grid-area: playback;
 }
 
@@ -107,7 +123,7 @@
       'panel'
       'playback';
   }
-  .dpviz__scroll {
+  .dpviz__viewport {
     border-right: 0;
   }
   .dpviz__panel {

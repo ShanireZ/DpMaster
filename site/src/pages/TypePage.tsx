@@ -8,6 +8,7 @@ import PartGlyph from '../components/PartGlyph'
 import { FamilyLessonPlate } from '../components/art/FamilyArtSlots.tsx'
 import { hasFamilyArt } from '../components/art/familyArtRegistry.ts'
 import { useStaticLessonContents } from '../app/StaticLessonContent.ts'
+import { isRepresentativeLesson } from '../components/demos/shared/lessonStandard.ts'
 import './typepage.css'
 
 const NotFound = lazy(() => import('./NotFound'))
@@ -81,6 +82,9 @@ export default function TypePage() {
   const titleStyle = type
     ? { '--title-units': getTitleVisualUnits(type.title) } as TitleStyle
     : undefined
+  const demoStandard = part && type && isRepresentativeLesson(part.id, type.slug)
+    ? 'representative'
+    : undefined
 
   useEffect(() => {
     if (!path) return
@@ -141,7 +145,14 @@ export default function TypePage() {
 
   return (
     <div className={`typepage-layout typepage-layout--${part.id}`} data-part-id={part.id}>
-      <article className="typepage" ref={articleRef} data-part-id={part.id} data-lesson-slug={type.slug}>
+      <article
+        className="typepage"
+        ref={articleRef}
+        data-part-id={part.id}
+        data-lesson-slug={type.slug}
+        data-demo-standard={demoStandard}
+        data-demo-intensity={demoStandard ? 'enhanced' : undefined}
+      >
         <AnimatedContent>
           <header className="typehead">
             <div className="typehead__canvas">

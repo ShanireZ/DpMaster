@@ -1,8 +1,8 @@
 import { useMemo, useState } from 'react'
 import { M } from '../../ui/Math'
 import { SafeCaption } from '../../dp-engine/SafeCaption'
-import { PlaybackControls } from '../../dp-engine/playback/PlaybackControls'
 import { useStepPlayer } from '../../dp-engine/playback/useStepPlayer'
+import { InstrumentRail, VizStateKey } from '../shared'
 import { buildTree, layoutTree, rerootDistSum, rerootFrames, bruteDistSum } from './rerootSolver'
 import type { Edge } from './rerootSolver'
 import { TreeCanvas } from './TreeCanvas'
@@ -161,7 +161,11 @@ export default function RerootTwoPassDemo() {
       </div>
 
       <div className="rr__phase-row">{phasePill}</div>
-      <PlaybackControls player={player} variant="compact" label="换根 DP 两遍扫描逐帧播放" />
+      <InstrumentRail
+        player={player}
+        label="换根 DP 两遍扫描逐帧播放"
+        secondary={<VizStateKey />}
+      />
 
       <div className="rr__stage">
         <TreeCanvas
