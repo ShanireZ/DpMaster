@@ -1,7 +1,7 @@
 # DP大师 A–G 正文图版与 Demo 统一改造计划
 
 > Task：B  
-> 状态：Task A 已完成，等待 Task B 审计与视觉评审  
+> 状态：Task A 已完成；Task B 标本场已验证，等待第一轮视觉拍板  
 > 范围：A–G 共 37 门课程的正文图版、Demo 表达系统与 B 类课程路径箭头  
 > Git：全部门禁通过后创建一个本地 commit；不 push、不部署
 
@@ -36,11 +36,11 @@
 
 ## 实施清单
 
-- [ ] 将 C–G 审计升级为 A–G 审计，逐课记录图版、Demo、工具条、状态、滚动、移动端和主题问题。
-- [ ] 删除 B 类独立绝对定位箭头层，恢复 7 个卡内 CTA 箭头与一致的 hover/focus/选中动效。
-- [ ] 建立 `DemoWorkbench`、`InstrumentRail`、`DemoTableViewport`、`DemoDetailSwitch` 与 `VizStateRole`。
-- [ ] 生成标本场的深色、浅色、移动端和关键状态对比示意图。
-- [ ] 建立不进入导航、排除 sitemap 且 `noindex` 的交互式标准标本场。
+- [x] 将 C–G 审计升级为 A–G 审计，逐课记录图版、Demo、工具条、状态、滚动、移动端和主题问题。
+- [x] 删除 B 类独立绝对定位箭头层，恢复 7 个卡内 CTA 箭头与一致的 hover/focus/选中动效。
+- [x] 建立 `DemoWorkbench`、`InstrumentRail`、`DemoTableViewport`、`DemoDetailSwitch` 与 `VizStateRole`。
+- [x] 生成标本场的深色、浅色、移动端和关键状态对比示意图。
+- [x] 建立不进入导航、排除 sitemap 且 `noindex` 的交互式标准标本场。
 - [ ] 通过无倒计时弹窗评审标本场。
 - [ ] 实装代表课程：A `01/dep`、B `lcs/fsm`、C `stone/ring`、D `grid/matpow`、E `basic/distsum`、F `knapsack/cover`、G `board/plug`。
 - [ ] 生成代表课程实现对比图，并通过第二次无倒计时弹窗评审。

@@ -5,7 +5,7 @@ import { JSDOM } from 'jsdom'
 import { getSiteConfig } from '../src/config/site.ts'
 import { generateDiscoveryFiles } from '../src/lib/discovery.ts'
 import { getPageMeta } from '../src/lib/pageMeta.ts'
-import { PUBLIC_PATHS } from '../src/lib/publicRoutes.ts'
+import { PRERENDER_PATHS } from '../src/lib/publicRoutes.ts'
 import { renderRouteHead, replaceRouteHead } from '../src/lib/seoHead.ts'
 import { renderRouteAssetLinks } from './route-assets.mjs'
 
@@ -113,7 +113,7 @@ export async function prerenderRegion(region, outDir, serverEntry) {
     `${pathToFileURL(serverEntry).href}?region=${region}&time=${Date.now()}`
   )
 
-  for (const path of PUBLIC_PATHS) {
+  for (const path of PRERENDER_PATHS) {
     const page = getPageMeta(path, site)
     const markup = settleSuspenseMarkup(await renderRoute(path))
     writeRouteVariants(
@@ -148,7 +148,7 @@ export async function prerenderRegion(region, outDir, serverEntry) {
   }
   rmSync(join(outDir, '.vite'), { recursive: true, force: true })
   console.log(
-    `[prerender] ${region}: ${PUBLIC_PATHS.length} routes hydrated + real 404 + discovery files`,
+    `[prerender] ${region}: ${PRERENDER_PATHS.length} routes hydrated + real 404 + discovery files`,
   )
 }
 

@@ -20,7 +20,7 @@ This directory is the canonical, current-truth OKF bundle for DP大师. It conta
 
 * [Visual System](/design/visual-system.md) - Warm Ink tokens, accessibility, motion rules, superseded palette notes.
 * [Family Visual Standard](/concepts/family-visual-standard.md) - A-G family hero, journey, and lesson-plate contract.
-* [Body Visualization Audit](/concepts/cg-body-demo-audit.md) - current draft audit feeding the A-G lesson-body standardization task.
+* [Body Visualization Audit](/concepts/body-demo-audit.md) - current A-G figure and Demo inventory feeding the lesson-body standardization task.
 * [A Backpack](/concepts/a-backpack/README.md), [B Linear](/concepts/b-linear/README.md), [C Interval](/concepts/c-interval/README.md), [D Matrix](/concepts/d-matrix/README.md), [E Reroot](/concepts/e-reroot/README.md), [F Tree](/concepts/f-tree/README.md), and [G Bitmask](/concepts/g-bitmask/README.md) - family-specific visual grammars.
 
 # Engineering

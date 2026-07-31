@@ -12,8 +12,21 @@ export const PUBLIC_PATHS = Object.freeze([
   '/problems',
 ])
 
+export const INTERNAL_PATHS = Object.freeze([
+  '/lab/body-demo-standard',
+])
+
+export const PRERENDER_PATHS = Object.freeze([
+  ...PUBLIC_PATHS,
+  ...INTERNAL_PATHS,
+])
+
 if (new Set(PUBLIC_PATHS).size !== PUBLIC_PATHS.length) {
   throw new Error('Public route list contains duplicates')
+}
+
+if (new Set(PRERENDER_PATHS).size !== PRERENDER_PATHS.length) {
+  throw new Error('Prerender route list contains duplicates')
 }
 
 export function isPublicPath(pathname: string): boolean {

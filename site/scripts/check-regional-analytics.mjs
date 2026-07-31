@@ -1,7 +1,7 @@
 import { readFileSync, readdirSync } from 'node:fs'
 import { extname, join, resolve } from 'node:path'
 import { fileURLToPath } from 'node:url'
-import { PUBLIC_PATHS } from '../src/lib/publicRoutes.ts'
+import { PRERENDER_PATHS } from '../src/lib/publicRoutes.ts'
 
 const beacon =
   '<!-- Cloudflare Web Analytics --><script type=\'module\' src=\'https://static.cloudflareinsights.com/beacon.min.js\' data-cf-beacon=\'{"token": "c113fb69d7e84d38a645c5160f6f1bda"}\'></script><!-- End Cloudflare Web Analytics -->'
@@ -26,7 +26,7 @@ export function checkRegionalAnalytics({
 } = {}) {
   const cloudflareHtml = htmlFilesUnder(cloudflareDir)
   const edgeOneHtml = htmlFilesUnder(edgeOneDir)
-  const expectedHtmlFiles = 1 + (PUBLIC_PATHS.length - 1) * 2 + 1
+  const expectedHtmlFiles = 1 + (PRERENDER_PATHS.length - 1) * 2 + 1
   const errors = []
 
   if (cloudflareHtml.length !== expectedHtmlFiles) {

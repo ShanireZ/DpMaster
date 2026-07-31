@@ -38,46 +38,53 @@ test('B category renders the high-fidelity polygon index sculpture and an integr
   ).evaluateAll((items) => items.map((item) => item.getBoundingClientRect().left))
   expect(secondRowOrder[0]).toBeGreaterThan(secondRowOrder[1])
   expect(secondRowOrder[1]).toBeGreaterThan(secondRowOrder[2])
-  await expect(page.locator('.partjourney--b .typepath__transition')).toHaveCount(6)
-  const arrowGeometry = await page.locator('.partjourney--b .typewaypoint').evaluateAll((items) => {
-    const boxes = items.map((item) => item.getBoundingClientRect())
-    const transitions = Array.from(
-      document.querySelectorAll<HTMLElement>('.partjourney--b .typepath__transition'),
-      (item) => item.getBoundingClientRect(),
-    )
-    const center = (box: DOMRect) => ({ x: (box.left + box.right) / 2, y: (box.top + box.bottom) / 2 })
+  await expect(page.locator('.partjourney--b .typepath__transition')).toHaveCount(0)
+  await expect(page.locator('.partjourney--b .typewaypoint__link .typewaypoint__arrow')).toHaveCount(7)
 
-    return {
-      firstRowBoundaryDeltas: [0, 1, 2].map((index) => {
-        const arrow = transitions[index]
-        return Math.abs(center(arrow).x - boxes[index].right)
-      }),
-      firstRowVerticalSpread: Math.max(...[0, 1, 2].map((index) => center(transitions[index]).y))
-        - Math.min(...[0, 1, 2].map((index) => center(transitions[index]).y)),
-      boundaryArrowWidths: [0, 1, 2, 4, 5].map((index) => transitions[index]?.width ?? 0),
-      foldArrow: transitions[3]
-        ? {
-            y: center(transitions[3]).y,
-            rowGapCenter: (boxes[3].bottom + boxes[4].top) / 2,
-            transform: getComputedStyle(document.querySelector<HTMLElement>('.typepath__transition--4')!).transform,
+  for (const viewport of [
+    { width: 1440, height: 900 },
+    { width: 820, height: 900 },
+    { width: 390, height: 844 },
+  ]) {
+    await page.setViewportSize(viewport)
+    const arrowGeometry = await page
+      .locator('.partjourney--b .typewaypoint__link')
+      .evaluateAll((links) =>
+        links.map((link) => {
+          const linkBox = link.getBoundingClientRect()
+          const arrow = link.querySelector<HTMLElement>('.typewaypoint__arrow')
+          const arrowBox = arrow?.getBoundingClientRect()
+          return {
+            contained: Boolean(
+              arrowBox &&
+              arrowBox.left >= linkBox.left &&
+              arrowBox.right <= linkBox.right &&
+              arrowBox.top >= linkBox.top &&
+              arrowBox.bottom <= linkBox.bottom
+            ),
+            display: arrow ? getComputedStyle(arrow).display : 'none',
           }
-        : undefined,
-      secondRowBoundaryDeltas: [4, 5].map((index) => {
-        const arrow = transitions[index]
-        return Math.abs(center(arrow).x - boxes[index].left)
-      }),
-      secondRowVerticalSpread: Math.abs(center(transitions[4]).y - center(transitions[5]).y),
-      nodeArrowDisplays: items.map((item) => getComputedStyle(item.querySelector<HTMLElement>('.typewaypoint__arrow')!).display),
-    }
-  })
-  expect(Math.max(...arrowGeometry.firstRowBoundaryDeltas)).toBeLessThanOrEqual(1)
-  expect(arrowGeometry.firstRowVerticalSpread).toBeLessThanOrEqual(1)
-  expect(Math.max(...arrowGeometry.secondRowBoundaryDeltas)).toBeLessThanOrEqual(1)
-  expect(arrowGeometry.secondRowVerticalSpread).toBeLessThanOrEqual(1)
-  expect(Math.min(...arrowGeometry.boundaryArrowWidths)).toBeGreaterThanOrEqual(19)
-  expect(Math.abs(arrowGeometry.foldArrow!.y - arrowGeometry.foldArrow!.rowGapCenter)).toBeLessThanOrEqual(2)
-  expect(arrowGeometry.foldArrow!.transform).not.toBe('none')
-  expect(arrowGeometry.nodeArrowDisplays).toEqual(Array(7).fill('none'))
+        }),
+      )
+    expect(arrowGeometry).toHaveLength(7)
+    expect(arrowGeometry.every(({ contained }) => contained)).toBe(true)
+    expect(arrowGeometry.every(({ display }) => display !== 'none')).toBe(true)
+  }
+
+  await page.setViewportSize({ width: 1440, height: 900 })
+  const firstLink = page.locator('.partjourney--b .typewaypoint__link').first()
+  const firstArrow = firstLink.locator('.typewaypoint__arrow')
+  const idleArrow = await firstArrow.evaluate((arrow) => ({
+    opacity: getComputedStyle(arrow).opacity,
+    transform: getComputedStyle(arrow).transform,
+  }))
+  await firstLink.hover()
+  await expect
+    .poll(() => firstArrow.evaluate((arrow) => Number(getComputedStyle(arrow).opacity)))
+    .toBeGreaterThan(Number(idleArrow.opacity))
+  await expect
+    .poll(() => firstArrow.evaluate((arrow) => getComputedStyle(arrow).transform))
+    .not.toBe(idleArrow.transform)
   expect(
     await page.evaluate(() => document.documentElement.scrollWidth <= document.documentElement.clientWidth + 1),
   ).toBe(true)
@@ -85,7 +92,6 @@ test('B category renders the high-fidelity polygon index sculpture and an integr
   await page.setViewportSize({ width: 390, height: 844 })
   await expect(page.locator('.partcover__family-art')).toBeVisible()
   await expect(page.locator('.partjourney--b .partjourney__art')).toBeHidden()
-  await expect(page.locator('.partjourney--b .typepath__transitions')).toBeHidden()
   expect(
     await page.evaluate(() => document.documentElement.scrollWidth <= document.documentElement.clientWidth + 1),
   ).toBe(true)
