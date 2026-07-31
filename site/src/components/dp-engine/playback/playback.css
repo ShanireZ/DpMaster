@@ -27,8 +27,8 @@
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  min-width: 40px;
-  height: 40px;
+  min-width: 44px;
+  height: 44px;
   padding: 0 10px;
   border: 1px solid var(--border);
   color: var(--text-1);
@@ -86,9 +86,9 @@
 }
 
 .playback__speed button {
-  min-width: 0;
+  min-width: 44px;
   width: auto;
-  height: 32px;
+  height: 44px;
   padding: 0 9px;
   border: 0;
   border-right: 1px solid var(--border);
@@ -110,16 +110,16 @@
 }
 
 .playback--compact button {
-  min-width: 36px;
-  height: 36px;
+  min-width: 44px;
+  height: 44px;
   padding: 0 8px;
   background: transparent;
 }
 
 .playback--compact .playback__speed button {
-  min-width: 0;
+  min-width: 44px;
   width: auto;
-  height: 30px;
+  height: 44px;
   padding: 0 7px;
 }
 

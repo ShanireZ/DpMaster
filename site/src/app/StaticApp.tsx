@@ -5,6 +5,7 @@ import PartPage from '../pages/PartPage'
 import TypePage from '../pages/TypePage'
 import MethodPage from '../pages/MethodPage'
 import ProblemsPage from '../pages/ProblemsPage'
+import BodyDemoStandardPage from '../pages/BodyDemoStandardPage'
 import { AppContent } from './AppContent.tsx'
 import type { RouteViews } from './routeViews.ts'
 import {
@@ -27,6 +28,7 @@ const STATIC_VIEWS: RouteViews = {
   NotFound,
   MethodPage,
   ProblemsPage,
+  BodyDemoStandardPage,
 }
 
 export function StaticApp({

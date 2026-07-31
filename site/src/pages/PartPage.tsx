@@ -131,18 +131,6 @@ export default function PartPage() {
                 )
               })}
             </ol>
-            {part.id === 'b' && (
-              <div className="typepath__transitions" aria-hidden="true">
-                {part.types.slice(0, -1).map((type, index) => (
-                  <span
-                    key={`${type.slug}-transition`}
-                    className={`typepath__transition typepath__transition--${index + 1}`}
-                  >
-                    <ArrowRight size={19} />
-                  </span>
-                ))}
-              </div>
-            )}
             <div className="partjourney__art" aria-hidden="true">
               <FamilyJourneyArt partId={part.id} />
             </div>

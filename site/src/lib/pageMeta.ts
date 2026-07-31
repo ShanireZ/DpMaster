@@ -49,6 +49,17 @@ const STATIC_META: Record<
   },
 }
 
+const INTERNAL_META: Record<
+  string,
+  { title: string; description: string; breadcrumb: string }
+> = {
+  '/lab/body-demo-standard': {
+    title: `正文算法仪器标本场 · ${BRAND.name}`,
+    description: 'DP大师内部正文图版与 Demo 共享组件评审场。',
+    breadcrumb: '正文算法仪器标本场',
+  },
+}
+
 export function normalizePathname(pathname: string): string {
   const path = (pathname.split(/[?#]/, 1)[0] || '/').replace(/\/{2,}/g, '/')
   return path.length > 1 ? path.replace(/\/$/, '') : '/'
@@ -143,6 +154,26 @@ export function getPageMeta(
       'website',
       { dateModified: lastModified },
     )
+  }
+
+  const internalMeta = INTERNAL_META[path]
+  if (internalMeta) {
+    return {
+      path,
+      title: internalMeta.title,
+      description: internalMeta.description,
+      summary: internalMeta.description,
+      canonical: null,
+      alternates: [],
+      ogType: 'website',
+      routeKind: 'static',
+      indexable: false,
+      breadcrumbs: [
+        { name: '首页', path: '/' },
+        { name: internalMeta.breadcrumb, path },
+      ],
+      teaches: [],
+    }
   }
 
   const familyMatch = path.match(/^\/part\/([^/]+)$/)

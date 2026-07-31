@@ -7,6 +7,7 @@ export interface RouteViews {
   NotFound: ComponentType
   MethodPage: ComponentType
   ProblemsPage: ComponentType
+  BodyDemoStandardPage: ComponentType
 }
 
 const PAGE_LOADERS = {
@@ -16,6 +17,7 @@ const PAGE_LOADERS = {
   NotFound: () => import('../pages/NotFound'),
   MethodPage: () => import('../pages/MethodPage'),
   ProblemsPage: () => import('../pages/ProblemsPage'),
+  BodyDemoStandardPage: () => import('../pages/BodyDemoStandardPage'),
 }
 
 function getRouteViewKey(pathname: string): keyof RouteViews {
@@ -29,6 +31,8 @@ function getRouteViewKey(pathname: string): keyof RouteViews {
           ? 'MethodPage'
           : pathname === '/problems'
             ? 'ProblemsPage'
+            : pathname === '/lab/body-demo-standard'
+              ? 'BodyDemoStandardPage'
             : 'NotFound'
 }
 
@@ -39,6 +43,7 @@ export const CLIENT_ROUTE_VIEWS: RouteViews = {
   NotFound: lazy(PAGE_LOADERS.NotFound),
   MethodPage: lazy(PAGE_LOADERS.MethodPage),
   ProblemsPage: lazy(PAGE_LOADERS.ProblemsPage),
+  BodyDemoStandardPage: lazy(PAGE_LOADERS.BodyDemoStandardPage),
 }
 
 export async function loadInitialRouteViews(pathname: string): Promise<RouteViews> {

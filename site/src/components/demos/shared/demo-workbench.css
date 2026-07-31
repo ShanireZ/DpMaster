@@ -1,5 +1,4 @@
-/* Shared editable-demo controls. Keep legacy demo-control__/demo-contrast__ selectors until each
-   family can migrate markup without coupling its algorithms to a visual rename. */
+/* Shared editable-demo controls used while each lesson moves into the standard instrument shell. */
 .demo-control__toolbar {
   display: flex;
   flex-wrap: wrap;

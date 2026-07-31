@@ -4,7 +4,11 @@ import test from 'node:test'
 import { SITE_CONFIGS, SITE_ORIGIN } from '../src/config/site.ts'
 import { PARTS } from '../src/data/catalog.ts'
 import { getPageMeta } from '../src/lib/pageMeta.ts'
-import { PUBLIC_PATHS } from '../src/lib/publicRoutes.ts'
+import {
+  INTERNAL_PATHS,
+  PRERENDER_PATHS,
+  PUBLIC_PATHS,
+} from '../src/lib/publicRoutes.ts'
 
 const siteRoot = new URL('../', import.meta.url)
 
@@ -20,6 +24,16 @@ test('the 47-route catalog is the single public-route contract', () => {
     PARTS.flatMap((part) => part.types.filter((type) => type.status === 'ready')).length,
     37,
   )
+})
+
+test('the internal specimen is prerendered but excluded from public discovery', () => {
+  assert.deepEqual(INTERNAL_PATHS, ['/lab/body-demo-standard'])
+  assert.equal(PRERENDER_PATHS.length, 48)
+  assert.equal(PUBLIC_PATHS.includes(INTERNAL_PATHS[0]), false)
+  const meta = getPageMeta(INTERNAL_PATHS[0], SITE_CONFIGS.international)
+  assert.equal(meta.indexable, false)
+  assert.equal(meta.canonical, null)
+  assert.deepEqual(meta.alternates, [])
 })
 
 test('both regions use host-aware canonical and equivalent hreflang alternates', () => {
@@ -204,7 +218,7 @@ test('build contracts provide two region outputs, SSR prerendering, hydration, a
 
   assert.match(regions, /dist\/cloudflare/)
   assert.match(regions, /dist\/edgeone/)
-  assert.match(prerender, /PUBLIC_PATHS/)
+  assert.match(prerender, /PRERENDER_PATHS/)
   assert.match(prerender, /404\.html/)
   assert.match(prerender, /renderRouteHead/)
   assert.match(prerender, /renderStaticWebAnalytics/)
