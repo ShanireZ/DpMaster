@@ -1,7 +1,7 @@
 import type { CSSProperties } from 'react'
 import { AnimatePresence, motion, useReducedMotion } from 'motion/react'
 import { NavLink, useMatch } from 'react-router-dom'
-import { Info, BookOpen, Library } from 'lucide-react'
+import { BookOpen, Library } from 'lucide-react'
 import { PARTS } from '../../data/catalog'
 import { BRAND } from '../../config/site.ts'
 
@@ -113,20 +113,6 @@ export default function Sidebar({ onNavigate }: { onNavigate?: () => void }) {
             <Library size={15} />
           </span>
           <span className="nav-part__title">题目索引</span>
-        </NavLink>
-        <NavLink
-          to="/about"
-          className={({ isActive }) => `nav-part${isActive ? ' active' : ''}`}
-          onClick={onNavigate}
-          title="关于 · 如何使用"
-        >
-          <span
-            className="nav-part__badge"
-            style={{ ['--nav-family']: 'var(--accent-1)' } as CSSProperties}
-          >
-            <Info size={15} />
-          </span>
-          <span className="nav-part__title">关于 · 如何使用</span>
         </NavLink>
       </nav>
 

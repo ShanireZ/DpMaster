@@ -5,7 +5,6 @@ export interface RouteViews {
   PartPage: ComponentType
   TypePage: ComponentType
   NotFound: ComponentType
-  AboutPage: ComponentType
   MethodPage: ComponentType
   ProblemsPage: ComponentType
 }
@@ -15,7 +14,6 @@ const PAGE_LOADERS = {
   PartPage: () => import('../pages/PartPage'),
   TypePage: () => import('../pages/TypePage'),
   NotFound: () => import('../pages/NotFound'),
-  AboutPage: () => import('../pages/AboutPage'),
   MethodPage: () => import('../pages/MethodPage'),
   ProblemsPage: () => import('../pages/ProblemsPage'),
 }
@@ -31,9 +29,7 @@ function getRouteViewKey(pathname: string): keyof RouteViews {
           ? 'MethodPage'
           : pathname === '/problems'
             ? 'ProblemsPage'
-            : pathname === '/about'
-              ? 'AboutPage'
-              : 'NotFound'
+            : 'NotFound'
 }
 
 export const CLIENT_ROUTE_VIEWS: RouteViews = {
@@ -41,7 +37,6 @@ export const CLIENT_ROUTE_VIEWS: RouteViews = {
   PartPage: lazy(PAGE_LOADERS.PartPage),
   TypePage: lazy(PAGE_LOADERS.TypePage),
   NotFound: lazy(PAGE_LOADERS.NotFound),
-  AboutPage: lazy(PAGE_LOADERS.AboutPage),
   MethodPage: lazy(PAGE_LOADERS.MethodPage),
   ProblemsPage: lazy(PAGE_LOADERS.ProblemsPage),
 }

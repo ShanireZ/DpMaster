@@ -110,6 +110,69 @@ test('C–G lessons use 21 distinct accessible poly atlas plates', async ({ page
   expect([...cellsByFamily.values()].reduce((sum, cells) => sum + cells.size, 0)).toBe(21)
 })
 
+test('C–G lesson titles and plates stay intact across the desktop-to-mobile boundary', async ({ page }) => {
+  test.setTimeout(90_000)
+  const viewports = [
+    { width: 1024, height: 900, mode: 'desktop' },
+    { width: 821, height: 900, mode: 'desktop' },
+    { width: 820, height: 900, mode: 'mobile' },
+  ] as const
+
+  for (const viewport of viewports) {
+    await page.setViewportSize(viewport)
+
+    for (const [family, slugs] of Object.entries(families)) {
+      for (const slug of slugs) {
+        const route = `${family}/${slug} at ${viewport.width}x${viewport.height}`
+        await page.goto(`/part/${family}/${slug}`)
+        await expect(page.locator('.poly-lesson-plate__atlas')).toHaveJSProperty('complete', true)
+
+        const layout = await page.locator('.typepage').evaluate((root) => {
+          const title = root.querySelector<HTMLElement>('.typehead h1')!
+          const copy = root.querySelector<HTMLElement>('.typehead__copy')!
+          const art = root.querySelector<HTMLElement>('.typehead__art')!
+          const plate = root.querySelector<HTMLElement>('.poly-lesson-plate')!
+          const titleBox = title.getBoundingClientRect()
+          const copyBox = copy.getBoundingClientRect()
+          const artBox = art.getBoundingClientRect()
+          const plateBox = plate.getBoundingClientRect()
+          const titleStyle = getComputedStyle(title)
+
+          return {
+            titleLineCount: titleBox.height / Number.parseFloat(titleStyle.lineHeight),
+            titleFontSize: Number.parseFloat(titleStyle.fontSize),
+            titleRight: titleBox.right,
+            copyBottom: copyBox.bottom,
+            artLeft: artBox.left,
+            artTop: artBox.top,
+            artCenter: artBox.left + artBox.width / 2,
+            plateLeft: plateBox.left,
+            plateRight: plateBox.right,
+            plateWidth: plateBox.width,
+            plateCenter: plateBox.left + plateBox.width / 2,
+            clientWidth: document.documentElement.clientWidth,
+            scrollWidth: document.documentElement.scrollWidth,
+          }
+        })
+
+        expect(layout.titleLineCount, `${route}: title should stay on one line`).toBeLessThanOrEqual(1.05)
+        expect(layout.titleFontSize, `${route}: title should stay readable`).toBeGreaterThanOrEqual(31.5)
+        expect(layout.plateLeft, `${route}: plate should stay inside the viewport`).toBeGreaterThanOrEqual(-1)
+        expect(layout.plateRight, `${route}: plate should stay inside the viewport`).toBeLessThanOrEqual(layout.clientWidth + 1)
+        expect(Math.abs(layout.plateCenter - layout.artCenter), `${route}: plate should remain centered`).toBeLessThanOrEqual(2)
+        expect(layout.scrollWidth, `${route}: page should not overflow horizontally`).toBeLessThanOrEqual(layout.clientWidth + 1)
+
+        if (viewport.mode === 'desktop') {
+          expect(layout.titleRight, `${route}: title should not collide with the illustration`).toBeLessThanOrEqual(layout.artLeft + 1)
+        } else {
+          expect(layout.artTop, `${route}: illustration should follow the copy`).toBeGreaterThanOrEqual(layout.copyBottom - 1)
+          expect(layout.plateWidth, `${route}: illustration should remain legible`).toBeGreaterThanOrEqual(340)
+        }
+      }
+    }
+  }
+})
+
 test('C–G geometry and content remain stable between dark and light themes', async ({ page }) => {
   for (const family of Object.keys(families)) {
     await page.setViewportSize({ width: 1440, height: 900 })

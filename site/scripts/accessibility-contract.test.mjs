@@ -121,7 +121,6 @@ test('each route host owns exactly one page-level heading', async () => {
     'pages/TypePage.tsx',
     'pages/MethodPage.tsx',
     'pages/ProblemsPage.tsx',
-    'pages/AboutPage.tsx',
     'pages/NotFound.tsx',
   ]
   for (const path of pages) {

@@ -3,7 +3,6 @@ import { MemoryRouter } from 'react-router-dom'
 import Home from '../pages/Home'
 import PartPage from '../pages/PartPage'
 import TypePage from '../pages/TypePage'
-import AboutPage from '../pages/AboutPage'
 import MethodPage from '../pages/MethodPage'
 import ProblemsPage from '../pages/ProblemsPage'
 import { AppContent } from './AppContent.tsx'
@@ -26,7 +25,6 @@ const STATIC_VIEWS: RouteViews = {
   PartPage,
   TypePage,
   NotFound,
-  AboutPage,
   MethodPage,
   ProblemsPage,
 }

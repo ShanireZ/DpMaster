@@ -47,12 +47,6 @@ const STATIC_META: Record<
       '按 DP 家族、课程、难度和关键词检索教程中的例题与练习，快速定位对应的洛谷题目和学习路径。',
     breadcrumb: '题目索引',
   },
-  '/about': {
-    title: `关于 · ${BRAND.name}`,
-    description:
-      `了解${BRAND.name}的教学目标、使用方式、内容边界、开源说明与反馈渠道，更高效地使用交互式 DP 课程。`,
-    breadcrumb: '关于',
-  },
 }
 
 export function normalizePathname(pathname: string): string {
