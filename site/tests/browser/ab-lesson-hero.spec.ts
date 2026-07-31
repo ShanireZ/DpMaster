@@ -27,6 +27,9 @@ async function inspectHero(page: Page) {
     const [x, y, width, height] = plate.getAttribute('data-atlas-frame')!
       .split(' ')
       .map(Number)
+    const [clipX, clipY, clipWidth, clipHeight] = plate.getAttribute('data-atlas-clip')!
+      .split(' ')
+      .map(Number)
     const titleBox = title.getBoundingClientRect()
     const copyBox = copy.getBoundingClientRect()
     const artBox = art.getBoundingClientRect()
@@ -76,6 +79,22 @@ async function inspectHero(page: Page) {
           right: viewportBox.right - contentBox.right,
           bottom: viewportBox.bottom - contentBox.bottom,
         },
+        insetBalance: {
+          horizontal: Math.abs(
+            (contentBox.left - viewportBox.left)
+            - (viewportBox.right - contentBox.right),
+          ),
+          vertical: Math.abs(
+            (contentBox.top - viewportBox.top)
+            - (viewportBox.bottom - contentBox.bottom),
+          ),
+        },
+        clipSafety: {
+          left: x - clipX,
+          top: y - clipY,
+          right: clipX + clipWidth - x - width,
+          bottom: clipY + clipHeight - y - height,
+        },
         dominantOccupancy: Math.max(
           contentBox.width / viewportBox.width,
           contentBox.height / viewportBox.height,
@@ -120,6 +139,14 @@ test('all A and B lesson titles and plates fit at desktop and 390px mobile', asy
           Math.min(...Object.values(hero.framing.inset)),
           `${route}: illustration content should keep a safe inset`,
         ).toBeGreaterThanOrEqual(13.5)
+        expect(
+          Math.max(...Object.values(hero.framing.insetBalance)),
+          `${route}: visible content frame should be geometrically centered`,
+        ).toBeLessThanOrEqual(1)
+        expect(
+          Math.min(...Object.values(hero.framing.clipSafety)),
+          `${route}: atlas mask should not cut into the visible content frame`,
+        ).toBeGreaterThanOrEqual(0)
         expect(hero.framing.dominantOccupancy, `${route}: illustration should use the available frame`).toBeGreaterThanOrEqual(0.87)
         expect(hero.framing.dominantOccupancy, `${route}: illustration should not crowd the frame`).toBeLessThanOrEqual(0.89)
         expect(hero.plate.left, `${route}: plate should not be cut off on the left`).toBeGreaterThanOrEqual(-1)
