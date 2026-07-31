@@ -1,0 +1,7 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1600" height="1000" viewBox="0 0 1600 1000" role="img" aria-labelledby="title desc">
+  <title id="title">G 状压 DP 深色概念板</title><desc id="desc">玫瑰石英稀疏状态星座、轮廓线与五门课程图例。</desc>
+  <rect width="1600" height="1000" fill="#171411"/><text x="80" y="92" fill="#c0899a" font-family="sans-serif" font-size="18" letter-spacing="5">G · BITMASK DP</text>
+  <text x="80" y="174" fill="#f2e8dc" font-family="sans-serif" font-size="64" font-weight="600">稀疏状态星座</text><text x="80" y="220" fill="#b9aa9c" font-family="sans-serif" font-size="20">当前 mask · 合法邻边 · 移动轮廓</text>
+  <g fill="none" stroke="#c0899a" stroke-width="2"><path d="M120 430L330 330 560 420 620 640 390 730 150 650Z"/><path d="M120 430L560 420M330 330L620 640M150 650L560 420"/><path d="M100 560Q360 430 660 550" stroke="#82ab9f" stroke-dasharray="12 8"/></g>
+  <image href="../../../site/src/assets/family-art/bitmask-hero.webp" x="720" y="10" width="820" height="570" preserveAspectRatio="xMidYMid meet"/><image href="../../../site/src/assets/family-art/bitmask-lessons.webp" x="720" y="520" width="820" height="470" preserveAspectRatio="xMidYMid meet"/>
+</svg>

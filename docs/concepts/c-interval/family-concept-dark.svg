@@ -1,0 +1,15 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1600" height="1000" viewBox="0 0 1600 1000" role="img" aria-labelledby="title desc">
+  <title id="title">C 区间 DP 深色概念板</title>
+  <desc id="desc">陶土区间拱顶、嵌套端点路径与五门课程 poly 图例。</desc>
+  <rect width="1600" height="1000" fill="#171411"/>
+  <g stroke="#d2896a" stroke-opacity=".12"><path d="M0 100H1600M0 200H1600M0 300H1600M0 400H1600M0 500H1600M0 600H1600M0 700H1600M0 800H1600M0 900H1600"/></g>
+  <text x="80" y="92" fill="#d2896a" font-family="sans-serif" font-size="18" letter-spacing="5">C · INTERVAL DP</text>
+  <text x="80" y="174" fill="#f2e8dc" font-family="sans-serif" font-size="64" font-weight="600">区间拱顶</text>
+  <text x="80" y="220" fill="#b9aa9c" font-family="sans-serif" font-size="20">端点 · 嵌套 · 分割 · 收缩</text>
+  <g fill="none" stroke="#d2896a" stroke-width="3">
+    <path d="M100 670Q370 310 640 670"/><path d="M160 690Q370 430 580 690"/><path d="M230 710Q370 540 510 710"/>
+    <circle cx="100" cy="670" r="8" fill="#d2896a"/><circle cx="640" cy="670" r="8" fill="#d2896a"/>
+  </g>
+  <image href="../../../site/src/assets/family-art/interval-hero.webp" x="720" y="30" width="820" height="540" preserveAspectRatio="xMidYMid meet"/>
+  <image href="../../../site/src/assets/family-art/interval-lessons.webp" x="720" y="520" width="820" height="470" preserveAspectRatio="xMidYMid meet"/>
+</svg>

@@ -1,0 +1,100 @@
+.family-poly-hero {
+  position: relative;
+  z-index: 1;
+  display: block;
+  width: 100%;
+  height: auto;
+  object-fit: contain;
+  object-position: center;
+  user-select: none;
+  filter: drop-shadow(0 30px 64px color-mix(in srgb, var(--accent-1) 18%, transparent));
+}
+
+.cg-journey {
+  display: block;
+  width: 100%;
+  height: auto;
+  overflow: visible;
+  color: var(--accent-1);
+}
+
+.cg-journey :is(path, circle, polygon) {
+  vector-effect: non-scaling-stroke;
+}
+
+.cg-journey__construction {
+  fill: none;
+  opacity: 0.44;
+  stroke: color-mix(in srgb, var(--accent-1) 24%, var(--border));
+  stroke-width: 1;
+}
+
+.interval-journey__shells,
+.matrix-journey__planes,
+.reroot-journey__tree,
+.tree-journey__canopy,
+.bitmask-journey__space {
+  fill: color-mix(in srgb, var(--surface-2) 84%, transparent);
+  stroke: color-mix(in srgb, var(--accent-1) 68%, var(--text-2));
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  stroke-width: 1.45;
+}
+
+.cg-journey__accent,
+.reroot-journey__orbit,
+.bitmask-journey__contour {
+  fill: none;
+  stroke: var(--accent-1);
+  stroke-width: 2.4;
+}
+
+.cg-journey__accent-fill {
+  fill: var(--accent-1);
+  stroke: none;
+}
+
+.matrix-journey__planes {
+  fill: color-mix(in srgb, var(--accent-1) 6%, var(--surface-2));
+}
+
+.reroot-journey__tree .is-root-stop {
+  fill: color-mix(in srgb, var(--accent-1) 28%, var(--surface-2));
+  stroke-width: 2.4;
+}
+
+.reroot-journey__return {
+  fill: none;
+  stroke: color-mix(in srgb, var(--viz-source) 76%, var(--accent-1));
+  stroke-dasharray: 9 8;
+  stroke-width: 2;
+}
+
+.tree-journey__container {
+  fill: color-mix(in srgb, var(--accent-1) 5%, transparent);
+  stroke-dasharray: 7 7;
+}
+
+.tree-journey__canopy .cg-journey__accent {
+  stroke: color-mix(in srgb, var(--viz-chosen) 70%, var(--accent-1));
+}
+
+.bitmask-journey__space > path:not(.bitmask-journey__contour) {
+  opacity: 0.66;
+}
+
+.bitmask-journey__space .is-current polygon {
+  fill: color-mix(in srgb, var(--accent-1) 38%, var(--surface-2));
+  stroke-width: 2.6;
+}
+
+.bitmask-journey__contour {
+  stroke: color-mix(in srgb, var(--viz-source) 70%, var(--accent-1));
+  stroke-dasharray: 12 9;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .family-poly-hero {
+    filter: none;
+  }
+}

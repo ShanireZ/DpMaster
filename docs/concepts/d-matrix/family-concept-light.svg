@@ -1,0 +1,7 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1600" height="1000" viewBox="0 0 1600 1000" role="img" aria-labelledby="title desc">
+  <title id="title">D 矩阵 DP 浅色概念板</title><desc id="desc">同几何暖纸面矩阵折页方案。</desc>
+  <rect width="1600" height="1000" fill="#f5eee3"/><text x="80" y="92" fill="#4a5828" font-family="sans-serif" font-size="18" letter-spacing="5">D · MATRIX DP</text>
+  <text x="80" y="174" fill="#2d241d" font-family="sans-serif" font-size="64" font-weight="600">矩阵折页</text><text x="80" y="220" fill="#68594e" font-family="sans-serif" font-size="20">晶格 · 平面 · 变换 · 倍增</text>
+  <g fill="none" stroke="#4a5828" stroke-width="2"><path d="M90 440L330 380V690L90 750Z"/><path d="M430 380L670 440V750L430 690Z"/><path d="M340 560H420"/></g>
+  <image href="../../../site/src/assets/family-art/matrix-hero.webp" x="720" y="20" width="820" height="560" preserveAspectRatio="xMidYMid meet"/><image href="../../../site/src/assets/family-art/matrix-lessons.webp" x="720" y="530" width="820" height="460" preserveAspectRatio="xMidYMid meet"/>
+</svg>

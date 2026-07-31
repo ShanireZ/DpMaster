@@ -188,7 +188,7 @@ export const PROBLEMS: Problem[] = [
   { part: 'g', partTitle: '状压 DP', slug: 'subset', typeTitle: '综合技巧', pid: 'P2831', name: '[NOIP2016 提高组] 愤怒的小鸟', diff: '', kind: 'exercise', src: '' },
   { part: 'g', partTitle: '状压 DP', slug: 'subset', typeTitle: '综合技巧', pid: 'P2915', name: '[USACO08NOV] Mixed Up Cows G', diff: '', kind: 'exercise', src: '' },
   { part: 'g', partTitle: '状压 DP', slug: 'subset', typeTitle: '综合技巧', pid: 'P3959', name: '[NOIP2017 提高组] 宝藏', diff: '', kind: 'exercise', src: '' },
-  { part: 'g', partTitle: '状压 DP', slug: 'plug', typeTitle: '插头 DP（选修）', pid: 'P5056', name: '【模板】插头 DP', diff: '省选/NOI-', kind: 'example', src: '洛谷原生' },
-  { part: 'g', partTitle: '状压 DP', slug: 'plug', typeTitle: '插头 DP（选修）', pid: 'P5056', name: '【模板】插头 DP（反复精练）', diff: '', kind: 'exercise', src: '' },
-  { part: 'g', partTitle: '状压 DP', slug: 'plug', typeTitle: '插头 DP（选修）', pid: 'P2704', name: '[NOI2001] 炮兵阵地（对照回顾）', diff: '', kind: 'exercise', src: '' },
+  { part: 'g', partTitle: '状压 DP', slug: 'plug', typeTitle: '插头 DP', pid: 'P5056', name: '【模板】插头 DP', diff: '省选/NOI-', kind: 'example', src: '洛谷原生' },
+  { part: 'g', partTitle: '状压 DP', slug: 'plug', typeTitle: '插头 DP', pid: 'P5056', name: '【模板】插头 DP（反复精练）', diff: '', kind: 'exercise', src: '' },
+  { part: 'g', partTitle: '状压 DP', slug: 'plug', typeTitle: '插头 DP', pid: 'P2704', name: '[NOI2001] 炮兵阵地（对照回顾）', diff: '', kind: 'exercise', src: '' },
 ]

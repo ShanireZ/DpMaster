@@ -1,0 +1,7 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1600" height="1000" viewBox="0 0 1600 1000" role="img" aria-labelledby="title desc">
+  <title id="title">E 换根 DP 浅色概念板</title><desc id="desc">同几何暖纸面巡根轨道方案。</desc>
+  <rect width="1600" height="1000" fill="#f5eee3"/><text x="80" y="92" fill="#574278" font-family="sans-serif" font-size="18" letter-spacing="5">E · REROOT DP</text>
+  <text x="80" y="174" fill="#2d241d" font-family="sans-serif" font-size="64" font-weight="600">巡根轨道</text><text x="80" y="220" fill="#68594e" font-family="sans-serif" font-size="20">同一棵树 · 两次扫描 · 父侧回传</text>
+  <g fill="none" stroke="#574278" stroke-width="2"><path d="M370 360L230 510M370 360L510 510M230 510L150 660M230 510L300 660M510 510L440 660M510 510L590 660"/><ellipse cx="370" cy="520" rx="280" ry="220" stroke-dasharray="12 9"/></g>
+  <image href="../../../site/src/assets/family-art/reroot-hero.webp" x="720" y="10" width="820" height="570" preserveAspectRatio="xMidYMid meet"/><image href="../../../site/src/assets/family-art/reroot-lessons.webp" x="720" y="520" width="820" height="470" preserveAspectRatio="xMidYMid meet"/>
+</svg>

@@ -651,8 +651,8 @@
     {
       "path": "/part/g/plug",
       "url": "https://dp.betaoi.cc/part/g/plug",
-      "title": "插头 DP（选修） · 状压 DP · DP大师",
-      "summary": "插头 DP（选修）课程回答“轮廓线上的连通性怎样压缩为插头状态”。内容以轮廓线连通性为主线，配合逐步推导、可编辑演示、例题与练习形成可复查的学习闭环。",
+      "title": "插头 DP · 状压 DP · DP大师",
+      "summary": "插头 DP课程回答“轮廓线上的连通性怎样压缩为插头状态”。内容以轮廓线连通性为主线，配合逐步推导、可编辑演示、例题与练习形成可复查的学习闭环。",
       "type": "lesson",
       "lastModified": "2026-07-30",
       "reviewedBy": "AzureL蔚澜算法",

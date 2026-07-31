@@ -44,6 +44,31 @@ const FAMILY_ART = Object.fromEntries([
     'src/components/art/families/linear.tsx',
     () => import('./families/linear.tsx'),
   ),
+  familyArt(
+    'c',
+    'src/components/art/families/interval.tsx',
+    () => import('./families/interval.tsx'),
+  ),
+  familyArt(
+    'd',
+    'src/components/art/families/matrix.tsx',
+    () => import('./families/matrix.tsx'),
+  ),
+  familyArt(
+    'e',
+    'src/components/art/families/reroot.tsx',
+    () => import('./families/reroot.tsx'),
+  ),
+  familyArt(
+    'f',
+    'src/components/art/families/tree.tsx',
+    () => import('./families/tree.tsx'),
+  ),
+  familyArt(
+    'g',
+    'src/components/art/families/bitmask.tsx',
+    () => import('./families/bitmask.tsx'),
+  ),
 ]) as Partial<Record<PartId, FamilyArtRegistration>>
 
 function lazyFamilyArt(registration: FamilyArtRegistration): ClientFamilyArtModule {

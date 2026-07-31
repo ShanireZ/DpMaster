@@ -130,7 +130,7 @@ export const PARTS: Part[] = [
       { slug: 'tsp', title: '集合状压 / TSP', blurb: '最短 Hamilton·吃奶酪', status: 'ready', ...lessonContent('../content/g/BitTSP.tsx', () => import('../content/g/BitTSP')) },
       { slug: 'cover', title: '状压 + 覆盖', blurb: '愤怒的小鸟·宝藏', status: 'ready', ...lessonContent('../content/g/BitCover.tsx', () => import('../content/g/BitCover')) },
       { slug: 'subset', title: '综合技巧', blurb: '枚举子集·计数变形', status: 'ready', ...lessonContent('../content/g/BitSubset.tsx', () => import('../content/g/BitSubset')) },
-      { slug: 'plug', title: '插头 DP（选修）', blurb: '轮廓线连通性', status: 'ready', ...lessonContent('../content/g/BitPlug.tsx', () => import('../content/g/BitPlug')) },
+      { slug: 'plug', title: '插头 DP', blurb: '轮廓线连通性', status: 'ready', ...lessonContent('../content/g/BitPlug.tsx', () => import('../content/g/BitPlug')) },
     ],
   },
 ]

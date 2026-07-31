@@ -45,11 +45,11 @@ const routes: RouteExpectation[] = [
   },
   {
     path: '/part/g/plug',
-    title: '插头 DP（选修） · 状压 DP · DP大师',
+    title: '插头 DP · 状压 DP · DP大师',
     description:
-      '插头 DP（选修）是DP大师「状压 DP」家族课程：轮廓线连通性。通过状态定义、转移推导、可编辑演示和配套题目掌握这一类 DP。',
+      '插头 DP是DP大师「状压 DP」家族课程：轮廓线连通性。通过状态定义、转移推导、可编辑演示和配套题目掌握这一类 DP。',
     ogType: 'article',
-    currentLabel: '插头 DP（选修）',
+    currentLabel: '插头 DP',
   },
 ]
 

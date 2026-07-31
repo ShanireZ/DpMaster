@@ -383,7 +383,7 @@ export function CentroidFigure() {
         )
       })}
       <text x="280" y="240" textAnchor="middle" fontSize="12" fill="var(--text-2)">
-        重心：以它为根时，最大的那棵子树的节点数<strong>最小</strong>（各方向最均衡）。用子树大小 sz[u] 判定。
+        重心：以它为根时，最大子树的节点数最小；各方向最均衡。
       </text>
     </svg>
   )

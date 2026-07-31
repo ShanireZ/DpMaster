@@ -1,0 +1,8 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="390" height="844" viewBox="0 0 390 844" role="img" aria-labelledby="title desc">
+  <title id="title">C 区间 DP 移动概念板</title><desc id="desc">完整端点主雕塑与单列课程路径。</desc>
+  <rect width="390" height="844" fill="#171411"/><text x="22" y="42" fill="#d2896a" font-family="sans-serif" font-size="12" letter-spacing="3">C · INTERVAL</text>
+  <image href="../../../site/src/assets/family-art/interval-hero.webp" x="4" y="54" width="382" height="255" preserveAspectRatio="xMidYMid meet"/>
+  <text x="22" y="342" fill="#f2e8dc" font-family="sans-serif" font-size="42">区间 DP</text>
+  <g fill="none" stroke="#d2896a" stroke-opacity=".7"><path d="M28 402H362M28 498H362M28 594H362M28 690H362M28 786H362"/></g>
+  <g fill="#f2e8dc" font-family="sans-serif" font-size="16"><text x="34" y="442">01  石子合并</text><text x="34" y="538">02  环形区间</text><text x="34" y="634">03  回文 / 括号</text><text x="34" y="730">04  加分二叉树型</text><text x="34" y="826">05  合并 / 删除类</text></g>
+</svg>
