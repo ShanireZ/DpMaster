@@ -3,8 +3,12 @@ import { MB } from '../ui/Math'
 import type { VizModel, CellState } from './types'
 import { key } from './types'
 import { SafeCaption } from './SafeCaption'
-import { PlaybackControls } from './playback/PlaybackControls'
 import { useStepPlayer } from './playback/useStepPlayer'
+import {
+  DemoTableViewport,
+  InstrumentRail,
+  VizStateKey,
+} from '../demos/shared'
 import './dp-viz.css'
 
 const stateClass: Record<CellState, string> = {
@@ -42,7 +46,11 @@ export default function DPViz({ model }: { model: VizModel }) {
 
   return (
     <div className="dpviz">
-      <div className="dpviz__scroll">
+      <DemoTableViewport
+        label="DP 状态表；使用方向键或滚动查看完整表格"
+        overviewLabel="DP 状态表横向位置"
+        className="dpviz__viewport"
+      >
         <div className="dpviz__grid" style={gridStyle}>
           {hasRowH && hasColH && (
             <div className="dp-corner" style={{ gridRow: 1, gridColumn: 1 }} />
@@ -127,7 +135,7 @@ export default function DPViz({ model }: { model: VizModel }) {
             })}
           </svg>
         </div>
-      </div>
+      </DemoTableViewport>
 
       <div className="dpviz__legend">
         <span><i style={{ borderColor: 'var(--viz-current)' }} /> 当前计算</span>
@@ -147,7 +155,11 @@ export default function DPViz({ model }: { model: VizModel }) {
         )}
       </div>
 
-      <PlaybackControls player={p} variant="full" label="DP 表格逐帧播放" />
+      <InstrumentRail
+        player={p}
+        label="DP 表格逐帧播放"
+        secondary={<VizStateKey />}
+      />
     </div>
   )
 }

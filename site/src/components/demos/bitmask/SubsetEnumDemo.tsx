@@ -1,6 +1,6 @@
 import { useMemo, useState } from 'react'
-import { PlaybackControls } from '../../dp-engine/playback/PlaybackControls'
 import { useStepPlayer } from '../../dp-engine/playback/useStepPlayer'
+import { InstrumentRail, VizStateKey } from '../shared'
 import { enumerateSubsets, toBits, popcount } from './subsetSolver'
 import '../shared/demo-workbench.css'
 import './bitmask-demo.css'
@@ -109,7 +109,11 @@ export default function SubsetEnumDemo() {
             </div>
           )}
 
-          <PlaybackControls player={p} variant="compact" label="子集枚举逐帧播放" />
+          <InstrumentRail
+            player={p}
+            label="子集枚举逐帧播放"
+            secondary={<VizStateKey />}
+          />
         </>
       )}
     </div>

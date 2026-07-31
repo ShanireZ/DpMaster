@@ -9,6 +9,7 @@ export interface InstrumentRailProps {
   secondaryLabel?: string
   secondary?: ReactNode
   defaultSecondaryOpen?: boolean
+  className?: string
 }
 
 export function InstrumentRail({
@@ -17,12 +18,13 @@ export function InstrumentRail({
   secondaryLabel = '参数与模式',
   secondary,
   defaultSecondaryOpen = false,
+  className = '',
 }: InstrumentRailProps) {
   const [secondaryOpen, setSecondaryOpen] = useState(defaultSecondaryOpen)
   const secondaryId = useId()
 
   return (
-    <div className="instrument-rail" aria-label={label}>
+    <div className={`instrument-rail${className ? ` ${className}` : ''}`} aria-label={label}>
       <div className="instrument-rail__primary">
         <PlaybackControls player={player} label={label} />
         {secondary && (

@@ -53,10 +53,10 @@
   align-items: flex-end;
   gap: var(--sp-4) var(--sp-6);
   margin-bottom: var(--sp-5);
-  padding: var(--sp-4);
-  border-radius: var(--r-2);
-  background: var(--surface-2);
-  border: 1px solid var(--border);
+  padding: var(--sp-4) 0;
+  border-top: 1px solid var(--border);
+  border-bottom: 1px solid var(--border);
+  background: transparent;
 }
 .mpw__group-label {
   font-size: 11px;
@@ -143,7 +143,11 @@
 
 /* 倍增 + 累乘轨迹 */
 .mpw__trace {
+  --mpw-spine: clamp(22px, 4vw, 42px);
+  position: relative;
   margin-bottom: var(--sp-5);
+  padding-left: var(--mpw-spine);
+  border-left: 1px solid color-mix(in srgb, var(--accent-1) 38%, var(--border));
 }
 .mpw__trace-head {
   display: flex;
@@ -171,19 +175,36 @@
   color: var(--text-3);
 }
 .mpw__step {
+  position: relative;
   display: flex;
   align-items: center;
   gap: var(--sp-3);
   flex-wrap: wrap;
-  padding: 10px var(--sp-3);
-  border-radius: var(--r-2);
-  margin-bottom: 8px;
-  background: var(--surface-2);
-  border: 1px solid var(--border);
+  padding: 14px var(--sp-3);
+  margin-bottom: 0;
+  border-bottom: 1px solid var(--border);
+  background: linear-gradient(90deg, color-mix(in srgb, var(--viz-source) 5%, transparent), transparent 62%);
 }
 .mpw__step.used {
-  border-color: var(--accent-2);
-  background: color-mix(in srgb, var(--accent-1) 7%, var(--surface-2));
+  border-color: color-mix(in srgb, var(--accent-1) 38%, var(--border));
+  background: linear-gradient(90deg, color-mix(in srgb, var(--accent-1) 12%, transparent), transparent 72%);
+  box-shadow: inset 2px 0 var(--accent-1);
+}
+.mpw__step::before {
+  position: absolute;
+  top: 50%;
+  left: calc(0px - var(--mpw-spine) - 5px);
+  width: 9px;
+  height: 9px;
+  border: 1px solid var(--viz-source);
+  background: var(--canvas);
+  content: '';
+  rotate: 45deg;
+  translate: 0 -50%;
+}
+.mpw__step.used::before {
+  border-color: var(--accent-1);
+  background: color-mix(in srgb, var(--accent-1) 28%, var(--canvas));
 }
 .mpw__step-bit {
   display: flex;
@@ -231,10 +252,10 @@
 /* 结果条 */
 .mpw__result {
   margin-bottom: var(--sp-5);
-  padding: var(--sp-4);
-  border-radius: var(--r-2);
-  background: color-mix(in srgb, var(--accent-1) 6%, var(--surface-2));
-  border: 1px solid var(--accent-2);
+  padding: var(--sp-5) 0;
+  border-top: 1px solid var(--accent-2);
+  border-bottom: 1px solid var(--accent-2);
+  background: linear-gradient(90deg, color-mix(in srgb, var(--accent-1) 9%, transparent), transparent 58%);
 }
 .mpw__result-mat {
   display: flex;
@@ -264,7 +285,10 @@
 .mpw__compare {
   display: grid;
   grid-template-columns: 1fr 1fr;
-  gap: var(--sp-4);
+  gap: 1px;
+  border-top: 1px solid var(--border);
+  border-bottom: 1px solid var(--border);
+  background: var(--border);
 }
 @media (max-width: 40rem) {
   .mpw__compare {
@@ -273,13 +297,13 @@
 }
 .mpw__card {
   padding: var(--sp-4);
-  border-radius: var(--r-2);
-  background: var(--surface-2);
-  border: 1px solid var(--border);
+  border: 0;
+  background: var(--canvas);
 }
 .mpw__card.win {
-  border-color: var(--accent-2);
-  background: color-mix(in srgb, var(--accent-1) 8%, var(--surface-2));
+  background:
+    linear-gradient(135deg, color-mix(in srgb, var(--accent-1) 13%, transparent), transparent 64%),
+    var(--canvas);
 }
 .mpw__card-head {
   display: flex;
@@ -319,10 +343,9 @@
   font-size: 14px;
   line-height: 1.55;
   color: var(--text-2);
-  padding: var(--sp-3) var(--sp-4);
-  border-radius: var(--r-2);
-  background: var(--surface-2);
-  border: 1px solid var(--border);
+  padding: var(--sp-4) 0;
+  border-bottom: 1px solid var(--border);
+  background: transparent;
 }
 .mpw__delta b {
   font-family: var(--font-mono);
@@ -345,10 +368,10 @@
   justify-content: space-between;
   gap: var(--sp-4) var(--sp-6);
   margin-bottom: var(--sp-5);
-  padding: var(--sp-4);
-  border-radius: var(--r-2);
-  background: var(--surface-2);
-  border: 1px solid var(--border);
+  padding: var(--sp-4) 0;
+  border-top: 1px solid var(--border);
+  border-bottom: 1px solid var(--border);
+  background: transparent;
 }
 .mbd__preset-row {
   display: flex;
@@ -405,12 +428,10 @@
   font-size: 12.5px;
   line-height: 1.6;
   color: var(--text-2);
-  padding: var(--sp-3) var(--sp-4);
+  padding: var(--sp-3) 0 var(--sp-3) var(--sp-4);
   margin-bottom: var(--sp-4);
-  border-radius: var(--r-2);
-  background: color-mix(in srgb, var(--accent-1) 5%, var(--surface-2));
-  border: 1px solid var(--border);
   border-left: 3px solid var(--accent-2);
+  background: linear-gradient(90deg, color-mix(in srgb, var(--accent-1) 7%, transparent), transparent 72%);
 }
 .mbd__convention b {
   color: var(--text-1);
@@ -430,9 +451,9 @@
   flex-wrap: wrap;
   padding: var(--sp-5) var(--sp-4);
   margin-bottom: var(--sp-4);
-  border-radius: var(--r-2);
-  background: var(--surface-1);
-  border: 1px solid var(--border);
+  border-top: 1px solid var(--border);
+  border-bottom: 1px solid var(--border);
+  background: linear-gradient(90deg, transparent, color-mix(in srgb, var(--accent-1) 6%, transparent), transparent);
 }
 .mbd__vec-cap {
   font-size: 11px;

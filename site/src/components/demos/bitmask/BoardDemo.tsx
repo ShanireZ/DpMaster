@@ -1,8 +1,8 @@
 import { useMemo, useState } from 'react'
 import { Minus, Plus, Sigma } from 'lucide-react'
 import { SafeCaption } from '../../dp-engine/SafeCaption'
-import { PlaybackControls } from '../../dp-engine/playback/PlaybackControls'
 import { useStepPlayer } from '../../dp-engine/playback/useStepPlayer'
+import { InstrumentRail, VizStateKey } from '../shared'
 import { layoutFrames } from './boardSolver'
 import { solveKingsBoard } from '../../../algorithms/bitmask-board/index.ts'
 import '../shared/demo-workbench.css'
@@ -139,7 +139,11 @@ export default function BoardDemo() {
 
           <SafeCaption html={frame?.caption ?? ''} className="bm__caption" />
 
-          <PlaybackControls player={p} variant="compact" label="棋盘布局逐帧播放" />
+          <InstrumentRail
+            player={p}
+            label="棋盘布局逐帧播放"
+            secondary={<VizStateKey />}
+          />
 
           <div className="bm__count-row">
             <button className="bm__count-btn" onClick={() => setShowCount((s) => !s)}>

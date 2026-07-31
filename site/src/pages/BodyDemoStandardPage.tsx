@@ -37,10 +37,22 @@ type ReviewChoice = {
   intensity: 'restrained' | 'enhanced' | 'quiet'
 }
 
+type RepresentativeReviewChoice = {
+  rollout: 'approve' | 'density' | 'rework'
+  intensity: 'enhanced' | 'stronger' | 'quieter'
+  mobile: 'approve' | 'density' | 'family'
+}
+
 const DEFAULT_REVIEW: ReviewChoice = {
   composition: 'spine',
   interaction: 'approve',
   intensity: 'restrained',
+}
+
+const DEFAULT_REPRESENTATIVE_REVIEW: RepresentativeReviewChoice = {
+  rollout: 'approve',
+  intensity: 'enhanced',
+  mobile: 'approve',
 }
 
 function IntervalSculpture({
@@ -201,7 +213,12 @@ export default function BodyDemoStandardPage() {
   const [family, setFamily] = useState<PartId>('c')
   const [review, setReview] = useState<ReviewChoice>(DEFAULT_REVIEW)
   const [reviewSaved, setReviewSaved] = useState(false)
+  const [representativeReview, setRepresentativeReview] = useState<RepresentativeReviewChoice>(
+    DEFAULT_REPRESENTATIVE_REVIEW,
+  )
+  const [representativeReviewSaved, setRepresentativeReviewSaved] = useState(false)
   const reviewDialog = useRef<HTMLDialogElement>(null)
+  const representativeReviewDialog = useRef<HTMLDialogElement>(null)
   const player = useStepPlayer(FRAMES.length)
   const frame = FRAMES[player.index] ?? FRAMES[0]
   const activeFamily = useMemo(
@@ -210,13 +227,24 @@ export default function BodyDemoStandardPage() {
   )
 
   useEffect(() => {
-    reviewDialog.current?.showModal()
+    const firstReviewSaved = localStorage.getItem('dpmaster:body-demo-review:v1')
+    const target = firstReviewSaved ? representativeReviewDialog.current : reviewDialog.current
+    if (target && !target.open) target.showModal()
   }, [])
 
   const saveReview = () => {
     localStorage.setItem('dpmaster:body-demo-review:v1', JSON.stringify(review))
     setReviewSaved(true)
     reviewDialog.current?.close()
+  }
+
+  const saveRepresentativeReview = () => {
+    localStorage.setItem(
+      'dpmaster:representative-demo-review:v1',
+      JSON.stringify(representativeReview),
+    )
+    setRepresentativeReviewSaved(true)
+    representativeReviewDialog.current?.close()
   }
 
   return (
@@ -300,6 +328,100 @@ export default function BodyDemoStandardPage() {
           <footer>
             <button type="button" onClick={() => reviewDialog.current?.close()}>继续查看标本</button>
             <button type="submit">保存本轮拍板</button>
+          </footer>
+        </form>
+      </dialog>
+
+      <dialog
+        ref={representativeReviewDialog}
+        className="standard-review"
+        aria-labelledby="representative-review-title"
+        onCancel={() => representativeReviewDialog.current?.close()}
+      >
+        <form method="dialog" onSubmit={saveRepresentativeReview}>
+          <header>
+            <span>Review gate 02 · no countdown</span>
+            <h2 id="representative-review-title">代表课程真实手感拍板</h2>
+            <p>
+              已实装 A–G 共 14 门代表课程，并为插头 DP 补齐正式可操作 Demo。
+              可从下方课程入口核对真实页面后再保存。
+            </p>
+            <nav className="standard-review__routes" aria-label="代表课程快速入口">
+              <a href="/part/a/01">A · 01</a>
+              <a href="/part/b/lcs">B · LCS</a>
+              <a href="/part/d/matpow">D · 矩阵幂</a>
+              <a href="/part/g/plug">G · 插头 DP</a>
+            </nav>
+          </header>
+
+          <fieldset>
+            <legend>01 / 推广判断</legend>
+            {([
+              ['approve', '确认推广', '推荐 · 将仪器骨架推广至全部 37 课'],
+              ['density', '先调信息密度', '保留方向，先调整标题、轨道或状态密度'],
+              ['rework', '重新设计', '暂停推广，回到代表课程重做'],
+            ] as const).map(([value, label, note]) => (
+              <label key={value}>
+                <input
+                  type="radio"
+                  name="rollout"
+                  value={value}
+                  checked={representativeReview.rollout === value}
+                  onChange={() => setRepresentativeReview((current) => ({ ...current, rollout: value }))}
+                />
+                <strong>{label}</strong>
+                <small>{note}</small>
+              </label>
+            ))}
+          </fieldset>
+
+          <fieldset>
+            <legend>02 / 增强演绎力度</legend>
+            {([
+              ['enhanced', '保持当前增强档', '推荐 · 亮边、矿材与完成态有存在感但不喧宾夺主'],
+              ['stronger', '继续增强', '提高完成态和材质响应强度'],
+              ['quieter', '适当收敛', '减少色场与动画对正文的竞争'],
+            ] as const).map(([value, label, note]) => (
+              <label key={value}>
+                <input
+                  type="radio"
+                  name="representative-intensity"
+                  value={value}
+                  checked={representativeReview.intensity === value}
+                  onChange={() => setRepresentativeReview((current) => ({ ...current, intensity: value }))}
+                />
+                <strong>{label}</strong>
+                <small>{note}</small>
+              </label>
+            ))}
+          </fieldset>
+
+          <fieldset>
+            <legend>03 / 移动端语义重排</legend>
+            {([
+              ['approve', '确认当前规则', '推荐 · 主状态脊常驻，表格、轨迹与解释原位切换'],
+              ['density', '降低移动密度', '保留语义结构，减少同屏辅助信息'],
+              ['family', '逐家族再审', '暂停全量推广，逐个家族确认移动构图'],
+            ] as const).map(([value, label, note]) => (
+              <label key={value}>
+                <input
+                  type="radio"
+                  name="mobile"
+                  value={value}
+                  checked={representativeReview.mobile === value}
+                  onChange={() => setRepresentativeReview((current) => ({ ...current, mobile: value }))}
+                />
+                <strong>{label}</strong>
+                <small>{note}</small>
+              </label>
+            ))}
+          </fieldset>
+
+          <footer>
+            <button type="button" onClick={() => representativeReviewDialog.current?.close()}>
+              继续查看课程
+            </button>
+            <button type="submit">保存第二轮拍板</button>
           </footer>
         </form>
       </dialog>
@@ -447,9 +569,22 @@ export default function BodyDemoStandardPage() {
       <footer className="body-standard-footer">
         <ChevronsRight aria-hidden="true" />
         <p>
-          {reviewSaved ? '本轮拍板已保存。' : '评审通过后，先落到 14 门代表课程，再进行第二次真实手感确认。'}
+          {representativeReviewSaved
+            ? '第二轮拍板已保存。'
+            : reviewSaved
+              ? '第一轮拍板已保存；14 门代表课程已进入真实手感评审。'
+              : '评审通过后，先落到 14 门代表课程，再进行第二次真实手感确认。'}
         </p>
-        <button type="button" onClick={() => reviewDialog.current?.showModal()}>打开评审弹窗</button>
+        <button
+          type="button"
+          onClick={() => {
+            const firstReviewSaved = localStorage.getItem('dpmaster:body-demo-review:v1')
+            const target = firstReviewSaved ? representativeReviewDialog.current : reviewDialog.current
+            if (target && !target.open) target.showModal()
+          }}
+        >
+          打开评审弹窗
+        </button>
       </footer>
     </div>
   )

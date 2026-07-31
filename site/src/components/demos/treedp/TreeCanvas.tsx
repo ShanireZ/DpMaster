@@ -1,6 +1,6 @@
-import { PlaybackControls } from '../../dp-engine/playback/PlaybackControls'
 import { SafeCaption } from '../../dp-engine/SafeCaption'
 import type { StepPlayer } from '../../dp-engine/playback/types'
+import { InstrumentRail, VizStateKey } from '../shared'
 import type { TreeLayout } from './treedpSolver'
 
 // —— 一个节点的视觉描述（由各演示按当前帧算出） ——
@@ -108,7 +108,14 @@ export function TreeCanvas({
 
 // —— 逐帧播放控制条（后序动画共用） ——
 export function StepBar({ player }: { player: StepPlayer }) {
-  return <PlaybackControls player={player} variant="compact" label="树形 DP 逐帧播放" className="td__playback" />
+  return (
+    <InstrumentRail
+      player={player}
+      label="树形 DP 逐帧播放"
+      className="td__playback"
+      secondary={<VizStateKey />}
+    />
+  )
 }
 
 export function Legend({ items }: { items: { color: string; label: string; bg?: boolean }[] }) {

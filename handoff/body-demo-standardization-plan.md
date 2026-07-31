@@ -1,9 +1,9 @@
 # DP大师 A–G 正文图版与 Demo 统一改造计划
 
 > Task：B  
-> 状态：Task A 已完成；Task B 标本场已验证，等待第一轮视觉拍板  
+> 状态：Task A 已完成；Task B 的 14 门代表课程已验证，等待第二轮真实手感拍板
 > 范围：A–G 共 37 门课程的正文图版、Demo 表达系统与 B 类课程路径箭头  
-> Git：全部门禁通过后创建一个本地 commit；不 push、不部署
+> Git：已推送检查点为 `d143b85`；当前代表课程改动未提交，后续完成后创建聚焦本地 commit；不 push、不部署
 
 ## 工程前置
 
@@ -41,10 +41,12 @@
 - [x] 建立 `DemoWorkbench`、`InstrumentRail`、`DemoTableViewport`、`DemoDetailSwitch` 与 `VizStateRole`。
 - [x] 生成标本场的深色、浅色、移动端和关键状态对比示意图。
 - [x] 建立不进入导航、排除 sitemap 且 `noindex` 的交互式标准标本场。
-- [ ] 通过无倒计时弹窗评审标本场。
-- [ ] 实装代表课程：A `01/dep`、B `lcs/fsm`、C `stone/ring`、D `grid/matpow`、E `basic/distsum`、F `knapsack/cover`、G `board/plug`。
-- [ ] 生成代表课程实现对比图，并通过第二次无倒计时弹窗评审。
-- [ ] 推广到全部 37 门课程，并补齐正式插头 DP Demo。
+- [x] 通过无倒计时弹窗评审标本场：纵向仪表脊、整体确认、增强演绎档。
+- [x] 实装代表课程：A `01/dep`、B `lcs/fsm`、C `stone/ring`、D `grid/matpow`、E `basic/distsum`、F `knapsack/cover`、G `board/plug`。
+- [x] 生成代表课程实现对比图，并建立第二次无倒计时评审弹窗。
+- [ ] 通过第二次无倒计时弹窗评审代表课程真实手感。
+- [x] 为插头 DP 补齐正式可操作 Demo 和独立移动端语义重排。
+- [ ] 将已确认的视觉壳层推广到全部 37 门课程。
 - [ ] 更新 A–G 审计、正文 Demo 标准、家族概念和本 handoff。
 - [ ] 完成 Chromium 全量、Firefox/WebKit 冒烟、多主题多视口和资源预算验证。
 - [ ] 运行完整 `pnpm verify`、视觉对照检查和 `git diff --check`。

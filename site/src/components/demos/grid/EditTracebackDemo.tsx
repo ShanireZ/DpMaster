@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from 'react'
-import { PlaybackControls } from '../../dp-engine/playback/PlaybackControls'
 import { useStepPlayer } from '../../dp-engine/playback/useStepPlayer'
+import { InstrumentRail, VizStateKey } from '../shared'
 import { editTrace } from './editTrace'
 import type { Op, Step } from './editTrace'
 import '../shared/demo-workbench.css'
@@ -147,11 +147,11 @@ export default function EditTracebackDemo() {
         </span>
       </div>
 
-      <PlaybackControls
+      <InstrumentRail
         player={player}
-        variant="compact"
         label="编辑距离回溯逐帧播放"
         className="etb__ctl"
+        secondary={<VizStateKey />}
       />
 
       <div className="etb__delta">
