@@ -67,7 +67,7 @@ export function getPageMeta(pathname:string): PageMeta
 - `node scripts/generate-seo.mjs --check`
 - npm script: `check:seo`.
 
-- [ ] **Step 1: Test expected URL set**: home + 7 families + 37 lessons + method/problems/about = 48 unique URLs.
+- [ ] **Step 1: Test expected URL set**: home + 7 families + 37 lessons + method/problems = 47 unique URLs.
 - [ ] **Step 2: Verify RED**.
 - [ ] **Step 3: Implement deterministic XML/text generation from catalog** and check/write modes.
 - [ ] **Step 4: Add `check:seo` before tests in `verify` and `generate-seo --write` to prebuild**.

@@ -10,7 +10,6 @@ export const PUBLIC_PATHS = Object.freeze([
   ),
   '/method',
   '/problems',
-  '/about',
 ])
 
 if (new Set(PUBLIC_PATHS).size !== PUBLIC_PATHS.length) {

@@ -12,9 +12,9 @@ async function siteSource(path) {
   return readFile(new URL(path, siteRoot), 'utf8')
 }
 
-test('the 48-route catalog is the single public-route contract', () => {
-  assert.equal(PUBLIC_PATHS.length, 48)
-  assert.equal(new Set(PUBLIC_PATHS).size, 48)
+test('the 47-route catalog is the single public-route contract', () => {
+  assert.equal(PUBLIC_PATHS.length, 47)
+  assert.equal(new Set(PUBLIC_PATHS).size, 47)
   assert.equal(PARTS.length, 7)
   assert.equal(
     PARTS.flatMap((part) => part.types.filter((type) => type.status === 'ready')).length,
@@ -130,7 +130,7 @@ test('RouteMeta owns every dynamic SEO tag including JSON-LD and noindex', async
   assert.equal((appContent.match(/<RouteMeta \/>/g) || []).length, 1)
 })
 
-test('discovery files expose the 48 approved URLs and real summaries', async () => {
+test('discovery files expose the 47 approved URLs and real summaries', async () => {
   const [sitemap, robots, llms, routeSummaries, generator, publicRoutes, packageJson] =
     await Promise.all([
       siteSource('public/sitemap.xml'),
@@ -145,20 +145,20 @@ test('discovery files expose the 48 approved URLs and real summaries', async () 
   const actual = [...sitemap.matchAll(/<loc>([^<]+)<\/loc>/g)].map((match) => match[1])
 
   assert.deepEqual(actual, expected)
-  assert.equal((sitemap.match(/<xhtml:link /g) || []).length, 48 * 3)
+  assert.equal((sitemap.match(/<xhtml:link /g) || []).length, 47 * 3)
   assert.match(sitemap, /hreflang="zh-Hans"/)
   assert.match(sitemap, /hreflang="zh-CN"/)
   assert.match(sitemap, /hreflang="x-default"/)
   assert.match(robots, /User-agent:\s*\*/)
   assert.match(robots, /Allow:\s*\//)
   assert.match(robots, /Sitemap: https:\/\/dp\.betaoi\.cc\/sitemap\.xml/)
-  assert.equal(routeSummaries.routes.length, 48)
+  assert.equal(routeSummaries.routes.length, 47)
   assert.equal(routeSummaries.brand, 'DP大师')
   assert.ok(routeSummaries.routes.every((route) => /^\d{4}-\d{2}-\d{2}$/.test(route.lastModified)))
-  assert.equal((sitemap.match(/<lastmod>/g) || []).length, 48)
+  assert.equal((sitemap.match(/<lastmod>/g) || []).length, 47)
   assert.equal(
     (llms.match(/^- \[[^\]]+\]\(https:\/\/dp\.betaoi\.cc/gm) || []).length,
-    48,
+    47,
   )
   assert.match(llms, /## 可引用页面/)
   assert.match(generator, /\.\.\/src\/lib\/publicRoutes\.ts/)

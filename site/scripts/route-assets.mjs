@@ -12,7 +12,6 @@ const PAGE_MODULES = Object.freeze({
   lesson: 'src/pages/TypePage.tsx',
   method: 'src/pages/MethodPage.tsx',
   problems: 'src/pages/ProblemsPage.tsx',
-  about: 'src/pages/AboutPage.tsx',
   notFound: 'src/pages/NotFound.tsx',
 })
 
@@ -70,7 +69,6 @@ export function routeModuleIds(pathname) {
   if (pathname === '/') return [PAGE_MODULES.home]
   if (pathname === '/method') return [PAGE_MODULES.method]
   if (pathname === '/problems') return [PAGE_MODULES.problems]
-  if (pathname === '/about') return [PAGE_MODULES.about]
   if (pathname === '/__dp-not-found__') return [PAGE_MODULES.notFound]
   if (/^\/part\/[a-g]$/.test(pathname)) {
     return [PAGE_MODULES.family, familyArtModule(pathname)].filter(Boolean)

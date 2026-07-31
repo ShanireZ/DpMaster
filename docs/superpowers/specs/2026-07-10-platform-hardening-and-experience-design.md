@@ -193,7 +193,7 @@ Module 集中七个小游戏共同拥有的能力，具体题目规则、难度�
 - `canonical`
 - Open Graph title、description、URL、type 与 site name
 
-37 个课程使用固定标题格式：`课程名 · 家族名 · DP大师`。家族页、首页、方法论、题目索引和关于页有各自的稳定元信息。生产基址固定为 `https://dp.betaoi.cc`，兼容部署标识不改名。
+37 个课程使用固定标题格式：`课程名 · 家族名 · DP大师`。家族页、首页、方法论和题目索引有各自的稳定元信息。生产基址固定为 `https://dp.betaoi.cc`，兼容部署标识不改名。
 
 App 内只挂载一个路由 Meta Adapter；页面不手写重复标签。`index.html` 提供首页默认 meta、theme color 和 WebSite JSON-LD，保证脚本执行前也有合理首页信息。
 
@@ -204,7 +204,7 @@ App 内只挂载一个路由 Meta Adapter；页面不手写重复标签。`index
 - 首页；
 - 7 个家族页；
 - 37 个已完成课程页；
-- 方法论、题目索引和关于页。
+- 方法论和题目索引。
 
 生成检查验证 URL 唯一、生产域名一致、37 个课程齐全和 XML 基本合法。`check:seo` 纳入 `npm run verify`。
 

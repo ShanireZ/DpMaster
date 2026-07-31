@@ -224,6 +224,19 @@ test('unknown routes return the themed document with HTTP 404 and noindex', asyn
   ])
 })
 
+test('/about is absent from navigation and resolves through the removed-route 404', async ({ page }) => {
+  await page.goto('/')
+  await expect(page.locator('nav[aria-label="主导航"] a[href="/about"]')).toHaveCount(0)
+  await expect(page.getByText('关于 · 如何使用', { exact: true })).toHaveCount(0)
+
+  const response = await page.goto('/about')
+  expect(response).not.toBeNull()
+  expect(response?.status()).toBe(404)
+  await expect(page).toHaveTitle('页面未找到 · DP大师')
+  await expect(page.getByRole('heading', { level: 1 })).toHaveText('状态不可达 · 页面越界')
+  await expect(page.locator('meta[name="robots"]')).toHaveAttribute('content', 'noindex,nofollow')
+})
+
 test('client navigation refreshes the complete route contract', async ({ page }) => {
   const browserErrors = captureBrowserErrors(page)
   const home = routeByPath('/')

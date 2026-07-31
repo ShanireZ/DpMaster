@@ -30,7 +30,6 @@ export function AppContent({ views }: { views: RouteViews }) {
     PartPage: PartPageView,
     TypePage: TypePageView,
     NotFound: NotFoundView,
-    AboutPage: AboutPageView,
     MethodPage: MethodPageView,
     ProblemsPage: ProblemsPageView,
   } = views
@@ -48,7 +47,6 @@ export function AppContent({ views }: { views: RouteViews }) {
             <Route path="/part/:pid/:slug" element={<RouteView View={TypePageView} />} />
             <Route path="/method" element={<RouteView View={MethodPageView} />} />
             <Route path="/problems" element={<RouteView View={ProblemsPageView} />} />
-            <Route path="/about" element={<RouteView View={AboutPageView} />} />
             <Route path="*" element={<RouteView View={NotFoundView} />} />
           </Route>
         </Routes>
