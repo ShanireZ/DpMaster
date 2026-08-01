@@ -1,0 +1,120 @@
+.lcs-demo {
+  min-width: 0;
+  container-name: lcs-demo;
+  container-type: inline-size;
+}
+
+/* A static visual preface. It deliberately has no selectors tied to demo state. */
+.lcs-hero {
+  position: relative;
+  height: clamp(180px, 24vw, 320px);
+  margin: 0 0 var(--sp-4);
+  overflow: hidden;
+  border-block: 1px solid var(--border);
+  background:
+    radial-gradient(circle at 50% 48%, color-mix(in srgb, var(--accent-1) 10%, transparent), transparent 48%),
+    linear-gradient(90deg, color-mix(in srgb, var(--accent-1) 4%, transparent), transparent 38% 62%, color-mix(in srgb, var(--accent-1) 4%, transparent));
+}
+
+.lcs-hero::before {
+  position: absolute;
+  z-index: 1;
+  inset: 0;
+  background-image: linear-gradient(90deg, color-mix(in srgb, var(--text-3) 6%, transparent) 1px, transparent 1px);
+  background-size: 72px 100%;
+  content: '';
+  mask-image: linear-gradient(90deg, transparent 4%, #000 28%, #000 72%, transparent 96%);
+  pointer-events: none;
+}
+
+.lcs-hero img {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  padding: clamp(10px, 2vw, 24px);
+  object-fit: contain;
+  object-position: center;
+  filter: drop-shadow(0 15px 24px color-mix(in srgb, var(--accent-1) 12%, transparent));
+  user-select: none;
+}
+
+.lcs-demo .lcs-demo__strings {
+  align-items: start;
+  gap: var(--sp-5);
+}
+
+.lcs-demo .lcs-string-editor {
+  min-width: min(100%, 280px);
+  flex: 1 1 420px;
+}
+
+.lcs-demo .lcs-string-editor__items {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(min(100%, 132px), 132px));
+  gap: var(--sp-2);
+}
+
+.lcs-demo .lcs-char {
+  min-width: 0;
+  align-items: center;
+  padding: 48px 6px 8px;
+  scroll-margin-top: calc(var(--topbar-h) + var(--sp-3));
+}
+
+.lcs-demo .lcs-char .demo-control__remove {
+  top: 0;
+  right: 0;
+}
+
+.lcs-demo .lcs-char__picker {
+  display: grid;
+  width: 100%;
+  grid-template-columns: 44px minmax(24px, 1fr) 44px;
+  align-items: center;
+  gap: 2px;
+}
+
+.lcs-demo .lcs-char__cycle {
+  display: grid;
+  width: 44px;
+  height: 44px;
+  place-items: center;
+  border: 0;
+  color: var(--text-1);
+  background: color-mix(in srgb, var(--surface-2) 82%, transparent);
+  scroll-margin-top: calc(var(--topbar-h) + var(--sp-3));
+}
+
+.lcs-demo .lcs-char__cycle:hover {
+  color: var(--accent-2);
+  background: color-mix(in srgb, var(--accent-1) 8%, var(--surface-2));
+}
+
+.lcs-demo .lcs-char__value {
+  min-width: 0;
+  color: var(--accent-1);
+  font-size: 20px;
+  font-weight: 700;
+  text-align: center;
+}
+
+.lcs-demo .lcs-string-editor .demo-control__add {
+  min-width: 132px;
+  align-self: stretch;
+  justify-content: center;
+}
+
+@container lcs-demo (max-width: 420px) {
+  .lcs-hero {
+    height: 180px;
+  }
+
+  .lcs-hero img {
+    padding-inline: 8px;
+  }
+
+  .lcs-demo .lcs-demo__strings {
+    gap: var(--sp-4);
+  }
+}
