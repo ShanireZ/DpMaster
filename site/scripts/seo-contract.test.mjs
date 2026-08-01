@@ -145,13 +145,14 @@ test('RouteMeta owns every dynamic SEO tag including JSON-LD and noindex', async
 })
 
 test('discovery files expose the 47 approved URLs and real summaries', async () => {
-  const [sitemap, robots, llms, routeSummaries, generator, publicRoutes, packageJson] =
+  const [sitemap, robots, llms, routeSummaries, generator, lastModified, publicRoutes, packageJson] =
     await Promise.all([
       siteSource('public/sitemap.xml'),
       siteSource('public/robots.txt'),
       siteSource('public/llms.txt'),
       siteSource('public/route-summaries.json').then(JSON.parse),
       siteSource('scripts/generate-seo.mjs'),
+      siteSource('scripts/last-modified.mjs'),
       siteSource('src/lib/publicRoutes.ts'),
       siteSource('package.json').then(JSON.parse),
     ])
@@ -178,6 +179,10 @@ test('discovery files expose the 47 approved URLs and real summaries', async () 
   assert.match(generator, /\.\.\/src\/lib\/publicRoutes\.ts/)
   assert.match(generator, /generateDiscoveryFiles/)
   assert.match(generator, /collectRouteLastModified/)
+  assert.match(lastModified, /gitNames\(\['diff', '--name-only', '-z', 'HEAD'/)
+  assert.match(lastModified, /gitNames\(\['ls-files', '--others', '--exclude-standard', '-z'/)
+  assert.match(lastModified, /files\.some\(\(file\) => dirtyFiles\.has\(file\)\)/)
+  assert.match(lastModified, /localDate\(\)/)
   assert.match(publicRoutes, /\.\.\/data\/catalog\.ts/)
   assert.equal(packageJson.scripts['check:seo'], 'node scripts/generate-seo.mjs --check')
   assert.match(packageJson.scripts.prebuild, /seo:generate/)

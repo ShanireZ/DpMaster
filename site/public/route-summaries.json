@@ -49,7 +49,7 @@
       "title": "区间 DP · DP大师",
       "summary": "区间 DP学习路径以“dp[l][r] 表示区间最优，枚举分割/合并点，按长度递推。”为主线，串联 5 门课程的状态模型、转移顺序、可视化验证与配套题目。",
       "type": "family",
-      "lastModified": "2026-07-31",
+      "lastModified": "2026-08-01",
       "alternates": {
         "zh-Hans": "https://dp.betaoi.cc/part/c",
         "zh-CN": "https://dp.betaoi.cn/part/c",
@@ -62,7 +62,7 @@
       "title": "矩阵 DP · DP大师",
       "summary": "矩阵 DP学习路径以“两条主线：网格坐标上的 DP，与矩阵快速幂加速的递推。”为主线，串联 2 门课程的状态模型、转移顺序、可视化验证与配套题目。",
       "type": "family",
-      "lastModified": "2026-07-31",
+      "lastModified": "2026-08-01",
       "alternates": {
         "zh-Hans": "https://dp.betaoi.cc/part/d",
         "zh-CN": "https://dp.betaoi.cn/part/d",
@@ -75,7 +75,7 @@
       "title": "换根 DP · DP大师",
       "summary": "换根 DP学习路径以“二次扫描：固定根一遍 DFS，再一遍换根 O(1) 推每个点。”为主线，串联 4 门课程的状态模型、转移顺序、可视化验证与配套题目。",
       "type": "family",
-      "lastModified": "2026-07-31",
+      "lastModified": "2026-08-01",
       "alternates": {
         "zh-Hans": "https://dp.betaoi.cc/part/e",
         "zh-CN": "https://dp.betaoi.cn/part/e",
@@ -88,7 +88,7 @@
       "title": "树形 DP · DP大师",
       "summary": "树形 DP学习路径以“dp[u][…] 表示子树最优，后序遍历自底向上合并。”为主线，串联 5 门课程的状态模型、转移顺序、可视化验证与配套题目。",
       "type": "family",
-      "lastModified": "2026-07-31",
+      "lastModified": "2026-08-01",
       "alternates": {
         "zh-Hans": "https://dp.betaoi.cc/part/f",
         "zh-CN": "https://dp.betaoi.cn/part/f",
@@ -101,7 +101,7 @@
       "title": "状压 DP · DP大师",
       "summary": "状压 DP学习路径以“状态是一个集合，用二进制整数表示；转移在 mask 间进行。”为主线，串联 5 门课程的状态模型、转移顺序、可视化验证与配套题目。",
       "type": "family",
-      "lastModified": "2026-07-31",
+      "lastModified": "2026-08-01",
       "alternates": {
         "zh-Hans": "https://dp.betaoi.cc/part/g",
         "zh-CN": "https://dp.betaoi.cn/part/g",
@@ -354,7 +354,7 @@
       "title": "石子合并（链形） · 区间 DP · DP大师",
       "summary": "石子合并（链形）课程回答“区间合并代价为何要按长度递增计算”。内容以区间合并基础模型为主线，配合逐步推导、可编辑演示、例题与练习形成可复查的学习闭环。",
       "type": "lesson",
-      "lastModified": "2026-07-31",
+      "lastModified": "2026-08-01",
       "reviewedBy": "AzureL蔚澜算法",
       "reviewStatus": "持续复核",
       "alternates": {
@@ -369,7 +369,7 @@
       "title": "环形区间 DP · 区间 DP · DP大师",
       "summary": "环形区间 DP课程回答“环形区间怎样通过复制序列转化为链形区间”。内容以断环为链·能量项链为主线，配合逐步推导、可编辑演示、例题与练习形成可复查的学习闭环。",
       "type": "lesson",
-      "lastModified": "2026-07-31",
+      "lastModified": "2026-08-01",
       "reviewedBy": "AzureL蔚澜算法",
       "reviewStatus": "持续复核",
       "alternates": {
@@ -384,7 +384,7 @@
       "title": "回文 / 括号 · 区间 DP · DP大师",
       "summary": "回文 / 括号课程回答“端点匹配如何组织回文与括号类转移”。内容以收缩扩展·端点匹配为主线，配合逐步推导、可编辑演示、例题与练习形成可复查的学习闭环。",
       "type": "lesson",
-      "lastModified": "2026-07-31",
+      "lastModified": "2026-08-01",
       "reviewedBy": "AzureL蔚澜算法",
       "reviewStatus": "持续复核",
       "alternates": {
@@ -399,7 +399,7 @@
       "title": "加分二叉树型 · 区间 DP · DP大师",
       "summary": "加分二叉树型课程回答“枚举区间根节点时，子区间如何对应左右子树”。内容以枚举根·区间即子树为主线，配合逐步推导、可编辑演示、例题与练习形成可复查的学习闭环。",
       "type": "lesson",
-      "lastModified": "2026-07-31",
+      "lastModified": "2026-08-01",
       "reviewedBy": "AzureL蔚澜算法",
       "reviewStatus": "持续复核",
       "alternates": {
@@ -414,7 +414,7 @@
       "title": "合并 / 删除类 · 区间 DP · DP大师",
       "summary": "合并 / 删除类课程回答“合并与删除过程怎样压缩成区间状态”。内容以2048·区间删除代价为主线，配合逐步推导、可编辑演示、例题与练习形成可复查的学习闭环。",
       "type": "lesson",
-      "lastModified": "2026-07-31",
+      "lastModified": "2026-08-01",
       "reviewedBy": "AzureL蔚澜算法",
       "reviewStatus": "持续复核",
       "alternates": {
@@ -429,7 +429,7 @@
       "title": "网格 / 矩阵上的 DP · 矩阵 DP · DP大师",
       "summary": "网格 / 矩阵上的 DP课程回答“网格路径、最大正方形和双路径如何选择状态维度”。内容以路径·最大正方形·双线程为主线，配合逐步推导、可编辑演示、例题与练习形成可复查的学习闭环。",
       "type": "lesson",
-      "lastModified": "2026-07-31",
+      "lastModified": "2026-08-01",
       "reviewedBy": "AzureL蔚澜算法",
       "reviewStatus": "持续复核",
       "alternates": {
@@ -444,7 +444,7 @@
       "title": "矩阵快速幂加速 · 矩阵 DP · DP大师",
       "summary": "矩阵快速幂加速课程回答“线性递推怎样写成矩阵并用快速幂加速”。内容以递推→矩阵幂·O(k³log n)为主线，配合逐步推导、可编辑演示、例题与练习形成可复查的学习闭环。",
       "type": "lesson",
-      "lastModified": "2026-07-31",
+      "lastModified": "2026-08-01",
       "reviewedBy": "AzureL蔚澜算法",
       "reviewStatus": "持续复核",
       "alternates": {
@@ -459,7 +459,7 @@
       "title": "换根基础模型 · 换根 DP · DP大师",
       "summary": "换根基础模型课程回答“一次定根结果如何在线性时间转移到所有根”。内容以二次扫描骨架为主线，配合逐步推导、可编辑演示、例题与练习形成可复查的学习闭环。",
       "type": "lesson",
-      "lastModified": "2026-07-31",
+      "lastModified": "2026-08-01",
       "reviewedBy": "AzureL蔚澜算法",
       "reviewStatus": "持续复核",
       "alternates": {
@@ -474,7 +474,7 @@
       "title": "距离和换根 · 换根 DP · DP大师",
       "summary": "距离和换根课程回答“换根时全树距离和为什么只需常数时间更新”。内容以深度和·带权距离和为主线，配合逐步推导、可编辑演示、例题与练习形成可复查的学习闭环。",
       "type": "lesson",
-      "lastModified": "2026-07-31",
+      "lastModified": "2026-08-01",
       "reviewedBy": "AzureL蔚澜算法",
       "reviewStatus": "持续复核",
       "alternates": {
@@ -489,7 +489,7 @@
       "title": "子树内外合并 · 换根 DP · DP大师",
       "summary": "子树内外合并课程回答“子树内外贡献如何在第二遍 DFS 中合并”。内容以距离≤k 点权和为主线，配合逐步推导、可编辑演示、例题与练习形成可复查的学习闭环。",
       "type": "lesson",
-      "lastModified": "2026-07-31",
+      "lastModified": "2026-08-01",
       "reviewedBy": "AzureL蔚澜算法",
       "reviewStatus": "持续复核",
       "alternates": {
@@ -504,7 +504,7 @@
       "title": "中心 / 偏心距 · 换根 DP · DP大师",
       "summary": "中心 / 偏心距课程回答“偏心距与树中心如何由向下和向上信息共同得到”。内容以树的直径·核为主线，配合逐步推导、可编辑演示、例题与练习形成可复查的学习闭环。",
       "type": "lesson",
-      "lastModified": "2026-07-31",
+      "lastModified": "2026-08-01",
       "reviewedBy": "AzureL蔚澜算法",
       "reviewStatus": "持续复核",
       "alternates": {
@@ -519,7 +519,7 @@
       "title": "选点 / 最大独立集 · 树形 DP · DP大师",
       "summary": "选点 / 最大独立集课程回答“父子不能同时选择时，选与不选状态如何配合”。内容以没有上司的舞会为主线，配合逐步推导、可编辑演示、例题与练习形成可复查的学习闭环。",
       "type": "lesson",
-      "lastModified": "2026-07-31",
+      "lastModified": "2026-08-01",
       "reviewedBy": "AzureL蔚澜算法",
       "reviewStatus": "持续复核",
       "alternates": {
@@ -534,7 +534,7 @@
       "title": "树上背包 · 树形 DP · DP大师",
       "summary": "树上背包课程回答“树上选取数量约束如何在子树间做背包合并”。内容以二叉苹果树·选课为主线，配合逐步推导、可编辑演示、例题与练习形成可复查的学习闭环。",
       "type": "lesson",
-      "lastModified": "2026-07-31",
+      "lastModified": "2026-08-01",
       "reviewedBy": "AzureL蔚澜算法",
       "reviewStatus": "持续复核",
       "alternates": {
@@ -549,7 +549,7 @@
       "title": "直径 / 重心 DP · 树形 DP · DP大师",
       "summary": "直径 / 重心 DP课程回答“过当前节点的多条链如何组合出直径与重心信息”。内容以过点最长链为主线，配合逐步推导、可编辑演示、例题与练习形成可复查的学习闭环。",
       "type": "lesson",
-      "lastModified": "2026-07-31",
+      "lastModified": "2026-08-01",
       "reviewedBy": "AzureL蔚澜算法",
       "reviewStatus": "持续复核",
       "alternates": {
@@ -564,7 +564,7 @@
       "title": "覆盖 / 支配 / 染色 · 树形 DP · DP大师",
       "summary": "覆盖 / 支配 / 染色课程回答“覆盖、支配和染色约束需要哪些互斥状态”。内容以三状态·染色计数为主线，配合逐步推导、可编辑演示、例题与练习形成可复查的学习闭环。",
       "type": "lesson",
-      "lastModified": "2026-07-31",
+      "lastModified": "2026-08-01",
       "reviewedBy": "AzureL蔚澜算法",
       "reviewStatus": "持续复核",
       "alternates": {
@@ -579,7 +579,7 @@
       "title": "方案数 / 距离统计 · 树形 DP · DP大师",
       "summary": "方案数 / 距离统计课程回答“树上方案数与距离统计如何在合并时避免重复”。内容以联合权值·括号树为主线，配合逐步推导、可编辑演示、例题与练习形成可复查的学习闭环。",
       "type": "lesson",
-      "lastModified": "2026-07-31",
+      "lastModified": "2026-08-01",
       "reviewedBy": "AzureL蔚澜算法",
       "reviewStatus": "持续复核",
       "alternates": {
@@ -594,7 +594,7 @@
       "title": "棋盘 / 轮廓状压 · 状压 DP · DP大师",
       "summary": "棋盘 / 轮廓状压课程回答“逐行棋盘约束怎样编码为兼容位掩码”。内容以互不侵犯·炮兵阵地为主线，配合逐步推导、可编辑演示、例题与练习形成可复查的学习闭环。",
       "type": "lesson",
-      "lastModified": "2026-07-31",
+      "lastModified": "2026-08-01",
       "reviewedBy": "AzureL蔚澜算法",
       "reviewStatus": "持续复核",
       "alternates": {
@@ -609,7 +609,7 @@
       "title": "集合状压 / TSP · 状压 DP · DP大师",
       "summary": "集合状压 / TSP课程回答“集合访问状态如何保证 Hamilton 路径不重不漏”。内容以最短 Hamilton·吃奶酪为主线，配合逐步推导、可编辑演示、例题与练习形成可复查的学习闭环。",
       "type": "lesson",
-      "lastModified": "2026-07-31",
+      "lastModified": "2026-08-01",
       "reviewedBy": "AzureL蔚澜算法",
       "reviewStatus": "持续复核",
       "alternates": {
@@ -624,7 +624,7 @@
       "title": "状压 + 覆盖 · 状压 DP · DP大师",
       "summary": "状压 + 覆盖课程回答“几何覆盖选择怎样预处理成可转移的状态集合”。内容以愤怒的小鸟·宝藏为主线，配合逐步推导、可编辑演示、例题与练习形成可复查的学习闭环。",
       "type": "lesson",
-      "lastModified": "2026-07-31",
+      "lastModified": "2026-08-01",
       "reviewedBy": "AzureL蔚澜算法",
       "reviewStatus": "持续复核",
       "alternates": {
@@ -639,7 +639,7 @@
       "title": "综合技巧 · 状压 DP · DP大师",
       "summary": "综合技巧课程回答“子集枚举与计数变形有哪些可复用的位运算技巧”。内容以枚举子集·计数变形为主线，配合逐步推导、可编辑演示、例题与练习形成可复查的学习闭环。",
       "type": "lesson",
-      "lastModified": "2026-07-31",
+      "lastModified": "2026-08-01",
       "reviewedBy": "AzureL蔚澜算法",
       "reviewStatus": "持续复核",
       "alternates": {
@@ -654,7 +654,7 @@
       "title": "插头 DP · 状压 DP · DP大师",
       "summary": "插头 DP课程回答“轮廓线上的连通性怎样压缩为插头状态”。内容以轮廓线连通性为主线，配合逐步推导、可编辑演示、例题与练习形成可复查的学习闭环。",
       "type": "lesson",
-      "lastModified": "2026-07-31",
+      "lastModified": "2026-08-01",
       "reviewedBy": "AzureL蔚澜算法",
       "reviewStatus": "持续复核",
       "alternates": {
