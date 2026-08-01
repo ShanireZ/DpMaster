@@ -37,8 +37,8 @@ test('C–G category pages render independent poly heroes and integrated journey
       height: image.naturalHeight,
       src: image.currentSrc,
     }))).toEqual(expect.objectContaining({
-      width: 1536,
-      height: 1024,
+      width: 1152,
+      height: 768,
       src: expect.stringContaining(`${familyNames[family as keyof typeof familyNames]}-hero`),
     }))
 
@@ -91,8 +91,8 @@ test('C–G lessons use 21 distinct accessible poly atlas plates', async ({ page
         height: image.naturalHeight,
         src: image.currentSrc,
       }))).toEqual(expect.objectContaining({
-        width: 1536,
-        height: 1024,
+        width: 1152,
+        height: 768,
         src: expect.stringContaining(`${familyNames[family as keyof typeof familyNames]}-lessons`),
       }))
 

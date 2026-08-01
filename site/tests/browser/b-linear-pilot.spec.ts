@@ -20,8 +20,8 @@ test('B category renders the high-fidelity polygon index sculpture and an integr
     naturalHeight: image.naturalHeight,
     src: image.currentSrc,
   }))
-  expect(heroAsset.naturalWidth).toBe(1536)
-  expect(heroAsset.naturalHeight).toBe(1024)
+  expect(heroAsset.naturalWidth).toBe(1152)
+  expect(heroAsset.naturalHeight).toBe(768)
   expect(heroAsset.src).toContain('linear-hero')
   const categoryResources = await page.evaluate(() =>
     performance.getEntriesByType('resource').map((entry) => entry.name),

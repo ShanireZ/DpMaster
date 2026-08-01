@@ -1,5 +1,5 @@
 import { useId, type CSSProperties, type ReactElement } from 'react'
-import linearHeroImage from '../../assets/family-art/linear-hero.webp'
+import linearHeroImage from '../../assets/family-art/linear-hero.avif'
 import PartGlyph from '../PartGlyph.tsx'
 import './linear-family-art.css'
 

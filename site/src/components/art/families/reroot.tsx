@@ -1,5 +1,5 @@
-import rerootHero from '../../../assets/family-art/reroot-hero.webp'
-import rerootLessons from '../../../assets/family-art/reroot-lessons.webp'
+import rerootHero from '../../../assets/family-art/reroot-hero.avif'
+import rerootLessons from '../../../assets/family-art/reroot-lessons.avif'
 import { RerootJourneyArt } from '../CGFamilyArt.tsx'
 import { PolyLessonPlate } from '../PolyLessonPlate.tsx'
 import type { FamilyArtProps, LessonPlateProps } from '../familyArtRegistry.ts'
