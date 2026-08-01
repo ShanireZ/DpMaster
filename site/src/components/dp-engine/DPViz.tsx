@@ -1,4 +1,4 @@
-import { useEffect, type CSSProperties } from 'react'
+import type { CSSProperties } from 'react'
 import { MB } from '../ui/Math'
 import type { VizModel, CellState } from './types'
 import { key } from './types'
@@ -26,19 +26,7 @@ function fmt(v: number | null): string {
   return String(v)
 }
 
-export interface DPVizPlaybackState {
-  index: number
-  count: number
-  playing: boolean
-}
-
-export default function DPViz({
-  model,
-  onPlaybackChange,
-}: {
-  model: VizModel
-  onPlaybackChange?: (state: DPVizPlaybackState) => void
-}) {
+export default function DPViz({ model }: { model: VizModel }) {
   const p = useStepPlayer(model.frames.length)
   const frame = model.frames[Math.min(p.index, model.frames.length - 1)]
   const cell = model.cell ?? 48
@@ -48,10 +36,6 @@ export default function DPViz({
   const ch = hasColH ? 30 : 0
   const colOffset = hasRowH ? 2 : 1
   const rowOffset = hasColH ? 2 : 1
-
-  useEffect(() => {
-    onPlaybackChange?.({ index: p.index, count: p.count, playing: p.playing })
-  }, [onPlaybackChange, p.count, p.index, p.playing])
 
   const gridStyle: CSSProperties = {
     gridTemplateColumns: `${hasRowH ? `${rh}px ` : ''}repeat(${model.cols}, ${cell}px)`,

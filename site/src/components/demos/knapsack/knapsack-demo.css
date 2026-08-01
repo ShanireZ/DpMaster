@@ -1,311 +1,39 @@
 @import '../shared/demo-workbench.css';
 
-/* Backpack-only editor composition. Shared controls live in demo-workbench.css. */
-.knapsack-instrument {
+/* A static visual preface. It deliberately has no selectors tied to demo state. */
+.knapsack-hero {
   position: relative;
-  min-height: clamp(390px, 54vw, 560px);
-  margin: 0 0 var(--sp-5);
-  overflow: clip;
+  height: clamp(176px, 19vw, 236px);
+  margin: 0 0 var(--sp-4);
+  overflow: hidden;
   border-block: 1px solid var(--border);
   background:
-    radial-gradient(circle at 66% 42%, color-mix(in srgb, var(--accent-1) 14%, transparent), transparent 42%),
-    linear-gradient(90deg, color-mix(in srgb, var(--accent-1) 5%, transparent), transparent 38%);
+    radial-gradient(circle at 58% 45%, color-mix(in srgb, var(--accent-1) 11%, transparent), transparent 44%),
+    linear-gradient(90deg, color-mix(in srgb, var(--accent-1) 4%, transparent), transparent 42%);
 }
 
-.knapsack-instrument::before {
-  position: absolute;
-  inset: 0;
-  background:
-    linear-gradient(90deg, transparent 49.9%, color-mix(in srgb, var(--text-3) 8%, transparent) 50%, transparent 50.1%),
-    linear-gradient(0deg, transparent 49.9%, color-mix(in srgb, var(--text-3) 6%, transparent) 50%, transparent 50.1%);
-  background-size: 84px 84px;
-  content: '';
-  mask-image: linear-gradient(180deg, #000, transparent 88%);
-  pointer-events: none;
-}
-
-.knapsack-instrument__scene {
-  position: absolute;
-  inset: clamp(4px, 1.2vw, 14px) 0 18%;
-  display: grid;
-  place-items: center;
-}
-
-.knapsack-instrument__art {
-  width: 100%;
-  height: 100%;
-  object-fit: contain;
-  clip-path: inset(0 0 0 29%);
-  filter: drop-shadow(0 22px 30px color-mix(in srgb, var(--accent-1) 12%, transparent));
-  transition: filter var(--t-fast), transform var(--t-fast);
-}
-
-.knapsack-instrument[data-decision='take'] .knapsack-instrument__art {
-  filter: drop-shadow(0 22px 34px color-mix(in srgb, var(--viz-chosen) 28%, transparent));
-  transform: translateX(2px);
-}
-
-.knapsack-instrument[data-decision='invalid'] .knapsack-instrument__art {
-  filter: grayscale(.35) drop-shadow(0 22px 34px color-mix(in srgb, var(--viz-invalid) 28%, transparent));
-}
-
-.knapsack-instrument__objects {
-  position: absolute;
-  z-index: 2;
-  top: 15%;
-  bottom: 22%;
-  left: 3%;
-  width: 26%;
-  display: grid;
-  grid-auto-rows: minmax(0, 1fr);
-  gap: 3px;
-  padding: 0;
-  margin: 0;
-  list-style: none;
-}
-
-.knapsack-instrument__objects[data-many='true'] {
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-}
-
-.knapsack-instrument__objects li {
-  min-width: 0;
-  display: grid;
-  grid-template-columns: minmax(22px, 42px) 1fr;
-  align-items: center;
-  gap: 6px;
-  padding: 3px 5px;
-  border-left: 2px solid transparent;
-  color: var(--text-3);
-  transition: border-color var(--t-fast), color var(--t-fast), transform var(--t-fast);
-}
-
-.knapsack-instrument__objects li.is-active {
-  border-color: var(--viz-current);
-  color: var(--text-1);
-  transform: translateX(8px);
-}
-
-.knapsack-instrument__object {
-  aspect-ratio: 1;
-  background: linear-gradient(145deg, color-mix(in srgb, var(--accent-2) 72%, white), var(--accent-1));
-  box-shadow:
-    inset -5px -6px 0 color-mix(in srgb, var(--accent-1) 42%, transparent),
-    0 6px 14px color-mix(in srgb, var(--accent-1) 18%, transparent);
-  clip-path: polygon(50% 0, 92% 24%, 84% 80%, 50% 100%, 12% 78%, 6% 24%);
-}
-
-.knapsack-instrument__object[data-shape='1'] {
-  clip-path: polygon(50% 0, 100% 52%, 50% 100%, 0 52%);
-}
-
-.knapsack-instrument__object[data-shape='2'] {
-  border-radius: 50%;
-  clip-path: polygon(50% 0, 82% 10%, 100% 38%, 92% 75%, 65% 100%, 28% 94%, 0 64%, 6% 25%);
-}
-
-.knapsack-instrument__objects li.is-active .knapsack-instrument__object {
-  outline: 2px solid var(--viz-current);
-  outline-offset: 3px;
-}
-
-.knapsack-instrument__objects small {
-  font-family: var(--font-mono);
-  font-size: 9px;
-}
-
-.knapsack-instrument__motion {
-  position: absolute;
-  z-index: 3;
-  inset: 0;
-  width: 100%;
-  height: 100%;
-  overflow: visible;
-  pointer-events: none;
-}
-
-.knapsack-instrument__motion path {
-  fill: none;
-  stroke: var(--viz-current);
-  stroke-dasharray: .035 .025;
-  stroke-width: .45;
-  opacity: .16;
-  vector-effect: non-scaling-stroke;
-}
-
-.knapsack-instrument[data-decision='take'] .knapsack-instrument__motion path {
-  stroke: var(--viz-chosen);
-  opacity: .72;
-}
-
-.knapsack-instrument[data-decision='skip'] .knapsack-instrument__motion path {
-  stroke: var(--viz-source);
-  opacity: .62;
-}
-
-.knapsack-instrument[data-decision='invalid'] .knapsack-instrument__motion path {
-  stroke: var(--viz-invalid);
-  opacity: .72;
-}
-
-.knapsack-instrument__motion circle {
-  fill: var(--viz-current);
-  stroke: var(--canvas);
-  stroke-width: .45;
-}
-
-.knapsack-instrument__live {
-  position: absolute;
-  z-index: 4;
-  top: var(--sp-3);
-  left: var(--sp-3);
-  max-width: min(72%, 420px);
-  padding: 6px 9px;
-  margin: 0;
-  color: var(--text-2);
-  background: color-mix(in srgb, var(--canvas) 86%, transparent);
-  font-family: var(--font-mono);
-  font-size: 10px;
-  line-height: 1.5;
-}
-
-.knapsack-instrument__readout,
-.knapsack-instrument__capacity {
+.knapsack-hero::before {
   position: absolute;
   z-index: 1;
-  right: clamp(var(--sp-3), 3vw, var(--sp-6));
-  left: clamp(var(--sp-3), 3vw, var(--sp-6));
-}
-
-.knapsack-instrument__readout {
-  bottom: 15%;
-  display: grid;
-  grid-template-columns: auto minmax(0, 1fr);
-  align-items: end;
-  gap: var(--sp-4);
-}
-
-.knapsack-instrument__mode,
-.knapsack-instrument__capacity-label {
-  display: flex;
-  align-items: baseline;
-  justify-content: space-between;
-  gap: var(--sp-3);
-  font-family: var(--font-mono);
-  font-size: 10px;
-  letter-spacing: .08em;
-}
-
-.knapsack-instrument__mode {
-  min-width: 150px;
-  padding: 9px 12px;
-  color: var(--text-2);
-  background: color-mix(in srgb, var(--canvas) 88%, transparent);
-  box-shadow: inset 3px 0 var(--accent-1);
-}
-
-.knapsack-instrument__mode strong,
-.knapsack-instrument__capacity-label strong {
-  color: var(--text-1);
-  font-weight: 600;
-}
-
-.knapsack-instrument__items,
-.knapsack-instrument__capacity ol {
-  padding: 0;
-  margin: 0;
-  list-style: none;
-}
-
-.knapsack-instrument__items {
-  display: flex;
-  justify-content: flex-end;
-  gap: 2px;
-}
-
-.knapsack-instrument__items li {
-  min-width: 70px;
-  display: grid;
-  grid-template-columns: auto 1fr;
-  gap: 0 8px;
-  padding: 8px 10px;
-  color: var(--text-2);
-  background: color-mix(in srgb, var(--canvas) 88%, transparent);
-  box-shadow: inset 0 1px color-mix(in srgb, var(--accent-1) 28%, var(--border));
-}
-
-.knapsack-instrument__items li.is-active {
-  color: var(--text-1);
-  background: color-mix(in srgb, var(--viz-current) 10%, var(--canvas));
-  box-shadow: inset 0 2px var(--viz-current);
-}
-
-.knapsack-instrument__items li > span {
-  grid-row: 1 / 3;
-  align-self: center;
-  color: var(--accent-1);
-  font-family: var(--font-display);
-  font-size: 18px;
-}
-
-.knapsack-instrument__items b,
-.knapsack-instrument__items small {
-  font-family: var(--font-mono);
-  font-size: 10px;
-  font-weight: 500;
-}
-
-.knapsack-instrument__capacity {
-  bottom: clamp(12px, 2vw, 20px);
-}
-
-.knapsack-instrument__capacity-label {
-  margin-bottom: 6px;
-  color: var(--text-3);
-}
-
-.knapsack-instrument__capacity-rail {
-  overflow-x: auto;
-  overflow-y: hidden;
-  padding: 3px 2px 5px;
-  scrollbar-color: var(--accent-1) transparent;
-  scrollbar-width: thin;
-  overscroll-behavior-inline: contain;
-}
-
-.knapsack-instrument__capacity ol {
-  display: grid;
-  grid-template-columns: repeat(var(--capacity-columns), minmax(28px, 1fr));
-  gap: 2px;
-  min-width: max(100%, calc(var(--capacity-columns) * 30px));
-}
-
-.knapsack-instrument__capacity li {
-  min-width: 0;
-  height: 31px;
-  display: grid;
-  place-items: center;
-  color: var(--text-3);
-  background: color-mix(in srgb, var(--canvas) 76%, var(--surface-2));
-  box-shadow: inset 0 1px var(--border-strong);
-  font-family: var(--font-mono);
-  font-size: 10px;
-  transition: background var(--t-fast), box-shadow var(--t-fast), color var(--t-fast), transform var(--t-fast);
-}
-
-.knapsack-instrument__capacity li.is-item-weight {
-  color: var(--text-1);
+  inset: 0;
   background:
-    linear-gradient(135deg, transparent 46%, color-mix(in srgb, var(--accent-1) 38%, transparent) 47% 53%, transparent 54%),
-    color-mix(in srgb, var(--accent-1) 11%, var(--canvas));
-  box-shadow: inset 0 2px var(--accent-1);
+    linear-gradient(90deg, transparent 49.8%, color-mix(in srgb, var(--text-3) 7%, transparent) 50%, transparent 50.2%),
+    linear-gradient(0deg, transparent 49.8%, color-mix(in srgb, var(--text-3) 5%, transparent) 50%, transparent 50.2%);
+  background-size: 72px 72px;
+  content: '';
+  mask-image: linear-gradient(90deg, transparent 6%, #000 36%, #000 84%, transparent);
+  pointer-events: none;
 }
 
-.knapsack-instrument__capacity li.is-active {
-  color: var(--text-on-accent);
-  background: var(--viz-current);
-  box-shadow: inset 0 0 0 2px var(--canvas), 0 0 0 2px var(--viz-current);
-  transform: translateY(-3px);
+.knapsack-hero img {
+  position: absolute;
+  inset: -28% 0 auto;
+  width: 100%;
+  height: 158%;
+  object-fit: contain;
+  object-position: center;
+  filter: drop-shadow(0 15px 24px color-mix(in srgb, var(--accent-1) 12%, transparent));
+  user-select: none;
 }
 
 .knapsack-settings {
@@ -333,7 +61,6 @@
   border-bottom: 1px solid currentColor;
   content: '';
   rotate: -45deg;
-  transition: rotate 320ms var(--ease-out);
 }
 
 .knapsack-settings[open] > summary::before {
@@ -346,14 +73,10 @@
 
 .demo-editor .demo-control__toolbar {
   display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
+  grid-template-columns: minmax(0, 1fr) minmax(150px, 0.24fr);
   align-items: start;
   gap: var(--sp-4);
   padding: 0 0 var(--sp-5);
-}
-
-.demo-editor .demo-control__toolbar > :first-child {
-  grid-column: 1 / -1;
 }
 
 .demo-editor .demo-control__items {
@@ -375,6 +98,14 @@
   flex: 1;
 }
 
+.demo-editor .stepper__row {
+  min-width: 106px;
+}
+
+.demo-editor .stepper__row button {
+  flex: 0 0 26px;
+}
+
 .demo-editor .stepper__val {
   flex: 0 0 54px;
   width: 54px;
@@ -385,14 +116,6 @@
   color: var(--text-1);
   background: color-mix(in srgb, var(--surface-2) 76%, transparent);
   appearance: textfield;
-}
-
-.demo-editor .stepper__row {
-  min-width: 106px;
-}
-
-.demo-editor .stepper__row button {
-  flex: 0 0 26px;
 }
 
 .demo-editor .stepper__val::-webkit-inner-spin-button,
@@ -413,89 +136,32 @@
   background: color-mix(in srgb, var(--accent-1) 2%, transparent);
 }
 
-@media (max-width: 600px) {
-  .knapsack-instrument {
-    min-height: 470px;
-  }
-
-  .knapsack-instrument__scene {
-    inset: 8px -8% 38%;
-  }
-
-  .knapsack-instrument__objects {
-    top: 7%;
-    bottom: 10%;
-    left: 9%;
-    width: 29%;
-  }
-
-  .knapsack-instrument__objects li {
-    grid-template-columns: minmax(18px, 30px) 1fr;
-    padding-inline: 3px;
-  }
-
-  .knapsack-instrument__objects li.is-active {
-    transform: translateX(4px);
-  }
-
-  .knapsack-instrument__objects small {
-    font-size: 8px;
-  }
-
-  .knapsack-instrument__live {
-    right: var(--sp-2);
-    left: var(--sp-2);
-    max-width: none;
-  }
-
-  .knapsack-instrument__readout {
-    bottom: 17%;
+@media (max-width: 760px) {
+  .demo-editor .demo-control__toolbar {
     grid-template-columns: 1fr;
-    gap: 6px;
+  }
+}
+
+@media (max-width: 600px) {
+  .knapsack-hero {
+    height: 164px;
+    margin-bottom: var(--sp-3);
   }
 
-  .knapsack-instrument__mode {
-    min-width: 0;
-  }
-
-  .knapsack-instrument__items {
-    justify-content: stretch;
-    overflow-x: auto;
-  }
-
-  .knapsack-instrument__items li {
-    min-width: 64px;
-    flex: 1 0 64px;
-  }
-
-  .knapsack-instrument__capacity li {
-    height: 28px;
-    font-size: 9px;
+  .knapsack-hero img {
+    inset-block-start: -23%;
+    height: 148%;
   }
 
   .knapsack-settings__body {
     padding-inline: var(--sp-2);
   }
 
-  .demo-editor .demo-control__toolbar,
   .demo-editor .demo-control__items {
     grid-template-columns: 1fr;
   }
 
   .demo-editor .demo-control__item {
     padding: 30px var(--sp-3) var(--sp-3);
-  }
-}
-
-@media (prefers-reduced-motion: reduce) {
-  .knapsack-instrument__art,
-  .knapsack-instrument__objects li,
-  .knapsack-instrument__capacity li,
-  .knapsack-settings > summary::before {
-    transition: none;
-  }
-
-  .knapsack-instrument__motion circle {
-    display: none;
   }
 }
