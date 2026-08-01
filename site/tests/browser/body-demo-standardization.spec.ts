@@ -110,6 +110,75 @@ test('A/01 keeps a decorative hero separate from the editable DP data flow', asy
   expect(consoleProblems).toEqual([])
 })
 
+test('knapsack editor and playback rail keep deliberate spacing at narrow widths', async ({ page }) => {
+  await page.setViewportSize({ width: 640, height: 900 })
+  await page.goto('/part/a/01')
+
+  const demo = page.locator('.kd.demo-editor')
+  const itemBoxes = await demo.locator('.demo-control__item').evaluateAll((items) =>
+    items.slice(0, 2).map((item) => item.getBoundingClientRect().toJSON()),
+  )
+  expect(itemBoxes).toHaveLength(2)
+  expect(itemBoxes[0].width).toBeLessThanOrEqual(230)
+  expect(Math.abs(itemBoxes[0].top - itemBoxes[1].top)).toBeLessThanOrEqual(1)
+
+  const rightInset = await demo.evaluate((element) => {
+    const viewport = element.querySelector('.dpviz__viewport')?.getBoundingClientRect()
+    const scroller = element.querySelector('.demo-table-viewport__scroller')?.getBoundingClientRect()
+    return viewport && scroller ? viewport.right - scroller.right : 0
+  })
+  expect(rightInset).toBeGreaterThanOrEqual(16)
+
+  const railAtTablet = await demo.evaluate((element) => {
+    const box = (selector: string) => element.querySelector(selector)?.getBoundingClientRect()
+    return {
+      transport: box('.instrument-rail .playback__transport'),
+      progress: box('.instrument-rail .playback__progress'),
+      speed: box('.instrument-rail .playback__speed'),
+    }
+  })
+  expect(Math.abs((railAtTablet.transport?.top ?? 0) - (railAtTablet.speed?.top ?? 0))).toBeLessThanOrEqual(1)
+  expect((railAtTablet.speed?.left ?? 0) - (railAtTablet.transport?.right ?? 0)).toBeGreaterThanOrEqual(8)
+  expect((railAtTablet.progress?.top ?? 0)).toBeGreaterThanOrEqual(railAtTablet.transport?.bottom ?? Infinity)
+
+  await page.setViewportSize({ width: 390, height: 844 })
+  const railAtMobile = await demo.evaluate((element) => {
+    const box = (selector: string) => element.querySelector(selector)?.getBoundingClientRect()
+    return {
+      transport: box('.instrument-rail .playback__transport'),
+      progress: box('.instrument-rail .playback__progress'),
+      speed: box('.instrument-rail .playback__speed'),
+    }
+  })
+  expect((railAtMobile.progress?.top ?? 0)).toBeGreaterThanOrEqual(railAtMobile.transport?.bottom ?? Infinity)
+  expect((railAtMobile.speed?.top ?? 0)).toBeGreaterThanOrEqual(railAtMobile.progress?.bottom ?? Infinity)
+  await demo.getByRole('button', { name: '速度 2 倍' }).click()
+  await expect(demo.getByRole('button', { name: '速度 2 倍' })).toHaveAttribute('aria-pressed', 'true')
+  expect(await page.evaluate(() => document.documentElement.scrollWidth <= document.documentElement.clientWidth + 1)).toBe(true)
+})
+
+test('complete knapsack owns a distinct decorative hero and repeat-use language', async ({ page }) => {
+  await page.setViewportSize({ width: 1440, height: 900 })
+  await page.goto('/part/a/complete')
+
+  const demo = page.locator('.kd.demo-editor')
+  const hero = demo.locator('.knapsack-hero')
+  const heroImage = hero.locator('img')
+  await expect(demo).toHaveAttribute('data-knapsack-variant', 'complete')
+  await expect(hero).toHaveAttribute('data-variant', 'complete')
+  await expect(heroImage).toHaveAttribute('src', /knapsack-complete-instrument-v1-.+\.avif$/)
+  await expect(demo.locator('.knapsack-settings__rule')).toContainText('每种物品可重复取用 · 容量正序更新')
+  await expect(demo.locator('.demo-control__group-label').first()).toContainText('每种可重复取用')
+  await expect(demo.locator('.demo-control__modes')).toHaveCount(0)
+
+  const heroSrc = await heroImage.getAttribute('src')
+  await demo.getByRole('spinbutton', { name: 'm 数值' }).fill('18')
+  await demo.getByRole('spinbutton', { name: 'm 数值' }).press('Tab')
+  await demo.getByRole('group', { name: 'DP 表格逐帧播放' }).getByRole('button', { name: '下一步' }).click()
+  await expect(heroImage).toHaveAttribute('src', heroSrc ?? '')
+  await expect(hero.locator('svg, ol, [data-decision]')).toHaveCount(0)
+})
+
 test('shared DP tables use local scrolling and the unified instrument rail', async ({ page }) => {
   await page.setViewportSize({ width: 390, height: 844 })
   await page.goto('/part/b/lcs')

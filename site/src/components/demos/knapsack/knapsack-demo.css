@@ -71,6 +71,29 @@
   padding: var(--sp-4);
 }
 
+.knapsack-settings__rule {
+  display: flex;
+  align-items: baseline;
+  gap: var(--sp-3);
+  padding: 0 0 var(--sp-3);
+  color: var(--text-3);
+  font-size: 11px;
+}
+
+.knapsack-settings__rule span {
+  flex: 0 0 auto;
+  color: var(--accent-2);
+  font-family: var(--font-display);
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: .14em;
+}
+
+.knapsack-settings__rule strong {
+  color: var(--text-2);
+  font-weight: 600;
+}
+
 .demo-editor .demo-control__toolbar {
   display: grid;
   grid-template-columns: minmax(0, 1fr) minmax(150px, 0.24fr);
@@ -140,6 +163,29 @@
   .demo-editor .demo-control__toolbar {
     grid-template-columns: 1fr;
   }
+
+  .demo-editor .demo-control__items {
+    grid-template-columns: repeat(auto-fill, minmax(min(100%, 204px), 224px));
+  }
+
+  .demo-editor .demo-control__item {
+    justify-content: flex-start;
+    gap: var(--sp-2);
+    padding: 28px var(--sp-2) 10px;
+  }
+
+  .demo-editor .demo-control__item > div {
+    flex: 1 1 94px;
+  }
+
+  .demo-editor .stepper__row {
+    min-width: 88px;
+  }
+
+  .demo-editor .stepper__val {
+    flex-basis: 42px;
+    width: 42px;
+  }
 }
 
 @media (max-width: 600px) {
@@ -152,11 +198,13 @@
     padding-inline: var(--sp-2);
   }
 
-  .demo-editor .demo-control__items {
-    grid-template-columns: 1fr;
+  .demo-editor .demo-control__item {
+    padding-inline: var(--sp-2);
   }
 
-  .demo-editor .demo-control__item {
-    padding: 30px var(--sp-3) var(--sp-3);
+  .knapsack-settings__rule {
+    align-items: flex-start;
+    flex-direction: column;
+    gap: 4px;
   }
 }

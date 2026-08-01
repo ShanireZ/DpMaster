@@ -10,7 +10,7 @@
 
 .dpviz__viewport {
   grid-area: table;
-  padding: var(--sp-4) 0 var(--sp-5);
+  padding: var(--sp-4) var(--sp-4) var(--sp-5) 0;
   border-right: 1px solid var(--border);
 }
 

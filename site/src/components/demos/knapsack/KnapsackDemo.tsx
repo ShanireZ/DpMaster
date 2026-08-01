@@ -98,15 +98,27 @@ export default function KnapsackDemo({ variant = '01' }: { variant?: '01' | 'com
     setItems((arr) => arr.map((it, k) => (k === i ? { ...it, ...patch } : it)))
 
   return (
-    <div className="kd demo-editor">
-      <KnapsackHero />
+    <div className="kd demo-editor" data-knapsack-variant={variant}>
+      <KnapsackHero variant={variant} />
 
       <details className="knapsack-settings" open>
         <summary>自主设计数值</summary>
         <div className="knapsack-settings__body">
+          <div className="knapsack-settings__rule">
+            <span>{variant === 'complete' ? '完全背包' : '01 背包'}</span>
+            <strong>
+              {variant === 'complete'
+                ? '每种物品可重复取用 · 容量正序更新'
+                : '每件物品至多取一次 · 可对照二维与一维顺序'}
+            </strong>
+          </div>
           <div className="demo-control__toolbar">
             <div>
-              <div className="demo-control__group-label">物品（直接输入重量 / 价值，最多 8 件）</div>
+              <div className="demo-control__group-label">
+                {variant === 'complete'
+                  ? '物品种类（每种可重复取用，最多 8 种）'
+                  : '物品（直接输入重量 / 价值，最多 8 件）'}
+              </div>
               <div className="demo-control__items">
                 {items.map((it, i) => (
                   <div className="demo-control__item" key={i}>
