@@ -1,11 +1,9 @@
 import { useEffect, useMemo, useState } from 'react'
 import { Minus, Plus, X } from 'lucide-react'
 import DPViz from '../../dp-engine/DPViz'
-import type { DPVizPlaybackState } from '../../dp-engine/DPViz'
 import { knapsack2D, knapsack1D } from './solvers'
 import type { Item, Mode1D } from './solvers'
-import { KnapsackInstrumentCore } from './KnapsackInstrumentCore.tsx'
-import type { KnapsackInstrumentPlayback } from './KnapsackInstrumentCore.tsx'
+import { KnapsackHero } from './KnapsackHero.tsx'
 import './knapsack-demo.css'
 
 function Stepper({
@@ -73,51 +71,6 @@ const MODES_01: { id: Mode; label: string; danger?: boolean }[] = [
   { id: 'forward', label: '一维 · 顺推 ✗', danger: true },
 ]
 
-function getPlaybackFocus(
-  items: readonly Item[],
-  capacity: number,
-  mode: Mode,
-  model: ReturnType<typeof knapsack2D>,
-  playback: DPVizPlaybackState,
-): KnapsackInstrumentPlayback {
-  const frame = model.frames[Math.min(playback.index, model.frames.length - 1)]
-  if (playback.index === 0 || !frame.active) {
-    return {
-      step: playback.index,
-      count: playback.count,
-      itemIndex: null,
-      capacity: playback.index >= model.frames.length - 1 ? capacity : null,
-      decision: playback.index >= model.frames.length - 1 ? 'complete' : 'idle',
-      playing: playback.playing,
-    }
-  }
-
-  let itemIndex: number | null = mode === '2D' ? frame.active.r : null
-  if (mode !== '2D') {
-    let offset = playback.index - 1
-    for (let index = 0; index < items.length; index += 1) {
-      const itemSteps = Math.max(0, capacity - items[index].w + 1)
-      if (offset < itemSteps) {
-        itemIndex = index + 1
-        break
-      }
-      offset -= itemSteps
-    }
-  }
-
-  const invalid = Object.values(frame.states).includes('invalid')
-  const takesItem = frame.arrows?.some((arrow) => arrow.kind === 'chosen' && arrow.from.c < arrow.to.c) ?? false
-
-  return {
-    step: playback.index,
-    count: playback.count,
-    itemIndex,
-    capacity: frame.active.c,
-    decision: invalid ? 'invalid' : takesItem ? 'take' : 'skip',
-    playing: playback.playing,
-  }
-}
-
 export default function KnapsackDemo({ variant = '01' }: { variant?: '01' | 'complete' }) {
   const [items, setItems] = useState<Item[]>(
     variant === 'complete'
@@ -140,33 +93,13 @@ export default function KnapsackDemo({ variant = '01' }: { variant?: '01' | 'com
   }, [items, cap, mode])
 
   const modelKey = `${variant}-${mode}-${cap}-${items.map((it) => `${it.w}.${it.v}`).join('_')}`
-  const [playback, setPlayback] = useState<DPVizPlaybackState>({
-    index: 0,
-    count: model.frames.length,
-    playing: false,
-  })
-
-  useEffect(() => {
-    setPlayback({ index: 0, count: model.frames.length, playing: false })
-  }, [model.frames.length, modelKey])
-
-  const instrumentPlayback = useMemo(
-    () => getPlaybackFocus(items, cap, mode, model, playback),
-    [cap, items, mode, model, playback],
-  )
 
   const setItem = (i: number, patch: Partial<Item>) =>
     setItems((arr) => arr.map((it, k) => (k === i ? { ...it, ...patch } : it)))
 
   return (
     <div className="kd demo-editor">
-      <KnapsackInstrumentCore
-        items={items}
-        capacity={cap}
-        mode={mode}
-        variant={variant}
-        playback={instrumentPlayback}
-      />
+      <KnapsackHero />
 
       <details className="knapsack-settings" open>
         <summary>自主设计物品、容量与计算模式</summary>
@@ -216,7 +149,7 @@ export default function KnapsackDemo({ variant = '01' }: { variant?: '01' | 'com
         </div>
       </details>
 
-      <DPViz key={modelKey} model={model} onPlaybackChange={setPlayback} />
+      <DPViz key={modelKey} model={model} />
     </div>
   )
 }

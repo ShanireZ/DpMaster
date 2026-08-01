@@ -1,36 +1,35 @@
 # DP大师正文视觉统一任务交接
 
 > 更新时间：2026-08-01
-> 当前阶段：Task B 第二轮整改，等待 A/01 高保真样机复核
+> 当前阶段：Task B 第二轮整改，等待 A/01 静态装饰 Hero 样机复核
 > 恢复重点：先确认正文主构图的设计稿还原度，再重做代表课程评审材料；不得直接推广到 37 课
 
 ## 当前停点
 
 - Task A 已完成并提交为 `023125f`。
-- 当前 `HEAD`、`origin/main` 均为 `e3671da`，此前 14 门代表课程与插头 DP 已提交。
+- 本轮静态 Hero 修正基于 `b2e6ac4`，`origin/main` 为 `e3671da`；此前 14 门代表课程、插头 DP 与上一版 A/01 交互稿已提交。
 - 第一轮标本场拍板已经完成：
   - 主构图：纵向仪表脊。
   - 公共交互：整体确认。
   - 视觉力度：增强演绎档。
 - 第一轮只确认视觉方向与交互合同，不等于批准后续代表课程的实际还原度。
 - 14 门代表课程虽已实装并完成工程验证，但用户明确判定第二轮视觉离设计稿太远；第二轮状态为**未通过**，旧评审材料不得继续作为通过证据。
-- 当前工作区包含 A/01 高保真样机：参照课程标题旁插图的成熟策略，以透明 AVIF 承担不可参数化的雕塑材质，以实时 DOM 保留物品、容量、模式与 DP 状态。
+- 当前工作区正在修正 A/01 样机：参照课程标题旁插图的策略，Hero 仅使用透明 AVIF 做静态美化，并与物品、容量、模式和 DP 播放彻底解耦。
 - 本轮没有 push、部署或执行 `pnpm release`。
 
 完整范围、规则和勾选状态见
 [`body-demo-standardization-plan.md`](body-demo-standardization-plan.md)；完整逐课事实见
 [`../docs/concepts/body-demo-audit.md`](../docs/concepts/body-demo-audit.md)。
 
-## 当前 A/01 高保真样机
+## 当前 A/01 静态装饰 Hero 样机
 
-- 新增 `KnapsackInstrumentCore`，第一屏以物品分叉、取舍路径和背包雕塑建立连续主构图。
-- 雕塑资产使用透明 AVIF，1536×1024、41,396 bytes；图片不含标题、公式、数字或控件文本。
-- 当前物品、模式和容量 `0…m` 均由 DOM 实时渲染；物品数量、重量、价值与容量变化会同步更新雕塑语义和 DP 模型。
-- 雕塑不再是静态贴图：播放帧驱动当前物品、取/不取路径、背包落点、容量焦点和实时解说；透明 AVIF 只提供稳定材质底座。
-- 容量轨道在大容量下改为局部滚动并自动跟随当前 `j`；`DPViz` 的当前格也会保持在局部视窗内，位置缩略条使用真实可见比例和滚动位置。
+- `KnapsackHero` 只渲染一张 `aria-hidden` 的透明 AVIF；Hero 内没有手工 polygon、SVG 路径、物品列表、容量轨道或播放状态属性。
+- Hero 高度缩至桌面不超过 236px、移动端 164px，只作为正文前言，不承担算法数据表达。
+- 雕塑资产为 1536×1024、41,396 bytes；图片不含标题、公式、数字或控件文本。
+- 物品、容量和模式只存在于参数编辑区与 DP 模型；编辑会重建 DP 数据，但不会改变 Hero 的 DOM、图片地址或几何。
+- `DPViz` 的当前格会保持在局部视窗内，位置缩略条使用真实可见比例和滚动位置。
 - 参数面板默认展开，重量、价值和容量均可直接输入；支持 1–8 件物品、容量 1–60、重量 1–60、价值 1–999。
-- 原有 solver 合同未改变；`DPViz` 新增只读播放状态回调，供算法雕塑复用同一帧状态。
-- 已核验明色、暗色与 390×844：无页面横向溢出，移动端按主构图 → 读数 → 容量轨道 → DP 表语义重排。
+- 原有 solver、输入与播放合同未改变；上一稿为 Hero 增加的 `DPViz` 播放状态回调已删除。
 
 ## 已提交的代表课程基础
 
@@ -44,23 +43,24 @@
 - 播放架构门禁已经同步为：课程只使用 `InstrumentRail`，只有共享适配器内部可以使用 `PlaybackControls`。
 - 第二轮评审弹窗位于 `/lab/body-demo-standard`，不进入导航、sitemap，并保持 `noindex`。
 
-代表课程基础已经包含在 `e3671da`。当前待评审样机文件可由 `git status --short` 和 `git diff --stat` 获取，关键新增文件：
+代表课程基础已经包含在 `e3671da`。当前待评审样机文件可由 `git status --short` 和 `git diff --stat` 获取，关键文件：
 
 - `site/src/assets/demo-art/knapsack-01-instrument.avif`
-- `site/src/components/demos/knapsack/KnapsackInstrumentCore.tsx`
-- `site/src/components/demos/knapsack/KnapsackInstrumentCore.test.tsx`
+- `site/src/components/demos/knapsack/KnapsackHero.tsx`
+- `site/src/components/demos/knapsack/KnapsackHero.test.tsx`
 - `site/tests/browser/body-demo-standardization.spec.ts`
 
 ## 当前验证证据
 
-以下门禁已在 A/01 样机工作区通过：
+以下门禁已在当前 A/01 静态 Hero 样机通过：
 
-- `pnpm test:unit -- ...`：实际运行 10 个测试文件、43 项测试，全部通过
-- `pnpm lint`
+- `pnpm test:unit`：10 个测试文件、43 项测试全部通过
+- `pnpm test`：231 项 Node 合同测试全部通过
+- `pnpm lint`：零 warning
 - `pnpm build`：两区产物与 96 个区域 HTML 正常生成
-- 资源预算：241 个文件、6,243,886 bytes，总量与 760 KB 单文件门禁均通过
-- 正文标准专项 Chromium：5 项全部通过；A/01 覆盖自定义 4 件物品、容量 20、雕塑帧联动、容量轨道跟随、DP 当前格跟随与位置缩略条
-- in-app browser 实测：1440×1000 与 390×844 均无页面横向溢出；容量轨道和 DP 表只在自身视窗内滚动；控制台无 warning/error
+- 资源预算：241 个文件、最大区域总量 6,232,615 bytes、最大单文件 732,959 bytes，门禁通过
+- 正文标准专项 Chromium：5 项全部通过；A/01 覆盖 Hero 不随数据/播放变化、自定义 4 件物品、容量 20、DP 当前格跟随与位置缩略条
+- in-app browser 实测：1440×1000 下 Hero 236px，390×844 下 Hero 164px；两端均无页面横向溢出，控制台无 warning/error
 
 完整 `pnpm verify` 尚未执行；A/01 方向通过用户复核前不得推广或勾选最终门禁。
 
@@ -71,8 +71,8 @@
 当前只提交 A/01 高保真样机复核。其策略与此前标题旁插图一致：
 
 - 不再用手写 SVG/CSS 近似不可参数化的高精度材质。
-- 高保真透明资产只承载稳定的算法雕塑，不烘焙动态文字、数字和控件。
-- 动态状态、读屏语义、容量轨道与交互继续由真实 DOM/SVG 驱动。
+- 高保真透明资产只承担静态美化，不烘焙也不映射动态文字、数字、控件或播放帧。
+- 所有动态数据与交互都留在独立编辑区和 DP 表中；Hero 不再承担算法状态语义。
 - A/01 方向确认后，才按家族逐课制作独特的高保真雕塑，并重建第二轮评审页。
 
 第一轮若需要向用户复述，应明确为：纵向仪表脊、公共交互整体确认、增强演绎档；它是方向评审，不是本轮代表课成品验收。
