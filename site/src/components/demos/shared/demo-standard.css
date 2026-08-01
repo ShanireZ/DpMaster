@@ -234,7 +234,7 @@
   }
 }
 
-@container instrument-rail (max-width: 560px) {
+@container instrument-rail (max-width: 575px) {
   .instrument-rail .playback {
     display: grid;
     grid-template-columns: auto auto;

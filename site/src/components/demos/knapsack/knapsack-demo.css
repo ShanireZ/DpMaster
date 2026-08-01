@@ -68,6 +68,8 @@
 }
 
 .knapsack-settings__body {
+  container-name: knapsack-settings;
+  container-type: inline-size;
   padding: var(--sp-4);
 }
 
@@ -159,32 +161,36 @@
   background: color-mix(in srgb, var(--accent-1) 2%, transparent);
 }
 
-@media (max-width: 760px) {
+@container knapsack-settings (max-width: 760px) {
   .demo-editor .demo-control__toolbar {
     grid-template-columns: 1fr;
   }
 
   .demo-editor .demo-control__items {
-    grid-template-columns: repeat(auto-fill, minmax(min(100%, 204px), 224px));
+    grid-template-columns: repeat(auto-fill, minmax(min(100%, 204px), min(100%, 224px)));
   }
 
   .demo-editor .demo-control__item {
+    align-items: stretch;
+    flex-direction: column;
     justify-content: flex-start;
     gap: var(--sp-2);
     padding: 28px var(--sp-2) 10px;
   }
 
   .demo-editor .demo-control__item > div {
-    flex: 1 1 94px;
+    width: 100%;
+    flex: 0 0 auto;
   }
 
   .demo-editor .stepper__row {
-    min-width: 88px;
+    width: 100%;
+    min-width: 0;
   }
 
   .demo-editor .stepper__val {
-    flex-basis: 42px;
-    width: 42px;
+    width: auto;
+    flex: 1 1 auto;
   }
 }
 
