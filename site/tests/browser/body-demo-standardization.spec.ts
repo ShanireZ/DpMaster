@@ -51,10 +51,12 @@ test('A/01 keeps a decorative hero separate from the editable DP data flow', asy
   await expect(hero).toHaveAttribute('aria-hidden', 'true')
   await expect(heroImage).toHaveAttribute('alt', '')
   await expect(heroImage).toHaveAttribute('src', /knapsack-01-instrument-.+\.avif$/)
+  await expect(heroImage).toHaveCSS('object-fit', 'contain')
   await expect(hero.locator('svg, ol, [data-decision]')).toHaveCount(0)
   const heroSrc = await heroImage.getAttribute('src')
   const initialHeroBox = await hero.boundingBox()
-  expect(initialHeroBox?.height).toBeLessThanOrEqual(240)
+  expect(initialHeroBox?.height).toBeGreaterThanOrEqual(350)
+  expect(initialHeroBox?.height).toBeLessThanOrEqual(365)
 
   const capacity = demo.getByRole('spinbutton', { name: 'm 数值' })
   await capacity.fill('20')
@@ -77,6 +79,7 @@ test('A/01 keeps a decorative hero separate from the editable DP data flow', asy
 
   const scroller = demo.locator('.demo-table-viewport__scroller')
   const currentCell = demo.locator('.dp-cell.is-current')
+  expect(await scroller.evaluate((element) => Number.parseFloat(getComputedStyle(element).paddingBottom))).toBeGreaterThanOrEqual(8)
   expect(await scroller.evaluate((element) => element.scrollLeft)).toBeGreaterThan(0)
   expect(await currentCell.evaluate((element) => {
     const cell = element.getBoundingClientRect()
@@ -86,7 +89,8 @@ test('A/01 keeps a decorative hero separate from the editable DP data flow', asy
   await expect(demo.locator('.demo-table-viewport__position')).not.toHaveCSS('left', '0px')
 
   await page.setViewportSize({ width: 390, height: 844 })
-  expect((await hero.boundingBox())?.height).toBeLessThanOrEqual(170)
+  expect((await hero.boundingBox())?.height).toBeGreaterThanOrEqual(215)
+  expect((await hero.boundingBox())?.height).toBeLessThanOrEqual(225)
   expect(
     await page.evaluate(() => document.documentElement.scrollWidth <= document.documentElement.clientWidth + 1),
   ).toBe(true)
