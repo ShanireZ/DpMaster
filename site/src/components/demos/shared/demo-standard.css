@@ -325,7 +325,7 @@
   position: absolute;
   z-index: 3;
   top: 0;
-  bottom: 8px;
+  bottom: calc(4px + var(--sp-2));
   width: 38px;
   pointer-events: none;
   opacity: 0;
@@ -350,6 +350,7 @@
 .demo-table-viewport__scroller {
   overflow: auto;
   max-width: 100%;
+  padding-block-end: var(--sp-2);
   scrollbar-gutter: stable;
   overscroll-behavior-inline: contain;
   border-block: 1px solid var(--border);
@@ -387,7 +388,7 @@
   position: relative;
   overflow: hidden;
   height: 4px;
-  margin-top: 6px;
+  margin-top: var(--sp-2);
   background: color-mix(in srgb, var(--text-3) 18%, transparent);
 }
 

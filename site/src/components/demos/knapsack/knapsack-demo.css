@@ -3,7 +3,7 @@
 /* A static visual preface. It deliberately has no selectors tied to demo state. */
 .knapsack-hero {
   position: relative;
-  height: clamp(176px, 19vw, 236px);
+  height: clamp(244px, 26vw, 360px);
   margin: 0 0 var(--sp-4);
   overflow: hidden;
   border-block: 1px solid var(--border);
@@ -27,9 +27,9 @@
 
 .knapsack-hero img {
   position: absolute;
-  inset: -28% 0 auto;
+  inset: 0;
   width: 100%;
-  height: 158%;
+  height: 100%;
   object-fit: contain;
   object-position: center;
   filter: drop-shadow(0 15px 24px color-mix(in srgb, var(--accent-1) 12%, transparent));
@@ -144,13 +144,8 @@
 
 @media (max-width: 600px) {
   .knapsack-hero {
-    height: 164px;
+    height: 220px;
     margin-bottom: var(--sp-3);
-  }
-
-  .knapsack-hero img {
-    inset-block-start: -23%;
-    height: 148%;
   }
 
   .knapsack-settings__body {
