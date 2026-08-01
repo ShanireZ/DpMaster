@@ -753,6 +753,22 @@
   letter-spacing: .17em;
 }
 
+.typepage[data-demo-standard='representative'] .demo__body.demo__body--terminal-rail {
+  padding-bottom: var(--sp-4);
+}
+
+.lesson--instrument-terminal {
+  margin-bottom: 0;
+}
+
+.lesson--instrument-terminal .demo {
+  margin-bottom: 0;
+}
+
+.lesson--instrument-terminal + .lesson {
+  margin-top: clamp(var(--sp-9), 7vw, 96px);
+}
+
 .typepage[data-demo-standard='representative'] .demo :is(button, input, select):focus-visible {
   outline: 2px solid var(--accent-2);
   outline-offset: 2px;
