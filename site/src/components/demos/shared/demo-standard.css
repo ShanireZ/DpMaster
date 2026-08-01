@@ -316,7 +316,6 @@
 }
 
 .demo-table-viewport {
-  --overview-width: 26%;
   position: relative;
 }
 
@@ -395,10 +394,8 @@
 .demo-table-viewport__position {
   position: absolute;
   inset: 0 auto 0 0;
-  width: var(--overview-width);
-  max-width: calc(100% - var(--overview-width));
   background: var(--accent-1);
-  transform: translateX(calc(-1 * var(--overview-width)));
+  transition: left var(--t-fast), width var(--t-fast);
 }
 
 .demo-detail-switch__tabs {

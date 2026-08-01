@@ -1,4 +1,4 @@
-import type { CSSProperties } from 'react'
+import { useEffect, type CSSProperties } from 'react'
 import { MB } from '../ui/Math'
 import type { VizModel, CellState } from './types'
 import { key } from './types'
@@ -26,7 +26,19 @@ function fmt(v: number | null): string {
   return String(v)
 }
 
-export default function DPViz({ model }: { model: VizModel }) {
+export interface DPVizPlaybackState {
+  index: number
+  count: number
+  playing: boolean
+}
+
+export default function DPViz({
+  model,
+  onPlaybackChange,
+}: {
+  model: VizModel
+  onPlaybackChange?: (state: DPVizPlaybackState) => void
+}) {
   const p = useStepPlayer(model.frames.length)
   const frame = model.frames[Math.min(p.index, model.frames.length - 1)]
   const cell = model.cell ?? 48
@@ -36,6 +48,10 @@ export default function DPViz({ model }: { model: VizModel }) {
   const ch = hasColH ? 30 : 0
   const colOffset = hasRowH ? 2 : 1
   const rowOffset = hasColH ? 2 : 1
+
+  useEffect(() => {
+    onPlaybackChange?.({ index: p.index, count: p.count, playing: p.playing })
+  }, [onPlaybackChange, p.count, p.index, p.playing])
 
   const gridStyle: CSSProperties = {
     gridTemplateColumns: `${hasRowH ? `${rh}px ` : ''}repeat(${model.cols}, ${cell}px)`,
@@ -50,6 +66,11 @@ export default function DPViz({ model }: { model: VizModel }) {
         label="DP 状态表；使用方向键或滚动查看完整表格"
         overviewLabel="DP 状态表横向位置"
         className="dpviz__viewport"
+        focus={frame.active ? {
+          key: p.index,
+          start: rh + frame.active.c * cell,
+          size: cell,
+        } : null}
       >
         <div className="dpviz__grid" style={gridStyle}>
           {hasRowH && hasColH && (

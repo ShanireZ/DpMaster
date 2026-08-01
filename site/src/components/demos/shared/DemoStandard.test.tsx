@@ -1,5 +1,5 @@
 import { beforeAll, expect, test, vi } from 'vitest'
-import { render, screen } from '@testing-library/react'
+import { fireEvent, render, screen } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { useStepPlayer } from '../../dp-engine/playback/useStepPlayer.ts'
 import {
@@ -101,4 +101,34 @@ test('DemoTableViewport owns local scrolling and position overview semantics', (
   )
   expect(screen.getByRole('region', { name: '二维状态表' })).toHaveAttribute('tabindex', '0')
   expect(screen.getByLabelText('表格横向位置')).toBeVisible()
+})
+
+test('DemoTableViewport follows the active column and sizes its overview thumb from real geometry', () => {
+  const { rerender } = render(
+    <DemoTableViewport label="宽状态表" focus={{ key: 0, start: 0, size: 48 }}>
+      <div>状态格</div>
+    </DemoTableViewport>,
+  )
+  const scroller = screen.getByRole('region', { name: '宽状态表' })
+  Object.defineProperties(scroller, {
+    clientWidth: { configurable: true, value: 200 },
+    scrollWidth: { configurable: true, value: 600 },
+    scrollLeft: { configurable: true, value: 0, writable: true },
+  })
+  const scrollTo = vi.fn(({ left }: ScrollToOptions) => {
+    Object.defineProperty(scroller, 'scrollLeft', { configurable: true, value: left, writable: true })
+  })
+  Object.defineProperty(scroller, 'scrollTo', { configurable: true, value: scrollTo })
+
+  rerender(
+    <DemoTableViewport label="宽状态表" focus={{ key: 1, start: 500, size: 48 }}>
+      <div>状态格</div>
+    </DemoTableViewport>,
+  )
+  fireEvent.scroll(scroller)
+
+  expect(scrollTo).toHaveBeenCalledWith({ left: 372, behavior: 'auto' })
+  const thumb = screen.getByLabelText('表格横向位置').firstElementChild as HTMLElement
+  expect(Number.parseFloat(thumb.style.left)).toBeCloseTo(62)
+  expect(Number.parseFloat(thumb.style.width)).toBeCloseTo(100 / 3)
 })
