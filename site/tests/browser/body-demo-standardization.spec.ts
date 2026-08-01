@@ -239,6 +239,77 @@ test('complete knapsack owns a distinct decorative hero and repeat-use language'
   await expect(hero.locator('svg, ol, [data-decision]')).toHaveCount(0)
 })
 
+test('B/LCS owns a static sequence hero and narrow editors stay inside the instrument', async ({ page }) => {
+  const consoleProblems: string[] = []
+  page.on('console', (message) => {
+    if (message.type() === 'error' || message.type() === 'warning') consoleProblems.push(message.text())
+  })
+  page.on('pageerror', (error) => consoleProblems.push(error.message))
+
+  await page.setViewportSize({ width: 1440, height: 900 })
+  await page.goto('/part/b/lcs')
+
+  const demo = page.locator('.lcs-demo').first()
+  const hero = demo.locator('.lcs-hero')
+  const heroImage = hero.locator('img')
+  await expect(hero).toBeVisible()
+  await expect(hero).toHaveAttribute('aria-hidden', 'true')
+  await expect(heroImage).toHaveAttribute('alt', '')
+  await expect(heroImage).toHaveAttribute('src', /lcs-instrument-v1-.+\.avif$/)
+  await expect(heroImage).toHaveCSS('object-fit', 'contain')
+  await expect(hero.locator('svg, ol, [data-step], [data-match]')).toHaveCount(0)
+
+  const heroSrc = await heroImage.getAttribute('src')
+  await demo.getByRole('button', { name: '完全一致' }).click()
+  await demo.getByRole('button', { name: '下一个字符' }).first().click()
+  await expect(heroImage).toHaveAttribute('src', heroSrc ?? '')
+  await expect(hero.locator('svg, ol, [data-step], [data-match]')).toHaveCount(0)
+
+  for (const width of [320, 360, 390, 430, 480, 540, 600, 640, 720, 740, 768]) {
+    await page.setViewportSize({ width, height: 900 })
+    const audit = await demo.evaluate((element) => {
+      const heroBox = element.querySelector('.lcs-hero')?.getBoundingClientRect()
+      const heroImageBox = element.querySelector('.lcs-hero img')?.getBoundingClientRect()
+      const editors = [...element.querySelectorAll('.lcs-string-editor')]
+      const cards = [...element.querySelectorAll('.lcs-char')]
+      const controls = [...element.querySelectorAll('.lcs-char button')]
+
+      return {
+        pageOverflow: document.documentElement.scrollWidth - document.documentElement.clientWidth,
+        demoOverflow: element.scrollWidth - element.clientWidth,
+        editorOverflow: editors.some((editor) => editor.scrollWidth > editor.clientWidth + 1),
+        maxCardWidth: Math.max(...cards.map((card) => card.getBoundingClientRect().width)),
+        controlOverflow: cards.some((card) => {
+          const cardBox = card.getBoundingClientRect()
+          return [...card.querySelectorAll('button')].some((control) => {
+            const box = control.getBoundingClientRect()
+            return box.left < cardBox.left - 1 || box.right > cardBox.right + 1
+          })
+        }),
+        minControlTarget: Math.min(...controls.map((control) => {
+          const box = control.getBoundingClientRect()
+          return Math.min(box.width, box.height)
+        })),
+        heroOverflow: heroBox && heroImageBox
+          ? heroImageBox.left < heroBox.left - 1 || heroImageBox.right > heroBox.right + 1
+          : true,
+        heroHeight: heroBox?.height ?? 0,
+      }
+    })
+
+    expect(audit.pageOverflow, `${width}px page overflow`).toBeLessThanOrEqual(1)
+    expect(audit.demoOverflow, `${width}px demo overflow`).toBeLessThanOrEqual(1)
+    expect(audit.editorOverflow, `${width}px editor overflow`).toBe(false)
+    expect(audit.maxCardWidth, `${width}px character card`).toBeLessThanOrEqual(133)
+    expect(audit.controlOverflow, `${width}px character controls`).toBe(false)
+    expect(audit.minControlTarget, `${width}px character target`).toBeGreaterThanOrEqual(44)
+    expect(audit.heroOverflow, `${width}px hero overflow`).toBe(false)
+    expect(audit.heroHeight, `${width}px hero height`).toBeGreaterThanOrEqual(179)
+  }
+
+  expect(consoleProblems).toEqual([])
+})
+
 test('shared DP tables use local scrolling and the unified instrument rail', async ({ page }) => {
   await page.setViewportSize({ width: 390, height: 844 })
   await page.goto('/part/b/lcs')

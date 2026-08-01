@@ -1,8 +1,10 @@
 import { useMemo, useState } from 'react'
 import { Plus, X, ChevronLeft, ChevronRight } from 'lucide-react'
 import DPViz from '../../dp-engine/DPViz'
+import { LCSHero } from './LCSHero.tsx'
 import { lcs2D } from './lcsSolver'
 import '../shared/demo-workbench.css'
+import './lcs-demo.css'
 
 // 字符池：够演示又不至于让表太大。改字符只在池内循环。
 const POOL = ['A', 'B', 'C', 'D']
@@ -29,49 +31,28 @@ function CharCell({
   idx: number
 }) {
   return (
-    <div className="demo-control__item" style={{ paddingTop: 14 }}>
+    <div className="demo-control__item lcs-char">
       <span className="demo-control__item-i">{idx + 1}</span>
       {removable && (
         <button className="demo-control__remove" onClick={onRemove} aria-label="删除字符">
           <X size={12} />
         </button>
       )}
-      <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+      <div className="lcs-char__picker">
         <button
+          className="lcs-char__cycle"
           onClick={() => onCycle(-1)}
           aria-label="上一个字符"
-          style={{
-            width: 24,
-            height: 28,
-            borderRadius: 6,
-            color: 'var(--text-1)',
-            border: '1px solid var(--border)',
-            background: 'var(--surface-2)',
-            display: 'grid',
-            placeItems: 'center',
-          }}
         >
           <ChevronLeft size={14} />
         </button>
-        <span
-          className="mono"
-          style={{ fontSize: 20, fontWeight: 700, minWidth: 22, textAlign: 'center', color: 'var(--accent-1)' }}
-        >
+        <span className="mono lcs-char__value">
           {ch}
         </span>
         <button
+          className="lcs-char__cycle"
           onClick={() => onCycle(1)}
           aria-label="下一个字符"
-          style={{
-            width: 24,
-            height: 28,
-            borderRadius: 6,
-            color: 'var(--text-1)',
-            border: '1px solid var(--border)',
-            background: 'var(--surface-2)',
-            display: 'grid',
-            placeItems: 'center',
-          }}
         >
           <ChevronRight size={14} />
         </button>
@@ -101,9 +82,9 @@ function StringRow({
   const addOne = () => setS((prev) => (prev.length < MAXLEN ? prev + POOL[0] : prev))
 
   return (
-    <div>
+    <div className="lcs-string-editor">
       <div className="demo-control__group-label">{title}（点箭头换字符 · 可增删 · 长度 ≤ {MAXLEN}）</div>
-      <div className="demo-control__items">
+      <div className="demo-control__items lcs-string-editor__items">
         {s.split('').map((ch, i) => (
           <CharCell
             key={i}
@@ -136,7 +117,9 @@ export default function LCSDemo() {
   const modelKey = `lcs-${a}-${b}`
 
   return (
-    <div>
+    <div className="lcs-demo">
+      <LCSHero />
+
       <div className="demo-control__modes">
         {PRESETS.map((p) => (
           <button
@@ -152,7 +135,7 @@ export default function LCSDemo() {
         ))}
       </div>
 
-      <div className="demo-control__toolbar" style={{ gap: 'var(--sp-5)' }}>
+      <div className="demo-control__toolbar lcs-demo__strings">
         <StringRow title="串 A（作行）" s={a} setS={setA} />
         <StringRow title="串 B（作列）" s={b} setS={setB} />
       </div>
