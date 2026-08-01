@@ -153,7 +153,7 @@ test('A lesson cues keep inline copy readable and DP panels use the available wi
         .map((child) => child.textContent?.trim())
 
       const dpPanels = [...document.querySelectorAll('.dpviz')].map((viz) => {
-        const table = viz.querySelector('.dpviz__scroll')?.getBoundingClientRect()
+        const table = viz.querySelector('.dpviz__viewport')?.getBoundingClientRect()
         const panel = viz.querySelector('.dpviz__panel')?.getBoundingClientRect()
         return {
           aligned: !!table && !!panel && Math.abs(table.top - panel.top) <= 1,
@@ -194,7 +194,7 @@ test('A lesson cues keep inline copy readable and DP panels use the available wi
 
   const mobileLayout = await page.evaluate(() => {
     const cue = document.querySelector('.pointer-cue')?.getBoundingClientRect()
-    const table = document.querySelector('.dpviz__scroll')?.getBoundingClientRect()
+    const table = document.querySelector('.dpviz__viewport')?.getBoundingClientRect()
     const panel = document.querySelector('.dpviz__panel')?.getBoundingClientRect()
     const body = document.querySelector('.demo__body')
     const bodyStyle = body ? getComputedStyle(body) : null
