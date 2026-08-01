@@ -1,5 +1,5 @@
-import treeHero from '../../../assets/family-art/tree-hero.webp'
-import treeLessons from '../../../assets/family-art/tree-lessons.webp'
+import treeHero from '../../../assets/family-art/tree-hero.avif'
+import treeLessons from '../../../assets/family-art/tree-lessons.avif'
 import { TreeJourneyArt } from '../CGFamilyArt.tsx'
 import { PolyLessonPlate } from '../PolyLessonPlate.tsx'
 import type { FamilyArtProps, LessonPlateProps } from '../familyArtRegistry.ts'

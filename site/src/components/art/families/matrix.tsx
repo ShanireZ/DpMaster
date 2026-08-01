@@ -1,5 +1,5 @@
-import matrixHero from '../../../assets/family-art/matrix-hero.webp'
-import matrixLessons from '../../../assets/family-art/matrix-lessons.webp'
+import matrixHero from '../../../assets/family-art/matrix-hero.avif'
+import matrixLessons from '../../../assets/family-art/matrix-lessons.avif'
 import { MatrixJourneyArt } from '../CGFamilyArt.tsx'
 import { PolyLessonPlate } from '../PolyLessonPlate.tsx'
 import type { FamilyArtProps, LessonPlateProps } from '../familyArtRegistry.ts'

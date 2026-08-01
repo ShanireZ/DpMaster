@@ -1,5 +1,5 @@
-import bitmaskHero from '../../../assets/family-art/bitmask-hero.webp'
-import bitmaskLessons from '../../../assets/family-art/bitmask-lessons.webp'
+import bitmaskHero from '../../../assets/family-art/bitmask-hero.avif'
+import bitmaskLessons from '../../../assets/family-art/bitmask-lessons.avif'
 import { BitmaskJourneyArt } from '../CGFamilyArt.tsx'
 import { PolyLessonPlate } from '../PolyLessonPlate.tsx'
 import type { FamilyArtProps, LessonPlateProps } from '../familyArtRegistry.ts'

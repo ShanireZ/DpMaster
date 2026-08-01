@@ -1,5 +1,5 @@
-import intervalHero from '../../../assets/family-art/interval-hero.webp'
-import intervalLessons from '../../../assets/family-art/interval-lessons.webp'
+import intervalHero from '../../../assets/family-art/interval-hero.avif'
+import intervalLessons from '../../../assets/family-art/interval-lessons.avif'
 import { IntervalJourneyArt } from '../CGFamilyArt.tsx'
 import { PolyLessonPlate } from '../PolyLessonPlate.tsx'
 import type { FamilyArtProps, LessonPlateProps } from '../familyArtRegistry.ts'

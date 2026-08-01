@@ -4,6 +4,21 @@ import test from 'node:test'
 
 const source = (path) => readFileSync(new URL(`../${path}`, import.meta.url), 'utf8')
 const demoRoot = new URL('../src/components/demos/', import.meta.url)
+const familyArtRoot = new URL('../src/assets/family-art/', import.meta.url)
+
+const optimizedFamilyArt = [
+  'bitmask-hero.avif',
+  'bitmask-lessons.avif',
+  'interval-hero.avif',
+  'interval-lessons.avif',
+  'linear-hero.avif',
+  'matrix-hero.avif',
+  'matrix-lessons.avif',
+  'reroot-hero.avif',
+  'reroot-lessons.avif',
+  'tree-hero.avif',
+  'tree-lessons.avif',
+]
 
 const componentFiles = (directory = demoRoot) => readdirSync(directory, { withFileTypes: true })
   .flatMap((entry) => {
@@ -26,6 +41,24 @@ test('family art owns upgraded route visuals without duplicating catalog content
   assert.doesNotMatch(partPage, /import PolygonBackpack/)
   assert.match(typePage, /FamilyLessonPlate/)
   assert.doesNotMatch(typePage, /KnapsackLessonPlate/)
+})
+
+test('route family art keeps the reclaimed AVIF asset budget', () => {
+  const assetNames = readdirSync(familyArtRoot)
+  const familySources = [
+    source('src/components/art/LinearFamilyArt.tsx'),
+    source('src/components/art/families/bitmask.tsx'),
+    source('src/components/art/families/interval.tsx'),
+    source('src/components/art/families/matrix.tsx'),
+    source('src/components/art/families/reroot.tsx'),
+    source('src/components/art/families/tree.tsx'),
+  ].join('\n')
+
+  for (const assetName of optimizedFamilyArt) {
+    assert.equal(assetNames.includes(assetName), true, `${assetName} must remain available`)
+  }
+  assert.deepEqual(assetNames.filter((name) => name.endsWith('.webp')), [])
+  assert.doesNotMatch(familySources, /family-art\/[a-z-]+\.webp/)
 })
 
 test('non-backpack demos consume the shared workbench stylesheet', () => {

@@ -8,6 +8,7 @@
 
 - Task A 已完成并提交为 `023125f`。
 - `origin/main` 为 `ecdd824`；pnpm 初始化修复已在 CI #77 生效。该轮随后暴露浅克隆造成的 SEO 日期漂移，本地已为 CI checkout 补全 Git 历史，并修正仍引用退役 `.dpviz__scroll` 的浏览器合同。
+- 11 张家族路由透明插画已从 1536×1024 WebP 收敛为 1152×768 AVIF；视觉构图与透明边界不变，区域产物回收约 608 KB，为后续独立家族资产恢复预算空间。
 - 第一轮标本场拍板已经完成：
   - 主构图：纵向仪表脊。
   - 公共交互：整体确认。
@@ -71,11 +72,13 @@
 以下门禁已在当前 A/01、完全背包与 B/LCS 样机通过：
 
 - `pnpm test:unit`：11 个测试文件、45 项测试全部通过
-- `pnpm test`：231 项 Node 合同测试全部通过
+- `pnpm test`：233 项 Node 合同测试全部通过
 - `pnpm lint`：零 warning
 - `pnpm build`：两区产物与 96 个区域 HTML 正常生成
-- 资源预算：243 个文件，Cloudflare 6,299,302 bytes、EdgeOne 6,299,300 bytes，最大单文件 732,959 bytes，门禁通过
-- 当前 Cloudflare 预算只剩 698 bytes；继续增加家族资产前必须压缩或合并现有资源，不能放宽 6.30 MB 门禁。
+- 资源预算：243 个文件，Cloudflare 5,691,431 bytes、EdgeOne 5,691,429 bytes，最大单文件 732,959 bytes，门禁通过
+- 当前 Cloudflare 预算余量为 608,569 bytes；保持 6.30 MB 门禁不变，新增家族资产仍须在现有余量内完成。
+- 家族路由插画已完成桌面与 390×844 移动端实页核对，Hero 与课程旅程图完整、清晰，控制台无 warning/error。
+- B–G 家族插画专项 Chromium：9 项全部通过，覆盖类别 Hero、28 张课程图版、深浅主题、中间宽度、reduced-motion 与真实 Demo 状态变化。
 - 正文标准专项 Chromium：8 项全部通过；新增 B/LCS 独立静态 Hero、字符交互和连续窄宽门禁
 - in-app browser 实测：640×900 下物品卡 224px 两列、DP 表右侧缓冲 16px、播放与倍速同排相隔 12px；390×844 下物品卡 224px，播放/进度/倍速三排，2× 与下一步交互正常；两端无页面横向溢出
 - 完全背包 1280px 实页使用独立 `knapsack-complete-instrument-v1` 资产，容量改为 18 并前进一步后 Hero 地址不变；控制台无 warning/error
