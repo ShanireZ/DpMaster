@@ -34,6 +34,58 @@ test('fourteen representative lessons use the approved instrument shell without 
   }
 })
 
+test('A/01 keeps the sculpture, capacity rail, editor, and DP viewport in one playback state', async ({ page }) => {
+  const consoleProblems: string[] = []
+  page.on('console', (message) => {
+    if (message.type() === 'error' || message.type() === 'warning') consoleProblems.push(message.text())
+  })
+  page.on('pageerror', (error) => consoleProblems.push(error.message))
+
+  await page.setViewportSize({ width: 1440, height: 900 })
+  await page.goto('/part/a/01')
+
+  const demo = page.locator('.kd.demo-editor')
+  const sculpture = demo.locator('.knapsack-instrument')
+  await expect(sculpture).toBeVisible()
+  await expect(sculpture).toHaveAttribute('aria-label', /容量 8，二维原型/)
+  await expect(sculpture.locator('img')).toHaveAttribute('alt', '')
+  await expect(sculpture.locator('img')).toHaveAttribute('src', /knapsack-01-instrument-.+\.avif$/)
+
+  const capacity = demo.getByRole('spinbutton', { name: 'm 数值' })
+  await capacity.fill('20')
+  await capacity.press('Tab')
+  const firstItem = demo.locator('.demo-control__item').first()
+  const firstWeight = firstItem.getByRole('spinbutton', { name: '重量 w 数值' })
+  await firstWeight.fill('7')
+  await firstWeight.press('Tab')
+  await demo.getByRole('button', { name: '加物品' }).click()
+  await expect(sculpture).toHaveAttribute('aria-label', /4 件物品，容量 20，二维原型/)
+  await expect(sculpture.locator('.knapsack-instrument__objects > li')).toHaveCount(4)
+  await expect(sculpture.locator('ol[aria-label="容量状态 0 到 20"] > li')).toHaveCount(21)
+
+  const next = demo.getByRole('group', { name: 'DP 表格逐帧播放' }).getByRole('button', { name: '下一步' })
+  for (let index = 0; index < 21; index += 1) await next.click()
+  await expect(sculpture).toHaveAttribute('data-decision', 'take')
+  await expect(sculpture.locator('[data-capacity="20"]')).toHaveAttribute('aria-current', 'step')
+  await expect(sculpture.getByText(/正在计算物品 1.+容量 20：取入背包/)).toBeVisible()
+
+  const scroller = demo.locator('.demo-table-viewport__scroller')
+  const currentCell = demo.locator('.dp-cell.is-current')
+  expect(await scroller.evaluate((element) => element.scrollLeft)).toBeGreaterThan(0)
+  expect(await currentCell.evaluate((element) => {
+    const cell = element.getBoundingClientRect()
+    const viewport = element.closest('.demo-table-viewport__scroller')?.getBoundingClientRect()
+    return viewport ? cell.left >= viewport.left - 1 && cell.right <= viewport.right + 1 : false
+  })).toBe(true)
+  await expect(demo.locator('.demo-table-viewport__position')).not.toHaveCSS('left', '0px')
+
+  await page.setViewportSize({ width: 390, height: 844 })
+  expect(
+    await page.evaluate(() => document.documentElement.scrollWidth <= document.documentElement.clientWidth + 1),
+  ).toBe(true)
+  expect(consoleProblems).toEqual([])
+})
+
 test('shared DP tables use local scrolling and the unified instrument rail', async ({ page }) => {
   await page.setViewportSize({ width: 390, height: 844 })
   await page.goto('/part/b/lcs')
