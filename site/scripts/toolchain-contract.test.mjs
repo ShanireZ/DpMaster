@@ -35,6 +35,18 @@ test('the package root uses the pinned pnpm 11 and Node 24 contract', () => {
   assert.doesNotMatch(settings, /onlyBuiltDependencies/)
 })
 
+test('CI fetches complete history for Git-derived route metadata', () => {
+  const workflow = readFileSync(
+    join(projectDir, '.github', 'workflows', 'ci.yml'),
+    'utf8',
+  )
+
+  assert.match(
+    workflow,
+    /uses:\s*actions\/checkout@v7[\s\S]*?fetch-depth:\s*0/,
+  )
+})
+
 test('active source and maintained guidance contain no retired compatibility surface', () => {
   const sourceFiles = textFiles(
     join(siteDir, 'src'),

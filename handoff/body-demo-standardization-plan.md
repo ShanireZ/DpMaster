@@ -3,7 +3,7 @@
 > Task：B  
 > 状态：Task A 已完成；A/01 高保真方向已确认，Task B 正用 B/LCS 验证第二个家族样例
 > 范围：A–G 共 37 门课程的正文图版、Demo 表达系统与 B 类课程路径箭头  
-> Git：`origin/main` 为 `84be804`；本地 CI 修复为 `24d315a`，尚待用户 push；不部署
+> Git：`origin/main` 为 `ecdd824`；CI #77 的完整历史与浏览器合同修复待本地提交；不 push、不部署
 
 ## 工程前置
 

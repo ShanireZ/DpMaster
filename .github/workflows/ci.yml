@@ -21,6 +21,9 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v7
+        with:
+          # routeLastModified is derived from git log, so a shallow clone is not deterministic.
+          fetch-depth: 0
 
       - name: Set up pnpm
         uses: pnpm/action-setup@v6

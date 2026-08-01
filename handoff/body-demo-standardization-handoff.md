@@ -7,7 +7,7 @@
 ## 当前停点
 
 - Task A 已完成并提交为 `023125f`。
-- `origin/main` 为 `84be804`；本地 `24d315a` 修复 GitHub Actions 的 pnpm 版本发现问题，尚待用户 push。
+- `origin/main` 为 `ecdd824`；pnpm 初始化修复已在 CI #77 生效。该轮随后暴露浅克隆造成的 SEO 日期漂移，本地已为 CI checkout 补全 Git 历史，并修正仍引用退役 `.dpviz__scroll` 的浏览器合同。
 - 第一轮标本场拍板已经完成：
   - 主构图：纵向仪表脊。
   - 公共交互：整体确认。
