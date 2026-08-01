@@ -18,6 +18,32 @@ function routeFiles(pathname) {
   ]
 }
 
+function gitNames(args) {
+  const result = spawnSync('git', args, {
+    cwd: projectRoot,
+    encoding: 'utf8',
+  })
+  if (result.status !== 0) {
+    throw new Error(`Unable to inspect Git changes: ${result.stderr.trim()}`)
+  }
+  return result.stdout.split('\0').filter(Boolean)
+}
+
+function dirtyRouteFiles(files) {
+  return new Set([
+    ...gitNames(['diff', '--name-only', '-z', 'HEAD', '--', ...files]),
+    ...gitNames(['ls-files', '--others', '--exclude-standard', '-z', '--', ...files]),
+  ])
+}
+
+function localDate() {
+  const now = new Date()
+  const year = now.getFullYear()
+  const month = String(now.getMonth() + 1).padStart(2, '0')
+  const day = String(now.getDate()).padStart(2, '0')
+  return `${year}-${month}-${day}`
+}
+
 function gitDate(files) {
   const result = spawnSync(
     'git',
@@ -35,8 +61,19 @@ function gitDate(files) {
 }
 
 export function collectRouteLastModified() {
+  const filesByRoute = new Map(
+    PUBLIC_PATHS.map((pathname) => [pathname, routeFiles(pathname)]),
+  )
+  const dirtyFiles = dirtyRouteFiles(new Set([...filesByRoute.values()].flat()))
+  const workingDate = dirtyFiles.size > 0 ? localDate() : null
+
   return Object.fromEntries(
-    PUBLIC_PATHS.map((pathname) => [pathname, gitDate(routeFiles(pathname))]),
+    [...filesByRoute].map(([pathname, files]) => [
+      pathname,
+      files.some((file) => dirtyFiles.has(file))
+        ? workingDate
+        : gitDate(files),
+    ]),
   )
 }
 
