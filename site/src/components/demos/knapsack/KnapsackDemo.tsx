@@ -102,7 +102,7 @@ export default function KnapsackDemo({ variant = '01' }: { variant?: '01' | 'com
       <KnapsackHero />
 
       <details className="knapsack-settings" open>
-        <summary>自主设计物品、容量与计算模式</summary>
+        <summary>自主设计数值</summary>
         <div className="knapsack-settings__body">
           <div className="demo-control__toolbar">
             <div>

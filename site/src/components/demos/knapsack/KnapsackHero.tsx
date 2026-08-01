@@ -1,4 +1,4 @@
-import heroArt from '../../../assets/demo-art/knapsack-01-instrument.avif'
+import heroArt from '../../../assets/demo-art/knapsack-01-instrument-v2.avif'
 
 /**
  * 纯装饰 Hero：只负责课程气质，不映射输入、容量或播放状态。

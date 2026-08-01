@@ -25,11 +25,14 @@
 
 - `KnapsackHero` 只渲染一张 `aria-hidden` 的透明 AVIF；Hero 内没有手工 polygon、SVG 路径、物品列表、容量轨道或播放状态属性。
 - Hero 调整为桌面最高 360px、移动端 220px，并使用完整 `contain` 展示资产；不再通过负偏移裁切图片，仍只作为正文前言。
-- 雕塑资产为 1536×1024、41,396 bytes；图片不含标题、公式、数字或控件文本。
+- 新版静态资产为 1536×1024、52,926 bytes；有效像素上下余量为 239/240px，消除了原图约 117px 的上下失衡。
+- 左侧三件物品归入同一个中性托盘；删除断线、分支、连接节点和激活色，不再用装饰 Hero 暗示取舍状态。图片不含标题、公式、数字或控件文本。
 - 物品、容量和模式只存在于参数编辑区与 DP 模型；编辑会重建 DP 数据，但不会改变 Hero 的 DOM、图片地址或几何。
 - `DPViz` 的当前格会保持在局部视窗内，位置缩略条使用真实可见比例和滚动位置。
 - 表格内容下沿与原生横向滚动条之间保留一个共享间隔，位置缩略条再独立位于视窗之外，避免三者贴边混成一层。
 - 参数面板默认展开，重量、价值和容量均可直接输入；支持 1–8 件物品、容量 1–60、重量 1–60、价值 1–999。
+- 参数面板标题收口为“自主设计数值”；终止型播放轨使用 16px 收尾，不再叠加通用 Demo 壳的 57.6px 底部留白。
+- A/01 仪器章节取消 Demo 末尾 88px 与章节 142px 的重复间距，下一章节统一以最高 96px 进入；原实测 230px 空洞不再保留。
 - 原有 solver、输入与播放合同未改变；上一稿为 Hero 增加的 `DPViz` 播放状态回调已删除。
 
 ## 已提交的代表课程基础
@@ -46,7 +49,7 @@
 
 代表课程基础已经包含在 `e3671da`。当前待评审样机文件可由 `git status --short` 和 `git diff --stat` 获取，关键文件：
 
-- `site/src/assets/demo-art/knapsack-01-instrument.avif`
+- `site/src/assets/demo-art/knapsack-01-instrument-v2.avif`
 - `site/src/components/demos/knapsack/KnapsackHero.tsx`
 - `site/src/components/demos/knapsack/KnapsackHero.test.tsx`
 - `site/tests/browser/body-demo-standardization.spec.ts`
@@ -59,7 +62,7 @@
 - `pnpm test`：231 项 Node 合同测试全部通过
 - `pnpm lint`：零 warning
 - `pnpm build`：两区产物与 96 个区域 HTML 正常生成
-- 资源预算：241 个文件、最大区域总量 6,232,615 bytes、最大单文件 732,959 bytes，门禁通过
+- 资源预算：241 个文件、最大区域总量 6,244,440 bytes、最大单文件 732,959 bytes，门禁通过
 - 正文标准专项 Chromium：5 项全部通过；A/01 覆盖 Hero 不随数据/播放变化、自定义 4 件物品、容量 20、DP 当前格跟随与位置缩略条
 - in-app browser 实测：1440×1000 下 Hero 360px，390×844 下 Hero 220px，图片均为零偏移完整 `contain`；表格内容到视窗下沿约 18.4px，位置缩略条另隔 8px；两端无页面横向溢出，控制台无 warning/error
 

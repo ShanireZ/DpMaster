@@ -50,9 +50,10 @@ test('A/01 keeps a decorative hero separate from the editable DP data flow', asy
   await expect(hero).toBeVisible()
   await expect(hero).toHaveAttribute('aria-hidden', 'true')
   await expect(heroImage).toHaveAttribute('alt', '')
-  await expect(heroImage).toHaveAttribute('src', /knapsack-01-instrument-.+\.avif$/)
+  await expect(heroImage).toHaveAttribute('src', /knapsack-01-instrument-v2-.+\.avif$/)
   await expect(heroImage).toHaveCSS('object-fit', 'contain')
   await expect(hero.locator('svg, ol, [data-decision]')).toHaveCount(0)
+  await expect(demo.locator('.knapsack-settings > summary')).toHaveText('自主设计数值')
   const heroSrc = await heroImage.getAttribute('src')
   const initialHeroBox = await hero.boundingBox()
   expect(initialHeroBox?.height).toBeGreaterThanOrEqual(350)
@@ -87,6 +88,18 @@ test('A/01 keeps a decorative hero separate from the editable DP data flow', asy
     return viewport ? cell.left >= viewport.left - 1 && cell.right <= viewport.right + 1 : false
   })).toBe(true)
   await expect(demo.locator('.demo-table-viewport__position')).not.toHaveCSS('left', '0px')
+  expect(await demo.evaluate((element) => {
+    const rail = element.querySelector('.instrument-rail')?.getBoundingClientRect()
+    const body = element.closest('.demo__body')?.getBoundingClientRect()
+    return rail && body ? body.bottom - rail.bottom : Number.POSITIVE_INFINITY
+  })).toBeLessThanOrEqual(20)
+  expect(await demo.evaluate((element) => {
+    const instrument = element.closest('.demo')
+    const nextHeading = instrument?.closest('.lesson')?.nextElementSibling?.querySelector('.section-title')
+    const instrumentBox = instrument?.getBoundingClientRect()
+    const headingBox = nextHeading?.getBoundingClientRect()
+    return instrumentBox && headingBox ? headingBox.top - instrumentBox.bottom : Number.POSITIVE_INFINITY
+  })).toBeLessThanOrEqual(100)
 
   await page.setViewportSize({ width: 390, height: 844 })
   expect((await hero.boundingBox())?.height).toBeGreaterThanOrEqual(215)

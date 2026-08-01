@@ -176,10 +176,10 @@ export default function Knapsack01() {
         </div>
       </section>
 
-      <section className="lesson">
+      <section className="lesson lesson--instrument-terminal">
         <h2 className="section-title">看它一格一格长出来</h2>
         <div className="demo">
-          <div className="demo__body">
+          <div className="demo__body demo__body--terminal-rail">
             <KnapsackDemo variant="01" />
           </div>
         </div>
