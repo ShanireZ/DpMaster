@@ -613,6 +613,32 @@ a.nav-type.active::before { opacity: 1; transform: scaleY(1); }
   }
 }
 
+@media (max-width: 360px) {
+  .topbar:not(.topbar--home) {
+    gap: var(--sp-2);
+    padding-inline: var(--sp-3);
+  }
+
+  .topbar:not(.topbar--home) .crumbs {
+    overflow: hidden;
+    flex: 1;
+  }
+
+  .topbar:not(.topbar--home) .crumbs > a,
+  .topbar:not(.topbar--home) .crumbs > .sep {
+    display: none;
+  }
+
+  .topbar:not(.topbar--home) .crumbs .cur {
+    display: block;
+    min-width: 0;
+  }
+
+  .topbar:not(.topbar--home) .topbar__spacer {
+    display: none;
+  }
+}
+
 @media (prefers-reduced-motion: reduce) {
   .shell,
   .sidebar,

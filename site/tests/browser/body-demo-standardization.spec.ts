@@ -155,6 +155,66 @@ test('knapsack editor and playback rail keep deliberate spacing at narrow widths
   await demo.getByRole('button', { name: '速度 2 倍' }).click()
   await expect(demo.getByRole('button', { name: '速度 2 倍' })).toHaveAttribute('aria-pressed', 'true')
   expect(await page.evaluate(() => document.documentElement.scrollWidth <= document.documentElement.clientWidth + 1)).toBe(true)
+
+  for (const width of [320, 360, 390, 430, 480, 540, 600, 640, 720, 740, 768]) {
+    await page.setViewportSize({ width, height: 900 })
+    const audit = await demo.evaluate((element) => {
+      const rect = (selector: string) => element.querySelector(selector)?.getBoundingClientRect()
+      const item = element.querySelector('.demo-control__item')
+      const itemBox = item?.getBoundingClientRect()
+      const itemControls = item ? [...item.querySelectorAll('button, input')].map((control) => control.getBoundingClientRect()) : []
+      const rail = rect('.instrument-rail')
+      const railParts = [
+        rect('.instrument-rail .playback__transport'),
+        rect('.instrument-rail .playback__progress'),
+        rect('.instrument-rail .playback__speed'),
+      ].filter((box): box is DOMRect => Boolean(box))
+      const playbackButtons = [...element.querySelectorAll('.instrument-rail .playback button')]
+        .map((button) => button.getBoundingClientRect())
+      const overlaps = railParts.some((box, index) => railParts.slice(index + 1).some((other) =>
+        Math.min(box.right, other.right) - Math.max(box.left, other.left) > 1
+        && Math.min(box.bottom, other.bottom) - Math.max(box.top, other.top) > 1,
+      ))
+      const viewport = rect('.dpviz__viewport')
+      const scroller = rect('.demo-table-viewport__scroller')
+
+      return {
+        pageOverflow: document.documentElement.scrollWidth - document.documentElement.clientWidth,
+        demoOverflow: element.scrollWidth - element.clientWidth,
+        settingsOverflow: (element.querySelector('.knapsack-settings__body')?.scrollWidth ?? 0)
+          - (element.querySelector('.knapsack-settings__body')?.clientWidth ?? 0),
+        itemWidth: itemBox?.width ?? Number.POSITIVE_INFINITY,
+        itemControlOverflow: itemBox
+          ? itemControls.some((box) => box.left < itemBox.left - 1 || box.right > itemBox.right + 1)
+          : true,
+        railOverflow: rail
+          ? railParts.some((box) => box.left < rail.left - 1 || box.right > rail.right + 1)
+          : true,
+        railPartsOverlap: overlaps,
+        minPlaybackButton: Math.min(...playbackButtons.map((box) => Math.min(box.width, box.height))),
+        rightInset: viewport && scroller ? viewport.right - scroller.right : 0,
+      }
+    })
+
+    expect(audit.pageOverflow, `${width}px page overflow`).toBeLessThanOrEqual(1)
+    expect(audit.demoOverflow, `${width}px demo overflow`).toBeLessThanOrEqual(1)
+    expect(audit.settingsOverflow, `${width}px settings overflow`).toBeLessThanOrEqual(1)
+    expect(audit.itemWidth, `${width}px item width`).toBeLessThanOrEqual(225)
+    expect(audit.itemControlOverflow, `${width}px item controls`).toBe(false)
+    expect(audit.railOverflow, `${width}px rail overflow`).toBe(false)
+    expect(audit.railPartsOverlap, `${width}px rail overlap`).toBe(false)
+    expect(audit.minPlaybackButton, `${width}px playback target`).toBeGreaterThanOrEqual(44)
+    expect(audit.rightInset, `${width}px table inset`).toBeGreaterThanOrEqual(16)
+
+    if (width === 320) {
+      const crumb = page.locator('.crumbs .cur')
+      await expect(crumb).toHaveText('01 背包')
+      expect((await crumb.boundingBox())?.height).toBeLessThanOrEqual(22)
+      expect(await page.locator('.crumbs > a, .crumbs > .sep').evaluateAll((elements) =>
+        elements.every((element) => getComputedStyle(element).display === 'none'),
+      )).toBe(true)
+    }
+  }
 })
 
 test('complete knapsack owns a distinct decorative hero and repeat-use language', async ({ page }) => {
