@@ -21,6 +21,8 @@ jobs:
 
       - name: Set up pnpm
         uses: pnpm/action-setup@v6
+        with:
+          package_json_file: site/package.json
 
       - name: Set up Node 24
         uses: actions/setup-node@v7
