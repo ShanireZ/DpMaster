@@ -13,4 +13,13 @@ describe('KnapsackHero', () => {
     expect(hero?.querySelector('ol')).not.toBeInTheDocument()
     expect(hero).not.toHaveAttribute('data-decision')
   })
+
+  it('uses a distinct static asset for complete knapsack', () => {
+    const zeroOne = render(<KnapsackHero variant="01" />)
+    const complete = render(<KnapsackHero variant="complete" />)
+
+    expect(zeroOne.container.querySelector('img')?.getAttribute('src')).toContain('knapsack-01-instrument-v2')
+    expect(complete.container.querySelector('img')?.getAttribute('src')).toContain('knapsack-complete-instrument-v1')
+    expect(complete.container.querySelector('.knapsack-hero')).toHaveAttribute('data-variant', 'complete')
+  })
 })
