@@ -14,7 +14,7 @@ const CODE_P1616 = `
 using namespace std;
 
 int t[10005], v[10005];
-int f[10005];
+long long f[10000005];        // 1 <= T <= 10^7，答案也可能超过 int
 
 int main()
 {
@@ -238,6 +238,9 @@ export default function KnapsackComplete() {
           </Field>
           <Field k="为什么选它">
             和 01 背包的 P1048 构成「逆推 ↔ 正推」黄金对照，代码<strong>只差内层循环方向</strong>，一眼看清两类背包的分界。
+          </Field>
+          <Field k="数据范围 · 别照搬 P1048 的数组">
+            本题 <M>{'T\\le 10^7'}</M>，所以 <M>{'f'}</M> 要按时间上限开到 <M>{'10^7+5'}</M>；最优价值还可能超过 32 位整数，数组必须用 <code>long long</code>。若仍写成 P1048 常见的 <code>int f[10005]</code>，大数据会越界或溢出。
           </Field>
           <Field k="参考代码（一维正推）">
             <CodeBlock code={CODE_P1616} luogu="P1616" />

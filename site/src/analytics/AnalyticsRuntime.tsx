@@ -37,6 +37,10 @@ function startRuntime(): void {
     })
   })
 
+  // web-vitals v6 uses Array.prototype.at internally. Keep optional RUM from
+  // generating client_error noise in older WebViews that can still read the site.
+  if (typeof Array.prototype.at !== 'function') return
+
   void import('web-vitals').then(({ onCLS, onFCP, onINP, onLCP, onTTFB }) => {
     const report = (metric: {
       name: string
