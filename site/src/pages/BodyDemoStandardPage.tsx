@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef, useState } from 'react'
+import { useMemo, useRef, useState } from 'react'
 import { Check, ChevronsRight, Orbit, ScanLine, Split } from 'lucide-react'
 import {
   DemoDetailSwitch,
@@ -226,12 +226,6 @@ export default function BodyDemoStandardPage() {
     [family],
   )
 
-  useEffect(() => {
-    const firstReviewSaved = localStorage.getItem('dpmaster:body-demo-review:v1')
-    const target = firstReviewSaved ? representativeReviewDialog.current : reviewDialog.current
-    if (target && !target.open) target.showModal()
-  }, [])
-
   const saveReview = () => {
     localStorage.setItem('dpmaster:body-demo-review:v1', JSON.stringify(review))
     setReviewSaved(true)
@@ -340,11 +334,11 @@ export default function BodyDemoStandardPage() {
       >
         <form method="dialog" onSubmit={saveRepresentativeReview}>
           <header>
-            <span>Review gate 02 · no countdown</span>
-            <h2 id="representative-review-title">代表课程真实手感拍板</h2>
+            <span>Review gate 02 · approved 2026-08-02</span>
+            <h2 id="representative-review-title">代表课程评审归档</h2>
             <p>
-              A–G 共 14 门代表课程现已接入独立高保真静态 Hero，并保留原有可操作 Demo。
-              请从下方逐课核对真实页面后再决定是否推广。
+              A–G 共 14 门代表课程已通过高保真方向评审，仪器壳层已推广到全部 37 课。
+              下方入口与选项仅保留为可复核记录。
             </p>
             <nav className="standard-review__routes" aria-label="代表课程快速入口">
               <a href="/part/a/01">A · 01</a>
@@ -365,7 +359,7 @@ export default function BodyDemoStandardPage() {
           </header>
 
           <fieldset>
-            <legend>01 / 推广判断</legend>
+            <legend>01 / 归档结论</legend>
             {([
               ['approve', '确认推广', '推荐 · 将仪器骨架推广至全部 37 课'],
               ['density', '先调信息密度', '保留方向，先调整标题、轨道或状态密度'],
@@ -431,7 +425,7 @@ export default function BodyDemoStandardPage() {
             <button type="button" onClick={() => representativeReviewDialog.current?.close()}>
               继续查看课程
             </button>
-            <button type="submit">保存第二轮拍板</button>
+            <button type="submit">更新评审记录</button>
           </footer>
         </form>
       </dialog>
@@ -580,10 +574,10 @@ export default function BodyDemoStandardPage() {
         <ChevronsRight aria-hidden="true" />
         <p>
           {representativeReviewSaved
-            ? '第二轮拍板已保存。'
+            ? '代表课程评审记录已更新。'
             : reviewSaved
-              ? '第一轮拍板已保存；14 门代表课程已进入真实手感评审。'
-              : '评审通过后，先落到 14 门代表课程，再进行第二次真实手感确认。'}
+              ? '第一轮评审记录已更新；代表课程与 37 课推广均已通过。'
+              : 'Task B 已完成；本页保留两轮设计评审与可运行标本。'}
         </p>
         <button
           type="button"
@@ -593,7 +587,7 @@ export default function BodyDemoStandardPage() {
             if (target && !target.open) target.showModal()
           }}
         >
-          打开评审弹窗
+          打开评审归档
         </button>
       </footer>
     </div>

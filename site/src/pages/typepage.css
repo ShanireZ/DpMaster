@@ -691,11 +691,11 @@
   min-width: 0;
 }
 
-.typepage[data-demo-standard='representative'] .lesson-flow {
+.typepage[data-demo-standard='instrument'] .lesson-flow {
   counter-reset: lesson-instrument;
 }
 
-.typepage[data-demo-standard='representative'] .demo {
+.typepage[data-demo-standard='instrument'] .demo {
   --instrument-spine: clamp(42px, 6vw, 72px);
   counter-increment: lesson-instrument;
   overflow: clip;
@@ -711,13 +711,13 @@
     inset calc(var(--instrument-spine) + 1px) 0 var(--border);
 }
 
-.typepage[data-demo-standard='representative'] .demo::before {
+.typepage[data-demo-standard='instrument'] .demo::before {
   width: min(240px, 42%);
   height: 3px;
   box-shadow: 0 0 22px color-mix(in srgb, var(--accent-1) 44%, transparent);
 }
 
-.typepage[data-demo-standard='representative'] .demo::after {
+.typepage[data-demo-standard='instrument'] .demo::after {
   position: absolute;
   z-index: 2;
   top: 18px;
@@ -732,7 +732,7 @@
   text-align: center;
 }
 
-.typepage[data-demo-standard='representative'] .demo__body {
+.typepage[data-demo-standard='instrument'] .demo__body {
   position: relative;
   padding:
     clamp(var(--sp-8), 5vw, 68px)
@@ -741,7 +741,7 @@
     calc(var(--instrument-spine) + clamp(var(--sp-4), 2vw, var(--sp-6)));
 }
 
-.typepage[data-demo-standard='representative'] .demo__body::before {
+.typepage[data-demo-standard='instrument'] .demo__body::before {
   position: absolute;
   top: 22px;
   left: calc(var(--instrument-spine) + clamp(var(--sp-4), 2vw, var(--sp-6)));
@@ -753,7 +753,7 @@
   letter-spacing: .17em;
 }
 
-.typepage[data-demo-standard='representative'] .demo__body.demo__body--terminal-rail {
+.typepage[data-demo-standard='instrument'] .demo__body.demo__body--terminal-rail {
   padding-bottom: var(--sp-4);
 }
 
@@ -769,12 +769,12 @@
   margin-top: clamp(var(--sp-9), 7vw, 96px);
 }
 
-.typepage[data-demo-standard='representative'] .demo :is(button, input, select):focus-visible {
+.typepage[data-demo-standard='instrument'] .demo :is(button, input, select):focus-visible {
   outline: 2px solid var(--accent-2);
   outline-offset: 2px;
 }
 
-.typepage[data-demo-standard='representative'] .demo button {
+.typepage[data-demo-standard='instrument'] .demo button {
   min-width: 44px;
   min-height: 44px;
 }
@@ -1121,13 +1121,13 @@
     padding-left: var(--sp-3);
   }
 
-  .typepage[data-demo-standard='representative'] .demo {
+  .typepage[data-demo-standard='instrument'] .demo {
     --instrument-spine: 38px;
     margin-right: -8px;
     margin-left: -8px;
   }
 
-  .typepage[data-demo-standard='representative'] .demo__body {
+  .typepage[data-demo-standard='instrument'] .demo__body {
     padding:
       var(--sp-8)
       var(--sp-3)
@@ -1135,7 +1135,7 @@
       calc(var(--instrument-spine) + var(--sp-3));
   }
 
-  .typepage[data-demo-standard='representative'] .demo__body::before {
+  .typepage[data-demo-standard='instrument'] .demo__body::before {
     left: calc(var(--instrument-spine) + var(--sp-3));
   }
 

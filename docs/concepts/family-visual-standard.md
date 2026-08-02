@@ -4,7 +4,7 @@ title: DP Family Visual Standard
 description: Durable visual contract for A–G family heroes, course journeys, and lesson semantic plates.
 tags: [design, family-art, polygon, accessibility]
 status: stable
-generated: { by: openai/codex, at: 2026-07-31T15:32:38+08:00 }
+generated: { by: openai/codex, at: 2026-08-02T00:00:00+08:00 }
 sources:
   - resource: ../../site/src/components/art/
 ---
@@ -12,7 +12,7 @@ sources:
 # DP 家族视觉标准
 
 > 状态：A–G 设计与实现基线已锁定
-> 适用：分类主雕塑、课程路径、课程页头图例
+> 适用：分类主雕塑、课程路径、课程页头图例、正文 Demo 壳层
 > 产品基线：Warm Ink；catalog 是标题、slug、顺序与内容的唯一来源
 
 ## 1. 三槽位合同
@@ -75,11 +75,22 @@ sources:
 
 评审先比较五类总览，再按 C→G 检查分类页与代表课程。任何方案都必须回答“它在解释哪个状态、转移、约束或边界”。
 
-## 6. 验收
+## 6. 正文仪器壳层
+
+- catalog 中全部 37 门有效课程统一标记为 `data-demo-standard="instrument"` 与 `data-demo-intensity="enhanced"`，不得维护代表课程白名单。
+- 历史 `.demo` 使用连续纵向仪表脊、顺序编号、工程网格、共享焦点与 44×44px 触控基线；新式 Demo 使用 `DemoWorkbench` 及其共享原语。
+- 14 门代表课的高保真静态 Hero 是家族构图拍板样例，A/complete 另有独立课程 Hero；它们只承担装饰，不读取参数、求解结果或播放帧。
+- 其余课程继续使用各自唯一的页头 `LessonPlate` 与真实交互 Demo；禁止为了“每课一张”而复制无语义静态资产。
+- 大表只能在局部仪器视窗内滚动；移动端保留算法主脊柱并重排参数、表格与解释层，禁止页面横向滚动。
+- 当前、来源、被选、已确定、非法五态必须具有颜色之外的第二编码；light/dark 与 reduced-motion 不得改变信息结构。
+
+## 7. 验收
 
 - light/dark：几何、顺序和信息一致。
 - 1600×1000、1440×900、1024、820、390×844：无页面横向溢出。
 - 分类页存在唯一主雕塑和同源路径；课程页不存在 `PartGlyph` 回退。
 - 37 个 slug 均有唯一图例和可访问名称。
+- 37 门课程均有至少一个真实 Demo，并使用统一正文仪器合同。
+- 14 门代表静态 Hero 保持独立、纯装饰且与动态数据解耦。
 - 当前路由只加载所属家族的艺术模块与资产。
 - `prefers-reduced-motion` 下移除非必要滤镜和动效。

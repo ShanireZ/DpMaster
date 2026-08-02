@@ -130,6 +130,8 @@ test('all 37 lesson titles and plates fit at desktop and 390px mobile', async ({
       for (const slug of slugs) {
         const route = `${part}/${slug} at ${viewport.width}x${viewport.height}`
         await page.goto(`/part/${part}/${slug}`)
+        await expect(page.locator('.typepage')).toHaveAttribute('data-demo-standard', 'instrument')
+        await expect(page.locator('.typepage')).toHaveAttribute('data-demo-intensity', 'enhanced')
         await expect(page.locator('.typehead h1')).toBeVisible()
         await expect(page.locator('.poly-lesson-plate__atlas')).toHaveJSProperty('complete', true)
 
