@@ -270,6 +270,18 @@ type AtlasStyle = CSSProperties & {
 
 const ATLAS_WIDTH = 1536
 const ATLAS_HEIGHT = 1024
+const ATLAS_NATIVE_SIZE: Record<FamilyId, {
+  width: number
+  height: number
+}> = {
+  a: { width: 1536, height: 1024 },
+  b: { width: 1536, height: 1024 },
+  c: { width: 1152, height: 768 },
+  d: { width: 1152, height: 768 },
+  e: { width: 1152, height: 768 },
+  f: { width: 1152, height: 768 },
+  g: { width: 1152, height: 768 },
+}
 const PLATE_ASPECT_RATIO = 3 / 2
 const PLATE_INLINE_INSET = 0.06
 const PLATE_BLOCK_INSET = 0.06
@@ -317,6 +329,17 @@ function getAtlasClip(
   return [column * columnWidth, top, columnWidth, bottom - top]
 }
 
+function getNativeAtlasRect(
+  family: FamilyId,
+  [x, y, width, height]: readonly [number, number, number, number],
+): readonly [number, number, number, number] {
+  const nativeSize = ATLAS_NATIVE_SIZE[family]
+  const scaleX = nativeSize.width / ATLAS_WIDTH
+  const scaleY = nativeSize.height / ATLAS_HEIGHT
+
+  return [x * scaleX, y * scaleY, width * scaleX, height * scaleY]
+}
+
 export function PolyLessonPlate({
   family,
   slug,
@@ -344,6 +367,11 @@ export function PolyLessonPlate({
     spec.column,
     spec.row,
   )
+  const nativeFrame = getNativeAtlasRect(family, spec.frame!)
+  const nativeClip = getNativeAtlasRect(
+    family,
+    [clipX, clipY, clipWidth, clipHeight],
+  )
   const style: AtlasStyle = {
     ...getContainedAtlasStyle(spec.frame!),
     '--atlas-clip-top': `${clipY / ATLAS_HEIGHT * 100}%`,
@@ -368,8 +396,8 @@ export function PolyLessonPlate({
       data-lesson-plate={slug}
       data-atlas-column={spec.column}
       data-atlas-row={spec.row}
-      data-atlas-frame={spec.frame?.join(' ')}
-      data-atlas-clip={[clipX, clipY, clipWidth, clipHeight].join(' ')}
+      data-atlas-frame={nativeFrame.join(' ')}
+      data-atlas-clip={nativeClip.join(' ')}
       style={style}
     >
       <span className="poly-lesson-plate__viewport" aria-hidden="true">
