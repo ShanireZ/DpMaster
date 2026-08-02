@@ -22,3 +22,9 @@ test('multiple knapsack includes a worked monotonic-queue example and solution',
   assert.match(source, /code=\{CODE_MULTIPLE_MONOQUEUE\}/)
   assert.match(source, /g\[r\+xw\]-xv/)
 })
+
+test('P2347 reference solution prints the required Total prefix', () => {
+  const source = readFileSync(join(contentDir, 'KnapsackMultiple.tsx'), 'utf8')
+
+  assert.match(source, /cout\s*<<\s*"Total="\s*<<\s*cnt\s*<<\s*endl;/)
+})
