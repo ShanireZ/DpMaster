@@ -1,5 +1,7 @@
 import { useMemo, useState } from 'react'
 import { M } from '../../ui/Math'
+import rerootDistSumHeroArt from '../../../assets/demo-art/reroot-distsum-instrument-v1.avif'
+import { DemoSculptureHero } from '../shared'
 import { buildTree, layoutTree, rerootDistSum } from './rerootSolver'
 import type { Edge } from './rerootSolver'
 import { TreeCanvas } from './TreeCanvas'
@@ -89,6 +91,7 @@ export default function RerootDistDemo() {
 
   return (
     <div>
+      <DemoSculptureHero family="e" lesson="distsum" src={rerootDistSumHeroArt} />
       <div className="rr__toolbar">
         <span className="rr__toolbar-label">模式</span>
         <div className="rr__tree-picker" role="group" aria-label="选择模式">

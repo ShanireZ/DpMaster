@@ -2,7 +2,8 @@ import { useMemo, useState } from 'react'
 import { M } from '../../ui/Math'
 import { SafeCaption } from '../../dp-engine/SafeCaption'
 import { useStepPlayer } from '../../dp-engine/playback/useStepPlayer'
-import { InstrumentRail, VizStateKey } from '../shared'
+import rerootBasicHeroArt from '../../../assets/demo-art/reroot-basic-instrument-v1.avif'
+import { DemoSculptureHero, InstrumentRail, VizStateKey } from '../shared'
 import { buildTree, layoutTree, rerootDistSum, rerootFrames, bruteDistSum } from './rerootSolver'
 import type { Edge } from './rerootSolver'
 import { TreeCanvas } from './TreeCanvas'
@@ -144,6 +145,7 @@ export default function RerootTwoPassDemo() {
 
   return (
     <div key={treeKey}>
+      <DemoSculptureHero family="e" lesson="basic" src={rerootBasicHeroArt} />
       <div className="rr__toolbar">
         <span className="rr__toolbar-label">选一棵树</span>
         <div className="rr__tree-picker" role="group" aria-label="选择树形">

@@ -1,6 +1,8 @@
 import { useMemo, useState } from 'react'
 import { Minus, Plus, X, Shuffle } from 'lucide-react'
 import DPViz from '../../dp-engine/DPViz'
+import fsmHeroArt from '../../../assets/demo-art/fsm-instrument-v1.avif'
+import { DemoSculptureHero } from '../shared'
 import { solveLinearFsm } from '../../../algorithms/linear-fsm/index.ts'
 import { fsmPickTable } from './fsmSolver'
 import '../shared/demo-workbench.css'
@@ -70,6 +72,7 @@ export default function StateMachineDemo() {
 
   return (
     <div>
+      <DemoSculptureHero family="b" lesson="fsm" src={fsmHeroArt} />
       <div className="demo-control__modes">
         {PRESETS.map((p) => (
           <button

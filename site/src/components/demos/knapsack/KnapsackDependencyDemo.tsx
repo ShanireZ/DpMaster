@@ -1,6 +1,8 @@
 import { useMemo, useState } from 'react'
 import { Minus, Plus } from 'lucide-react'
 import DPViz from '../../dp-engine/DPViz'
+import dependencyHeroArt from '../../../assets/demo-art/knapsack-dependency-instrument-v1.avif'
+import { DemoSculptureHero } from '../shared'
 import { dependencyKnapsack, enumCombos } from './dependencySolver'
 import type { Master, Accessory } from './dependencySolver'
 import './knapsack-demo.css'
@@ -55,6 +57,7 @@ export default function KnapsackDependencyDemo() {
 
   return (
     <div>
+      <DemoSculptureHero family="a" lesson="dep" src={dependencyHeroArt} />
       <div className="demo-control__toolbar">
         <div>
           <div className="demo-control__group-label">主件（必选前提）· 可改 w / v</div>

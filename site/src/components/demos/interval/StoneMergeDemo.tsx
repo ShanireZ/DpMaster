@@ -1,6 +1,8 @@
 import { useMemo, useState } from 'react'
 import { Minus, Plus, X } from 'lucide-react'
 import DPViz from '../../dp-engine/DPViz'
+import stoneHeroArt from '../../../assets/demo-art/interval-stone-instrument-v1.avif'
+import { DemoSculptureHero } from '../shared'
 import { stoneMerge } from './stoneSolver'
 import '../shared/demo-workbench.css'
 
@@ -48,6 +50,7 @@ export default function StoneMergeDemo() {
 
   return (
     <div>
+      <DemoSculptureHero family="c" lesson="stone" src={stoneHeroArt} />
       <div className="demo-control__toolbar">
         <div>
           <div className="demo-control__group-label">一排石子（相邻可合并 · 可改每堆数值 · 3～5 堆）</div>

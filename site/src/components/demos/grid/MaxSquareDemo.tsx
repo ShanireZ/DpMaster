@@ -1,6 +1,8 @@
 import { useMemo, useState } from 'react'
 import { Minus, Plus } from 'lucide-react'
 import DPViz from '../../dp-engine/DPViz'
+import gridHeroArt from '../../../assets/demo-art/matrix-grid-instrument-v1.avif'
+import { DemoSculptureHero } from '../shared'
 import { maxSquare2D } from './maxSquareSolver'
 import '../shared/demo-workbench.css'
 
@@ -72,6 +74,7 @@ export default function MaxSquareDemo() {
 
   return (
     <div>
+      <DemoSculptureHero family="d" lesson="grid" src={gridHeroArt} />
       <div className="demo-control__toolbar">
         <div>
           <div className="demo-control__group-label">0 / 1 矩阵（点格子翻转 · 1 = 可用，0 = 空洞 · 找最大全 1 正方形）</div>

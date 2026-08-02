@@ -6,6 +6,8 @@ export { DemoTableViewport } from './DemoTableViewport.tsx'
 export type { DemoTableViewportProps } from './DemoTableViewport.tsx'
 export { DemoDetailSwitch } from './DemoDetailSwitch.tsx'
 export type { DemoDetailItem } from './DemoDetailSwitch.tsx'
+export { DemoSculptureHero } from './DemoSculptureHero.tsx'
+export type { DemoSculptureHeroProps } from './DemoSculptureHero.tsx'
 export {
   VizStateKey,
   VizStateMark,

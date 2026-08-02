@@ -2,7 +2,8 @@ import { useMemo, useState } from 'react'
 import { Minus, Plus, Sigma } from 'lucide-react'
 import { SafeCaption } from '../../dp-engine/SafeCaption'
 import { useStepPlayer } from '../../dp-engine/playback/useStepPlayer'
-import { InstrumentRail, VizStateKey } from '../shared'
+import boardHeroArt from '../../../assets/demo-art/bitmask-board-instrument-v1.avif'
+import { DemoSculptureHero, InstrumentRail, VizStateKey } from '../shared'
 import { layoutFrames } from './boardSolver'
 import { solveKingsBoard } from '../../../algorithms/bitmask-board/index.ts'
 import '../shared/demo-workbench.css'
@@ -48,6 +49,7 @@ export default function BoardDemo() {
 
   return (
     <div>
+      <DemoSculptureHero family="g" lesson="board" src={boardHeroArt} />
       <div className="bm__toolbar bm__toolbar--board">
         <div className="bm__steppers">
           <div>

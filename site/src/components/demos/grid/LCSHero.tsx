@@ -6,7 +6,7 @@ import heroArt from '../../../assets/demo-art/lcs-instrument-v1.avif'
  */
 export function LCSHero() {
   return (
-    <figure className="lcs-hero" aria-hidden="true">
+    <figure className="lcs-hero" data-demo-hero="lcs" aria-hidden="true">
       <img
         src={heroArt}
         alt=""

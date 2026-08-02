@@ -1,0 +1,32 @@
+.demo-sculpture-hero {
+  display: grid;
+  width: 100%;
+  height: clamp(210px, 28vw, 320px);
+  margin: 0 0 clamp(18px, 2.4vw, 28px);
+  place-items: center;
+  overflow: clip;
+  isolation: isolate;
+  pointer-events: none;
+  user-select: none;
+  contain: layout paint style;
+}
+
+.demo-sculpture-hero img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  object-position: center;
+  filter: drop-shadow(0 16px 24px color-mix(in srgb, var(--ink) 14%, transparent));
+}
+
+@media (max-width: 600px) {
+  .demo-sculpture-hero {
+    height: clamp(172px, 58vw, 220px);
+    margin-bottom: 16px;
+  }
+
+  .demo-sculpture-hero img {
+    filter: drop-shadow(0 10px 18px color-mix(in srgb, var(--ink) 12%, transparent));
+  }
+}

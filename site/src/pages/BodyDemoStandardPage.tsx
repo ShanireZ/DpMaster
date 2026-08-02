@@ -343,13 +343,23 @@ export default function BodyDemoStandardPage() {
             <span>Review gate 02 · no countdown</span>
             <h2 id="representative-review-title">代表课程真实手感拍板</h2>
             <p>
-              已实装 A–G 共 14 门代表课程，并为插头 DP 补齐正式可操作 Demo。
-              可从下方课程入口核对真实页面后再保存。
+              A–G 共 14 门代表课程现已接入独立高保真静态 Hero，并保留原有可操作 Demo。
+              请从下方逐课核对真实页面后再决定是否推广。
             </p>
             <nav className="standard-review__routes" aria-label="代表课程快速入口">
               <a href="/part/a/01">A · 01</a>
+              <a href="/part/a/dep">A · 依赖</a>
               <a href="/part/b/lcs">B · LCS</a>
+              <a href="/part/b/fsm">B · 状态机</a>
+              <a href="/part/c/stone">C · 石子</a>
+              <a href="/part/c/ring">C · 环形</a>
+              <a href="/part/d/grid">D · 网格</a>
               <a href="/part/d/matpow">D · 矩阵幂</a>
+              <a href="/part/e/basic">E · 基础</a>
+              <a href="/part/e/distsum">E · 距离和</a>
+              <a href="/part/f/knapsack">F · 树背包</a>
+              <a href="/part/f/cover">F · 覆盖</a>
+              <a href="/part/g/board">G · 棋盘</a>
               <a href="/part/g/plug">G · 插头 DP</a>
             </nav>
           </header>

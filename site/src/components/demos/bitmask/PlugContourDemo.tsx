@@ -1,8 +1,10 @@
 import { useMemo } from 'react'
 import { Check } from 'lucide-react'
 import { useStepPlayer } from '../../dp-engine/playback/useStepPlayer.ts'
+import plugHeroArt from '../../../assets/demo-art/bitmask-plug-instrument-v1.avif'
 import {
   DemoDetailSwitch,
+  DemoSculptureHero,
   DemoTableViewport,
   DemoWorkbench,
   InstrumentRail,
@@ -152,51 +154,54 @@ export default function PlugContourDemo() {
   )
 
   return (
-    <DemoWorkbench
-      family="g"
-      title="轮廓线连通性扫描仪"
-      description="逐格推进折线，显式观察括号插头的新建、延续、换行、合并与合法闭环。状态不是二进制背景纹理，而是当前轮廓上的稀疏连接。"
-      activeRole={frame.role}
-      complete={player.index === FRAMES.length - 1}
-      className="plug-contour-demo"
-      status={(
-        <>
-          <VizStateMark role={frame.role}>{frame.action}</VizStateMark>
-          <span>{player.index + 1} / {FRAMES.length}</span>
-        </>
-      )}
-      visual={<PlugStage frameIndex={player.index} />}
-      rail={(
-        <InstrumentRail
-          player={player}
-          label="插头 DP 轮廓线逐帧播放"
-          secondaryLabel="状态编码"
-          secondary={<VizStateKey />}
-        />
-      )}
-      details={(
-        <DemoDetailSwitch
-          items={[
-            { id: 'states', label: '状态', content: <VizStateKey /> },
-            { id: 'table', label: '表格', content: <PlugTable frameIndex={player.index} /> },
-            {
-              id: 'trace',
-              label: '轨迹',
-              content: (
-                <ol className="plug-trace">
-                  {trace.map((candidate, index) => (
-                    <li key={candidate.action} data-active={candidate.active ? 'true' : 'false'}>
-                      <span>{String(index + 1).padStart(2, '0')}</span>
-                      <strong>{candidate.action}</strong>
-                      {candidate.complete && <Check size={14} aria-label="已完成" />}
-                    </li>
-                  ))}
-                </ol>
-              ),
-            },
-          ]}
-        />
-      )}
-    />
+    <>
+      <DemoSculptureHero family="g" lesson="plug" src={plugHeroArt} />
+      <DemoWorkbench
+        family="g"
+        title="轮廓线连通性扫描仪"
+        description="逐格推进折线，显式观察括号插头的新建、延续、换行、合并与合法闭环。状态不是二进制背景纹理，而是当前轮廓上的稀疏连接。"
+        activeRole={frame.role}
+        complete={player.index === FRAMES.length - 1}
+        className="plug-contour-demo"
+        status={(
+          <>
+            <VizStateMark role={frame.role}>{frame.action}</VizStateMark>
+            <span>{player.index + 1} / {FRAMES.length}</span>
+          </>
+        )}
+        visual={<PlugStage frameIndex={player.index} />}
+        rail={(
+          <InstrumentRail
+            player={player}
+            label="插头 DP 轮廓线逐帧播放"
+            secondaryLabel="状态编码"
+            secondary={<VizStateKey />}
+          />
+        )}
+        details={(
+          <DemoDetailSwitch
+            items={[
+              { id: 'states', label: '状态', content: <VizStateKey /> },
+              { id: 'table', label: '表格', content: <PlugTable frameIndex={player.index} /> },
+              {
+                id: 'trace',
+                label: '轨迹',
+                content: (
+                  <ol className="plug-trace">
+                    {trace.map((candidate, index) => (
+                      <li key={candidate.action} data-active={candidate.active ? 'true' : 'false'}>
+                        <span>{String(index + 1).padStart(2, '0')}</span>
+                        <strong>{candidate.action}</strong>
+                        {candidate.complete && <Check size={14} aria-label="已完成" />}
+                      </li>
+                    ))}
+                  </ol>
+                ),
+              },
+            ]}
+          />
+        )}
+      />
+    </>
   )
 }

@@ -1,5 +1,7 @@
 import { useMemo, useState } from 'react'
 import { Minus, Plus, Zap, Gauge, X as XIcon } from 'lucide-react'
+import matrixPowerHeroArt from '../../../assets/demo-art/matrix-power-instrument-v1.avif'
+import { DemoSculptureHero } from '../shared'
 import './matrix-power.css'
 
 // 2×2 矩阵（斐波那契转移 M = [[1,1],[1,0]]）。所有运算取模，避免大数溢出。
@@ -122,6 +124,7 @@ export default function MatrixPowerDemo() {
 
   return (
     <div>
+      <DemoSculptureHero family="d" lesson="matpow" src={matrixPowerHeroArt} />
       <div className="mpw__toolbar">
         <div>
           <div className="mpw__group-label">指数 n（要算 Mⁿ，即斐波那契第 n+1 项）</div>
