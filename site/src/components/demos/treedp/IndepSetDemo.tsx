@@ -1,6 +1,8 @@
 import { useMemo, useState } from 'react'
 import { Minus, Plus } from 'lucide-react'
 import { useStepPlayer } from '../../dp-engine/playback/useStepPlayer'
+import selectHeroArt from '../../../assets/demo-art/tree-select-instrument-v1.avif'
+import { DemoSculptureHero } from '../shared'
 import { buildTree, layoutTree, solveIndepSet } from './treedpSolver'
 import { TreeCanvas, StepBar, Legend, Panel, type NodePaint } from './TreeCanvas'
 import '../shared/demo-workbench.css'
@@ -79,6 +81,7 @@ export default function IndepSetDemo() {
 
   return (
     <div>
+      <DemoSculptureHero family="f" lesson="select" src={selectHeroArt} />
       <div className="td__toolbar">
         <div>
           <div className="td__group-label">改每个员工的欢乐值，看 dp 自底向上重算</div>

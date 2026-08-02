@@ -1,6 +1,8 @@
 import { useMemo, useState } from 'react'
 import { Minus, Plus, X, RotateCcw } from 'lucide-react'
 import DPViz from '../../dp-engine/DPViz'
+import maxsegHeroArt from '../../../assets/demo-art/linear-maxseg-instrument-v1.avif'
+import { DemoSculptureHero } from '../shared'
 import { kadane, kadaneAnswer } from './maxsegSolver'
 import '../shared/demo-workbench.css'
 
@@ -52,6 +54,7 @@ export default function MaxSubarrayDemo() {
 
   return (
     <div>
+      <DemoSculptureHero family="b" lesson="maxseg" src={maxsegHeroArt} />
       <div className="demo-control__toolbar">
         <div>
           <div className="demo-control__group-label">数组 a[]（可增删 · 可为负数）</div>

@@ -1,6 +1,8 @@
 import { useMemo, useState } from 'react'
 import { Minus, Plus, X } from 'lucide-react'
 import DPViz from '../../dp-engine/DPViz'
+import variantHeroArt from '../../../assets/demo-art/knapsack-variant-instrument-v1.avif'
+import { DemoSculptureHero } from '../shared'
 import { countKnapsack } from './variantSolver'
 import type { CountItem } from './variantSolver'
 import './knapsack-demo.css'
@@ -52,6 +54,7 @@ export default function KnapsackVariantDemo() {
 
   return (
     <div>
+      <DemoSculptureHero family="a" lesson="variant" src={variantHeroArt} />
       <div className="demo-control__toolbar">
         <div>
           <div className="demo-control__group-label">物品（只需重量，方案数与价值无关）</div>

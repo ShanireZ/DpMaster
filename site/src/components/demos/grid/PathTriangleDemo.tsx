@@ -1,6 +1,8 @@
 import { useMemo, useState } from 'react'
 import { Minus, Plus } from 'lucide-react'
 import DPViz from '../../dp-engine/DPViz'
+import pathHeroArt from '../../../assets/demo-art/linear-path-instrument-v1.avif'
+import { DemoSculptureHero } from '../shared'
 import { triangle2D } from './pathSolver'
 import '../shared/demo-workbench.css'
 
@@ -71,6 +73,7 @@ export default function PathTriangleDemo() {
 
   return (
     <div>
+      <DemoSculptureHero family="b" lesson="path" src={pathHeroArt} />
       <div className="demo-control__toolbar">
         <div>
           <div className="demo-control__group-label">数字三角形（点数字上的 ± 改值 · 每步只能去正下方或右下方）</div>

@@ -1,6 +1,8 @@
 import { useMemo, useState } from 'react'
 import { Minus, Plus, X, Shuffle } from 'lucide-react'
 import DPViz from '../../dp-engine/DPViz'
+import lisHeroArt from '../../../assets/demo-art/linear-lis-instrument-v1.avif'
+import { DemoSculptureHero } from '../shared'
 import { lisNaive } from './lisSolver'
 import { solveLis } from '../../../algorithms/lis/index.ts'
 import '../shared/demo-workbench.css'
@@ -69,6 +71,7 @@ export default function LISDemo() {
 
   return (
     <div>
+      <DemoSculptureHero family="b" lesson="lis" src={lisHeroArt} />
       <div className="demo-control__modes">
         {PRESETS.map((p) => (
           <button

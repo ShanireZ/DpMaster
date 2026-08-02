@@ -1,6 +1,8 @@
 import { useMemo, useState } from 'react'
 import { Minus, Plus, X } from 'lucide-react'
 import DPViz from '../../dp-engine/DPViz'
+import cost2dHeroArt from '../../../assets/demo-art/knapsack-cost2d-instrument-v1.avif'
+import { DemoSculptureHero } from '../shared'
 import { cost2D } from './cost2dSolver'
 import type { C2Item, C2Mode } from './cost2dSolver'
 import './knapsack-demo.css'
@@ -60,6 +62,7 @@ export default function KnapsackCost2DDemo() {
 
   return (
     <div className="kd demo-editor">
+      <DemoSculptureHero family="a" lesson="cost2d" src={cost2dHeroArt} />
       <div className="demo-control__toolbar">
         <div>
           <div className="demo-control__group-label">

@@ -1,6 +1,8 @@
 import { useMemo, useState } from 'react'
 import { RotateCcw } from 'lucide-react'
 import DPViz from '../../dp-engine/DPViz'
+import palindromeHeroArt from '../../../assets/demo-art/interval-palindrome-instrument-v1.avif'
+import { DemoSculptureHero } from '../shared'
 import { palindromeLps, normalize } from './palindromeSolver'
 import { solvePalindromeLps } from '../../../algorithms/palindrome/index.ts'
 import '../shared/demo-workbench.css'
@@ -19,6 +21,7 @@ export default function PalindromeDemo() {
 
   return (
     <div>
+      <DemoSculptureHero family="c" lesson="palindrome" src={palindromeHeroArt} />
       <div className="pal__toolbar">
         <div style={{ flex: 1 }}>
           <div className="demo-control__group-label">字符串（可编辑 · 取前 8 个字母/数字 · 大小写不敏感）</div>

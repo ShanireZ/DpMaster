@@ -1,5 +1,7 @@
 import { useMemo, useState } from 'react'
 import { Minus, Plus, Layers, Boxes } from 'lucide-react'
+import multipleHeroArt from '../../../assets/demo-art/knapsack-multiple-instrument-v1.avif'
+import { DemoSculptureHero } from '../shared'
 import { binarySplit, packCounts } from './multipleSolver'
 import './multiple-split.css'
 
@@ -56,6 +58,7 @@ export default function MultipleSplitDemo() {
 
   return (
     <div>
+      <DemoSculptureHero family="a" lesson="multiple" src={multipleHeroArt} />
       <div className="msp__toolbar">
         <div>
           <div className="msp__group-label">件数上限 m（这一种物品有几件）</div>

@@ -40,6 +40,46 @@ const ALL_LESSON_ROUTES = [
   '/part/g/plug',
 ] as const
 
+const ALL_LESSON_HEROES = [
+  { route: '/part/a/01', lesson: '01', asset: 'knapsack-01-instrument-v2' },
+  { route: '/part/a/complete', lesson: 'complete', asset: 'knapsack-complete-instrument-v1' },
+  { route: '/part/a/multiple', lesson: 'multiple', asset: 'knapsack-multiple-instrument-v1' },
+  { route: '/part/a/group', lesson: 'group', asset: 'knapsack-group-instrument-v1' },
+  { route: '/part/a/mixed', lesson: 'mixed', asset: 'knapsack-mixed-instrument-v1' },
+  { route: '/part/a/cost2d', lesson: 'cost2d', asset: 'knapsack-cost2d-instrument-v1' },
+  { route: '/part/a/dep', lesson: 'dep', asset: 'knapsack-dependency-instrument-v1' },
+  { route: '/part/a/variant', lesson: 'variant', asset: 'knapsack-variant-instrument-v1' },
+  { route: '/part/a/fractional', lesson: 'fractional', asset: 'knapsack-fractional-instrument-v1' },
+  { route: '/part/b/path', lesson: 'path', asset: 'linear-path-instrument-v1' },
+  { route: '/part/b/maxseg', lesson: 'maxseg', asset: 'linear-maxseg-instrument-v1' },
+  { route: '/part/b/lis', lesson: 'lis', asset: 'linear-lis-instrument-v1' },
+  { route: '/part/b/lcs', lesson: 'lcs', asset: 'lcs-instrument-v1' },
+  { route: '/part/b/edit', lesson: 'edit', asset: 'linear-edit-instrument-v1' },
+  { route: '/part/b/fsm', lesson: 'fsm', asset: 'fsm-instrument-v1' },
+  { route: '/part/b/count', lesson: 'count', asset: 'linear-count-instrument-v1' },
+  { route: '/part/c/stone', lesson: 'stone', asset: 'interval-stone-instrument-v1' },
+  { route: '/part/c/ring', lesson: 'ring', asset: 'interval-ring-instrument-v1' },
+  { route: '/part/c/palindrome', lesson: 'palindrome', asset: 'interval-palindrome-instrument-v1' },
+  { route: '/part/c/tree', lesson: 'tree', asset: 'interval-tree-instrument-v1' },
+  { route: '/part/c/merge', lesson: 'merge', asset: 'interval-merge-instrument-v1' },
+  { route: '/part/d/grid', lesson: 'grid', asset: 'matrix-grid-instrument-v1' },
+  { route: '/part/d/matpow', lesson: 'matpow', asset: 'matrix-power-instrument-v1' },
+  { route: '/part/e/basic', lesson: 'basic', asset: 'reroot-basic-instrument-v1' },
+  { route: '/part/e/distsum', lesson: 'distsum', asset: 'reroot-distsum-instrument-v1' },
+  { route: '/part/e/inout', lesson: 'inout', asset: 'reroot-inout-instrument-v1' },
+  { route: '/part/e/center', lesson: 'center', asset: 'reroot-center-instrument-v1' },
+  { route: '/part/f/select', lesson: 'select', asset: 'tree-select-instrument-v1' },
+  { route: '/part/f/knapsack', lesson: 'knapsack', asset: 'tree-knapsack-instrument-v1' },
+  { route: '/part/f/diameter', lesson: 'diameter', asset: 'tree-diameter-instrument-v1' },
+  { route: '/part/f/cover', lesson: 'cover', asset: 'tree-cover-instrument-v1' },
+  { route: '/part/f/count', lesson: 'count', asset: 'tree-count-instrument-v1' },
+  { route: '/part/g/board', lesson: 'board', asset: 'bitmask-board-instrument-v1' },
+  { route: '/part/g/tsp', lesson: 'tsp', asset: 'bitmask-tsp-instrument-v1' },
+  { route: '/part/g/cover', lesson: 'cover', asset: 'bitmask-cover-instrument-v1' },
+  { route: '/part/g/subset', lesson: 'subset', asset: 'bitmask-subset-instrument-v1' },
+  { route: '/part/g/plug', lesson: 'plug', asset: 'bitmask-plug-instrument-v1' },
+] as const
+
 const REPRESENTATIVE_HEROES = [
   { route: '/part/a/01', lesson: '01', asset: 'knapsack-01-instrument-v2' },
   { route: '/part/a/dep', lesson: 'dep', asset: 'knapsack-dependency-instrument-v1' },
@@ -75,10 +115,11 @@ test('all 37 lessons use the approved instrument shell without page overflow', a
   }
 })
 
-test('fourteen approved high-fidelity heroes stay decorative and course-specific', async ({ page }) => {
+test('all 37 high-fidelity heroes stay decorative and course-specific', async ({ page }) => {
   await page.setViewportSize({ width: 1440, height: 900 })
 
-  for (const { route, lesson, asset } of REPRESENTATIVE_HEROES) {
+  const loadedSources = new Set<string>()
+  for (const { route, lesson, asset } of ALL_LESSON_HEROES) {
     await page.goto(route)
     const hero = page.locator(`[data-demo-hero="${lesson}"]`).first()
     const image = hero.locator('img')
@@ -88,7 +129,12 @@ test('fourteen approved high-fidelity heroes stay decorative and course-specific
     await expect(image).toHaveAttribute('src', new RegExp(`${asset}-.+\\.avif$`))
     await expect(image).toHaveCSS('object-fit', 'contain')
     await expect(hero.locator('button, input, select, svg, [data-step]')).toHaveCount(0)
+    const source = await image.getAttribute('src')
+    expect(source, `${route} should load a concrete Hero asset`).toBeTruthy()
+    expect(loadedSources.has(source ?? ''), `${route} should not reuse another lesson's Hero`).toBe(false)
+    loadedSources.add(source ?? '')
   }
+  expect(loadedSources.size).toBe(ALL_LESSON_HEROES.length)
 })
 
 test('approved review archive links every high-fidelity representative lesson', async ({ page }) => {

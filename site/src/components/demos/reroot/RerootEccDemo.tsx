@@ -1,5 +1,7 @@
 import { useMemo, useState } from 'react'
 import { M } from '../../ui/Math'
+import centerHeroArt from '../../../assets/demo-art/reroot-center-instrument-v1.avif'
+import { DemoSculptureHero } from '../shared'
 import { buildTree, layoutTree, eccentricity } from './rerootSolver'
 import type { Edge } from './rerootSolver'
 import { TreeCanvas } from './TreeCanvas'
@@ -54,6 +56,7 @@ export default function RerootEccDemo() {
 
   return (
     <div>
+      <DemoSculptureHero family="e" lesson="center" src={centerHeroArt} />
       <div className="rr__hint">
         点任意节点，看它的<strong>偏心距</strong>（到最远点的距离）= max(向下最长链 down, 向上最长链 up)。
         绿圈是偏心距<strong>最小</strong>的点 = 树的<strong>中心</strong>（半径 <b>{ecc.radius}</b>），
