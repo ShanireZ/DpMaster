@@ -117,4 +117,20 @@ describe('family art registry', () => {
       expect(familyPlates.every((plate) => plate.getAttribute('aria-label')?.includes('：'))).toBe(true)
     }
   })
+
+  it('exposes lesson frame metadata in each optimized atlas native pixel space', () => {
+    const { container } = render(
+      <PolyLessonPlate
+        family="c"
+        slug="stone"
+        title="石子合并"
+        atlas="/interval-lessons.avif"
+      />,
+    )
+
+    const plate = container.querySelector<HTMLElement>('.interval-plate--stone')
+
+    expect(plate?.dataset.atlasFrame).toBe('25.5 46.5 333 289.5')
+    expect(plate?.dataset.atlasClip).toBe('0 0 384 384')
+  })
 })
