@@ -1,6 +1,8 @@
 import { useMemo, useState } from 'react'
 import { Minus, Plus, X } from 'lucide-react'
 import DPViz from '../../dp-engine/DPViz'
+import mergeHeroArt from '../../../assets/demo-art/interval-merge-instrument-v1.avif'
+import { DemoSculptureHero } from '../shared'
 import { takeEnds } from './mergeSolver'
 import '../shared/demo-workbench.css'
 
@@ -47,6 +49,7 @@ export default function MergeIntervalDemo() {
 
   return (
     <div>
+      <DemoSculptureHero family="c" lesson="merge" src={mergeHeroArt} />
       <div className="demo-control__toolbar">
         <div>
           <div className="demo-control__group-label">一排数字（两人轮流从两端取 · 可改每个数值 · 3～6 个）</div>

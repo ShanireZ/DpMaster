@@ -7,7 +7,7 @@ export interface DemoSculptureHeroProps {
 }
 
 /**
- * 代表课程的纯装饰雕塑。算法输入、状态和播放帧必须继续留在下方 Demo 中。
+ * 每门课程的纯装饰雕塑。算法输入、状态和播放帧必须继续留在下方 Demo 中。
  */
 export function DemoSculptureHero({ family, lesson, src }: DemoSculptureHeroProps) {
   return (

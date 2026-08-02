@@ -1,6 +1,8 @@
 import { useMemo, useState } from 'react'
 import { Minus, Plus } from 'lucide-react'
 import DPViz from '../../dp-engine/DPViz'
+import countHeroArt from '../../../assets/demo-art/linear-count-instrument-v1.avif'
+import { DemoSculptureHero } from '../shared'
 import { solveStairCount } from '../../../algorithms/linear-count/index.ts'
 import { stairCount } from './countSolver'
 import '../shared/demo-workbench.css'
@@ -48,6 +50,7 @@ export default function StairCountDemo() {
 
   return (
     <div>
+      <DemoSculptureHero family="b" lesson="count" src={countHeroArt} />
       <div className="demo-control__toolbar">
         <div>
           <div className="demo-control__group-label">台阶总数（每步跨 1 或 2 级）</div>

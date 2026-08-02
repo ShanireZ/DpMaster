@@ -1,6 +1,8 @@
 import { useMemo, useState } from 'react'
 import { Minus, Plus, X } from 'lucide-react'
 import DPViz from '../../dp-engine/DPViz'
+import groupHeroArt from '../../../assets/demo-art/knapsack-group-instrument-v1.avif'
+import { DemoSculptureHero } from '../shared'
 import { group2D } from './groupSolver'
 import type { Group, GItem } from './groupSolver'
 import './knapsack-demo.css'
@@ -62,6 +64,7 @@ export default function KnapsackGroupDemo() {
 
   return (
     <div>
+      <DemoSculptureHero family="a" lesson="group" src={groupHeroArt} />
       <div className="demo-control__toolbar">
         <div>
           <div className="demo-control__group-label">分组（每组内至多选一件 · 可改 w / v）</div>

@@ -1,5 +1,7 @@
 import { useMemo, useState } from 'react'
 import { M } from '../../ui/Math'
+import inoutHeroArt from '../../../assets/demo-art/reroot-inout-instrument-v1.avif'
+import { DemoSculptureHero } from '../shared'
 import { buildTree, layoutTree, inOutDecompose } from './rerootSolver'
 import type { Edge } from './rerootSolver'
 import { TreeCanvas } from './TreeCanvas'
@@ -78,6 +80,7 @@ export default function RerootInOutDemo() {
 
   return (
     <div>
+      <DemoSculptureHero family="e" lesson="inout" src={inoutHeroArt} />
       <div className="rr__hint">
         固定根 = 节点 1。点任意节点，把它的距离和拆成两块：
         <span style={{ color: 'var(--viz-source)' }}>子树内（向下，down）</span> +{' '}

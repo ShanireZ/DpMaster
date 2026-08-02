@@ -1,6 +1,8 @@
 import { useMemo, useState } from 'react'
 import { Minus, Plus, RotateCcw } from 'lucide-react'
 import DPViz from '../../dp-engine/DPViz'
+import tspHeroArt from '../../../assets/demo-art/bitmask-tsp-instrument-v1.avif'
+import { DemoSculptureHero } from '../shared'
 import { tspHamilton } from './tspSolver'
 import '../shared/demo-workbench.css'
 import './bitmask-demo.css'
@@ -53,6 +55,7 @@ export default function TspDemo() {
 
   return (
     <div>
+      <DemoSculptureHero family="g" lesson="tsp" src={tspHeroArt} />
       <div className="bm__toolbar">
         <div className="bm__map-wrap">
           <div className="demo-control__group-label">点位（点 0 = 起点 · 可移动 · 曼哈顿距离）</div>

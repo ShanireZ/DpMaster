@@ -1,6 +1,8 @@
 import { useMemo, useState } from 'react'
 import { Minus, Plus } from 'lucide-react'
 import { useStepPlayer } from '../../dp-engine/playback/useStepPlayer'
+import diameterHeroArt from '../../../assets/demo-art/tree-diameter-instrument-v1.avif'
+import { DemoSculptureHero } from '../shared'
 import { buildTree, layoutTree, solveMaxSubtreeChain } from './treedpSolver'
 import { TreeCanvas, StepBar, Legend, Panel, type NodePaint } from './TreeCanvas'
 import '../shared/demo-workbench.css'
@@ -103,6 +105,7 @@ export default function DiameterDemo() {
 
   return (
     <div>
+      <DemoSculptureHero family="f" lesson="diameter" src={diameterHeroArt} />
       <div className="td__toolbar">
         <div>
           <div className="td__group-label">改点权，看每个点的向下最长链 down 与「过点」最长链</div>

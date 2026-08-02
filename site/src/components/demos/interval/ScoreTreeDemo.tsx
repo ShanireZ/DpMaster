@@ -1,6 +1,8 @@
 import { useMemo, useState } from 'react'
 import { Minus, Plus, X } from 'lucide-react'
 import DPViz from '../../dp-engine/DPViz'
+import treeHeroArt from '../../../assets/demo-art/interval-tree-instrument-v1.avif'
+import { DemoSculptureHero } from '../shared'
 import { scoreTree } from './scoreTreeSolver'
 import '../shared/demo-workbench.css'
 
@@ -52,6 +54,7 @@ export default function ScoreTreeDemo() {
 
   return (
     <div>
+      <DemoSculptureHero family="c" lesson="tree" src={treeHeroArt} />
       <div className="demo-control__toolbar">
         <div>
           <div className="demo-control__group-label">节点按中序排开（可改每个分数 · 3～5 个节点）</div>

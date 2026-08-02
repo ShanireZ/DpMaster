@@ -1,5 +1,7 @@
 import { useMemo, useState } from 'react'
 import { Minus, Plus, X, Scissors, Boxes } from 'lucide-react'
+import fractionalHeroArt from '../../../assets/demo-art/knapsack-fractional-instrument-v1.avif'
+import { DemoSculptureHero } from '../shared'
 import './fractional-demo.css'
 
 interface Item {
@@ -114,6 +116,7 @@ export default function KnapsackFractionalDemo() {
 
   return (
     <div>
+      <DemoSculptureHero family="a" lesson="fractional" src={fractionalHeroArt} />
       <div className="frd__toolbar">
         <div>
           <div className="frd__group-label">物品（可分割 · 可改重量 / 价值）</div>

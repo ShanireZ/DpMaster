@@ -1,7 +1,8 @@
 import { useMemo, useState } from 'react'
 import { RotateCcw, Minus, Plus } from 'lucide-react'
 import { useStepPlayer } from '../../dp-engine/playback/useStepPlayer'
-import { InstrumentRail, VizStateKey } from '../shared'
+import coverHeroArt from '../../../assets/demo-art/bitmask-cover-instrument-v1.avif'
+import { DemoSculptureHero, InstrumentRail, VizStateKey } from '../shared'
 import { solveCover, toBits } from './coverSolver'
 import type { Choice } from './coverSolver'
 import '../shared/demo-workbench.css'
@@ -67,6 +68,7 @@ export default function CoverDemo() {
 
   return (
     <div>
+      <DemoSculptureHero family="g" lesson="cover" src={coverHeroArt} />
       <div className="bm__toolbar bm__toolbar--cover">
         <div className="demo-control__group-label" style={{ width: '100%' }}>
           选择（点元素格切换是否覆盖 · 调代价）· 全集 = {'{0,1,2,3}'}

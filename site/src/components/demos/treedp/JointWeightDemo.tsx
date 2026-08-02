@@ -1,5 +1,7 @@
 import { useMemo, useState } from 'react'
 import { Minus, Plus } from 'lucide-react'
+import countHeroArt from '../../../assets/demo-art/tree-count-instrument-v1.avif'
+import { DemoSculptureHero } from '../shared'
 import { buildTree, layoutTree, solveJointWeight } from './treedpSolver'
 import type { NodePaint } from './TreeCanvas'
 import '../shared/demo-workbench.css'
@@ -61,6 +63,7 @@ export default function JointWeightDemo() {
 
   return (
     <div>
+      <DemoSculptureHero family="f" lesson="count" src={countHeroArt} />
       <div className="td__toolbar">
         <div>
           <div className="td__group-label">改点权，点任意节点当「中间点」</div>

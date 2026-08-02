@@ -1,6 +1,7 @@
 import { useMemo, useState } from 'react'
 import { useStepPlayer } from '../../dp-engine/playback/useStepPlayer'
-import { InstrumentRail, VizStateKey } from '../shared'
+import subsetHeroArt from '../../../assets/demo-art/bitmask-subset-instrument-v1.avif'
+import { DemoSculptureHero, InstrumentRail, VizStateKey } from '../shared'
 import { enumerateSubsets, toBits, popcount } from './subsetSolver'
 import '../shared/demo-workbench.css'
 import './bitmask-demo.css'
@@ -37,6 +38,7 @@ export default function SubsetEnumDemo() {
 
   return (
     <div>
+      <DemoSculptureHero family="g" lesson="subset" src={subsetHeroArt} />
       <div className="bm__toolbar bm__toolbar--subset">
         <div>
           <div className="demo-control__group-label">母集 S（点方块把元素放入 / 移出）</div>

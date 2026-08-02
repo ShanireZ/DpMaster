@@ -1,6 +1,8 @@
 import { useMemo, useState } from 'react'
 import { RefreshCw } from 'lucide-react'
 import DPViz from '../../dp-engine/DPViz'
+import editHeroArt from '../../../assets/demo-art/linear-edit-instrument-v1.avif'
+import { DemoSculptureHero } from '../shared'
 import { edit2D } from './editSolver'
 import '../shared/demo-workbench.css'
 import './edit-traceback.css'
@@ -30,6 +32,7 @@ export default function EditDistanceDemo() {
 
   return (
     <div>
+      <DemoSculptureHero family="b" lesson="edit" src={editHeroArt} />
       <div className="demo-control__toolbar">
         <div>
           <div className="demo-control__group-label">源串 A（改成 B · 仅字母 · ≤6）</div>

@@ -1,6 +1,8 @@
 import { useMemo, useState } from 'react'
 import { Minus, Plus, X } from 'lucide-react'
 import DPViz from '../../dp-engine/DPViz'
+import mixedHeroArt from '../../../assets/demo-art/knapsack-mixed-instrument-v1.avif'
+import { DemoSculptureHero } from '../shared'
 import { mixedKnapsack, unitCount } from './mixedSolver'
 import type { MixItem, MixKind } from './mixedSolver'
 import './knapsack-demo.css'
@@ -61,6 +63,7 @@ export default function KnapsackMixedDemo() {
 
   return (
     <div>
+      <DemoSculptureHero family="a" lesson="mixed" src={mixedHeroArt} />
       <div className="demo-control__toolbar">
         <div>
           <div className="demo-control__group-label">物品（切类型 · 改重量 / 价值 / 件数）</div>
