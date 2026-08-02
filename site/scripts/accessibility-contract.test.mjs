@@ -41,6 +41,7 @@ test('browser verification starts a strict fresh production preview', async () =
     /command:\s*'node scripts\/preview\.mjs --host 127\.0\.0\.1 --port 4173 --strictPort'/,
   )
   assert.match(config, /reuseExistingServer:\s*false/)
+  assert.match(config, /workers:\s*process\.env\.CI\s*\?\s*1\s*:\s*4/)
 })
 
 test('client navigation reuses the complete route assertion contract', async () => {

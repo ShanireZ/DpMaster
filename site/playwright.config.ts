@@ -6,7 +6,7 @@ export default defineConfig({
   testDir: './tests/browser',
   forbidOnly: Boolean(process.env.CI),
   reporter: 'line',
-  workers: 4,
+  workers: process.env.CI ? 1 : 4,
   use: {
     baseURL,
     trace: 'retain-on-failure',
