@@ -36,7 +36,7 @@ int main()
     for (int j = 1; j <= S; j++)        // 统计非零可达重量的种数
         if (f[j]) cnt++;
 
-    cout << cnt << endl;
+    cout << "Total=" << cnt << endl;
     return 0;
 }`
 
