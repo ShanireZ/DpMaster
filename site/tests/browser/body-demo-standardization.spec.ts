@@ -1,26 +1,26 @@
 import { expect, test } from '@playwright/test'
 
-const REPRESENTATIVE_ROUTES = [
-  '/part/a/01',
-  '/part/a/dep',
-  '/part/b/lcs',
-  '/part/b/fsm',
-  '/part/c/stone',
-  '/part/c/ring',
-  '/part/d/grid',
-  '/part/d/matpow',
-  '/part/e/basic',
-  '/part/e/distsum',
-  '/part/f/knapsack',
-  '/part/f/cover',
-  '/part/g/board',
-  '/part/g/plug',
+const REPRESENTATIVE_HEROES = [
+  { route: '/part/a/01', lesson: '01', asset: 'knapsack-01-instrument-v2' },
+  { route: '/part/a/dep', lesson: 'dep', asset: 'knapsack-dependency-instrument-v1' },
+  { route: '/part/b/lcs', lesson: 'lcs', asset: 'lcs-instrument-v1' },
+  { route: '/part/b/fsm', lesson: 'fsm', asset: 'fsm-instrument-v1' },
+  { route: '/part/c/stone', lesson: 'stone', asset: 'interval-stone-instrument-v1' },
+  { route: '/part/c/ring', lesson: 'ring', asset: 'interval-ring-instrument-v1' },
+  { route: '/part/d/grid', lesson: 'grid', asset: 'matrix-grid-instrument-v1' },
+  { route: '/part/d/matpow', lesson: 'matpow', asset: 'matrix-power-instrument-v1' },
+  { route: '/part/e/basic', lesson: 'basic', asset: 'reroot-basic-instrument-v1' },
+  { route: '/part/e/distsum', lesson: 'distsum', asset: 'reroot-distsum-instrument-v1' },
+  { route: '/part/f/knapsack', lesson: 'knapsack', asset: 'tree-knapsack-instrument-v1' },
+  { route: '/part/f/cover', lesson: 'cover', asset: 'tree-cover-instrument-v1' },
+  { route: '/part/g/board', lesson: 'board', asset: 'bitmask-board-instrument-v1' },
+  { route: '/part/g/plug', lesson: 'plug', asset: 'bitmask-plug-instrument-v1' },
 ] as const
 
 test('fourteen representative lessons use the approved instrument shell without page overflow', async ({ page }) => {
   await page.setViewportSize({ width: 1440, height: 900 })
 
-  for (const route of REPRESENTATIVE_ROUTES) {
+  for (const { route, lesson, asset } of REPRESENTATIVE_HEROES) {
     await page.goto(route)
     await expect(page.locator('.typepage')).toHaveAttribute('data-demo-standard', 'representative')
     await expect(page.locator('.typepage')).toHaveAttribute('data-demo-intensity', 'enhanced')
@@ -31,7 +31,30 @@ test('fourteen representative lessons use the approved instrument shell without 
 
     const instruments = page.locator('.demo, .demo-workbench')
     expect(await instruments.count(), `${route} should expose at least one algorithm instrument`).toBeGreaterThan(0)
+
+    const hero = page.locator(`[data-demo-hero="${lesson}"]`).first()
+    const image = hero.locator('img')
+    await expect(hero, `${route} should expose its own decorative sculpture`).toBeVisible()
+    await expect(hero).toHaveAttribute('aria-hidden', 'true')
+    await expect(image).toHaveAttribute('alt', '')
+    await expect(image).toHaveAttribute('src', new RegExp(`${asset}-.+\\.avif$`))
+    await expect(image).toHaveCSS('object-fit', 'contain')
+    await expect(hero.locator('button, input, select, svg, [data-step]')).toHaveCount(0)
   }
+})
+
+test('second review gate links every high-fidelity representative lesson', async ({ page }) => {
+  await page.addInitScript(() => {
+    localStorage.setItem('dpmaster:body-demo-review:v1', '{}')
+  })
+  await page.goto('/lab/body-demo-standard')
+
+  const review = page.getByRole('dialog', { name: '代表课程真实手感拍板' })
+  await expect(review).toBeVisible()
+  await expect(review.locator('.standard-review__routes a')).toHaveCount(REPRESENTATIVE_HEROES.length)
+  expect(await review.locator('.standard-review__routes a').evaluateAll((links) =>
+    links.map((link) => link.getAttribute('href')),
+  )).toEqual(REPRESENTATIVE_HEROES.map(({ route }) => route))
 })
 
 test('A/01 keeps a decorative hero separate from the editable DP data flow', async ({ page }) => {

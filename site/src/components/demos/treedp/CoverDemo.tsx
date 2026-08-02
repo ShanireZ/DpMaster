@@ -1,5 +1,7 @@
 import { useMemo, useState } from 'react'
 import { Minus, Plus } from 'lucide-react'
+import treeCoverHeroArt from '../../../assets/demo-art/tree-cover-instrument-v1.avif'
+import { DemoSculptureHero } from '../shared'
 import { useStepPlayer } from '../../dp-engine/playback/useStepPlayer'
 import { buildTree, layoutTree, solveDominatingSet } from './treedpSolver'
 import { TreeCanvas, StepBar, Legend, Panel, type NodePaint } from './TreeCanvas'
@@ -82,6 +84,7 @@ export default function CoverDemo() {
 
   return (
     <div>
+      <DemoSculptureHero family="f" lesson="cover" src={treeCoverHeroArt} />
       <div className="td__toolbar">
         <div>
           <div className="td__group-label">改每个哨点的造价，看三状态 dp0/dp1/dp2 重算</div>

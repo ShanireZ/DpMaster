@@ -1,6 +1,8 @@
 import { useMemo, useState } from 'react'
 import { Minus, Plus, X } from 'lucide-react'
 import DPViz from '../../dp-engine/DPViz'
+import ringHeroArt from '../../../assets/demo-art/interval-ring-instrument-v1.avif'
+import { DemoSculptureHero } from '../shared'
 import { ringMerge } from './ringSolver'
 import { solveRingInterval } from '../../../algorithms/ring-interval/index.ts'
 import '../shared/demo-workbench.css'
@@ -50,6 +52,7 @@ export default function RingIntervalDemo() {
 
   return (
     <div>
+      <DemoSculptureHero family="c" lesson="ring" src={ringHeroArt} />
       <div className="demo-control__toolbar">
         <div>
           <div className="demo-control__group-label">环上石子（首尾相邻 · 可改每堆数值 · 3～4 堆）</div>

@@ -12,7 +12,7 @@ const HERO_ART = {
  */
 export function KnapsackHero({ variant = '01' }: { variant?: keyof typeof HERO_ART }) {
   return (
-    <figure className="knapsack-hero" data-variant={variant} aria-hidden="true">
+    <figure className="knapsack-hero" data-variant={variant} data-demo-hero={variant} aria-hidden="true">
       <img
         src={HERO_ART[variant]}
         alt=""

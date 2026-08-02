@@ -1,5 +1,7 @@
 import { useMemo, useState } from 'react'
 import { Minus, Plus } from 'lucide-react'
+import treeKnapsackHeroArt from '../../../assets/demo-art/tree-knapsack-instrument-v1.avif'
+import { DemoSculptureHero } from '../shared'
 import { buildTree, layoutTree, solveTreeKnapsack } from './treedpSolver'
 import type { NodePaint } from './TreeCanvas'
 import '../shared/demo-workbench.css'
@@ -57,6 +59,7 @@ export default function TreeKnapsackDemo() {
 
   return (
     <div>
+      <DemoSculptureHero family="f" lesson="knapsack" src={treeKnapsackHeroArt} />
       <div className="td__toolbar">
         <div>
           <div className="td__group-label">改每条边的苹果数（边权）</div>
