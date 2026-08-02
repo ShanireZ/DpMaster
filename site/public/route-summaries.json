@@ -129,7 +129,7 @@
       "title": "完全背包 · 背包 DP · DP大师",
       "summary": "完全背包课程回答“物品可无限取用时，正序更新如何复用本轮状态”。内容以无限件·一维正推为主线，配合逐步推导、可编辑演示、例题与练习形成可复查的学习闭环。",
       "type": "lesson",
-      "lastModified": "2026-08-01",
+      "lastModified": "2026-08-02",
       "reviewedBy": "AzureL蔚澜算法",
       "reviewStatus": "持续复核",
       "alternates": {
@@ -144,7 +144,7 @@
       "title": "多重背包 · 背包 DP · DP大师",
       "summary": "多重背包课程回答“有限件物品怎样从朴素枚举优化到二进制或单调队列”。内容以朴素·二进制·单调队列为主线，配合逐步推导、可编辑演示、例题与练习形成可复查的学习闭环。",
       "type": "lesson",
-      "lastModified": "2026-07-31",
+      "lastModified": "2026-08-02",
       "reviewedBy": "AzureL蔚澜算法",
       "reviewStatus": "持续复核",
       "alternates": {

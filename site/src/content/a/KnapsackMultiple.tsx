@@ -83,6 +83,49 @@ int main()
     return 0;
 }`
 
+const CODE_MULTIPLE_MONOQUEUE = `
+#include <deque>
+#include <iostream>
+#include <vector>
+using namespace std;
+
+int main()
+{
+    int n, W;
+    cin >> n >> W;
+    vector<long long> f(W + 1, 0);
+
+    for (int i = 1; i <= n; i++)
+    {
+        int v, w, m;                         // 价值、重量、件数上限
+        cin >> v >> w >> m;
+        vector<long long> g = f;             // g：还没加入第 i 种物品的旧状态
+
+        for (int r = 0; r < w && r <= W; r++) // 容量按 j mod w 分成 w 条链
+        {
+            deque<int> q;                    // 存链上的下标 x，不是容量 j
+            auto score = [&](int x) {
+                return g[r + x * w] - 1LL * x * v;
+            };
+
+            for (int k = 0, j = r; j <= W; k++, j += w)
+            {
+                while (!q.empty() && q.front() < k - m)
+                    q.pop_front();           // 超过 m 件，窗口左端失效
+                while (!q.empty() && score(q.back()) <= score(k))
+                    q.pop_back();            // 保持候选分数单调递减
+                q.push_back(k);              // x=k 表示这一种取 0 件
+
+                int x = q.front();
+                f[j] = g[r + x * w] + 1LL * (k - x) * v;
+            }
+        }
+    }
+
+    cout << f[W] << endl;
+    return 0;
+}`
+
 export default function KnapsackMultiple() {
   return (
     <>
@@ -236,9 +279,49 @@ export default function KnapsackMultiple() {
             在每条链上，「取不超过 <M>{'m_i'}</M> 件」就变成了一个<strong>定长滑动窗口求最大值</strong>的问题，用单调队列可 <M>{'O(1)'}</M> 均摊维护，于是第 <M>{'i'}</M> 种物品整体只花 <M>{'O(V)'}</M>。
           </p>
           <p>
-            它的代码比二进制拆分繁琐不少（要处理余数分组、窗口内加偏移量比较），竞赛里除非 <M>{'\\sum m_i'}</M> 大到二进制都吃紧，一般<strong>首选二进制拆分</strong>。这里点到为止，知道有这条路即可。
+            设 <M>{'g'}</M> 是加入当前物品前的旧数组。固定余数 <M>{'r'}</M>，令容量 <M>{'j=r+kw_i'}</M>，再用 <M>{'x'}</M> 表示「从旧状态出发的位置」，便有
+          </p>
+          <MB>{'f[r+kw_i]=k v_i+\\max_{k-m_i\\le x\\le k}\\big(g[r+xw_i]-xv_i\\big)'}</MB>
+          <p>
+            对每个 <M>{'k'}</M>，变化的只是长度为 <M>{'m_i+1'}</M> 的窗口 <M>{'[k-m_i,k]'}</M>；候选分数 <M>{'g[r+xw_i]-xv_i'}</M> 只依赖 <M>{'x'}</M>。队首保存窗口内分数最大的 <M>{'x'}</M>，每个下标最多进队、出队一次，于是整条链是线性的。
           </p>
         </div>
+
+        <h3 className="section-title">跟着算一遍：按余数链维护滑动窗口</h3>
+        <div className="prose">
+          <p>
+            处理物品 <M>{'(w,v,m)=(2,3,2)'}</M>，容量上限 8。只看偶数余数链 <M>{'r=0'}</M>；旧数组在容量 <M>{'0,2,4,6,8'}</M> 上的值依次是 <M>{'0,4,5,7,8'}</M>。
+          </p>
+        </div>
+        <div className="steps">
+          <div className="step">
+            <span className="step__n">0</span>
+            <div className="step__b">
+              <b>先减去线性项。</b> 对链下标 <M>{'x=0,1,2,3,4'}</M>，候选分数 <M>{'g[r+xw]-xv'}</M> 依次为 <M>{'0,1,-1,-2,-4'}</M>。单调队列只需要维护这串分数的窗口最大值。
+            </div>
+          </div>
+          <div className="step">
+            <span className="step__n">1</span>
+            <div className="step__b">
+              <b>算容量 6。</b> 此时 <M>{'k=3'}</M>，最多取 2 件，所以窗口是 <M>{'x\\in[1,3]'}</M>。最大分数是 <M>{'x=1'}</M> 的 1，故 <M>{'f[6]=3\\times3+1=10'}</M>；也就是从旧状态 <M>{'g[2]=4'}</M> 出发，再取 2 件当前物品，得到 <M>{'4+2\\times3=10'}</M>。
+            </div>
+          </div>
+          <div className="step">
+            <span className="step__n">2</span>
+            <div className="step__b">
+              <b>窗口右移到容量 8。</b> <M>{'k=4'}</M> 时合法窗口变成 <M>{'x\\in[2,4]'}</M>，<M>{'x=1'}</M> 因为会取 3 件而从队首过期。新的最大分数是 <M>{'x=2'}</M> 的 −1，于是 <M>{'f[8]=4\\times3-1=11'}</M>，正好对应 <M>{'g[4]+2\\times3=11'}</M>。
+            </div>
+          </div>
+        </div>
+        <InfoBox kind="key" title="队列里到底存什么">
+          队列存的是链下标 <M>{'x'}</M>：队首过期条件是 <M>{'x<k-m_i'}</M>，队尾则按 <M>{'g[r+xw_i]-xv_i'}</M> 从大到小淘汰。每次把当前 <M>{'x=k'}</M> 也入队，表示「当前物品取 0 件」，因此不会漏掉沿用旧状态的选择。
+        </InfoBox>
+        <div className="prose">
+          <p>
+            下面是与 P1776 输入格式一致的完整写法。代码比二进制拆分繁琐，竞赛里通常仍首选二进制；当容量与物品种数允许、但件数上限很大时，再考虑这套 <M>{'O(Vn)'}</M> 优化。
+          </p>
+        </div>
+        <CodeBlock code={CODE_MULTIPLE_MONOQUEUE} luogu="P1776" />
         <InfoBox kind="warn" title="常见陷阱 · 别把三法记混">
           三法的分界很清晰：<strong>朴素 <M>{'O(V\\sum m_i)'}</M></strong> 是把 <M>{'m_i'}</M> 件摊开；<strong>二进制 <M>{'O(V\\sum\\log m_i)'}</M></strong> 是把 <M>{'m_i'}</M> 打包（主力）；
           <strong>单调队列 <M>{'O(Vn)'}</M></strong> 是按同余滑窗（选讲）。三者拿的都是<strong>同一个 <M>{'f[W]'}</M></strong>，只是把「取不超过 <M>{'m_i'}</M> 件」表达得越来越省。切莫把二进制的「打包件」当成真的多买了物品，打包只是转移的<strong>组织方式</strong>，取用件数始终不超过 <M>{'m_i'}</M>。
