@@ -16,6 +16,13 @@
 - `site/src/data/problems.ts` 是生成文件；不要手改。课程题目变化后运行 `pnpm content:generate`。
 - 部署与反馈操作以根目录 `deploy.md` 为准；长期工程知识维护在 `docs/` OKF 文档包。
 
+## Cloudflare Web Analytics / RUM contract
+
+- Rocket Loader 保持关闭，Web Analytics / RUM 保持开启。国际站 `dp.betaoi.cc` 只使用 Cloudflare 自动注入，源码与预渲染产物不得再加入手工 beacon。
+- 国内站 `dp.betaoi.cn` 的 EdgeOne 产物必须在每个可访问 HTML 中手工加载 `https://static.cloudflareinsights.com/beacon.min.js`（`type="module"`），统一公开 site token 为 `c113fb69d7e84d38a645c5160f6f1bda`；localhost、预览域和国际站产物不得手工加载。
+- 任何覆盖 Analytics 页面响应的 CSP 都必须在 `script-src` 放行 `https://static.cloudflareinsights.com`，并在 `connect-src` 放行 `'self' https://cloudflareinsights.com`，同时保留站点自身需要的来源。
+- 区域构建、预渲染、CSP 或部署合同变化时，必须由测试锁住 `.cc` 自动 / `.cn` 手工、统一 token、每个国内 HTML 恰好一个 snippet，以及国际产物零手工 snippet。
+
 ## Commands
 
 所有包管理命令从 `site/` 执行。运行时精确基线见 `site/.node-version` 与
