@@ -72,20 +72,8 @@ function cloudflareProvider(): AnalyticsProvider {
   return {
     name: 'cloudflare',
     initialize() {
-      const webAnalytics = site.analytics.cloudflareWebAnalytics
-      if (
-        window.location.hostname !== site.hostname ||
-        webAnalytics.delivery !== 'runtime' ||
-        document.querySelector('script[data-dp-analytics="cloudflare"]')
-      ) {
-        return
-      }
-      const script = document.createElement('script')
-      script.type = 'module'
-      script.src = 'https://static.cloudflareinsights.com/beacon.min.js'
-      script.dataset.cfBeacon = JSON.stringify({ token: webAnalytics.token })
-      script.dataset.dpAnalytics = 'cloudflare'
-      document.body.append(script)
+      // `.cc` 的 Web Analytics / RUM 由 Cloudflare 代理自动注入。
+      // 源码不得再注入 beacon，否则同一次浏览会重复统计。
     },
     track(event) {
       sendFirstPartyEvent('cloudflare', site.analytics.endpoint, event)

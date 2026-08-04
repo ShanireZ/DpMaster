@@ -42,7 +42,7 @@ test('both regions use host-aware canonical and equivalent hreflang alternates',
   assert.equal(SITE_CONFIGS.china.origin, 'https://dp.betaoi.cn')
   assert.equal(
     SITE_CONFIGS.international.analytics.cloudflareWebAnalytics.delivery,
-    'runtime',
+    'automatic',
   )
   assert.equal(
     SITE_CONFIGS.china.analytics.cloudflareWebAnalytics.delivery,
