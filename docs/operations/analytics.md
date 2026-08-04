@@ -67,7 +67,7 @@ GROUP BY path, metric
 ORDER BY metric, p75 DESC
 ```
 
-Keep Cloudflare Web Analytics enabled for independent request/page-view trends; use the first-party dataset for route, feedback, search, outbound-problem, and RUM funnels. Course visits are represented only by ordinary route page views; the site does not record lesson-start, lesson-completion, or local learning-progress state.
+Keep Cloudflare Web Analytics enabled for independent request/page-view trends; use the first-party dataset for route, feedback, search, outbound-problem, and RUM funnels. The `.cc` deployment relies exclusively on Cloudflare automatic injection (Rocket Loader stays off); source code must not add a second beacon. Course visits are represented only by ordinary route page views; the site does not record lesson-start, lesson-completion, or local learning-progress state.
 
 # EdgeOne Dashboard
 

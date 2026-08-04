@@ -7,7 +7,7 @@ export const BRAND = Object.freeze({
 
 export type SiteRegion = 'international' | 'china'
 export type AnalyticsProviderKind = 'cloudflare' | 'tencent-edgeone'
-export type CloudflareWebAnalyticsDelivery = 'runtime' | 'static'
+export type CloudflareWebAnalyticsDelivery = 'automatic' | 'static'
 
 export interface CloudflareWebAnalyticsConfig {
   token: string
@@ -38,8 +38,8 @@ export const SITE_CONFIGS: Readonly<Record<SiteRegion, SiteConfig>> = Object.fre
       provider: 'cloudflare',
       endpoint: '/api/analytics',
       cloudflareWebAnalytics: {
-        token: 'c113fb69d7e84d38a645c5160f6f1bda',
-        delivery: 'runtime',
+        token: '',
+        delivery: 'automatic',
       },
     },
   },
