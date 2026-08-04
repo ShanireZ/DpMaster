@@ -1,0 +1,5 @@
+{
+  "_comment": "EdgeOne Pages 项目绑定模板。复制为 project.json（同目录，已 gitignore）后填真值，或直接跑 `edgeone pages link` 由 CLI 生成。Name = EdgeOne 控制台里的项目名，ProjectId = 控制台项目详情里的 makers-* 标识。",
+  "Name": "",
+  "ProjectId": ""
+}
