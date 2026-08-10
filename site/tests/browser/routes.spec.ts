@@ -468,6 +468,15 @@ test('home starts its entrance on the first styled frame and cancels trailing co
   ).toBeLessThanOrEqual(2)
 })
 
+test('LIS first example shows the corrected difficulty on mobile', async ({ page }) => {
+  await page.setViewportSize({ width: 360, height: 612 })
+  await page.goto('/part/b/lis')
+
+  const firstExample = page.locator('.example').first()
+  await expect(firstExample.locator('.example__pid')).toHaveText('B3637')
+  await expect(firstExample.locator('.example__diff')).toHaveText('普及-')
+})
+
 test('home state atlas drag stays aligned and settles without catch-up motion', async ({ page }) => {
   await page.setViewportSize({ width: 1440, height: 900 })
   await page.goto('/')

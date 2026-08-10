@@ -65,7 +65,7 @@ export const PROBLEMS: Problem[] = [
   { part: 'b', partTitle: '线性 DP', slug: 'maxseg', typeTitle: '最大子段和', pid: 'P1121', name: '环状最大两段子段和', diff: '提高+/省选-', kind: 'example', src: '洛谷原生' },
   { part: 'b', partTitle: '线性 DP', slug: 'maxseg', typeTitle: '最大子段和', pid: 'P1719', name: '最大加权矩形', diff: '', kind: 'exercise', src: '' },
   { part: 'b', partTitle: '线性 DP', slug: 'maxseg', typeTitle: '最大子段和', pid: 'P2642', name: '双子序列最大和（回炉自测）', diff: '', kind: 'exercise', src: '' },
-  { part: 'b', partTitle: '线性 DP', slug: 'lis', typeTitle: '最长上升子序列 LIS', pid: 'B3637', name: '最长上升子序列', diff: '入门', kind: 'example', src: '洛谷原生' },
+  { part: 'b', partTitle: '线性 DP', slug: 'lis', typeTitle: '最长上升子序列 LIS', pid: 'B3637', name: '最长上升子序列', diff: '普及-', kind: 'example', src: '洛谷原生' },
   { part: 'b', partTitle: '线性 DP', slug: 'lis', typeTitle: '最长上升子序列 LIS', pid: 'P1020', name: '[NOIP1999 提高组] 导弹拦截', diff: '提高+/省选-', kind: 'example', src: 'NOIP1999 提高' },
   { part: 'b', partTitle: '线性 DP', slug: 'lis', typeTitle: '最长上升子序列 LIS', pid: 'P1091', name: '[NOIP2004 提高组] 合唱队形', diff: '普及/提高-', kind: 'example', src: 'NOIP2004 提高' },
   { part: 'b', partTitle: '线性 DP', slug: 'lis', typeTitle: '最长上升子序列 LIS', pid: 'P2782', name: '友好城市', diff: '', kind: 'exercise', src: '' },

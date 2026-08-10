@@ -100,13 +100,13 @@ test('Cloudflare worker exposes the analytics endpoint and keeps static assets i
   assert.equal(options.status, 204)
 })
 
-test('analytics providers keep route events same-origin and defer the international beacon', async () => {
+test('analytics providers stay on configured hosts and never inject a source beacon', async () => {
   const source = await import('node:fs/promises').then(({ readFile }) =>
     readFile(new URL('../src/analytics/index.ts', import.meta.url), 'utf8'),
   )
   assert.match(source, /window\.location\.hostname !== site\.hostname/)
-  assert.match(source, /static\.cloudflareinsights\.com\/beacon\.min\.js/)
-  assert.match(source, /script\.dataset\.cfBeacon/)
+  assert.doesNotMatch(source, /static\.cloudflareinsights\.com\/beacon\.min\.js/)
+  assert.doesNotMatch(source, /script\.dataset\.cfBeacon/)
   assert.match(source, /sendFirstPartyEvent\('cloudflare'/)
   assert.match(source, /sendFirstPartyEvent\('tencent-edgeone'/)
   assert.match(source, /navigator\.sendBeacon/)

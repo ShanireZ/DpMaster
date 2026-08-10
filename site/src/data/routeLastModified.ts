@@ -19,7 +19,7 @@ export const ROUTE_LAST_MODIFIED: Readonly<Record<string, string>> = Object.free
   "/part/a/fractional": "2026-08-02",
   "/part/b/path": "2026-08-02",
   "/part/b/maxseg": "2026-08-02",
-  "/part/b/lis": "2026-08-02",
+  "/part/b/lis": "2026-08-10",
   "/part/b/lcs": "2026-08-02",
   "/part/b/edit": "2026-08-02",
   "/part/b/fsm": "2026-08-02",
