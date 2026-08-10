@@ -279,7 +279,7 @@
       "title": "最长上升子序列 LIS · 线性 DP · DP大师",
       "summary": "最长上升子序列 LIS课程回答“最长上升子序列如何从二次转移优化到对数查找”。内容以O(n²) 与 O(n log n)·导弹拦截为主线，配合逐步推导、可编辑演示、例题与练习形成可复查的学习闭环。",
       "type": "lesson",
-      "lastModified": "2026-08-02",
+      "lastModified": "2026-08-10",
       "reviewedBy": "AzureL蔚澜算法",
       "reviewStatus": "持续复核",
       "alternates": {

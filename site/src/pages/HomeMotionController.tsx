@@ -1,5 +1,7 @@
 import { useEffect } from 'react'
 import type { RefObject } from 'react'
+import { gsap } from 'gsap'
+import { ScrollTrigger } from 'gsap/ScrollTrigger'
 
 type HomeMotionControllerProps = {
   rootRef: RefObject<HTMLDivElement | null>
@@ -10,12 +12,7 @@ export default function HomeMotionController({ rootRef }: HomeMotionControllerPr
     let disposed = false
     let cleanup = () => {}
 
-    async function mountMotion() {
-      const [{ gsap }, { ScrollTrigger }] = await Promise.all([
-        import('gsap'),
-        import('gsap/ScrollTrigger'),
-      ])
-
+    function mountMotion() {
       if (disposed || !rootRef.current) return
 
       gsap.registerPlugin(ScrollTrigger)
@@ -223,7 +220,7 @@ export default function HomeMotionController({ rootRef }: HomeMotionControllerPr
       }
     }
 
-    void mountMotion()
+    mountMotion()
 
     return () => {
       disposed = true

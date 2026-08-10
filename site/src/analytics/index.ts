@@ -33,6 +33,8 @@ function sendFirstPartyEvent(
   event: AnalyticsEvent,
 ): void {
   const site = getRuntimeSiteConfig()
+  if (window.location.hostname !== site.hostname) return
+
   const body = JSON.stringify({
     provider,
     event: event.event,

@@ -310,7 +310,7 @@ export default function LIS() {
       <section className="lesson">
         <h2 className="section-title">例题</h2>
 
-        <ExampleCard pid="B3637" name="最长上升子序列" src="洛谷原生" diff="入门">
+        <ExampleCard pid="B3637" name="最长上升子序列" src="洛谷原生" diff="普及-">
           <Field k="题意">
             给定长度 <M>{'n'}</M> 的序列，求其最长<strong>严格上升</strong>子序列的长度。
           </Field>

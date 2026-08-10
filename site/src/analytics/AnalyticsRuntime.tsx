@@ -9,17 +9,25 @@ function safeMessage(value: unknown): string {
   return 'unknown client error'
 }
 
+const resizeObserverDiagnostics = new Set([
+  'ResizeObserver loop limit exceeded',
+  'ResizeObserver loop completed with undelivered notifications.',
+])
+
 function startRuntime(): void {
   if (initialized || typeof window === 'undefined') return
   initialized = true
 
   window.addEventListener('error', (event) => {
+    const message = safeMessage(event.error ?? event.message)
+    if (resizeObserverDiagnostics.has(message)) return
+
     trackAnalyticsEvent({
       event: 'client_error',
       path: window.location.pathname,
       metadata: {
         source: 'window',
-        message: safeMessage(event.error ?? event.message),
+        message,
         line: event.lineno,
         column: event.colno,
       },
