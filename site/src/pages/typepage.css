@@ -289,7 +289,7 @@
   font-size: clamp(30px, 4vw, 48px);
   letter-spacing: -0.045em;
   line-height: 1.16;
-  scroll-margin-top: calc(var(--topbar-h) + 24px);
+  scroll-margin-top: calc(var(--topbar-h) + var(--sp-5));
   text-wrap: balance;
 }
 

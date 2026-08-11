@@ -18,6 +18,7 @@ sources:
   - resource: ../../site/src/components/ui/Math.tsx
   - resource: ../../site/src/components/games/runtime/
   - resource: ../../site/src/lib/pageMeta.ts
+  - resource: ../../site/src/lib/hashNavigation.ts
   - resource: ../../site/src/lib/publicRoutes.ts
   - resource: ../../site/src/lib/discovery.ts
   - resource: ../../site/src/lib/seoHead.ts
@@ -108,9 +109,9 @@ The client exposes a bounded event vocabulary for page views/404s, Web Vitals, l
 
 The receiver rejects cross-origin requests, unknown providers/events, non-JSON or oversized payloads, clips strings and primitive metadata, and logs no cookies, account identifiers, contact fields, or payment data. Analytics failures are swallowed by the client and cannot block lessons, games, or feedback.
 
-The shell owns cross-route accessibility behavior: a keyboard-visible skip link targets the focusable `main`, navigation uses current-page semantics, the mobile drawer exposes expanded/controlled state and a real close button, and a polite status region announces route changes. After a client pathname change, the shell focuses `#main-content` with `preventScroll`; a previous-path guard leaves focus unchanged on initial load. Global reduced-motion styles keep content visible while shortening transitions and animations.
+The shell owns cross-route accessibility and positioning behavior: a keyboard-visible skip link targets the focusable `main`, navigation uses current-page semantics, the mobile drawer exposes expanded/controlled state and a real close button, and a polite status region announces route changes. After a client pathname change, the shell focuses `#main-content` with `preventScroll`; a previous-path guard leaves focus unchanged on initial load. Ordinary route changes reset scroll immediately so the new page cannot inherit an in-flight smooth animation from the old page. Fragment navigation is coordinated through `hashNavigation.ts`: it waits for the new DOM, applies the target's declared scroll margin or the sticky-topbar fallback, and briefly corrects layout shifts unless the learner starts another pointer, wheel, touch, or keyboard interaction. Lesson headings receive their stable fragment IDs when the hydrated lesson outline is built, so `TypePage` repeats the fragment restore after those dynamic targets exist. Reduced-motion preference turns requested smooth fragment moves into immediate positioning.
 
-The production-preview browser gate runs against the international `dist/cloudflare` build through the custom strict preview server. It covers direct prerendered deep links, hydration, live client navigation, metadata/current-page state, real 404 behavior, focus, deferred game loading, seeded replay and round-stat lifecycles, and rejects browser console or page errors. Node contracts separately inspect both regional origins and build outputs.
+The production-preview browser gate runs against the international `dist/cloudflare` build through the custom strict preview server. It covers direct prerendered deep links, hydration, live client navigation, metadata/current-page state, fragment offsets on desktop and mobile, one representative lesson from every family, immediate cross-page scroll reset, real 404 behavior, focus, deferred game loading, seeded replay and round-stat lifecycles, and rejects browser console or page errors. Node contracts separately inspect both regional origins and build outputs.
 
 # Playback And Captions
 

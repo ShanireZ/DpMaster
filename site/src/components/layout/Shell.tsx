@@ -7,6 +7,7 @@ import TopBar from './TopBar'
 import RouteStage from './RouteStage'
 import FeedbackWidget from '../feedback/FeedbackWidget'
 import { getPageMeta } from '../../lib/pageMeta.ts'
+import { scheduleHashScroll } from '../../lib/hashNavigation.ts'
 import './shell.css'
 
 const SIDEBAR_STORAGE_KEY = 'dp-master-sidebar-collapsed:v1'
@@ -16,7 +17,7 @@ export default function Shell() {
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false)
   const location = useLocation()
   const mainRef = useRef<HTMLElement>(null)
-  const previousPath = useRef(location.pathname)
+  const previousPath = useRef<string | undefined>(undefined)
   const reduceMotion = useReducedMotion()
   const match = useMatch('/part/:pid/*')
   const pid = match?.params.pid
@@ -36,14 +37,26 @@ export default function Shell() {
     else delete document.documentElement.dataset.part
   }, [pid])
 
-  // 路由变化：关闭移动抽屉 + 滚动到顶 + 将键盘焦点移到新页面正文
+  // 路由变化：关闭移动抽屉 + 恢复正确位置 + 将键盘焦点移到新页面正文。
+  // 普通路由必须立即置顶，不能继承全局 smooth（新旧页面高度变化会让动画中途偏移）。
+  // 带 hash 的首屏/跨页导航则等 DOM 稳定两帧后精确定位；课程动态标题由 TypePage 补做。
   useLayoutEffect(() => {
-    const changed = previousPath.current !== location.pathname
+    const initial = previousPath.current === undefined
+    const changed = !initial && previousPath.current !== location.pathname
     previousPath.current = location.pathname
     setMobileOpen(false)
-    window.scrollTo({ top: 0 })
+    let cancelHashScroll: (() => void) | undefined
+    if (location.hash) {
+      cancelHashScroll = scheduleHashScroll(
+        location.hash,
+        initial || changed ? 'instant' : 'smooth',
+      )
+    } else if (changed) {
+      window.scrollTo({ top: 0, left: window.scrollX, behavior: 'instant' as ScrollBehavior })
+    }
     if (changed) mainRef.current?.focus({ preventScroll: true })
-  }, [location.pathname])
+    return cancelHashScroll
+  }, [location.hash, location.pathname])
 
   const toggleSidebar = () => {
     setSidebarCollapsed((collapsed) => {
