@@ -21,7 +21,7 @@ pnpm release
 
 ```bash
 pnpm exec wrangler login
-pnpm dlx edgeone@1.6.18 login
+pnpm dlx edgeone@1.6.21 login
 ```
 
 `pnpm release` 是唯一完整双区发布入口：先执行完整 `pnpm verify`，只构建一次，再依次发布 Cloudflare 与 EdgeOne。
@@ -229,7 +229,7 @@ edgeone makers deploy ./dist/edgeone -n dpmaster -e production
 ### 首次发布到 EdgeOne
 
 ```bash
-pnpm dlx edgeone@1.6.18 login
+pnpm dlx edgeone@1.6.21 login
 pnpm build
 pnpm deploy:eo
 ```
