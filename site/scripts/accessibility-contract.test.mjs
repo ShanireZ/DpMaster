@@ -23,15 +23,19 @@ test('Shell owns skip navigation, the main target, and route announcements', asy
   assert.match(shell, /getPageMeta\(location\.pathname\)/)
 })
 
-test('Shell focuses main only after pathname changes', async () => {
+test('Shell focuses main only after pathname changes and coordinates route position', async () => {
   const shell = await source('components/layout/Shell.tsx')
   assert.match(shell, /const mainRef = useRef<HTMLElement>\(null\)/)
-  assert.match(shell, /const previousPath = useRef\(location\.pathname\)/)
+  assert.match(shell, /const previousPath = useRef<string \| undefined>\(undefined\)/)
   assert.match(shell, /<main[^>]*ref=\{mainRef\}/)
   assert.match(
     shell,
-    /const changed = previousPath\.current !== location\.pathname[\s\S]*previousPath\.current = location\.pathname[\s\S]*setMobileOpen\(false\)[\s\S]*window\.scrollTo\(\{ top: 0 \}\)[\s\S]*if \(changed\) mainRef\.current\?\.focus\(\{ preventScroll: true \}\)/,
+    /const initial = previousPath\.current === undefined[\s\S]*const changed = !initial && previousPath\.current !== location\.pathname[\s\S]*previousPath\.current = location\.pathname/,
   )
+  assert.match(shell, /if \(location\.hash\)[\s\S]*scheduleHashScroll\([\s\S]*initial \|\| changed \? 'instant' : 'smooth'/)
+  assert.match(shell, /else if \(changed\)[\s\S]*window\.scrollTo\(\{ top: 0,[\s\S]*behavior: 'instant'/)
+  assert.match(shell, /if \(changed\) mainRef\.current\?\.focus\(\{ preventScroll: true \}\)/)
+  assert.match(shell, /\}, \[location\.hash, location\.pathname\]\)/)
 })
 
 test('browser verification starts a strict fresh production preview', async () => {

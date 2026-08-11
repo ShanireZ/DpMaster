@@ -1,5 +1,5 @@
 import { lazy, Suspense, useEffect, useRef, useState, type CSSProperties } from 'react'
-import { Link, useParams } from 'react-router-dom'
+import { Link, useNavigate, useParams } from 'react-router-dom'
 import { ListTree } from 'lucide-react'
 import { getLesson, getLessonNeighbors } from '../data/catalog'
 import { getLessonEditorial } from '../data/editorial.ts'
@@ -8,6 +8,7 @@ import PartGlyph from '../components/PartGlyph'
 import { FamilyLessonPlate } from '../components/art/FamilyArtSlots.tsx'
 import { hasFamilyArt } from '../components/art/familyArtRegistry.ts'
 import { useStaticLessonContents } from '../app/StaticLessonContent.ts'
+import { scheduleHashScroll } from '../lib/hashNavigation.ts'
 import './typepage.css'
 
 const NotFound = lazy(() => import('./NotFound'))
@@ -48,12 +49,21 @@ function OutlineLinks({
   items: OutlineItem[]
   activeId: string
 }) {
+  const navigate = useNavigate()
   if (items.length === 0) return <p className="lesson-outline__pending">正在整理目录…</p>
   return (
     <ol>
       {items.map((item) => (
         <li key={item.id}>
-          <a href={`#${item.id}`} aria-current={activeId === item.id ? 'location' : undefined}>
+          <a
+            href={`#${item.id}`}
+            aria-current={activeId === item.id ? 'location' : undefined}
+            onClick={(event) => {
+              event.preventDefault()
+              navigate({ hash: `#${item.id}` }, { preventScrollReset: true })
+              scheduleHashScroll(`#${item.id}`, 'smooth')
+            }}
+          >
             {item.label}
           </a>
         </li>
@@ -86,6 +96,7 @@ export default function TypePage() {
     const article = articleRef.current
     if (!article) return
     let sectionObserver: IntersectionObserver | undefined
+    let cancelHashScroll: (() => void) | undefined
 
     const refresh = () => {
       const headings = Array.from(article.querySelectorAll<HTMLElement>('h2.section-title'))
@@ -99,6 +110,17 @@ export default function TypePage() {
       setActiveId((current) => (
         items.some((item) => item.id === current) ? current : (items[0]?.id ?? '')
       ))
+      const hashId = (() => {
+        try {
+          return decodeURIComponent(window.location.hash.slice(1))
+        } catch {
+          return ''
+        }
+      })()
+      if (items.some((item) => item.id === hashId)) {
+        cancelHashScroll?.()
+        cancelHashScroll = scheduleHashScroll(window.location.hash)
+      }
       sectionObserver?.disconnect()
       sectionObserver = new IntersectionObserver(
         () => {
@@ -126,6 +148,7 @@ export default function TypePage() {
     return () => {
       mutationObserver.disconnect()
       sectionObserver?.disconnect()
+      cancelHashScroll?.()
     }
   }, [path])
 
