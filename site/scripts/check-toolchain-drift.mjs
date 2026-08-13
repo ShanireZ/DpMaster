@@ -6,6 +6,10 @@ const packageJson = JSON.parse(
 const nodeVersion = (
   await readFile(new URL('../.node-version', import.meta.url), 'utf8')
 ).trim()
+const deployDoc = await readFile(
+  new URL('../../deploy.md', import.meta.url),
+  'utf8',
+)
 const githubToken = process.env.GITHUB_TOKEN
 const maturityCutoff = Date.now() - 24 * 60 * 60 * 1000
 
@@ -19,9 +23,12 @@ const packageEntries = [
   ...Object.entries(packageJson.dependencies ?? {}),
   ...Object.entries(packageJson.devDependencies ?? {}),
 ]
-const edgeOneVersion = packageJson.scripts['deploy:eo'].match(
-  /edgeone@(\d+\.\d+\.\d+)/,
-)?.[1]
+// wrangler / edgeone 由发布机全局安装，基线声明在 deploy.md 的「全局 CLI 基线」表格。
+const globalCliBaselines = Object.fromEntries(
+  [...deployDoc.matchAll(/^\| (wrangler|edgeone) \| (\d+\.\d+\.\d+) \|$/gm)].map(
+    (match) => [match[1], match[2]],
+  ),
+)
 
 function numericVersion(value) {
   return value.match(/\d+\.\d+\.\d+(?:-[0-9A-Za-z.-]+)?/)?.[0]
@@ -112,7 +119,12 @@ await Promise.all([
     packageJson.packageManager.replace(/^pnpm@/, ''),
     () => latestPackageVersion('pnpm'),
   ),
-  record('EdgeOne CLI', edgeOneVersion, () => latestPackageVersion('edgeone')),
+  record('EdgeOne CLI（全局）', globalCliBaselines.edgeone, () =>
+    latestPackageVersion('edgeone'),
+  ),
+  record('Wrangler CLI（全局）', globalCliBaselines.wrangler, () =>
+    latestPackageVersion('wrangler'),
+  ),
   ...packageEntries.map(([name, range]) =>
     record(name, numericVersion(range), () => latestPackageVersion(name)),
   ),

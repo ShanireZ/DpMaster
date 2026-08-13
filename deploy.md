@@ -17,12 +17,7 @@ pnpm install --frozen-lockfile
 pnpm release
 ```
 
-首次部署前登录两家平台：
-
-```bash
-pnpm exec wrangler login
-pnpm dlx edgeone@1.6.21 login
-```
+发布工具链（`wrangler`、`edgeone`、`gh`、`cnb`）由发布机全局安装并登录，见“全局 CLI 准备”；新机器先完成该节再跑上面的流程。
 
 `pnpm release` 是唯一完整双区发布入口：先执行完整 `pnpm verify`，只构建一次，再依次发布 Cloudflare 与 EdgeOne。
 
@@ -39,11 +34,55 @@ pnpm deploy:cf
 pnpm deploy:eo
 ```
 
+## 全局 CLI 准备
+
+发布 CLI 全部**系统全局安装、提前登录**，不在各项目内重复安装，升级也只在全局做一次。新机器或新维护者首次接手时，按顺序执行：
+
+```bash
+# 1. 安装（Windows 默认 shell；gh 也可用 winget install --id GitHub.cli）
+pnpm add -g wrangler edgeone
+npm install -g @cnbcool/cnb-cli
+winget install --id GitHub.cli   # 已装则跳过
+
+# 2. 登录（均为一次性 OAuth，凭证缓存在用户目录，各项目共用）
+wrangler login
+edgeone login
+cnb login
+gh auth login
+```
+
+验证：
+
+```bash
+wrangler --version && wrangler whoami
+edgeone --version && edgeone whoami
+cnb status
+gh auth status
+```
+
+全局 CLI 升级：
+
+```bash
+pnpm add -g wrangler edgeone      # gh / cnb 各自用 winget upgrade / npm install -g 升级
+```
+
+升级后把下方“全局 CLI 基线”表中的版本号同步为实际安装版本，并在本仓库跑一次 `pnpm verify` 确认双区部署链路不受影响。
+
+### 全局 CLI 基线
+
+本表是机器可读的当前基线声明，`site/scripts/check-toolchain-drift.mjs` 每周巡检会读取并与 npm 最新稳定版比对。全局升级后必须同步更新本表数字：
+
+| CLI | 当前基线 |
+| --- | --- |
+| wrangler | 4.121.0 |
+| edgeone | 1.6.23 |
+
 ## 部署前准备
 
 需要准备：
 
 - Node.js 24.18.1 与 pnpm 11.18.0。仓库使用 `pnpm-lock.yaml` 锁版，版本权威是 `site/.node-version`、`site/package.json` 和 `site/pnpm-workspace.yaml`。
+- 已完成“全局 CLI 准备”：`wrangler`、`edgeone`、`gh`、`cnb` 全局安装并登录。
 - Cloudflare 账号，已允许 Wrangler 发布 Workers。
 - 腾讯云 EdgeOne 账号，已允许 EdgeOne Pages 发布。
 - 如果需要站内反馈，准备一个钉钉群自定义机器人 webhook，或按后文规划迁移到钉钉应用机器人。
@@ -118,7 +157,7 @@ pnpm preview -- --region china --port 4174
 ### 首次发布到 Cloudflare
 
 ```bash
-pnpm exec wrangler login
+wrangler login
 pnpm build
 pnpm deploy:cf
 ```
@@ -158,8 +197,8 @@ pnpm deploy:cf
 CLI 设置 Secret：
 
 ```bash
-pnpm exec wrangler secret put FEEDBACK_WEBHOOK_URL
-pnpm exec wrangler secret put FEEDBACK_WEBHOOK_SECRET
+wrangler secret put FEEDBACK_WEBHOOK_URL
+wrangler secret put FEEDBACK_WEBHOOK_SECRET
 ```
 
 `FEEDBACK_WEBHOOK_KIND` 不敏感，推荐在 Dashboard 里作为 Text variable 添加。如果完全用 CLI，也可以临时用 `wrangler secret put FEEDBACK_WEBHOOK_KIND` 输入 `dingtalk`，但它语义上不是 secret。
@@ -201,7 +240,7 @@ Invoke-RestMethod `
 可以用 Wrangler 看实时日志：
 
 ```bash
-pnpm exec wrangler tail dpmaster
+wrangler tail dpmaster
 ```
 
 ## EdgeOne 部署
@@ -229,7 +268,7 @@ edgeone makers deploy ./dist/edgeone -n dpmaster -e production
 ### 首次发布到 EdgeOne
 
 ```bash
-pnpm dlx edgeone@1.6.21 login
+edgeone login
 pnpm build
 pnpm deploy:eo
 ```
@@ -443,6 +482,7 @@ Invoke-WebRequest `
 ## 维护边界
 
 - `site/wrangler.jsonc` 是 Cloudflare 部署合同，应随仓库维护。
+- `wrangler` 与 `edgeone` 由发布机全局安装，不在仓库锁版；全局升级后同步更新上文“全局 CLI 基线”表格。
 - `site/dist/`（含两个区域子目录）、`.env`、`.dev.vars`、CLI 登录缓存和平台 token 不入仓库。
 - 如果更改 Cloudflare Worker 名称，同步更新 `site/wrangler.jsonc` 的 `name`。
 - 如果更改 EdgeOne Pages 项目名，同步更新 `site/package.json` 的 `deploy:eo` 命令。

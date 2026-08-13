@@ -42,6 +42,8 @@ pnpm verify
 
 `pnpm release` 是唯一完整生产发布入口：先通过 `pnpm verify` 并复用该次构建产物，再依次发布 Cloudflare 与 EdgeOne。GitHub Actions 只运行 CI，不保存生产密钥，也不部署。
 
+发布 CLI `wrangler` 与 `edgeone` 由发布机**全局安装并提前登录**，不在 `package.json` 锁版；安装、登录、升级与版本基线（供 `pnpm maintenance:check` 巡检读取）均以根目录 `deploy.md` 的“全局 CLI 准备”与“全局 CLI 基线”节为准。全局升级 CLI 后必须同步该基线表并重跑 `pnpm verify`。
+
 ## Toolchain and compatibility
 
 - Node 固定在 24 LTS 最新成熟补丁，pnpm 固定在 11 最新成熟版本；直接依赖使用当前稳定主线的 `^` 范围，`pnpm-lock.yaml` 是 CI 的精确解析合同。
