@@ -48,6 +48,66 @@ function sourceFromRequest(request) {
   return forwarded || 'anonymous'
 }
 
+const RELAY_SECRET_HEADER = 'x-dp-relay-secret'
+const RELAY_CLIENT_IP_HEADER = 'x-dp-client-ip'
+
+/** 恒定时间字符串比较，避免共享密钥被时序侧信道探测。 */
+function secureEqual(a, b) {
+  const bytesA = new TextEncoder().encode(String(a || ''))
+  const bytesB = new TextEncoder().encode(String(b || ''))
+  if (bytesA.length !== bytesB.length) return false
+  let diff = 0
+  for (let i = 0; i < bytesA.length; i++) diff |= bytesA[i] ^ bytesB[i]
+  return diff === 0
+}
+
+/**
+ * 识别来自 .cc Worker 的可信转发请求。
+ * .cc 的 Cloudflare 出口到钉钉 TLS 不通（525），反馈经 .cn 中转；
+ * 中转请求携带共享密钥与原始客户端 IP，只有密钥匹配才信任转发 IP。
+ * 转发 IP 仅接受 IPv4/IPv6 字面量，避免异常字符进入消息与日志。
+ */
+function trustedRelay(request, env) {
+  const secret = env.FEEDBACK_RELAY_SECRET
+  if (!secret) return null
+  const offered = request.headers.get(RELAY_SECRET_HEADER)
+  if (!offered || !secureEqual(offered, secret)) return null
+  const clientIp = String(request.headers.get(RELAY_CLIENT_IP_HEADER) || '').trim()
+  return /^[0-9a-fA-F:.]{1,64}$/.test(clientIp) ? clientIp : null
+}
+
+async function forwardRelay({ relayUrl, secret, clientIp, rawBody, fetchImpl = fetch }) {
+  const headers = { 'Content-Type': 'application/json' }
+  if (secret) headers[RELAY_SECRET_HEADER] = secret
+  if (clientIp && clientIp !== 'anonymous') headers[RELAY_CLIENT_IP_HEADER] = clientIp
+  const response = await fetchImpl(relayUrl, {
+    method: 'POST',
+    headers,
+    body: rawBody,
+  })
+  let body = null
+  try {
+    body = await response.json()
+  } catch {
+    // 非 JSON 响应视为中转失败。
+  }
+  return { status: response.status, body }
+}
+
+async function alertFailure({ env, runtime, requestId, relay, webhook, kind }) {
+  const alertUrl = env.ALERT_WEBHOOK_URL
+  if (!alertUrl) return
+  const detail = relay ? `中转状态：${relay.status}` : `状态：${webhook.status}`
+  await forwardWebhook({
+    baseUrl: alertUrl,
+    kind: env.ALERT_WEBHOOK_KIND || kind,
+    secret: env.ALERT_WEBHOOK_SECRET,
+    text: `DP大师反馈通道异常\n编号：${requestId}\n${detail}`,
+    fetchImpl: runtime.fetch || fetch,
+    now: runtime.now || Date.now,
+  })
+}
+
 function requestId(randomUUID, now) {
   if (randomUUID) return randomUUID()
   if (globalThis.crypto && typeof globalThis.crypto.randomUUID === 'function') {
@@ -176,7 +236,8 @@ export async function handleFeedback(request, env = {}, runtime = {}) {
 
   const now = runtime.now || Date.now
   const timestamp = now()
-  const ip = sourceFromRequest(request)
+  const relayTrust = trustedRelay(request, env)
+  const ip = relayTrust || sourceFromRequest(request)
   const source = runtime.sourceKey ? runtime.sourceKey(request) : ip
   const limiter = runtime.limiter || defaultLimiter
   const rate = limiter.take(source, timestamp)
@@ -191,6 +252,7 @@ export async function handleFeedback(request, env = {}, runtime = {}) {
 
   const id = requestId(runtime.randomUUID, timestamp)
   const baseUrl = env.FEEDBACK_WEBHOOK_URL
+  const relayUrl = env.FEEDBACK_RELAY_URL
   const kind = env.FEEDBACK_WEBHOOK_KIND || 'wecom'
   const log = runtime.log || defaultLog
   const errorLog = runtime.errorLog || defaultErrorLog
@@ -199,7 +261,7 @@ export async function handleFeedback(request, env = {}, runtime = {}) {
     event: 'feedback_received',
     requestId: id,
     feedback,
-    webhook: { status: baseUrl ? 'pending' : 'not_configured' },
+    webhook: { status: relayUrl ? 'relay_pending' : baseUrl ? 'pending' : 'not_configured' },
   }
 
   try {
@@ -208,7 +270,7 @@ export async function handleFeedback(request, env = {}, runtime = {}) {
     return fail('log_failed', '反馈服务暂时不可用', 500)
   }
 
-  if (!baseUrl) {
+  if (!baseUrl && !relayUrl) {
     errorLog({
       event: 'feedback_delivery_unavailable',
       requestId: id,
@@ -219,6 +281,53 @@ export async function handleFeedback(request, env = {}, runtime = {}) {
       '反馈通道尚未配置，请先复制反馈内容后通过公开渠道发送。',
       503,
     )
+  }
+
+  // .cc 的 Cloudflare 出口到钉钉 TLS 不通（525），配置 relay 时经 .cn 中转进钉钉。
+  // 已识别为可信转发的请求（trustedRelay 命中）绝不再次转发，防止误配造成转发循环。
+  if (relayUrl && !relayTrust) {
+    let relayed
+    try {
+      relayed = await forwardRelay({
+        relayUrl,
+        secret: env.FEEDBACK_RELAY_SECRET,
+        clientIp: ip,
+        rawBody: raw,
+        fetchImpl: runtime.fetch || fetch,
+      })
+    } catch {
+      relayed = { status: 0, body: null }
+    }
+    try {
+      log({ event: 'feedback_relay', requestId: id, relay: { status: relayed.status } })
+    } catch {
+      // 首条反馈日志已成功，转发诊断日志失败不改变最终送达判断。
+    }
+
+    if (relayed.status === 429) {
+      return fail('rate_limited', '提交太频繁，请稍后再试', 429)
+    }
+    if (relayed.status !== 200 || !relayed.body?.ok) {
+      const failure = {
+        event: 'feedback_delivery_failed',
+        requestId: id,
+        relay: { status: relayed.status, error: relayed.body?.error },
+      }
+      errorLog(failure)
+      await alertFailure({ env, runtime, requestId: id, relay: failure.relay, kind })
+      return fail(
+        'delivery_failed',
+        '反馈暂时无法送达，请稍后重试，或复制反馈内容后通过公开渠道发送。',
+        502,
+      )
+    }
+
+    return json({
+      ok: true,
+      status: 'delivered',
+      forwarded: true,
+      requestId: String(relayed.body.requestId || id),
+    })
   }
 
   const webhook = await forwardWebhook({
@@ -244,14 +353,7 @@ export async function handleFeedback(request, env = {}, runtime = {}) {
     errorLog(failure)
     const alertUrl = env.ALERT_WEBHOOK_URL
     if (alertUrl && alertUrl !== baseUrl) {
-      await forwardWebhook({
-        baseUrl: alertUrl,
-        kind: env.ALERT_WEBHOOK_KIND || kind,
-        secret: env.ALERT_WEBHOOK_SECRET,
-        text: `DP大师反馈通道异常\n编号：${id}\n状态：${webhook.status}`,
-        fetchImpl: runtime.fetch || fetch,
-        now,
-      })
+      await alertFailure({ env, runtime, requestId: id, webhook, kind })
     }
     return fail(
       'delivery_failed',

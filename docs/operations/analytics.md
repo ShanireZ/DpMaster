@@ -31,6 +31,8 @@ The UI collects feedback separately. Page name/path and feedback copy are sent o
 
 The receiver never trusts a client-supplied IP. It derives the submitter IP from platform-injected sources only: EdgeOne's `request.eo.clientIp` runtime property — on that runtime every IP-related header is client-forgeable and ignored — or Cloudflare's `cf-connecting-ip` header. `x-real-ip` / `x-forwarded-for` are fallbacks only outside those platform runtimes, and the rate limiter keys on the same derived IP.
 
+The `.cc` Worker relays feedback to `https://dp.betaoi.cn/api/feedback` (`FEEDBACK_RELAY_URL`) because the Cloudflare datacenter egress to `oapi.dingtalk.com` fails TLS with 525 while DingTalk accepts ordinary overseas hosts. Relay requests carry `x-dp-relay-secret` and `x-dp-client-ip`; EdgeOne trusts the forwarded IP only when the shared `FEEDBACK_RELAY_SECRET` matches (constant-time comparison), otherwise the platform IP applies. A relay 429 propagates as 429; an unreachable or failing relay returns 502 and raises the delivery alert.
+
 # Cloudflare Dashboard
 
 The international Worker writes every accepted event to the `dpmaster` Analytics Engine dataset through the `ANALYTICS` binding. Blob positions are:

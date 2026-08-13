@@ -234,6 +234,259 @@ test('returns a retryable failure when the webhook returns non-2xx', async () =>
   assert.equal(logs.at(-1).webhook.code, 503)
 })
 
+test('accepts a trusted relay request and uses the forwarded client IP', async () => {
+  const { value, logs } = runtime({
+    fetch: async () => new Response('{}', { status: 200 }),
+  })
+  // .cn 收到 .cc 的可信转发：即使 EdgeOne 平台给了 eo.clientIp（Cloudflare 出口 IP），
+  // 密钥匹配时也必须用转发头里的原始客户端 IP 作为展示 IP 与限流键。
+  const response = await feedback.handleFeedback(
+    request(
+      VALID,
+      {
+        'CF-Connecting-IP': '',
+        'X-Dp-Relay-Secret': 'relay-secret-123',
+        'X-Dp-Client-Ip': '203.0.113.77',
+      },
+      { geo: { countryCodeAlpha2: 'CN' }, uuid: 'eo-test', clientIp: '9.9.9.9' },
+    ),
+    { FEEDBACK_WEBHOOK_URL: 'https://hooks.example.test', FEEDBACK_RELAY_SECRET: 'relay-secret-123' },
+    value,
+  )
+
+  assert.equal(response.status, 200)
+  assert.equal(logs[0].feedback.ip, '203.0.113.77')
+})
+
+test('ignores relay headers when the shared secret does not match', async () => {
+  const { value, logs } = runtime({
+    fetch: async () => new Response('{}', { status: 200 }),
+  })
+  const response = await feedback.handleFeedback(
+    request(
+      VALID,
+      { 'X-Dp-Relay-Secret': 'wrong-secret', 'X-Dp-Client-Ip': '203.0.113.77' },
+      { geo: { countryCodeAlpha2: 'CN' }, uuid: 'eo-test', clientIp: '9.9.9.9' },
+    ),
+    { FEEDBACK_WEBHOOK_URL: 'https://hooks.example.test', FEEDBACK_RELAY_SECRET: 'right-secret' },
+    value,
+  )
+
+  assert.equal(response.status, 200)
+  assert.equal(logs[0].feedback.ip, '9.9.9.9')
+})
+
+test('relays feedback to FEEDBACK_RELAY_URL with secret and client IP', async () => {
+  let relayRequest
+  const { value, logs } = runtime({
+    fetch: async (url, init) => {
+      relayRequest = { url, init }
+      return new Response(
+        JSON.stringify({ ok: true, status: 'delivered', requestId: 'relayed-id' }),
+        { status: 200 },
+      )
+    },
+  })
+  const response = await feedback.handleFeedback(
+    request(VALID),
+    {
+      FEEDBACK_RELAY_URL: 'https://dp.betaoi.cn/api/feedback',
+      FEEDBACK_RELAY_SECRET: 'relay-secret-123',
+    },
+    value,
+  )
+
+  assert.equal(response.status, 200)
+  assert.equal((await response.json()).requestId, 'relayed-id')
+  assert.equal(relayRequest.url, 'https://dp.betaoi.cn/api/feedback')
+  assert.equal(relayRequest.init.headers['x-dp-relay-secret'], 'relay-secret-123')
+  assert.equal(relayRequest.init.headers['x-dp-client-ip'], '203.0.113.42')
+  assert.equal(relayRequest.init.body, JSON.stringify(VALID))
+  assert.equal(logs[0].webhook.status, 'relay_pending')
+  assert.ok(logs.some((entry) => entry.event === 'feedback_relay'))
+})
+
+test('propagates 429 from the relay as rate_limited', async () => {
+  const { value } = runtime({
+    fetch: async () =>
+      new Response(JSON.stringify({ ok: false, error: 'rate_limited' }), { status: 429 }),
+  })
+  const response = await feedback.handleFeedback(
+    request(VALID),
+    {
+      FEEDBACK_RELAY_URL: 'https://dp.betaoi.cn/api/feedback',
+      FEEDBACK_RELAY_SECRET: 'relay-secret-123',
+    },
+    value,
+  )
+
+  assert.equal(response.status, 429)
+  assert.equal((await response.json()).error, 'rate_limited')
+})
+
+test('fails visibly when the relay cannot be reached', async () => {
+  const { value } = runtime({
+    fetch: async () => {
+      throw new Error('relay unreachable')
+    },
+  })
+  const response = await feedback.handleFeedback(
+    request(VALID),
+    {
+      FEEDBACK_RELAY_URL: 'https://dp.betaoi.cn/api/feedback',
+      FEEDBACK_RELAY_SECRET: 'relay-secret-123',
+    },
+    value,
+  )
+
+  assert.equal(response.status, 502)
+  assert.equal((await response.json()).error, 'delivery_failed')
+})
+
+test('falls back to platform IP when a trusted relay omits the client IP', async () => {
+  const { value, logs } = runtime({
+    fetch: async () => new Response('{}', { status: 200 }),
+  })
+  const response = await feedback.handleFeedback(
+    request(
+      VALID,
+      { 'X-Dp-Relay-Secret': 'relay-secret-123' },
+      { geo: { countryCodeAlpha2: 'CN' }, uuid: 'eo-test', clientIp: '9.9.9.9' },
+    ),
+    { FEEDBACK_WEBHOOK_URL: 'https://hooks.example.test', FEEDBACK_RELAY_SECRET: 'relay-secret-123' },
+    value,
+  )
+
+  assert.equal(response.status, 200)
+  assert.equal(logs[0].feedback.ip, '9.9.9.9')
+})
+
+test('rejects a non-literal client IP from a trusted relay', async () => {
+  const { value, logs } = runtime({
+    fetch: async () => new Response('{}', { status: 200 }),
+  })
+  const response = await feedback.handleFeedback(
+    request(
+      VALID,
+      { 'X-Dp-Relay-Secret': 'relay-secret-123', 'X-Dp-Client-Ip': '9.9.9.9, evil' },
+      { geo: { countryCodeAlpha2: 'CN' }, uuid: 'eo-test', clientIp: '9.9.9.9' },
+    ),
+    { FEEDBACK_WEBHOOK_URL: 'https://hooks.example.test', FEEDBACK_RELAY_SECRET: 'relay-secret-123' },
+    value,
+  )
+
+  assert.equal(response.status, 200)
+  assert.equal(logs[0].feedback.ip, '9.9.9.9')
+})
+
+test('never forwards a trusted relay request again, even when relay is misconfigured', async () => {
+  let forwardedUrl
+  const { value } = runtime({
+    fetch: async (url) => {
+      forwardedUrl = url
+      return new Response('{}', { status: 200 })
+    },
+  })
+  // 模拟 .cn 被误配了 FEEDBACK_RELAY_URL：已命中可信转发的请求必须走 webhook 直达，
+  // 而不是再次被转发出去（防止转发循环）。
+  const response = await feedback.handleFeedback(
+    request(
+      VALID,
+      { 'X-Dp-Relay-Secret': 'relay-secret-123', 'X-Dp-Client-Ip': '203.0.113.77' },
+      { geo: { countryCodeAlpha2: 'CN' }, uuid: 'eo-test', clientIp: '9.9.9.9' },
+    ),
+    {
+      FEEDBACK_WEBHOOK_URL: 'https://hooks.example.test',
+      FEEDBACK_RELAY_URL: 'https://dp.betaoi.cn/api/feedback',
+      FEEDBACK_RELAY_SECRET: 'relay-secret-123',
+    },
+    value,
+  )
+
+  assert.equal(response.status, 200)
+  assert.equal(forwardedUrl, 'https://hooks.example.test')
+})
+
+test('returns 502 and alerts when the relay answers with a failure', async () => {
+  const fetches = []
+  const { value, logs } = runtime({
+    errorLog: (entry) => logs.push(entry),
+    fetch: async (url, init) => {
+      fetches.push({ url, init })
+      if (url === 'https://dp.betaoi.cn/api/feedback') {
+        return new Response(JSON.stringify({ ok: false, error: 'delivery_failed' }), { status: 502 })
+      }
+      return new Response('{}', { status: 200 })
+    },
+  })
+  const response = await feedback.handleFeedback(
+    request(VALID),
+    {
+      FEEDBACK_RELAY_URL: 'https://dp.betaoi.cn/api/feedback',
+      FEEDBACK_RELAY_SECRET: 'relay-secret-123',
+      ALERT_WEBHOOK_URL: 'https://alert.example.test',
+    },
+    value,
+  )
+
+  assert.equal(response.status, 502)
+  assert.equal((await response.json()).error, 'delivery_failed')
+  assert.ok(logs.some((entry) => entry.event === 'feedback_delivery_failed'))
+  assert.ok(fetches.some(({ url }) => url === 'https://alert.example.test'))
+})
+
+test('does not call the direct webhook when relay is configured', async () => {
+  const fetches = []
+  const { value } = runtime({
+    fetch: async (url) => {
+      fetches.push(url)
+      return new Response(JSON.stringify({ ok: true, status: 'delivered', requestId: 'relayed-id' }), { status: 200 })
+    },
+  })
+  const response = await feedback.handleFeedback(
+    request(VALID),
+    {
+      FEEDBACK_RELAY_URL: 'https://dp.betaoi.cn/api/feedback',
+      FEEDBACK_RELAY_SECRET: 'relay-secret-123',
+      FEEDBACK_WEBHOOK_URL: 'https://hooks.example.test',
+    },
+    value,
+  )
+
+  assert.equal(response.status, 200)
+  assert.deepEqual(fetches, ['https://dp.betaoi.cn/api/feedback'])
+})
+
+test('a forged relay IP cannot shift the limiter bucket without the secret', async () => {
+  const limiter = feedback.createFeedbackLimiter({ limit: 1, windowMs: 1_800_000 })
+  const { value } = runtime({
+    limiter,
+    sourceKey: undefined,
+    fetch: async () => new Response('{}', { status: 200 }),
+  })
+  const forged = (clientIp) =>
+    request(
+      VALID,
+      { 'X-Dp-Relay-Secret': 'wrong-secret', 'X-Dp-Client-Ip': clientIp },
+      { geo: { countryCodeAlpha2: 'CN' }, uuid: 'eo-test', clientIp: '9.9.9.9' },
+    )
+
+  const first = await feedback.handleFeedback(
+    forged('203.0.113.77'),
+    { FEEDBACK_WEBHOOK_URL: 'https://hooks.example.test', FEEDBACK_RELAY_SECRET: 'right-secret' },
+    value,
+  )
+  assert.equal(first.status, 200)
+
+  // 换一个伪造 IP 再提交：限流键必须仍是平台 IP（9.9.9.9），而不是伪造值。
+  const second = await feedback.handleFeedback(
+    forged('203.0.113.78'),
+    { FEEDBACK_WEBHOOK_URL: 'https://hooks.example.test', FEEDBACK_RELAY_SECRET: 'right-secret' },
+    value,
+  )
+  assert.equal(second.status, 429)
+})
+
 test('limits one source to ten requests in a rolling thirty-minute window', () => {
   assert.equal(typeof feedback.createFeedbackLimiter, 'function')
   const limiter = feedback.createFeedbackLimiter({ limit: 10, windowMs: 1_800_000 })
