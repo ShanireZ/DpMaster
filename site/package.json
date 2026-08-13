@@ -40,7 +40,7 @@
     "maintenance:check": "node scripts/check-toolchain-drift.mjs",
     "preview": "node scripts/preview.mjs",
     "deploy:cf": "wrangler deploy",
-    "deploy:eo": "pnpm dlx edgeone@1.6.21 makers deploy ./dist/edgeone -n dpmaster -e production",
+    "deploy:eo": "edgeone makers deploy ./dist/edgeone -n dpmaster -e production",
     "release": "pnpm verify && pnpm deploy:cf && pnpm deploy:eo"
   },
   "dependencies": {
@@ -71,7 +71,6 @@
     "oxc-parser": "^0.142.0",
     "typescript": "^7.0.2",
     "vite": "^8.1.5",
-    "vitest": "^4.1.10",
-    "wrangler": "^4.120.0"
+    "vitest": "^4.1.10"
   }
 }
