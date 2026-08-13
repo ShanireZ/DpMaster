@@ -91,6 +91,7 @@ pnpm add -g wrangler edgeone      # gh / cnb 各自用 winget upgrade / npm inst
 
 - `FEEDBACK_WEBHOOK_URL`
 - `FEEDBACK_WEBHOOK_SECRET`
+- `FEEDBACK_RELAY_SECRET`
 - `ALERT_WEBHOOK_URL`
 - `ALERT_WEBHOOK_SECRET`
 - Cloudflare API token
@@ -187,21 +188,22 @@ pnpm deploy:cf
 
 | 名称                      | 类型   |         必填 | 值                                           |
 | ------------------------- | ------ | -----------: | -------------------------------------------- |
-| `FEEDBACK_WEBHOOK_URL`    | Secret |           是 | 钉钉 webhook 完整 URL，包含 `access_token`。 |
-| `FEEDBACK_WEBHOOK_KIND`   | Text   |           是 | 钉钉填 `dingtalk`。                          |
-| `FEEDBACK_WEBHOOK_SECRET` | Secret | 加签模式必填 | 钉钉机器人加签密钥，通常以 `SEC` 开头。      |
+| `FEEDBACK_RELAY_URL`      | Text   |           是 | `https://dp.betaoi.cn/api/feedback`。       |
+| `FEEDBACK_RELAY_SECRET`   | Secret |           是 | 与 .cn 共享的转发密钥（如 `openssl rand -hex 32` 生成），两站必须一致。 |
+| `FEEDBACK_WEBHOOK_URL`    | Secret | 否（配 relay 时不要填） | 钉钉 webhook 完整 URL。保留仅为回退直达模式。 |
+| `FEEDBACK_WEBHOOK_KIND`   | Text   |           否 | 钉钉填 `dingtalk`。                          |
+| `FEEDBACK_WEBHOOK_SECRET` | Secret | 加签模式选填 | 钉钉机器人加签密钥，通常以 `SEC` 开头。      |
 | `ALERT_WEBHOOK_URL`       | Secret |           否 | 前端错误与反馈送达失败的独立告警机器人。    |
 | `ALERT_WEBHOOK_KIND`      | Text   |           否 | 告警机器人类型，默认沿用反馈类型。           |
 | `ALERT_WEBHOOK_SECRET`    | Secret | 加签模式选填 | 告警机器人的签名密钥。                       |
 
+> ★ Cloudflare 数据中心出口到钉钉（oapi.dingtalk.com）的 TLS 握手被阿里云侧打断，稳定返回 525（2026-08 实测复现，钉钉对普通海外节点开放）。因此 **.cc 站必须走 relay 模式**：Worker 把反馈转交给 `https://dp.betaoi.cn/api/feedback`（EdgeOne 国内节点），由 .cn 转发进钉钉。转发请求带 `x-dp-relay-secret`（共享密钥）与 `x-dp-client-ip`（原始客户端 IP）；.cn 侧密钥匹配才信任转发 IP，否则按平台 IP 处理。若 relay 不可达或返回 429/非 200，.cc 分别返回 429/502 并触发告警。不要把 `FEEDBACK_WEBHOOK_URL` 与 `FEEDBACK_RELAY_URL` 同时配置——relay 优先，直连 webhook 会被跳过。
+
 CLI 设置 Secret：
 
 ```bash
-wrangler secret put FEEDBACK_WEBHOOK_URL
-wrangler secret put FEEDBACK_WEBHOOK_SECRET
+wrangler secret put FEEDBACK_RELAY_SECRET
 ```
-
-`FEEDBACK_WEBHOOK_KIND` 不敏感，推荐在 Dashboard 里作为 Text variable 添加。如果完全用 CLI，也可以临时用 `wrangler secret put FEEDBACK_WEBHOOK_KIND` 输入 `dingtalk`，但它语义上不是 secret。
 
 ### Cloudflare 验收
 
@@ -298,6 +300,7 @@ EdgeOne 的变量要配置到生产环境的边缘函数运行时。控制台入
 | `FEEDBACK_WEBHOOK_URL`    | Secret |           是 | 钉钉 webhook 完整 URL，包含 `access_token`。 |
 | `FEEDBACK_WEBHOOK_KIND`   | String |           是 | 钉钉填 `dingtalk`。                          |
 | `FEEDBACK_WEBHOOK_SECRET` | Secret | 加签模式必填 | 钉钉机器人加签密钥。                         |
+| `FEEDBACK_RELAY_SECRET`   | Secret |           是 | 与 .cc 共享的转发密钥，两站必须一致；用于识别来自 .cc Worker 的可信转发请求（带 `x-dp-relay-secret` / `x-dp-client-ip` 头），密钥匹配时用转发 IP 展示与限流。 |
 | `ALERT_WEBHOOK_URL`       | Secret |           否 | 前端错误与反馈送达失败的独立告警机器人。     |
 | `ALERT_WEBHOOK_KIND`      | String |           否 | 告警机器人类型，默认沿用反馈类型。           |
 | `ALERT_WEBHOOK_SECRET`    | Secret | 加签模式选填 | 告警机器人的签名密钥。                       |
