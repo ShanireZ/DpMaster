@@ -19,8 +19,8 @@ const VALID = {
   ts: '2026-07-10T10:00:00.000Z',
 }
 
-function request(body = VALID, headers = {}, eo) {
-  const req = new Request('https://dp.betaoi.cc/api/feedback', {
+function request(body = VALID, headers = {}, eo, url = 'https://dp.betaoi.cc/api/feedback') {
+  const req = new Request(url, {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
@@ -79,6 +79,46 @@ test('rejects cross-origin browser requests', async () => {
   const response = await feedback.handleFeedback(request(VALID, { Origin: 'https://evil.example' }), {}, value)
   assert.equal(response.status, 403)
   assert.equal((await response.json()).error, 'forbidden_origin')
+})
+
+test('accepts the allowlisted .cc origin on the .cn endpoint and echoes CORS headers', async () => {
+  const { value } = runtime({
+    fetch: async () => new Response('{}', { status: 200 }),
+  })
+  // .cc 浏览器跨域直连 .cn：origin 为 dp.betaoi.cc、URL 为 dp.betaoi.cn。
+  const response = await feedback.handleFeedback(
+    request(
+      VALID,
+      { Origin: 'https://dp.betaoi.cc', 'CF-Connecting-IP': '' },
+      { geo: { countryCodeAlpha2: 'CN' }, uuid: 'eo-test', clientIp: '9.9.9.9' },
+      'https://dp.betaoi.cn/api/feedback',
+    ),
+    { FEEDBACK_WEBHOOK_URL: 'https://hooks.example.test' },
+    value,
+  )
+
+  assert.equal(response.status, 200)
+  assert.equal(response.headers.get('Access-Control-Allow-Origin'), 'https://dp.betaoi.cc')
+  assert.match(response.headers.get('Vary') || '', /Origin/)
+})
+
+test('denies non-allowlisted origins on the .cn endpoint without CORS headers', async () => {
+  const { value } = runtime({
+    fetch: async () => new Response('{}', { status: 200 }),
+  })
+  const response = await feedback.handleFeedback(
+    request(
+      VALID,
+      { Origin: 'https://evil.example' },
+      undefined,
+      'https://dp.betaoi.cn/api/feedback',
+    ),
+    { FEEDBACK_WEBHOOK_URL: 'https://hooks.example.test' },
+    value,
+  )
+
+  assert.equal(response.status, 403)
+  assert.equal(response.headers.get('Access-Control-Allow-Origin'), null)
 })
 
 test('validates kind and field lengths', async () => {

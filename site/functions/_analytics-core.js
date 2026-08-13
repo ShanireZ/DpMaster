@@ -1,5 +1,5 @@
 // 区域无关的第一方统计接收器。只记录无身份、无联系方式的有限事件字段。
-import { forwardRelay, forwardWebhook } from './_webhook-core.js'
+import { applyCors, corsDecision, forwardRelay, forwardWebhook } from './_webhook-core.js'
 
 const BODY_LIMIT_BYTES = 4_000
 const PROVIDERS = new Set(['cloudflare', 'tencent-edgeone'])
@@ -48,7 +48,15 @@ function normalizeMetadata(value) {
   )
 }
 
-export async function handleAnalytics(request, runtime = {}) {
+export function handleAnalytics(request, runtime = {}) {
+  const cors = corsDecision(request)
+  if (!cors.allowed) {
+    return fail('forbidden_origin', '不接受跨站统计请求', 403)
+  }
+  return handleAnalyticsCore(request, runtime).then((response) => applyCors(response, cors))
+}
+
+async function handleAnalyticsCore(request, runtime) {
   if (request.method !== 'POST') {
     return fail('method_not_allowed', '只支持 POST 请求', 405, { Allow: 'POST' })
   }
@@ -56,17 +64,6 @@ export async function handleAnalytics(request, runtime = {}) {
   const contentType = request.headers.get('content-type') || ''
   if (!contentType.toLowerCase().includes('application/json')) {
     return fail('unsupported_media_type', '请使用 application/json 提交统计事件', 415)
-  }
-
-  const origin = request.headers.get('origin')
-  if (origin) {
-    try {
-      if (new URL(origin).origin !== new URL(request.url).origin) {
-        return fail('forbidden_origin', '不接受跨站统计请求', 403)
-      }
-    } catch {
-      return fail('forbidden_origin', '统计来源无效', 403)
-    }
   }
 
   const raw = await request.text()

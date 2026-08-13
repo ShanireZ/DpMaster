@@ -66,7 +66,7 @@ describe('<FeedbackWidget>', () => {
     fireEvent.click(screen.getByRole('button', { name: /提交/ }))
 
     const feedbackCalls = () =>
-      fetchMock.mock.calls.filter(([url]) => url === '/api/feedback')
+      fetchMock.mock.calls.filter(([url]) => String(url).endsWith('/api/feedback'))
 
     await waitFor(() => {
       expect(feedbackCalls()).toHaveLength(1)

@@ -188,16 +188,16 @@ pnpm deploy:cf
 
 | 名称                      | 类型   |         必填 | 值                                           |
 | ------------------------- | ------ | -----------: | -------------------------------------------- |
-| `FEEDBACK_RELAY_URL`      | Text   |           是 | `https://dp.betaoi.cn/api/feedback`。       |
-| `FEEDBACK_RELAY_SECRET`   | Secret |           是 | 与 .cn 共享的转发密钥（如 `openssl rand -hex 32` 生成），两站必须一致。 |
-| `FEEDBACK_WEBHOOK_URL`    | Secret | 否（配 relay 时不要填） | 钉钉 webhook 完整 URL。保留仅为回退直达模式。 |
+| `FEEDBACK_RELAY_URL`      | Text   |           否 | 备用 relay 目标（`https://dp.betaoi.cn/api/feedback`）。浏览器直连模式下不需要。 |
+| `FEEDBACK_RELAY_SECRET`   | Secret |           否 | 备用 relay 共享密钥，与 .cn 一致。            |
+| `FEEDBACK_WEBHOOK_URL`    | Secret |           否 | 钉钉 webhook 完整 URL。直连模式下不需要（也发不出去）。 |
 | `FEEDBACK_WEBHOOK_KIND`   | Text   |           否 | 钉钉填 `dingtalk`。                          |
 | `FEEDBACK_WEBHOOK_SECRET` | Secret | 加签模式选填 | 钉钉机器人加签密钥，通常以 `SEC` 开头。      |
-| `ALERT_WEBHOOK_URL`       | Secret | 否（relay 模式不需要，告警经 .cn 转发） | 仅直连模式下的独立告警机器人。      |
+| `ALERT_WEBHOOK_URL`       | Secret |           否 | 直连模式下的独立告警机器人（浏览器直连模式下由 .cn 负责告警）。 |
 | `ALERT_WEBHOOK_KIND`      | Text   |           否 | 告警机器人类型，默认沿用反馈类型。           |
 | `ALERT_WEBHOOK_SECRET`    | Secret | 加签模式选填 | 告警机器人的签名密钥。                       |
 
-> ★ Cloudflare 数据中心出口到钉钉（oapi.dingtalk.com）的 TLS 握手被阿里云侧打断，稳定返回 525（2026-08 实测复现，钉钉对普通海外节点开放）。因此 **.cc 站必须走 relay 模式**：Worker 把反馈转交给 `https://dp.betaoi.cn/api/feedback`（EdgeOne 国内节点），由 .cn 转发进钉钉。转发请求带 `x-dp-relay-secret`（共享密钥）与 `x-dp-client-ip`（原始客户端 IP）；.cn 侧密钥匹配才信任转发 IP，否则按平台 IP 处理。若 relay 不可达或返回 429/非 200，.cc 分别返回 429/502 并触发告警。不要把 `FEEDBACK_WEBHOOK_URL` 与 `FEEDBACK_RELAY_URL` 同时配置——relay 优先，直连 webhook 会被跳过。**告警也走同一 relay**：.cc 的反馈送达失败告警与前端错误告警（`client_error` / `feedback_failed`）带 `x-dp-relay-kind: alert` 转交给 .cn，由 .cn 转发到**它自己的** `ALERT_WEBHOOK_URL`；.cc 无需再配可达的 `ALERT_WEBHOOK_URL`，但 .cn 必须配置 `ALERT_WEBHOOK_URL`（否则告警 relay 返回 503）。
+> ★ Cloudflare 数据中心出口到中国境内基础设施（钉钉 oapi.dingtalk.com、EdgeOne dp.betaoi.cn）的 TLS 都被系统性打断，稳定返回 525（2026-08 多轮实测复现；普通海外节点到两者均正常）。因此 **.cc 站的反馈与统计由浏览器跨域直连 `https://dp.betaoi.cn/api/*`**（.cn 已对 `https://dp.betaoi.cc` 开放 CORS 白名单并校验 origin），由 .cn 转发进钉钉、按真实客户端 IP 展示与限流。.cc 的 Worker 只保留 relay 代码作为备用路径（配 `FEEDBACK_RELAY_URL` 才启用），当前无需配置任何反馈/告警相关变量。
 
 CLI 设置 Secret：
 
@@ -215,20 +215,21 @@ curl.exe -I https://dp.betaoi.cc/part/a/01
 
 期望状态码是 200。
 
-反馈：
+反馈（浏览器直连模式：.cc 前端把反馈直接 POST 到 .cn，由 .cn 转发进钉钉）：
 
 ```powershell
 $body = @{
   kind = "建议"
-  page = "Cloudflare 部署检查"
+  page = "Cloudflare 部署检查（经 .cn 直连）"
   path = "/"
-  description = "Cloudflare 反馈端点测试"
+  description = "Cloudflare 反馈链路测试"
   ts = (Get-Date).ToString("o")
 } | ConvertTo-Json
 
 Invoke-RestMethod `
   -Method Post `
-  -Uri "https://dp.betaoi.cc/api/feedback" `
+  -Uri "https://dp.betaoi.cn/api/feedback" `
+  -Headers @{ Origin = "https://dp.betaoi.cc" } `
   -ContentType "application/json" `
   -Body $body
 ```
@@ -236,8 +237,8 @@ Invoke-RestMethod `
 验收标准：
 
 - HTTP 响应的 `ok` 为 `true`、`status` 为 `delivered`，并带有 `requestId`。
-- Cloudflare 日志出现结构化的 `feedback_received` 记录。
-- 配置 Webhook 时，日志还有同一 `requestId` 的 `feedback_webhook` 状态；钉钉目标群应收到消息。
+- EdgeOne 函数日志出现结构化的 `feedback_received` 记录，且响应带 `Access-Control-Allow-Origin: https://dp.betaoi.cc`。
+- 钉钉目标群应收到消息。
 
 可以用 Wrangler 看实时日志：
 
@@ -300,7 +301,7 @@ EdgeOne 的变量要配置到生产环境的边缘函数运行时。控制台入
 | `FEEDBACK_WEBHOOK_URL`    | Secret |           是 | 钉钉 webhook 完整 URL，包含 `access_token`。 |
 | `FEEDBACK_WEBHOOK_KIND`   | String |           是 | 钉钉填 `dingtalk`。                          |
 | `FEEDBACK_WEBHOOK_SECRET` | Secret | 加签模式必填 | 钉钉机器人加签密钥。                         |
-| `FEEDBACK_RELAY_SECRET`   | Secret |           是 | 与 .cc 共享的转发密钥，两站必须一致；用于识别来自 .cc Worker 的可信转发请求（带 `x-dp-relay-secret` / `x-dp-client-ip` 头），密钥匹配时用转发 IP 展示与限流。 |
+| `FEEDBACK_RELAY_SECRET`   | Secret |           否 | 备用 relay 共享密钥（与 .cc 一致；浏览器直连模式下不需要）。 |
 | `ALERT_WEBHOOK_URL`       | Secret |           否 | 前端错误与反馈送达失败的独立告警机器人。     |
 | `ALERT_WEBHOOK_KIND`      | String |           否 | 告警机器人类型，默认沿用反馈类型。           |
 | `ALERT_WEBHOOK_SECRET`    | Secret | 加签模式选填 | 告警机器人的签名密钥。                       |

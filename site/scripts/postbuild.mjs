@@ -18,21 +18,28 @@ if (!existsSync(notFoundPath)) {
 
 function inlineModule(relativeUrl, returnNames, prelude = '') {
   const source = readFileSync(fileURLToPath(new URL(relativeUrl, import.meta.url)), 'utf8')
-    .replace(/^import .*_webhook-core\.js['"]\r?\n/gm, '')
+    .replace(/^import\s+[\s\S]*?\sfrom\s+['"].*_webhook-core\.js['"]\r?\n/gm, '')
     .replace(/^export /gm, '')
   return `(() => {\n${prelude}\n${source}\nreturn { ${returnNames.join(', ')} }\n})()`
 }
 
-const webhookModule = inlineModule('../functions/_webhook-core.js', ['clip', 'forwardWebhook'])
+const webhookModule = inlineModule('../functions/_webhook-core.js', [
+  'clip',
+  'forwardWebhook',
+  'forwardRelay',
+  'corsDecision',
+  'applyCors',
+  'preflightResponse',
+])
 const feedbackModule = inlineModule(
   '../functions/_feedback-core.js',
   ['handleFeedback'],
-  'const { clip, forwardWebhook } = webhook',
+  'const { clip, forwardWebhook, forwardRelay, corsDecision, applyCors } = webhook',
 )
 const analyticsModule = inlineModule(
   '../functions/_analytics-core.js',
   ['handleAnalytics'],
-  'const { forwardWebhook } = webhook',
+  'const { forwardWebhook, forwardRelay, corsDecision, applyCors } = webhook',
 )
 const notFoundHtml = readFileSync(notFoundPath, 'utf8')
 const internalBody = JSON.stringify({
@@ -72,7 +79,7 @@ export default async function onRequest(context) {
       if (request.method === 'POST') {
         return await feedback.handleFeedback(request, (context && context.env) || {})
       }
-      if (request.method === 'OPTIONS') return new Response(null, { status: 204 })
+      if (request.method === 'OPTIONS') return webhook.preflightResponse(webhook.corsDecision(request))
       return new Response('Method Not Allowed', { status: 405, headers: { Allow: 'POST' } })
     } catch (error) {
       return internalError('[feedback] edge handler failed', error)
@@ -89,7 +96,7 @@ export default async function onRequest(context) {
             : undefined,
         })
       }
-      if (request.method === 'OPTIONS') return new Response(null, { status: 204 })
+      if (request.method === 'OPTIONS') return webhook.preflightResponse(webhook.corsDecision(request))
       return new Response('Method Not Allowed', { status: 405, headers: { Allow: 'POST' } })
     } catch (error) {
       return internalError('[analytics] edge handler failed', error)

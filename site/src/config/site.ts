@@ -22,9 +22,11 @@ export interface SiteConfig {
   hreflang: 'zh-Hans' | 'zh-CN'
   analytics: {
     provider: AnalyticsProviderKind
-    endpoint: '/api/analytics'
+    endpoint: string
     cloudflareWebAnalytics: CloudflareWebAnalyticsConfig
   }
+  /** 反馈提交端点。.cc 直连 .cn（Cloudflare 出口到国内基础设施 TLS 不通），.cn 同源。 */
+  feedbackEndpoint: string
 }
 
 export const SITE_CONFIGS: Readonly<Record<SiteRegion, SiteConfig>> = Object.freeze({
@@ -36,12 +38,15 @@ export const SITE_CONFIGS: Readonly<Record<SiteRegion, SiteConfig>> = Object.fre
     hreflang: 'zh-Hans',
     analytics: {
       provider: 'cloudflare',
-      endpoint: '/api/analytics',
+      // .cc 的 Cloudflare 出口到国内基础设施 TLS 不通（525），统计与反馈
+      // 由浏览器跨域直连 .cn 的 API（.cn 已加 CORS 白名单）。
+      endpoint: 'https://dp.betaoi.cn/api/analytics',
       cloudflareWebAnalytics: {
         token: '',
         delivery: 'automatic',
       },
     },
+    feedbackEndpoint: 'https://dp.betaoi.cn/api/feedback',
   },
   china: {
     region: 'china',
@@ -57,6 +62,7 @@ export const SITE_CONFIGS: Readonly<Record<SiteRegion, SiteConfig>> = Object.fre
         delivery: 'static',
       },
     },
+    feedbackEndpoint: '/api/feedback',
   },
 })
 
