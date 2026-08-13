@@ -156,15 +156,16 @@ test('forwards the new schema with automatic diagnostics and server-derived IP',
   assert.doesNotMatch(text, /198\.51\.100\.8/)
 })
 
-test('derives IP from EdgeOne request.eo.clientIp when no platform headers exist', async () => {
+test('derives IP from EdgeOne request.eo.clientIp, ignoring forgeable headers', async () => {
   const { value, logs } = runtime({
     fetch: async () => new Response('{}', { status: 200 }),
   })
-  // EdgeOne 不注入 cf-connecting-ip / x-real-ip / x-forwarded-for，IP 在 request.eo.clientIp。
+  // EdgeOne 不注入 IP 头：客户端伪造的 cf-connecting-ip / x-real-ip / x-forwarded-for
+  // 必须被忽略，只信平台属性 request.eo.clientIp。
   const response = await feedback.handleFeedback(
     request(
       { ...VALID, ip: '198.51.100.8' },
-      { 'CF-Connecting-IP': '', 'X-Real-Ip': '', 'X-Forwarded-For': '' },
+      { 'CF-Connecting-IP': '6.6.6.6', 'X-Real-Ip': '6.6.6.6', 'X-Forwarded-For': '6.6.6.6' },
       { geo: { countryCodeAlpha2: 'CN' }, uuid: 'eo-test', clientIp: '203.0.113.99' },
     ),
     { FEEDBACK_WEBHOOK_URL: 'https://hooks.example.test' },
@@ -176,18 +177,48 @@ test('derives IP from EdgeOne request.eo.clientIp when no platform headers exist
   assert.notEqual(logs[0].feedback.ip, 'anonymous')
 })
 
-test('falls back to anonymous on EdgeOne when request.eo is absent', async () => {
+test('falls back to anonymous on EdgeOne when eo.clientIp is absent', async () => {
   const { value, logs } = runtime({
     fetch: async () => new Response('{}', { status: 200 }),
   })
-  const response = await feedback.handleFeedback(
-    request(VALID, { 'CF-Connecting-IP': '', 'X-Real-Ip': '', 'X-Forwarded-For': '' }, {}),
-    { FEEDBACK_WEBHOOK_URL: 'https://hooks.example.test' },
-    value,
+  // eo 存在但 clientIp 缺失，以及 eo 完全不存在，都应回退 anonymous。
+  for (const eo of [{}, undefined]) {
+    const response = await feedback.handleFeedback(
+      request(VALID, { 'CF-Connecting-IP': '', 'X-Real-Ip': '', 'X-Forwarded-For': '' }, eo),
+      { FEEDBACK_WEBHOOK_URL: 'https://hooks.example.test' },
+      value,
+    )
+    assert.equal(response.status, 200)
+  }
+  assert.ok(
+    logs
+      .filter((entry) => entry.event === 'feedback_received')
+      .every((entry) => entry.feedback.ip === 'anonymous'),
   )
+})
 
-  assert.equal(response.status, 200)
-  assert.equal(logs[0].feedback.ip, 'anonymous')
+test('rate-limits EdgeOne submitters by eo.clientIp, not a shared anonymous bucket', async () => {
+  const limiter = feedback.createFeedbackLimiter({ limit: 1, windowMs: 1_800_000 })
+  // 不注入 sourceKey：生产 EdgeOne 路径的限流键就是推导出的 IP。
+  const { value } = runtime({ limiter, sourceKey: undefined })
+  const edgeOneRequest = (clientIp) =>
+    request(
+      VALID,
+      { 'CF-Connecting-IP': '', 'X-Real-Ip': '', 'X-Forwarded-For': '' },
+      { geo: { countryCodeAlpha2: 'CN' }, uuid: 'eo-test', clientIp },
+    )
+
+  // 无 webhook 配置时，限流通过后才会走到 503 delivery_unavailable。
+  const first = await feedback.handleFeedback(edgeOneRequest('203.0.113.1'), {}, value)
+  assert.equal(first.status, 503)
+
+  // 同一 IP 的第二次提交命中限流（429），而不是共享 anonymous 桶。
+  const second = await feedback.handleFeedback(edgeOneRequest('203.0.113.1'), {}, value)
+  assert.equal(second.status, 429)
+
+  // 不同 IP 拥有独立限流桶，不受影响。
+  const other = await feedback.handleFeedback(edgeOneRequest('203.0.113.2'), {}, value)
+  assert.equal(other.status, 503)
 })
 
 test('returns a retryable failure when the webhook returns non-2xx', async () => {

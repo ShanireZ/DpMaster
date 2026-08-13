@@ -29,7 +29,7 @@ Metadata is capped at eight scalar fields. The browser automatically adds `regio
 
 The UI collects feedback separately. Page name/path and feedback copy are sent only after explicit submission. Contact is optional. Full URL, user agent, and viewport are opt-in diagnostics. A successful receipt means the configured webhook confirmed delivery; a missing or failed webhook returns 503/502 and the UI offers a copy fallback.
 
-The receiver never trusts a client-supplied IP. It derives the submitter IP from platform-injected sources only: Cloudflare's `cf-connecting-ip` header and EdgeOne's `request.eo.clientIp` runtime property. `x-real-ip` / `x-forwarded-for` are fallbacks for non-platform deployments, and the rate limiter keys on the same derived IP.
+The receiver never trusts a client-supplied IP. It derives the submitter IP from platform-injected sources only: EdgeOne's `request.eo.clientIp` runtime property — on that runtime every IP-related header is client-forgeable and ignored — or Cloudflare's `cf-connecting-ip` header. `x-real-ip` / `x-forwarded-for` are fallbacks only outside those platform runtimes, and the rate limiter keys on the same derived IP.
 
 # Cloudflare Dashboard
 
