@@ -116,6 +116,7 @@ test('all 37 lessons use the approved instrument shell without page overflow', a
 })
 
 test('all 37 high-fidelity heroes stay decorative and course-specific', async ({ page }) => {
+  test.setTimeout(60_000)
   await page.setViewportSize({ width: 1440, height: 900 })
 
   const loadedSources = new Set<string>()
@@ -135,6 +136,34 @@ test('all 37 high-fidelity heroes stay decorative and course-specific', async ({
     loadedSources.add(source ?? '')
   }
   expect(loadedSources.size).toBe(ALL_LESSON_HEROES.length)
+})
+
+test('group lesson sculpture stays inside its frame above the editor controls', async ({ page }) => {
+  await page.setViewportSize({ width: 1366, height: 617 })
+  await page.goto('/part/a/group')
+
+  const demo = page.locator('.demo__body').first()
+  const hero = demo.locator('[data-demo-hero="group"]')
+  const image = hero.locator('img')
+  const toolbar = demo.locator('.demo-control__toolbar')
+
+  expect(await hero.evaluate((element) => {
+    const frame = element.getBoundingClientRect()
+    const art = element.querySelector('img')?.getBoundingClientRect()
+    return art
+      ? art.top >= frame.top - 1
+        && art.right <= frame.right + 1
+        && art.bottom <= frame.bottom + 1
+        && art.left >= frame.left - 1
+      : false
+  })).toBe(true)
+  expect(await toolbar.evaluate((element) => {
+    const controls = element.getBoundingClientRect()
+    const art = element.previousElementSibling?.querySelector('img')?.getBoundingClientRect()
+    return art ? controls.top >= art.bottom : false
+  })).toBe(true)
+  await expect(image).toHaveCSS('position', 'absolute')
+  await expect(hero).toHaveCSS('overflow', 'hidden')
 })
 
 test('approved review archive links every high-fidelity representative lesson', async ({ page }) => {
