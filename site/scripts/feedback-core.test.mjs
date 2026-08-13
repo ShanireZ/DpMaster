@@ -19,8 +19,8 @@ const VALID = {
   ts: '2026-07-10T10:00:00.000Z',
 }
 
-function request(body = VALID, headers = {}) {
-  return new Request('https://dp.betaoi.cc/api/feedback', {
+function request(body = VALID, headers = {}, eo) {
+  const req = new Request('https://dp.betaoi.cc/api/feedback', {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
@@ -30,6 +30,9 @@ function request(body = VALID, headers = {}) {
     },
     body: typeof body === 'string' ? body : JSON.stringify(body),
   })
+  // EdgeOne 运行时把客户端 GEO/IP 挂在 request.eo 上，而不是 HTTP 头。
+  if (eo !== undefined) req.eo = eo
+  return req
 }
 
 function runtime(overrides = {}) {
@@ -151,6 +154,40 @@ test('forwards the new schema with automatic diagnostics and server-derived IP',
   assert.match(text, /IP：203\.0\.113\.42/)
   assert.doesNotMatch(text, /复现|客户端遗留字段/)
   assert.doesNotMatch(text, /198\.51\.100\.8/)
+})
+
+test('derives IP from EdgeOne request.eo.clientIp when no platform headers exist', async () => {
+  const { value, logs } = runtime({
+    fetch: async () => new Response('{}', { status: 200 }),
+  })
+  // EdgeOne 不注入 cf-connecting-ip / x-real-ip / x-forwarded-for，IP 在 request.eo.clientIp。
+  const response = await feedback.handleFeedback(
+    request(
+      { ...VALID, ip: '198.51.100.8' },
+      { 'CF-Connecting-IP': '', 'X-Real-Ip': '', 'X-Forwarded-For': '' },
+      { geo: { countryCodeAlpha2: 'CN' }, uuid: 'eo-test', clientIp: '203.0.113.99' },
+    ),
+    { FEEDBACK_WEBHOOK_URL: 'https://hooks.example.test' },
+    value,
+  )
+
+  assert.equal(response.status, 200)
+  assert.equal(logs[0].feedback.ip, '203.0.113.99')
+  assert.notEqual(logs[0].feedback.ip, 'anonymous')
+})
+
+test('falls back to anonymous on EdgeOne when request.eo is absent', async () => {
+  const { value, logs } = runtime({
+    fetch: async () => new Response('{}', { status: 200 }),
+  })
+  const response = await feedback.handleFeedback(
+    request(VALID, { 'CF-Connecting-IP': '', 'X-Real-Ip': '', 'X-Forwarded-For': '' }, {}),
+    { FEEDBACK_WEBHOOK_URL: 'https://hooks.example.test' },
+    value,
+  )
+
+  assert.equal(response.status, 200)
+  assert.equal(logs[0].feedback.ip, 'anonymous')
 })
 
 test('returns a retryable failure when the webhook returns non-2xx', async () => {

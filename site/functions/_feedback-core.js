@@ -35,7 +35,12 @@ const defaultLog = (entry) => console.log('[feedback]', JSON.stringify(entry))
 const defaultErrorLog = (entry) => console.error('[feedback]', JSON.stringify(entry))
 
 function sourceFromRequest(request) {
+  // 平台注入的客户端 IP 在两个托管商身上的位置不同：
+  // - Cloudflare：cf-connecting-ip 请求头（Worker 里平台保证注入）。
+  // - EdgeOne：request.eo.clientIp 运行时属性（边缘函数不注入 IP 相关请求头）。
+  // x-real-ip / x-forwarded-for 只作为兜底；两者都可被客户端伪造，必须排在平台来源之后。
   const forwarded = request.headers.get('cf-connecting-ip')
+    || (request.eo && String(request.eo.clientIp || '').trim())
     || request.headers.get('x-real-ip')
     || request.headers.get('x-forwarded-for')?.split(',')[0]?.trim()
   return forwarded || 'anonymous'
