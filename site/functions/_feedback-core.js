@@ -1,6 +1,12 @@
 // 反馈处理核心 —— 被 Cloudflare Worker / Pages Functions / EdgeOne 共用。
 // 仅依赖 Fetch API 与 Web Crypto；运行时 Adapter 不得复制校验、限流或回执语义。
-import { clip, forwardRelay, forwardWebhook } from './_webhook-core.js'
+import {
+  applyCors,
+  clip,
+  corsDecision,
+  forwardRelay,
+  forwardWebhook,
+} from './_webhook-core.js'
 
 const BODY_LIMIT_BYTES = 16_000
 const DEFAULT_LIMIT = 10
@@ -274,7 +280,15 @@ function buildText(data, id) {
   return lines.join('\n')
 }
 
-export async function handleFeedback(request, env = {}, runtime = {}) {
+export function handleFeedback(request, env = {}, runtime = {}) {
+  const cors = corsDecision(request)
+  if (!cors.allowed) {
+    return fail('forbidden_origin', '不接受跨站反馈请求', 403)
+  }
+  return handleFeedbackCore(request, env, runtime).then((response) => applyCors(response, cors))
+}
+
+async function handleFeedbackCore(request, env, runtime) {
   if (request.method !== 'POST') {
     return fail('method_not_allowed', '只支持 POST 请求', 405, { Allow: 'POST' })
   }
@@ -282,17 +296,6 @@ export async function handleFeedback(request, env = {}, runtime = {}) {
   const contentType = request.headers.get('content-type') || ''
   if (!contentType.toLowerCase().includes('application/json')) {
     return fail('unsupported_media_type', '请使用 application/json 提交反馈', 415)
-  }
-
-  const origin = request.headers.get('origin')
-  if (origin) {
-    try {
-      if (new URL(origin).origin !== new URL(request.url).origin) {
-        return fail('forbidden_origin', '不接受跨站反馈请求', 403)
-      }
-    } catch {
-      return fail('forbidden_origin', '反馈来源无效', 403)
-    }
   }
 
   const raw = await request.text()

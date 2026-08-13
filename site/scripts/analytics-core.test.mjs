@@ -4,7 +4,7 @@ import { handleAnalytics } from '../functions/_analytics-core.js'
 import worker from '../worker.js'
 
 function request(body, options = {}) {
-  return new Request('https://dp.betaoi.cc/api/analytics', {
+  return new Request(options.url ?? 'https://dp.betaoi.cc/api/analytics', {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
@@ -98,6 +98,38 @@ test('Cloudflare worker exposes the analytics endpoint and keeps static assets i
     env,
   )
   assert.equal(options.status, 204)
+})
+
+test('worker preflight answers CORS headers for the allowlisted .cc origin', async () => {
+  const env = { ASSETS: { fetch: async () => new Response('asset') } }
+  const preflight = await worker.fetch(
+    new Request('https://dp.betaoi.cn/api/analytics', {
+      method: 'OPTIONS',
+      headers: {
+        Origin: 'https://dp.betaoi.cc',
+        'Access-Control-Request-Method': 'POST',
+      },
+    }),
+    env,
+  )
+  assert.equal(preflight.status, 204)
+  assert.equal(preflight.headers.get('Access-Control-Allow-Origin'), 'https://dp.betaoi.cc')
+  assert.match(preflight.headers.get('Access-Control-Allow-Methods') || '', /POST/)
+})
+
+test('analytics accepts the allowlisted .cc origin on the .cn endpoint with CORS headers', async () => {
+  const response = await handleAnalytics(
+    request(
+      { provider: 'cloudflare', event: 'page_view', path: '/' },
+      {
+        headers: { Origin: 'https://dp.betaoi.cc' },
+        url: 'https://dp.betaoi.cn/api/analytics',
+      },
+    ),
+    { log: () => {} },
+  )
+  assert.equal(response.status, 204)
+  assert.equal(response.headers.get('Access-Control-Allow-Origin'), 'https://dp.betaoi.cc')
 })
 
 test('analytics providers stay on configured hosts and never inject a source beacon', async () => {
