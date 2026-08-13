@@ -33,6 +33,8 @@ The receiver never trusts a client-supplied IP. It derives the submitter IP from
 
 The `.cc` Worker relays feedback to `https://dp.betaoi.cn/api/feedback` (`FEEDBACK_RELAY_URL`) because the Cloudflare datacenter egress to `oapi.dingtalk.com` fails TLS with 525 while DingTalk accepts ordinary overseas hosts. Relay requests carry `x-dp-relay-secret` and `x-dp-client-ip`; EdgeOne trusts the forwarded IP only when the shared `FEEDBACK_RELAY_SECRET` matches (constant-time comparison), otherwise the platform IP applies. A relay 429 propagates as 429; an unreachable or failing relay returns 502 and raises the delivery alert.
 
+`.cc` alerts ride the same relay: feedback-delivery-failure alerts and `client_error` / `feedback_failed` analytics alerts are posted with `x-dp-relay-kind: alert` and a `{text}` body. EdgeOne verifies the secret, rate-limits on the forwarded IP, and forwards the text to its own `ALERT_WEBHOOK_URL` (absent → 503). Trusted relay requests are never forwarded again, so a misconfigured relay URL cannot loop.
+
 # Cloudflare Dashboard
 
 The international Worker writes every accepted event to the `dpmaster` Analytics Engine dataset through the `ANALYTICS` binding. Blob positions are:

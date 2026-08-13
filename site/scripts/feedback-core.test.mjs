@@ -407,14 +407,19 @@ test('never forwards a trusted relay request again, even when relay is misconfig
   assert.equal(forwardedUrl, 'https://hooks.example.test')
 })
 
-test('returns 502 and alerts when the relay answers with a failure', async () => {
+test('returns 502 and relays the failure alert through the relay channel', async () => {
   const fetches = []
+  let relayCalls = 0
   const { value, logs } = runtime({
     errorLog: (entry) => logs.push(entry),
     fetch: async (url, init) => {
       fetches.push({ url, init })
       if (url === 'https://dp.betaoi.cn/api/feedback') {
-        return new Response(JSON.stringify({ ok: false, error: 'delivery_failed' }), { status: 502 })
+        relayCalls++
+        // 第一次调用是反馈 relay（失败），第二次是告警 relay（成功）。
+        return relayCalls === 1
+          ? new Response(JSON.stringify({ ok: false, error: 'delivery_failed' }), { status: 502 })
+          : new Response(JSON.stringify({ ok: true, status: 'alerted' }), { status: 200 })
       }
       return new Response('{}', { status: 200 })
     },
@@ -432,7 +437,11 @@ test('returns 502 and alerts when the relay answers with a failure', async () =>
   assert.equal(response.status, 502)
   assert.equal((await response.json()).error, 'delivery_failed')
   assert.ok(logs.some((entry) => entry.event === 'feedback_delivery_failed'))
-  assert.ok(fetches.some(({ url }) => url === 'https://alert.example.test'))
+  const alertCall = fetches.find(({ init }) => init.headers['x-dp-relay-kind'] === 'alert')
+  assert.ok(alertCall)
+  assert.equal(alertCall.url, 'https://dp.betaoi.cn/api/feedback')
+  assert.equal(alertCall.init.headers['x-dp-relay-secret'], 'relay-secret-123')
+  assert.match(JSON.parse(alertCall.init.body).text, /反馈通道异常/)
 })
 
 test('does not call the direct webhook when relay is configured', async () => {
@@ -485,6 +494,109 @@ test('a forged relay IP cannot shift the limiter bucket without the secret', asy
     value,
   )
   assert.equal(second.status, 429)
+})
+
+test('forwards a trusted alert relay to the local ALERT_WEBHOOK_URL', async () => {
+  let alerted
+  const { value, logs } = runtime({
+    fetch: async (url, init) => {
+      alerted = { url, init }
+      return new Response('{}', { status: 200 })
+    },
+  })
+  // .cn 收到 .cc 的告警 relay：密钥匹配 + kind=alert + body{text} → 转发到本地告警机器人。
+  const response = await feedback.handleFeedback(
+    request(
+      { text: 'DP大师反馈通道异常\n编号：abc' },
+      { 'X-Dp-Relay-Secret': 'relay-secret-123', 'X-Dp-Relay-Kind': 'alert' },
+      { geo: { countryCodeAlpha2: 'CN' }, uuid: 'eo-test', clientIp: '9.9.9.9' },
+    ),
+    {
+      FEEDBACK_WEBHOOK_URL: 'https://hooks.example.test',
+      FEEDBACK_RELAY_SECRET: 'relay-secret-123',
+      ALERT_WEBHOOK_URL: 'https://alert.example.test',
+    },
+    value,
+  )
+
+  assert.equal(response.status, 200)
+  assert.equal((await response.json()).status, 'alerted')
+  assert.equal(alerted.url, 'https://alert.example.test')
+  assert.match(JSON.parse(alerted.init.body).text.content, /反馈通道异常/)
+  assert.ok(logs.some((entry) => entry.event === 'alert_relay_received'))
+})
+
+test('rejects an alert relay when no alert channel is configured', async () => {
+  const { value } = runtime({
+    fetch: async () => new Response('{}', { status: 200 }),
+  })
+  const response = await feedback.handleFeedback(
+    request(
+      { text: 'DP大师前端告警' },
+      { 'X-Dp-Relay-Secret': 'relay-secret-123', 'X-Dp-Relay-Kind': 'alert' },
+      { geo: { countryCodeAlpha2: 'CN' }, uuid: 'eo-test', clientIp: '9.9.9.9' },
+    ),
+    {
+      FEEDBACK_WEBHOOK_URL: 'https://hooks.example.test',
+      FEEDBACK_RELAY_SECRET: 'relay-secret-123',
+    },
+    value,
+  )
+
+  assert.equal(response.status, 503)
+  assert.equal((await response.json()).error, 'delivery_unavailable')
+})
+
+test('falls through to feedback validation when the alert relay secret is wrong', async () => {
+  const { value } = runtime({
+    fetch: async () => new Response('{}', { status: 200 }),
+  })
+  const response = await feedback.handleFeedback(
+    request(
+      { text: 'DP大师前端告警' },
+      { 'X-Dp-Relay-Secret': 'wrong-secret', 'X-Dp-Relay-Kind': 'alert' },
+      { geo: { countryCodeAlpha2: 'CN' }, uuid: 'eo-test', clientIp: '9.9.9.9' },
+    ),
+    {
+      FEEDBACK_WEBHOOK_URL: 'https://hooks.example.test',
+      FEEDBACK_RELAY_SECRET: 'right-secret',
+      ALERT_WEBHOOK_URL: 'https://alert.example.test',
+    },
+    value,
+  )
+
+  // 告警 body 不是反馈格式，密钥又不匹配：必须走正常反馈校验并拒绝。
+  assert.equal(response.status, 422)
+  assert.equal((await response.json()).error, 'invalid_kind')
+})
+
+test('never forwards an alert relay again, even when relay is misconfigured', async () => {
+  const fetches = []
+  const { value } = runtime({
+    fetch: async (url, init) => {
+      fetches.push({ url, init })
+      return new Response('{}', { status: 200 })
+    },
+  })
+  // .cn 被误配 FEEDBACK_RELAY_URL 时，告警 relay 必须直接送本地告警机器人，绝不二次转发。
+  const response = await feedback.handleFeedback(
+    request(
+      { text: 'DP大师前端告警' },
+      { 'X-Dp-Relay-Secret': 'relay-secret-123', 'X-Dp-Relay-Kind': 'alert' },
+      { geo: { countryCodeAlpha2: 'CN' }, uuid: 'eo-test', clientIp: '9.9.9.9' },
+    ),
+    {
+      FEEDBACK_WEBHOOK_URL: 'https://hooks.example.test',
+      FEEDBACK_RELAY_URL: 'https://dp.betaoi.cn/api/feedback',
+      FEEDBACK_RELAY_SECRET: 'relay-secret-123',
+      ALERT_WEBHOOK_URL: 'https://alert.example.test',
+    },
+    value,
+  )
+
+  assert.equal(response.status, 200)
+  assert.equal((await response.json()).status, 'alerted')
+  assert.deepEqual(fetches.map(({ url }) => url), ['https://alert.example.test'])
 })
 
 test('limits one source to ten requests in a rolling thirty-minute window', () => {

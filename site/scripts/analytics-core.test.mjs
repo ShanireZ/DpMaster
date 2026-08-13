@@ -112,3 +112,57 @@ test('analytics providers stay on configured hosts and never inject a source bea
   assert.match(source, /navigator\.sendBeacon/)
   assert.match(source, /keepalive:\s*true/)
 })
+
+test('relays alert events through the relay channel when configured', async () => {
+  let alerted
+  const response = await handleAnalytics(
+    request({
+      provider: 'cloudflare',
+      event: 'client_error',
+      path: '/part/a/01',
+      metadata: { message: 'boom' },
+    }),
+    {
+      log: () => {},
+      env: {
+        FEEDBACK_RELAY_URL: 'https://dp.betaoi.cn/api/feedback',
+        FEEDBACK_RELAY_SECRET: 'relay-secret-123',
+        ALERT_WEBHOOK_URL: 'https://alert.example.test',
+      },
+      fetch: async (url, init) => {
+        alerted = { url, init }
+        return new Response(JSON.stringify({ ok: true, status: 'alerted' }), { status: 200 })
+      },
+    },
+  )
+
+  assert.equal(response.status, 204)
+  assert.equal(alerted.url, 'https://dp.betaoi.cn/api/feedback')
+  assert.equal(alerted.init.headers['x-dp-relay-kind'], 'alert')
+  assert.equal(alerted.init.headers['x-dp-relay-secret'], 'relay-secret-123')
+  assert.match(JSON.parse(alerted.init.body).text, /client_error/)
+})
+
+test('alerts directly to the alert webhook when no relay is configured', async () => {
+  let alerted
+  const response = await handleAnalytics(
+    request({
+      provider: 'cloudflare',
+      event: 'feedback_failed',
+      path: '/',
+      metadata: { status: 'network' },
+    }),
+    {
+      log: () => {},
+      env: { ALERT_WEBHOOK_URL: 'https://alert.example.test' },
+      fetch: async (url, init) => {
+        alerted = { url, init }
+        return new Response('{}', { status: 200 })
+      },
+    },
+  )
+
+  assert.equal(response.status, 204)
+  assert.equal(alerted.url, 'https://alert.example.test')
+  assert.match(JSON.parse(alerted.init.body).text.content, /feedback_failed/)
+})
