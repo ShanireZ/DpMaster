@@ -14,37 +14,9 @@ DP大师是面向 C++ 算法学习者的动态规划交互式学习网站，将�
 - 题目索引支持搜索、筛选和可分享的 URL 状态。
 - 无需账号，打开网页即可学习。
 
-## 项目结构
-
-```text
-DpMaster/
-├─ site/                       # 网站应用
-│  ├─ src/
-│  │  ├─ algorithms/          # DP 算法与可视化计算模型
-│  │  ├─ analytics/           # 站点事件与性能采集
-│  │  ├─ app/                 # 应用入口、路由与静态渲染
-│  │  ├─ components/          # 布局、交互演示、小游戏与通用组件
-│  │  ├─ content/             # 课程正文
-│  │  ├─ data/                # 课程目录、题目索引与页面元数据
-│  │  ├─ learning/            # 本地学习状态
-│  │  ├─ pages/               # 页面级组件
-│  │  └─ styles/              # 全局样式与设计变量
-│  ├─ functions/              # 反馈与统计接口
-│  ├─ public/                 # 静态资源
-│  ├─ scripts/                # 内容生成、预渲染与区域构建
-│  ├─ tests/                  # 浏览器端到端测试
-│  ├─ worker.js               # Cloudflare Worker 入口
-│  └─ wrangler.jsonc          # Cloudflare 部署配置
-├─ docs/                      # 项目维护文档
-├─ deploy.md                  # 部署说明
-├─ LICENSE
-└─ README.md
-```
-
 ## 本地运行
 
-需要 Node.js 24.18.1 与 pnpm 11.18.0；版本权威分别是
-`site/.node-version` 和 `site/package.json`。
+需要 Node.js 24.18.1 与 pnpm 11.18.0；版本权威分别是 `site/.node-version` 和 `site/package.json`。
 
 ```bash
 cd site
