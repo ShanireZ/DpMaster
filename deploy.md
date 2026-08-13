@@ -193,11 +193,11 @@ pnpm deploy:cf
 | `FEEDBACK_WEBHOOK_URL`    | Secret | 否（配 relay 时不要填） | 钉钉 webhook 完整 URL。保留仅为回退直达模式。 |
 | `FEEDBACK_WEBHOOK_KIND`   | Text   |           否 | 钉钉填 `dingtalk`。                          |
 | `FEEDBACK_WEBHOOK_SECRET` | Secret | 加签模式选填 | 钉钉机器人加签密钥，通常以 `SEC` 开头。      |
-| `ALERT_WEBHOOK_URL`       | Secret |           否 | 前端错误与反馈送达失败的独立告警机器人。    |
+| `ALERT_WEBHOOK_URL`       | Secret | 否（relay 模式不需要，告警经 .cn 转发） | 仅直连模式下的独立告警机器人。      |
 | `ALERT_WEBHOOK_KIND`      | Text   |           否 | 告警机器人类型，默认沿用反馈类型。           |
 | `ALERT_WEBHOOK_SECRET`    | Secret | 加签模式选填 | 告警机器人的签名密钥。                       |
 
-> ★ Cloudflare 数据中心出口到钉钉（oapi.dingtalk.com）的 TLS 握手被阿里云侧打断，稳定返回 525（2026-08 实测复现，钉钉对普通海外节点开放）。因此 **.cc 站必须走 relay 模式**：Worker 把反馈转交给 `https://dp.betaoi.cn/api/feedback`（EdgeOne 国内节点），由 .cn 转发进钉钉。转发请求带 `x-dp-relay-secret`（共享密钥）与 `x-dp-client-ip`（原始客户端 IP）；.cn 侧密钥匹配才信任转发 IP，否则按平台 IP 处理。若 relay 不可达或返回 429/非 200，.cc 分别返回 429/502 并触发告警。不要把 `FEEDBACK_WEBHOOK_URL` 与 `FEEDBACK_RELAY_URL` 同时配置——relay 优先，直连 webhook 会被跳过。
+> ★ Cloudflare 数据中心出口到钉钉（oapi.dingtalk.com）的 TLS 握手被阿里云侧打断，稳定返回 525（2026-08 实测复现，钉钉对普通海外节点开放）。因此 **.cc 站必须走 relay 模式**：Worker 把反馈转交给 `https://dp.betaoi.cn/api/feedback`（EdgeOne 国内节点），由 .cn 转发进钉钉。转发请求带 `x-dp-relay-secret`（共享密钥）与 `x-dp-client-ip`（原始客户端 IP）；.cn 侧密钥匹配才信任转发 IP，否则按平台 IP 处理。若 relay 不可达或返回 429/非 200，.cc 分别返回 429/502 并触发告警。不要把 `FEEDBACK_WEBHOOK_URL` 与 `FEEDBACK_RELAY_URL` 同时配置——relay 优先，直连 webhook 会被跳过。**告警也走同一 relay**：.cc 的反馈送达失败告警与前端错误告警（`client_error` / `feedback_failed`）带 `x-dp-relay-kind: alert` 转交给 .cn，由 .cn 转发到**它自己的** `ALERT_WEBHOOK_URL`；.cc 无需再配可达的 `ALERT_WEBHOOK_URL`，但 .cn 必须配置 `ALERT_WEBHOOK_URL`（否则告警 relay 返回 503）。
 
 CLI 设置 Secret：
 

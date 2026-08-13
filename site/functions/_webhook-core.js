@@ -84,3 +84,35 @@ export async function forwardWebhook({
     return { status: 'network_error', message: clip(String(error), 200) }
   }
 }
+
+/**
+ * 经 .cn 的 /api/feedback 端点可信转发（relay 协议）。
+ * 共享密钥 x-dp-relay-secret 由接收侧恒定时间校验；x-dp-relay-kind 区分
+ * 反馈（省略）与告警（alert）；x-dp-client-ip 携带原始客户端 IP。
+ * body 是已序列化的字符串，由调用方负责。
+ */
+export async function forwardRelay({
+  relayUrl,
+  secret,
+  kind,
+  clientIp,
+  body,
+  fetchImpl = fetch,
+}) {
+  const headers = { 'Content-Type': 'application/json' }
+  if (secret) headers['x-dp-relay-secret'] = secret
+  if (kind) headers['x-dp-relay-kind'] = kind
+  if (clientIp) headers['x-dp-client-ip'] = clientIp
+  const response = await fetchImpl(relayUrl, {
+    method: 'POST',
+    headers,
+    body,
+  })
+  let payload = null
+  try {
+    payload = await response.json()
+  } catch {
+    // 非 JSON 响应视为转发失败。
+  }
+  return { status: response.status, body: payload }
+}

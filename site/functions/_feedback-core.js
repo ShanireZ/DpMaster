@@ -1,6 +1,6 @@
 // 反馈处理核心 —— 被 Cloudflare Worker / Pages Functions / EdgeOne 共用。
 // 仅依赖 Fetch API 与 Web Crypto；运行时 Adapter 不得复制校验、限流或回执语义。
-import { clip, forwardWebhook } from './_webhook-core.js'
+import { clip, forwardRelay, forwardWebhook } from './_webhook-core.js'
 
 const BODY_LIMIT_BYTES = 16_000
 const DEFAULT_LIMIT = 10
@@ -50,6 +50,9 @@ function sourceFromRequest(request) {
 
 const RELAY_SECRET_HEADER = 'x-dp-relay-secret'
 const RELAY_CLIENT_IP_HEADER = 'x-dp-client-ip'
+const RELAY_KIND_HEADER = 'x-dp-relay-kind'
+const RELAY_ALERT_KIND = 'alert'
+const ALERT_TEXT_LIMIT = 1000
 
 /** 恒定时间字符串比较，避免共享密钥被时序侧信道探测。 */
 function secureEqual(a, b) {
@@ -63,9 +66,10 @@ function secureEqual(a, b) {
 
 /**
  * 识别来自 .cc Worker 的可信转发请求。
- * .cc 的 Cloudflare 出口到钉钉 TLS 不通（525），反馈经 .cn 中转；
- * 中转请求携带共享密钥与原始客户端 IP，只有密钥匹配才信任转发 IP。
- * 转发 IP 仅接受 IPv4/IPv6 字面量，避免异常字符进入消息与日志。
+ * .cc 的 Cloudflare 出口到钉钉 TLS 不通（525），反馈与告警都经 .cn 中转；
+ * 转发请求携带共享密钥（x-dp-relay-secret），只有密钥匹配才视为可信。
+ * 返回 { trusted, clientIp }：clientIp 仅在 x-dp-client-ip 为合法 IPv4/IPv6
+ * 字面量时给出，否则为 null（调用方回退平台 IP）。
  */
 function trustedRelay(request, env) {
   const secret = env.FEEDBACK_RELAY_SECRET
@@ -73,39 +77,111 @@ function trustedRelay(request, env) {
   const offered = request.headers.get(RELAY_SECRET_HEADER)
   if (!offered || !secureEqual(offered, secret)) return null
   const clientIp = String(request.headers.get(RELAY_CLIENT_IP_HEADER) || '').trim()
-  return /^[0-9a-fA-F:.]{1,64}$/.test(clientIp) ? clientIp : null
-}
-
-async function forwardRelay({ relayUrl, secret, clientIp, rawBody, fetchImpl = fetch }) {
-  const headers = { 'Content-Type': 'application/json' }
-  if (secret) headers[RELAY_SECRET_HEADER] = secret
-  if (clientIp && clientIp !== 'anonymous') headers[RELAY_CLIENT_IP_HEADER] = clientIp
-  const response = await fetchImpl(relayUrl, {
-    method: 'POST',
-    headers,
-    body: rawBody,
-  })
-  let body = null
-  try {
-    body = await response.json()
-  } catch {
-    // 非 JSON 响应视为中转失败。
+  return {
+    trusted: true,
+    clientIp: /^[0-9a-fA-F:.]{1,64}$/.test(clientIp) ? clientIp : null,
   }
-  return { status: response.status, body }
 }
 
-async function alertFailure({ env, runtime, requestId, relay, webhook, kind }) {
-  const alertUrl = env.ALERT_WEBHOOK_URL
-  if (!alertUrl) return
-  const detail = relay ? `中转状态：${relay.status}` : `状态：${webhook.status}`
+async function forwardRelayFeedback({ relayUrl, secret, clientIp, rawBody, fetchImpl = fetch }) {
+  return forwardRelay({ relayUrl, secret, clientIp, body: rawBody, fetchImpl })
+}
+
+/** 告警送达：relay 模式经 .cn 中转，否则直连告警机器人。告警失败不得影响主流程。 */
+async function deliverAlert({ env, runtime, text }) {
+  const relayUrl = env.FEEDBACK_RELAY_URL
+  if (relayUrl) {
+    try {
+      const relayed = await forwardRelay({
+        relayUrl,
+        secret: env.FEEDBACK_RELAY_SECRET,
+        kind: RELAY_ALERT_KIND,
+        body: JSON.stringify({ text }),
+        fetchImpl: runtime.fetch || fetch,
+      })
+      if (relayed.status !== 200 || !relayed.body?.ok) {
+        console.error('[feedback-alert-relay]', JSON.stringify({ status: relayed.status, body: relayed.body }))
+      }
+    } catch (error) {
+      console.error('[feedback-alert-relay]', String(error))
+    }
+    return
+  }
   await forwardWebhook({
-    baseUrl: alertUrl,
-    kind: env.ALERT_WEBHOOK_KIND || kind,
+    baseUrl: env.ALERT_WEBHOOK_URL,
+    kind: env.ALERT_WEBHOOK_KIND || 'wecom',
     secret: env.ALERT_WEBHOOK_SECRET,
-    text: `DP大师反馈通道异常\n编号：${requestId}\n${detail}`,
+    text,
     fetchImpl: runtime.fetch || fetch,
     now: runtime.now || Date.now,
   })
+}
+
+async function alertFailure({ env, runtime, requestId, relay, webhook }) {
+  const alertUrl = env.ALERT_WEBHOOK_URL
+  if (!alertUrl && !env.FEEDBACK_RELAY_URL) return
+  const detail = relay ? `中转状态：${relay.status}` : `状态：${webhook.status}`
+  await deliverAlert({
+    env,
+    runtime,
+    text: `DP大师反馈通道异常\n编号：${requestId}\n${detail}`,
+  })
+}
+
+/**
+ * .cn 侧处理来自 .cc 的告警 relay（x-dp-relay-kind: alert）：
+ * 密钥已由 trustedRelay 验证，这里按转发 IP 限流后转发到 .cn 自己的
+ * ALERT_WEBHOOK_URL（EdgeOne 国内节点 → 钉钉可达）。告警分流直接返回，
+ * 不会再进入反馈 relay 分支，天然防循环。
+ */
+async function handleRelayAlert({ env, runtime, data, ip }) {
+  const text = data && typeof data === 'object'
+    ? String(data.text || '').trim()
+    : ''
+  if (!text || text.length > ALERT_TEXT_LIMIT) {
+    return fail('invalid_payload', '告警内容无效', 422)
+  }
+
+  const now = runtime.now || Date.now
+  const timestamp = now()
+  const limiter = runtime.limiter || defaultLimiter
+  const rate = limiter.take(ip, timestamp)
+  if (!rate.allowed) {
+    return fail(
+      'rate_limited',
+      '提交太频繁，请稍后再试',
+      429,
+      { 'Retry-After': String(rate.retryAfter) },
+    )
+  }
+
+  const alertUrl = env.ALERT_WEBHOOK_URL
+  if (!alertUrl) {
+    return fail('delivery_unavailable', '告警通道尚未配置', 503)
+  }
+
+  const id = requestId(runtime.randomUUID, timestamp)
+  const log = runtime.log || defaultLog
+  const errorLog = runtime.errorLog || defaultErrorLog
+  try {
+    log({ event: 'alert_relay_received', requestId: id, ip })
+  } catch {
+    return fail('log_failed', '告警服务暂时不可用', 500)
+  }
+
+  const webhook = await forwardWebhook({
+    baseUrl: alertUrl,
+    kind: env.ALERT_WEBHOOK_KIND || 'wecom',
+    secret: env.ALERT_WEBHOOK_SECRET,
+    text,
+    fetchImpl: runtime.fetch || fetch,
+    now,
+  })
+  if (webhook.status !== 'forwarded') {
+    errorLog({ event: 'alert_relay_failed', requestId: id, webhook })
+    return fail('delivery_failed', '告警暂时无法送达', 502)
+  }
+  return json({ ok: true, status: 'alerted', requestId: id })
 }
 
 function requestId(randomUUID, now) {
@@ -231,13 +307,20 @@ export async function handleFeedback(request, env = {}, runtime = {}) {
     return fail('bad_json', '反馈内容不是有效的 JSON', 400)
   }
 
+  // 告警分流：.cc 的告警也经本端点 relay（x-dp-relay-kind: alert），
+  // 由 .cn 转发到自己的 ALERT_WEBHOOK_URL。仅在密钥匹配时生效，
+  // 且必须在反馈格式校验之前，因为告警 body（{text}）不是反馈格式。
+  const relay = trustedRelay(request, env)
+  if (relay && request.headers.get(RELAY_KIND_HEADER) === RELAY_ALERT_KIND) {
+    return handleRelayAlert({ env, runtime, data, ip: relay.clientIp || sourceFromRequest(request) })
+  }
+
   const normalized = normalizePayload(data)
   if (normalized.error) return normalized.error
 
   const now = runtime.now || Date.now
   const timestamp = now()
-  const relayTrust = trustedRelay(request, env)
-  const ip = relayTrust || sourceFromRequest(request)
+  const ip = (relay && relay.clientIp) || sourceFromRequest(request)
   const source = runtime.sourceKey ? runtime.sourceKey(request) : ip
   const limiter = runtime.limiter || defaultLimiter
   const rate = limiter.take(source, timestamp)
@@ -284,11 +367,11 @@ export async function handleFeedback(request, env = {}, runtime = {}) {
   }
 
   // .cc 的 Cloudflare 出口到钉钉 TLS 不通（525），配置 relay 时经 .cn 中转进钉钉。
-  // 已识别为可信转发的请求（trustedRelay 命中）绝不再次转发，防止误配造成转发循环。
-  if (relayUrl && !relayTrust) {
+  // 已识别为可信转发的请求（secret 匹配）绝不再次转发，防止误配造成转发循环。
+  if (relayUrl && !relay) {
     let relayed
     try {
-      relayed = await forwardRelay({
+      relayed = await forwardRelayFeedback({
         relayUrl,
         secret: env.FEEDBACK_RELAY_SECRET,
         clientIp: ip,
@@ -314,7 +397,7 @@ export async function handleFeedback(request, env = {}, runtime = {}) {
         relay: { status: relayed.status, error: relayed.body?.error },
       }
       errorLog(failure)
-      await alertFailure({ env, runtime, requestId: id, relay: failure.relay, kind })
+      await alertFailure({ env, runtime, requestId: id, relay: failure.relay })
       return fail(
         'delivery_failed',
         '反馈暂时无法送达，请稍后重试，或复制反馈内容后通过公开渠道发送。',
@@ -353,7 +436,7 @@ export async function handleFeedback(request, env = {}, runtime = {}) {
     errorLog(failure)
     const alertUrl = env.ALERT_WEBHOOK_URL
     if (alertUrl && alertUrl !== baseUrl) {
-      await alertFailure({ env, runtime, requestId: id, webhook, kind })
+      await alertFailure({ env, runtime, requestId: id, webhook })
     }
     return fail(
       'delivery_failed',

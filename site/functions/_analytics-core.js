@@ -1,5 +1,5 @@
 // 区域无关的第一方统计接收器。只记录无身份、无联系方式的有限事件字段。
-import { forwardWebhook } from './_webhook-core.js'
+import { forwardRelay, forwardWebhook } from './_webhook-core.js'
 
 const BODY_LIMIT_BYTES = 4_000
 const PROVIDERS = new Set(['cloudflare', 'tencent-edgeone'])
@@ -110,23 +110,37 @@ export async function handleAnalytics(request, runtime = {}) {
   }
 
   const env = runtime.env || {}
-  if (ALERT_EVENTS.has(entry.name) && env.ALERT_WEBHOOK_URL) {
-    const alert = forwardWebhook({
-      baseUrl: env.ALERT_WEBHOOK_URL,
-      kind: env.ALERT_WEBHOOK_KIND || 'wecom',
-      secret: env.ALERT_WEBHOOK_SECRET,
-      text: [
-        'DP大师前端告警',
-        `事件：${entry.name}`,
-        `页面：${entry.path}`,
-        `详情：${JSON.stringify(entry.metadata)}`,
-      ].join('\n'),
-      fetchImpl: runtime.fetch || fetch,
-    }).then((result) => {
-      if (result.status !== 'forwarded') {
-        console.error('[analytics-alert]', JSON.stringify(result))
-      }
-    })
+  if (ALERT_EVENTS.has(entry.name) && (env.ALERT_WEBHOOK_URL || env.FEEDBACK_RELAY_URL)) {
+    const text = [
+      'DP大师前端告警',
+      `事件：${entry.name}`,
+      `页面：${entry.path}`,
+      `详情：${JSON.stringify(entry.metadata)}`,
+    ].join('\n')
+    // .cc 直连钉钉 525：配了 relay 时告警也经 .cn 中转，否则直连告警机器人。
+    const alert = (env.FEEDBACK_RELAY_URL
+      ? forwardRelay({
+          relayUrl: env.FEEDBACK_RELAY_URL,
+          secret: env.FEEDBACK_RELAY_SECRET,
+          kind: 'alert',
+          body: JSON.stringify({ text }),
+          fetchImpl: runtime.fetch || fetch,
+        }).then((result) => {
+          if (result.status !== 200 || !result.body?.ok) {
+            console.error('[analytics-alert-relay]', JSON.stringify({ status: result.status, body: result.body }))
+          }
+        })
+      : forwardWebhook({
+          baseUrl: env.ALERT_WEBHOOK_URL,
+          kind: env.ALERT_WEBHOOK_KIND || 'wecom',
+          secret: env.ALERT_WEBHOOK_SECRET,
+          text,
+          fetchImpl: runtime.fetch || fetch,
+        }).then((result) => {
+          if (result.status !== 'forwarded') {
+            console.error('[analytics-alert]', JSON.stringify(result))
+          }
+        }))
     if (runtime.waitUntil) runtime.waitUntil(alert)
     else await alert
   }
