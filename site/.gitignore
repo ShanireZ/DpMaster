@@ -39,3 +39,8 @@ dist-ssr
 .wrangler/
 wrangler-account.json
 node_modules/.cache/wrangler/
+
+# Build-time intermediate outputs (cleared by build; may linger after interrupted builds)
+.prerender/
+test-results/
+playwright-report/
