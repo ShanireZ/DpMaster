@@ -41,8 +41,8 @@ pnpm deploy:eo
 ```bash
 # 1. 安装（Windows 默认 shell；gh 也可用 winget install --id GitHub.cli）
 pnpm add -g wrangler edgeone
-npm install -g @cnbcool/cnb-cli
 winget install --id GitHub.cli   # 已装则跳过
+# cnb 见下方「cnb 的两条安装渠道」——本机用的是原生二进制，不要再用 npm 装一遍
 
 # 2. 登录（均为一次性 OAuth，凭证缓存在用户目录，各项目共用）
 wrangler login
@@ -60,11 +60,16 @@ cnb status
 gh auth status
 ```
 
+> **cnb 的两条安装渠道，只能选一条。** 官方文档给的是 `npm install -g @cnbcool/cnb-cli`（npm 上现为 1.13.0）或 Docker 镜像 `cnbcool/cnb-cli`；**本机实际用的是原生二进制** `~/.cnb/bin/cnb.exe`（`cnb --version` 报 1.11.1），由 `%USERPROFILE%\.cnb\bin` 上 PATH。
+> ★ 两条渠道会互相遮蔽：User PATH 里 `%PNPM_HOME%\bin` 排在 `%USERPROFILE%\.cnb\bin` **之前**，所以一旦再用 npm/pnpm 全局装一份，它会盖住原生那份，且版本不同。工作区所有 `cnb.cool` 推送依赖的 credential helper 路径写的是 `$HOME/.cnb/bin/cnb`（见根 `AGENTS.md`），因此**保持原生这一条**，不要 npm 装。
+
 全局 CLI 升级：
 
 ```bash
-pnpm add -g wrangler edgeone      # gh / cnb 各自用 winget upgrade / npm install -g 升级
+pnpm add -g wrangler edgeone      # gh 用 winget upgrade --id GitHub.cli
 ```
+
+`cnb` 无自更新子命令；原生二进制按 CNB 官方渠道重新下载覆盖 `~/.cnb/bin/cnb.exe` 即可，升级后 `cnb status` 应仍是已登录（token 在 `~/.cnb/token`，与二进制分离）。
 
 升级后把下方“全局 CLI 基线”表中的版本号同步为实际安装版本，并在本仓库跑一次 `pnpm verify` 确认双区部署链路不受影响。
 
