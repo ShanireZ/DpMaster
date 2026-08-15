@@ -74,8 +74,8 @@ pnpm add -g wrangler edgeone      # gh / cnb 各自用 winget upgrade / npm inst
 
 | CLI | 当前基线 |
 | --- | --- |
-| wrangler | 4.121.0 |
-| edgeone | 1.6.23 |
+| wrangler | 4.123.0 |
+| edgeone | 1.6.26 |
 
 ## 部署前准备
 
