@@ -14,7 +14,7 @@ sources:
 
 # Runtime and package authority
 
-`site/` is the only package root. `.node-version` fixes the current Node 24 LTS patch, `package.json` fixes pnpm 11 through `packageManager` and `devEngines`, and `pnpm-lock.yaml` is the reproducible dependency graph used by CI.
+`site/` is the only package root. `.node-version` fixes the current Node 26 patch, `package.json` fixes pnpm 11 through `packageManager` and `devEngines`, and `pnpm-lock.yaml` is the reproducible dependency graph used by CI.
 
 All package commands use pnpm through Corepack. npm, yarn, and bun are not alternative project workflows. Direct dependencies use a caret range whose lower bound is the current stable mainline version eligible under the release-age policy.
 

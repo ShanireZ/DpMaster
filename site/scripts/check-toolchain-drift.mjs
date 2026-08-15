@@ -77,11 +77,16 @@ async function latestPackageVersion(name) {
     .at(-1)
 }
 
-async function latestNode24() {
+// 跟随 `.node-version` 声明的**那条大版本线**取最新补丁，而不是把某个大版本写死 ——
+// 写死的话每次抬大版本都要记得回来改这里，而漏改的表现是「巡检一直报已对齐」，
+// 一道永远红不了的门。2026-08-15 从 24 抬到 26 时就是这么发现的。
+const nodeMajor = nodeVersion.split('.')[0]
+
+async function latestNodeInLine() {
   const releases = await fetchJson('https://nodejs.org/dist/index.json')
   return releases
     .map((release) => release.version.replace(/^v/, ''))
-    .filter((version) => version.startsWith('24.'))
+    .filter((version) => version.startsWith(`${nodeMajor}.`))
     .toSorted(compareVersions)
     .at(-1)
 }
@@ -113,7 +118,7 @@ async function record(label, current, getLatest) {
 }
 
 await Promise.all([
-  record('Node.js 24 LTS', nodeVersion, latestNode24),
+  record(`Node.js ${nodeMajor}`, nodeVersion, latestNodeInLine),
   record(
     'pnpm',
     packageJson.packageManager.replace(/^pnpm@/, ''),
