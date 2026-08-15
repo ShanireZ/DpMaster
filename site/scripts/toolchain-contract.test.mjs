@@ -37,9 +37,16 @@ test('the package root pins one Node version consistently across all four declar
   assert.equal(packageJson.engines.node, `>=${nodeVersion}`)
 })
 
-test('the package root uses the pinned pnpm 11 contract', () => {
-  assert.equal(packageJson.packageManager, 'pnpm@11.18.0')
-  assert.equal(packageJson.devEngines.packageManager.version, '11.18.0')
+// 同 Node：pnpm 版本也在三处各写一遍（packageManager、devEngines.packageManager、
+// engines.pnpm 的下限），要守的是**三处一致**而不是某个字面量。写死的话每次升级
+// 都会红一次假警报，而真正危险的「只改了其中两处」反而可能溜过去。
+test('the package root pins one pnpm version consistently', () => {
+  const pnpmVersion = packageJson.packageManager.replace(/^pnpm@/, '')
+
+  assert.match(pnpmVersion, /^\d+\.\d+\.\d+$/)
+  assert.equal(packageJson.devEngines.packageManager.name, 'pnpm')
+  assert.equal(packageJson.devEngines.packageManager.version, pnpmVersion)
+  assert.equal(packageJson.engines.pnpm, `>=${pnpmVersion} <12`)
   assert.equal(existsSync(join(siteDir, 'package-lock.json')), false)
   assert.equal(existsSync(join(siteDir, 'pnpm-lock.yaml')), true)
 

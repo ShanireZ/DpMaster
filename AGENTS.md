@@ -26,8 +26,11 @@
 ## Commands
 
 所有包管理命令从 `site/` 执行。运行时精确基线见 `site/.node-version` 与
-`site/package.json`；当前要求 Node 26.7.0、pnpm 11.18.0。使用 Corepack
-提供 pnpm，不得混用 npm、yarn 或 bun。
+`site/package.json`；当前要求 Node 26.7.0、pnpm 11.21.0。**两者都是全局安装**
+（Node 由 pnpm 管、pnpm 自身是独立二进制，见 [`../Init_essential.md`](../Init_essential.md)）——
+★ 2026-08-15 起**不再经由 Corepack**：pnpm 从 11.0.0 起安装 Node 运行时时不解包
+corepack，开发机上根本没有这个命令。CI 侧由 `pnpm/action-setup` 读 `packageManager`
+字段取版本。不得混用 npm、yarn 或 bun。
 
 ```bash
 pnpm install --frozen-lockfile
