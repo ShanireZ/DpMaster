@@ -12,7 +12,7 @@ DP大师是一个 React + Vite 预渲染静态站。生产采用区域双站：
 ## 一页流程
 
 ```bash
-corepack install --global pnpm@11.18.0
+# pnpm 由全局独立安装，见 ../Init_essential.md（本机不装 corepack）
 pnpm install --frozen-lockfile
 pnpm release
 ```
@@ -86,7 +86,7 @@ pnpm add -g wrangler edgeone      # gh 用 winget upgrade --id GitHub.cli
 
 需要准备：
 
-- Node.js 26.7.0 与 pnpm 11.18.0。仓库使用 `pnpm-lock.yaml` 锁版，版本权威是 `site/.node-version`、`site/package.json` 和 `site/pnpm-workspace.yaml`。
+- Node.js 26.7.0 与 pnpm 11.21.0，均为**全局安装**（见 [`../Init_essential.md`](../Init_essential.md)）。仓库使用 `pnpm-lock.yaml` 锁版，版本权威是 `site/.node-version`、`site/package.json` 和 `site/pnpm-workspace.yaml`。
 - 已完成“全局 CLI 准备”：`wrangler`、`edgeone`、`gh`、`cnb` 全局安装并登录。
 - Cloudflare 账号，已允许 Wrangler 发布 Workers。
 - 腾讯云 EdgeOne 账号，已允许 EdgeOne Pages 发布。
@@ -106,7 +106,7 @@ pnpm add -g wrangler edgeone      # gh 用 winget upgrade --id GitHub.cli
 ## 本地构建
 
 ```bash
-corepack install --global pnpm@11.18.0
+# pnpm 由全局独立安装，见 ../Init_essential.md（本机不装 corepack）
 pnpm install --frozen-lockfile
 pnpm lint
 pnpm build
