@@ -26,7 +26,7 @@
 ## Commands
 
 所有包管理命令从 `site/` 执行。运行时精确基线见 `site/.node-version` 与
-`site/package.json`；当前要求 Node 24.18.1、pnpm 11.18.0。使用 Corepack
+`site/package.json`；当前要求 Node 26.7.0、pnpm 11.18.0。使用 Corepack
 提供 pnpm，不得混用 npm、yarn 或 bun。
 
 ```bash

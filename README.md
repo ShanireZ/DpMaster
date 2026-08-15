@@ -21,7 +21,7 @@ DP大师是面向 C++ 算法学习者的动态规划交互式学习网站，将�
 
 ## 本地运行
 
-需要 Node.js 24.18.1 与 pnpm 11.18.0；版本权威分别是 `site/.node-version` 和 `site/package.json`。
+需要 Node.js 26.7.0 与 pnpm 11.18.0；版本权威分别是 `site/.node-version` 和 `site/package.json`。
 
 ```bash
 cd site
