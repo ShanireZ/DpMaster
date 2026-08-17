@@ -43,10 +43,13 @@ test('the package root pins one Node version consistently across all four declar
 test('the package root pins one pnpm version consistently', () => {
   const pnpmVersion = packageJson.packageManager.replace(/^pnpm@/, '')
 
-  assert.match(pnpmVersion, /^\d+\.\d+\.\d+$/)
+  // 允许预发布后缀：2026-08-17 全工作区钉到 12.0.0-rc.6，因为 pnpm 12 还没有正式版
+  // （registry 的 latest 仍是 11.22.0，12.x 只有 rc 串）。12 GA 之后版本会自然回到
+  // 三段式，这条正则不必再动 —— 它守的是形态，不是某个具体版本。
+  assert.match(pnpmVersion, /^\d+\.\d+\.\d+(?:-[0-9A-Za-z.-]+)?$/)
   assert.equal(packageJson.devEngines.packageManager.name, 'pnpm')
   assert.equal(packageJson.devEngines.packageManager.version, pnpmVersion)
-  assert.equal(packageJson.engines.pnpm, `>=${pnpmVersion} <12`)
+  assert.equal(packageJson.engines.pnpm, `>=${pnpmVersion}`)
   assert.equal(existsSync(join(siteDir, 'package-lock.json')), false)
   assert.equal(existsSync(join(siteDir, 'pnpm-lock.yaml')), true)
 
