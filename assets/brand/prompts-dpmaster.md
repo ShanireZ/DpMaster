@@ -104,8 +104,8 @@ Avoid: rainbow gradient, candy colors, neon, blue-purple tech grid, glassmorphis
   两段**同字号并排会显得 `DP` 偏小**——拉丁大写字母高度只有汉字字面高度的七成上下。
   所以 `DP` 需单独放大约 8–12% 后**与汉字齐顶（按字形包围盒对齐，不按基线对齐）**，
   并在 `P` 与「大」之间补约 0.06em 的中西文间隙。**这一条不做，主标一眼就是歪的。**
-- ⏳ 同前两个项目：`BetaPass/std/candidates/_build/build-v2-assets.cjs` 的输出目录 `out` 写死在
-  平台资产目录，本批四个项目需要 per-project 输出目录，下一轮出图时一并改。
+- ✅ 2026-08-20：四项目改用独立的
+  `BetaPass/std/candidates/_build/build-non-platform-assets.cjs` 按项目输出，不改平台资产管线。
 
 ## 5. 自检
 
