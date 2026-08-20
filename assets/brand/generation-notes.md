@@ -1,5 +1,8 @@
 <!-- source: BetaPass\std\candidates\dpmaster\notes.md -->
 
+> 归档说明（2026-08-20）：以下路径是生成当时的历史记录；当前采用源统一为本目录下
+> `dpmaster-logo-source.png`、`dpmaster-badge-bg-source.png`、`dpmaster-stage-bg-source.png`。
+
 # DpMaster 原生候选图生成记录
 
 - 日期：2026-08-20（Asia/Shanghai）
