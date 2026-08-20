@@ -6,9 +6,9 @@
 >
 > | 落位 | 路径 |
 > | --- | --- |
-> | 提示词（两份逐字一致） | `BetaPass/std/prompts-dpmaster.md` · `DpMaster/assets/brand/prompts-dpmaster.md` |
-> | 候选与生成记录 | `BetaPass/std/candidates/dpmaster/` |
-> | 成图（五件） | `DpMaster/assets/brand/` |
+> | BetaPass 镜像 | `BetaPass/std/brand/dpmaster/` |
+> | 项目完整副本 | `DpMaster/assets/brand/` |
+> | 脚本 | `BetaPass/std/candidates/_build/`（只存 BetaPass） |
 >
 > 正文一律写工作区相对路径、不用 Markdown 相对链接 —— 两份副本要能逐字节相同。
 >
