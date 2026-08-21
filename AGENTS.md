@@ -92,3 +92,7 @@ This target uses a single-context domain-doc layout. See `docs/agents/domain.md`
 ### Related engineering skills
 
 See `docs/agents/skill-workflows.md` for recommendations on when to use the installed engineering skills and how their workflows compose.
+
+### Documentation system
+
+Maintain durable documentation as an OKF knowledge bundle. See `docs/agents/documentation.md` and `docs/agents/index.md`.
