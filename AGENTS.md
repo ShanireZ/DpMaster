@@ -74,3 +74,21 @@ pnpm verify
 - 正文题目变化后提交同步生成的 `problems.ts`，并更新涉及数量的 README/OKF 文档。
 - 保持课程正文按课程独立分包；家族游戏也必须 lazy-load。
 - 核心路由、内容语料、部署标识变化时同步更新对应文档和测试。
+
+## Agent skills
+
+### Issue tracker
+
+Issues and specs are tracked in this repository's GitHub Issues. See `docs/agents/issue-tracker.md`.
+
+### Triage labels
+
+Use the five canonical triage labels. See `docs/agents/triage-labels.md`.
+
+### Domain docs
+
+This target uses a single-context domain-doc layout. See `docs/agents/domain.md`.
+
+### Related engineering skills
+
+See `docs/agents/skill-workflows.md` for recommendations on when to use the installed engineering skills and how their workflows compose.
