@@ -1,9 +1,11 @@
 import assert from 'node:assert/strict'
 import test from 'node:test'
 import {
+  DEFAULT_POST_TARGETS,
   DEFAULT_TARGETS,
   handleEgressProbe,
   runEgressProbe,
+  runPostRoundTrip,
   secureEqual,
 } from '../worker/egress-probe.js'
 
@@ -143,4 +145,80 @@ test('secureEqual compares in constant time and rejects length mismatches', () =
   assert.equal(secureEqual('abc', 'abcd'), false)
   assert.equal(secureEqual('', ''), true)
   assert.equal(secureEqual(null, undefined), true)
+})
+
+test('the POST round-trip targets DingTalk without credentials so nothing is delivered', () => {
+  for (const target of DEFAULT_POST_TARGETS) {
+    assert.match(target.host, /dingtalk\.com$/)
+    // 不带 access_token / 签名：钉钉只会回 errcode，不会往群里投递。
+    assert.doesNotMatch(target.path, /access_token|sign=/)
+  }
+  assert.equal(DEFAULT_POST_TARGETS.length, 2)
+})
+
+test('the POST round-trip sends a body and parses a chunked response', async () => {
+  const written = []
+  const chunkedResponse = [
+    'HTTP/1.1 200 OK',
+    'Content-Type: application/json;charset=utf-8',
+    'Transfer-Encoding: chunked',
+    '',
+    '1a',
+    '{"errcode":300001,"errmsg"',
+    '14',
+    ':"token is not exist"}',
+    '0',
+    '',
+    '',
+  ].join('\r\n')
+  let reads = 0
+  const fakeConnect = () => ({
+    opened: Promise.resolve({}),
+    writable: {
+      getWriter: () => ({
+        write: async (chunk) => written.push(new TextDecoder().decode(chunk)),
+        releaseLock: () => {},
+      }),
+    },
+    readable: {
+      getReader: () => ({
+        read: async () =>
+          reads++ === 0
+            ? { value: new TextEncoder().encode(chunkedResponse), done: false }
+            : { value: undefined, done: true },
+        releaseLock: () => {},
+      }),
+    },
+    close: async () => {},
+  })
+
+  const report = await runPostRoundTrip({ loadConnect: async () => fakeConnect, now: () => 0 })
+  assert.equal(report.mode, 'post-round-trip')
+  assert.equal(report.results.length, 2)
+
+  const first = report.results[0].socket
+  assert.equal(first.reachable, true)
+  assert.equal(first.statusLine, 'HTTP/1.1 200 OK')
+  assert.equal(first.transferEncoding, 'chunked')
+  // chunked 解码后应还原成完整 JSON，而不是带着长度前缀的原文。
+  assert.match(first.body, /"errcode":300001/)
+  assert.doesNotMatch(first.body, /^1a/)
+
+  const sent = written[0]
+  assert.match(sent, /^POST \/robot\/send HTTP\/1\.1/)
+  assert.match(sent, /Host: oapi\.dingtalk\.com/)
+  assert.match(sent, /Content-Length: \d+/)
+  assert.match(sent, /Connection: close/)
+  assert.match(sent, /"msgtype":"text"/)
+})
+
+test('a POST round-trip failure is reported instead of being swallowed', async () => {
+  const report = await runPostRoundTrip({
+    loadConnect: async () => () => {
+      throw new Error('connect refused')
+    },
+    now: () => 0,
+  })
+  assert.equal(report.results[0].socket.reachable, false)
+  assert.match(report.results[0].socket.error, /connect refused/)
 })

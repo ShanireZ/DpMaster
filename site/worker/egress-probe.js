@@ -10,10 +10,15 @@
 //   - connect()（cloudflare:sockets）：官方文档明确说明其出口前缀**不在**
 //     Cloudflare 公开 IP 段里。如果对端是按 CF 公开段封的，这条有机会通。
 //
-// 全部目标都只做无副作用的探测（GET 根路径 / HEAD 根路径），不会真的发出消息。
+// 两种模式：
+//   - 默认（可达性）：对每个目标 GET / 与 HEAD /，纯读，无副作用。
+//   - `{"mode":"post"}`（POST 往返）：向钉钉两个接入点发一次真实的 HTTPS POST，
+//     验证「发请求体 + 完整读回响应（含 chunked）」这条链路。★ 不带 access_token
+//     与签名，钉钉会用 errcode 拒绝，不会向任何群投递消息。
 //
 // 启用方式：给 Worker 配 EGRESS_DIAG_SECRET，然后带 x-dp-diag-secret 头 POST。
-// 不配这个变量时端点不存在（请求落回静态资源，返回真实 404）。
+// 不配这个变量时端点不存在（请求落回静态资源，与任意未知路径同样返回
+// POST 405 / GET 404，不泄露端点是否存在）。
 
 const DEFAULT_TARGETS = Object.freeze([
   { host: 'oapi.dingtalk.com', note: '钉钉自定义机器人（当前 webhook 接入点）' },
@@ -27,6 +32,25 @@ const DEFAULT_TARGETS = Object.freeze([
 
 const DEFAULT_TIMEOUT_MS = 8000
 const MAX_TARGETS = 12
+const MAX_RESPONSE_BYTES = 64 * 1024
+
+/**
+ * POST 往返验证目标。★ 一律不带 access_token / 签名：钉钉会用 errcode 拒绝，
+ * 不会向任何群投递消息。这里要验证的是「连接 + 发请求体 + 完整读回响应」这条
+ * 链路本身，不是投递。
+ */
+const DEFAULT_POST_TARGETS = Object.freeze([
+  {
+    host: 'oapi.dingtalk.com',
+    path: '/robot/send',
+    note: '钉钉自定义机器人（无 token，预期 errcode 拒绝）',
+  },
+  {
+    host: 'api.dingtalk.com',
+    path: '/v1.0/robot/oToMessages/batchSend',
+    note: '钉钉新版 OpenAPI（无凭证，预期鉴权拒绝）',
+  },
+])
 
 /** 恒定时间字符串比较，避免诊断密钥被时序侧信道探测。 */
 export function secureEqual(a, b) {
@@ -73,6 +97,133 @@ async function probeFetch(host, timeoutMs, fetchImpl, now) {
     return { reachable: true, status: response.status, ms: now() - started }
   } catch (error) {
     return { reachable: false, error: describeError(error), ms: now() - started }
+  }
+}
+
+/** 读到对端关闭为止。请求里带了 Connection: close，所以 EOF 就是响应结束。 */
+async function readAll(socket, timeoutMs) {
+  const reader = socket.readable.getReader()
+  const chunks = []
+  let total = 0
+  try {
+    while (total < MAX_RESPONSE_BYTES) {
+      const { value, done } = await withTimeout(reader.read(), timeoutMs, 'socket read')
+      if (done) break
+      if (value) {
+        chunks.push(value)
+        total += value.byteLength
+      }
+    }
+  } finally {
+    try {
+      reader.releaseLock()
+    } catch {
+      // 读侧已随连接关闭时释放会抛，不影响结论。
+    }
+  }
+  const merged = new Uint8Array(total)
+  let offset = 0
+  for (const chunk of chunks) {
+    merged.set(chunk, offset)
+    offset += chunk.byteLength
+  }
+  return merged
+}
+
+function decodeChunked(body) {
+  let rest = body
+  let out = ''
+  while (true) {
+    const lineEnd = rest.indexOf('\r\n')
+    if (lineEnd < 0) break
+    const size = Number.parseInt(rest.slice(0, lineEnd).split(';', 1)[0].trim(), 16)
+    if (!Number.isFinite(size) || size <= 0) break
+    out += rest.slice(lineEnd + 2, lineEnd + 2 + size)
+    rest = rest.slice(lineEnd + 2 + size + 2)
+  }
+  return out
+}
+
+/** 把原始字节切成 { statusLine, headers, body }，并按需要解 chunked。 */
+function parseHttpResponse(bytes) {
+  const text = new TextDecoder().decode(bytes)
+  const split = text.indexOf('\r\n\r\n')
+  if (split < 0) return { statusLine: text.split('\r\n', 1)[0].slice(0, 120), headers: {}, body: '' }
+  const head = text.slice(0, split)
+  const rawBody = text.slice(split + 4)
+  const [statusLine, ...headerLines] = head.split('\r\n')
+  const headers = {}
+  for (const line of headerLines) {
+    const at = line.indexOf(':')
+    if (at > 0) headers[line.slice(0, at).trim().toLowerCase()] = line.slice(at + 1).trim()
+  }
+  const chunked = (headers['transfer-encoding'] || '').toLowerCase().includes('chunked')
+  return {
+    statusLine: statusLine.slice(0, 120),
+    headers,
+    body: chunked ? decodeChunked(rawBody) : rawBody,
+  }
+}
+
+/**
+ * 走 raw socket 发一次真实的 HTTPS POST 并完整读回响应。
+ * 这是「能不能用 connect() 顶替 fetch() 投递 webhook」的决定性验证：
+ * 光有 TLS 握手不够，还要能发请求体、能把响应（可能是 chunked）解回来。
+ */
+async function probeSocketPost(target, timeoutMs, connect, now) {
+  if (!connect) {
+    return { reachable: false, error: 'cloudflare:sockets unavailable in this runtime' }
+  }
+  const started = now()
+  let socket
+  try {
+    const payload = JSON.stringify({ msgtype: 'text', text: { content: 'dpmaster egress probe' } })
+    const body = new TextEncoder().encode(payload)
+    socket = connect({ hostname: target.host, port: 443 }, { secureTransport: 'on' })
+    await withTimeout(socket.opened, timeoutMs, 'tls handshake')
+
+    const head = [
+      `POST ${target.path} HTTP/1.1`,
+      `Host: ${target.host}`,
+      'User-Agent: dpmaster-egress-probe',
+      'Content-Type: application/json',
+      `Content-Length: ${body.byteLength}`,
+      // 不要压缩响应，省掉一层解码；也不要 keep-alive，靠 EOF 判定响应结束。
+      'Accept-Encoding: identity',
+      'Connection: close',
+      '',
+      '',
+    ].join('\r\n')
+
+    const writer = socket.writable.getWriter()
+    // ★ 用编码后的字节长度拼，不能用 head.length —— 那是 UTF-16 码元数，
+    // 一旦请求头里出现非 ASCII 就会算错偏移。
+    const headBytes = new TextEncoder().encode(head)
+    const request = new Uint8Array(headBytes.byteLength + body.byteLength)
+    request.set(headBytes, 0)
+    request.set(body, headBytes.byteLength)
+    await withTimeout(writer.write(request), timeoutMs, 'socket write')
+    writer.releaseLock()
+
+    const raw = await readAll(socket, timeoutMs)
+    const parsed = parseHttpResponse(raw)
+    return {
+      reachable: true,
+      statusLine: parsed.statusLine,
+      contentType: parsed.headers['content-type'] || null,
+      transferEncoding: parsed.headers['transfer-encoding'] || null,
+      bytes: raw.byteLength,
+      body: parsed.body.slice(0, 300),
+      ms: now() - started,
+    }
+  } catch (error) {
+    return { reachable: false, error: describeError(error), ms: now() - started }
+  } finally {
+    try {
+      await socket?.close()
+    } catch {
+      // 关闭失败不影响探测结论。
+    }
   }
 }
 
@@ -138,6 +289,23 @@ export async function runEgressProbe(targets = DEFAULT_TARGETS, runtime = {}) {
   return { schema: 1, timeoutMs, results }
 }
 
+/** 只跑 POST 往返验证。目标固定，不接受自定义主机：这条路径会真的发请求体。 */
+export async function runPostRoundTrip(runtime = {}) {
+  const now = runtime.now || Date.now
+  const timeoutMs = runtime.timeoutMs || DEFAULT_TIMEOUT_MS
+  const connect = runtime.loadConnect ? await runtime.loadConnect() : null
+  const results = []
+  for (const target of DEFAULT_POST_TARGETS) {
+    results.push({
+      host: target.host,
+      path: target.path,
+      note: target.note,
+      socket: await probeSocketPost(target, timeoutMs, connect, now),
+    })
+  }
+  return { schema: 1, mode: 'post-round-trip', timeoutMs, results }
+}
+
 const json = (body, status = 200) =>
   new Response(JSON.stringify(body, null, 2), {
     status,
@@ -161,10 +329,12 @@ export async function handleEgressProbe(request, env, runtime = {}) {
   }
 
   let targets = DEFAULT_TARGETS
+  let mode = 'reachability'
   try {
     const body = await request.text()
     if (body.trim()) {
       const parsed = JSON.parse(body)
+      if (parsed?.mode === 'post') mode = 'post'
       if (Array.isArray(parsed?.hosts) && parsed.hosts.length > 0) {
         targets = parsed.hosts
           .filter((host) => typeof host === 'string' && /^[a-z0-9.-]{1,253}$/i.test(host))
@@ -174,6 +344,9 @@ export async function handleEgressProbe(request, env, runtime = {}) {
   } catch {
     return json({ ok: false, error: 'bad_json', message: '探针请求体不是有效 JSON' }, 400)
   }
+  if (mode === 'post') {
+    return json({ ok: true, ...(await runPostRoundTrip(runtime)) })
+  }
   if (targets.length === 0) {
     return json({ ok: false, error: 'no_targets', message: '没有合法的目标主机' }, 422)
   }
@@ -181,4 +354,4 @@ export async function handleEgressProbe(request, env, runtime = {}) {
   return json({ ok: true, ...(await runEgressProbe(targets, runtime)) })
 }
 
-export { DEFAULT_TARGETS }
+export { DEFAULT_TARGETS, DEFAULT_POST_TARGETS }
