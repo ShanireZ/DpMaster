@@ -19,7 +19,11 @@
 			"zone_name": "round1.cc"
 		}
 	],
-	"compatibility_date": "2026-07-06",
+	// 2026-08-04 起 nodejs_compat / nodejs_compat_v2 默认开启。本 Worker 不 import
+	// 任何 node: 模块，因此这个日期对现有代码是零行为变化，只是不再落后。
+	// ★ 不启用 Smart Placement：本 Worker ~100% 的请求是 env.ASSETS 静态直出，
+	// 没有需要靠近的后端；把执行点从访客身边挪走只会给每次 HTML 请求加一跳。
+	"compatibility_date": "2026-08-04",
 	// Worker 入口：先接同源 API，其余交回 env.ASSETS（见 worker.js）。
 	"main": "worker.js",
 	"vars": {

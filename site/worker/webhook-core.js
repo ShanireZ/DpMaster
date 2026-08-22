@@ -1,3 +1,12 @@
+import { loadConnect, postOverSocket } from './socket-fetch.js'
+
+/**
+ * Cloudflare 反代「连不上源站」这一类状态码。它们不是对端应用层的拒绝，
+ * 而是 CF 到源站那一跳失败 —— 钉钉稳定命中 525。碰到这些才值得换出口重试；
+ * 普通 4xx/5xx 是对端自己的回复，重试没有意义。
+ */
+const CLOUDFLARE_ORIGIN_ERRORS = new Set([520, 521, 522, 523, 524, 525, 526, 527, 530])
+
 export function clip(value, maxLength) {
   const text = String(value == null ? '' : value)
   return text.length > maxLength ? `${text.slice(0, maxLength)}…` : text
@@ -91,6 +100,48 @@ async function dingtalkSignedUrl(baseUrl, secret, now) {
   return `${baseUrl}${separator}timestamp=${timestamp}&sign=${encodeURIComponent(btoa(binary))}`
 }
 
+/** 统一 fetch 与 raw socket 两条出口的结果形状。 */
+function outcomeFromResponse(transport, status, text) {
+  return { transport, status, ok: status >= 200 && status < 300, text }
+}
+
+/**
+ * 投递一次 webhook。**fetch 优先，只有在 CF 到源站那一跳失败时才降级到 raw socket。**
+ *
+ * ★ 顺序不能反：`connect()` 被禁止连 Cloudflare 自己的 IP 段，而 Discord / Slack
+ * 这类 webhook 常托管在 Cloudflare 后面 —— socket 优先会把它们全打死。反过来，
+ * 钉钉这类拒绝 CF 反代出口的对端，fetch 会稳定拿到 525，正好触发降级。
+ */
+async function deliver({ url, payload, fetchImpl, connectImpl, timeoutMs }) {
+  let outcome
+  try {
+    const response = await fetchImpl(url, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: payload,
+    })
+    outcome = outcomeFromResponse('fetch', response.status, await response.text())
+  } catch (error) {
+    outcome = { transport: 'fetch', failure: error }
+  }
+
+  const retryable = outcome.failure || CLOUDFLARE_ORIGIN_ERRORS.has(outcome.status)
+  if (!retryable) return outcome
+
+  try {
+    const connect = connectImpl ?? (await loadConnect())
+    if (!connect) return outcome
+    const viaSocket = await postOverSocket({ url, body: payload, connect, timeoutMs })
+    return outcomeFromResponse('socket', viaSocket.status, viaSocket.body)
+  } catch (error) {
+    // 降级也失败：保留 fetch 那次的结论，并把 socket 的失败原因附上，
+    // 否则运维只能看到一个 525，不知道第二条出口也试过了。
+    return outcome.failure
+      ? { transport: 'fetch+socket', failure: outcome.failure, socketError: error }
+      : { ...outcome, transport: 'fetch+socket', socketError: error }
+  }
+}
+
 export async function forwardWebhook({
   baseUrl,
   kind,
@@ -98,26 +149,36 @@ export async function forwardWebhook({
   text,
   fetchImpl = fetch,
   now = Date.now,
+  connectImpl,
+  timeoutMs,
 }) {
   try {
     const url = kind === 'dingtalk' && secret
       ? await dingtalkSignedUrl(baseUrl, secret, now)
       : baseUrl
-    const response = await fetchImpl(url, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(webhookBody(kind, text)),
-    })
-    if (!response.ok) return { status: 'http_error', code: response.status }
+    const payload = JSON.stringify(webhookBody(kind, text))
+    const outcome = await deliver({ url, payload, fetchImpl, connectImpl, timeoutMs })
+
+    if (outcome.failure) {
+      return {
+        status: 'network_error',
+        message: clip(String(outcome.failure), 200),
+        transport: outcome.transport,
+      }
+    }
+    if (!outcome.ok) {
+      return { status: 'http_error', code: outcome.status, transport: outcome.transport }
+    }
 
     try {
-      const body = await response.clone().json()
+      const body = JSON.parse(outcome.text)
       if (body && typeof body === 'object') {
         if (Number(body.errcode) !== 0 && body.errcode != null) {
           return {
             status: 'business_error',
             code: Number(body.errcode),
             message: clip(body.errmsg, 160),
+            transport: outcome.transport,
           }
         }
         if (Number(body.code) !== 0 && body.code != null) {
@@ -125,13 +186,14 @@ export async function forwardWebhook({
             status: 'business_error',
             code: Number(body.code),
             message: clip(body.msg, 160),
+            transport: outcome.transport,
           }
         }
       }
     } catch {
       // 非 JSON 的 2xx 响应仍视为转发成功。
     }
-    return { status: 'forwarded', code: response.status }
+    return { status: 'forwarded', code: outcome.status, transport: outcome.transport }
   } catch (error) {
     return { status: 'network_error', message: clip(String(error), 200) }
   }
