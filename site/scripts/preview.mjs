@@ -9,8 +9,7 @@ const valueAfter = (flag, fallback) => {
 }
 const host = valueAfter('--host', '127.0.0.1')
 const port = Number(valueAfter('--port', '4173'))
-const region = valueAfter('--region', 'international')
-const root = resolve(region === 'china' ? 'dist/edgeone' : 'dist/cloudflare')
+const root = resolve('dist')
 
 const contentTypes = {
   '.css': 'text/css; charset=utf-8',
@@ -75,5 +74,5 @@ const server = createServer((request, response) => {
 })
 
 server.listen(port, host, () => {
-  console.log(`[preview] ${region} listening on http://${host}:${port}`)
+  console.log(`[preview] listening on http://${host}:${port}`)
 })

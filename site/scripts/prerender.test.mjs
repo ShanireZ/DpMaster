@@ -1,14 +1,14 @@
 import assert from 'node:assert/strict'
+import { readFile } from 'node:fs/promises'
 import test from 'node:test'
-import { SITE_CONFIGS } from '../src/config/site.ts'
-import { renderStaticWebAnalytics, settleSuspenseMarkup } from './prerender.mjs'
+import { settleSuspenseMarkup } from './prerender.mjs'
 
-const webAnalyticsSnippet =
-  '<!-- Cloudflare Web Analytics --><script type=\'module\' src=\'https://static.cloudflareinsights.com/beacon.min.js\' data-cf-beacon=\'{"token": "c113fb69d7e84d38a645c5160f6f1bda"}\'></script><!-- End Cloudflare Web Analytics -->'
-
-test('EdgeOne receives the exact static Cloudflare Web Analytics snippet', () => {
-  assert.equal(renderStaticWebAnalytics(SITE_CONFIGS.china), webAnalyticsSnippet)
-  assert.equal(renderStaticWebAnalytics(SITE_CONFIGS.international), '')
+test('the prerenderer never injects a Web Analytics beacon', async () => {
+  // Cloudflare 代理自动注入 Web Analytics / RUM。预渲染再手工塞一份 beacon
+  // 会让同一次浏览重复统计，所以这条路必须从源头上不存在。
+  const source = await readFile(new URL('./prerender.mjs', import.meta.url), 'utf8')
+  assert.doesNotMatch(source, /cloudflareinsights/)
+  assert.doesNotMatch(source, /data-cf-beacon/)
 })
 
 test('settleSuspenseMarkup replaces streamed fallbacks with final hydration markup', () => {

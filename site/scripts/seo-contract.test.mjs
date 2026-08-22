@@ -1,7 +1,7 @@
 import assert from 'node:assert/strict'
 import { readFile } from 'node:fs/promises'
 import test from 'node:test'
-import { SITE_CONFIGS, SITE_ORIGIN } from '../src/config/site.ts'
+import { SITE, SITE_ORIGIN } from '../src/config/site.ts'
 import { PARTS } from '../src/data/catalog.ts'
 import { getPageMeta } from '../src/lib/pageMeta.ts'
 import {
@@ -11,6 +11,7 @@ import {
 } from '../src/lib/publicRoutes.ts'
 
 const siteRoot = new URL('../', import.meta.url)
+const NEWLINE = String.fromCharCode(10)
 
 async function siteSource(path) {
   return readFile(new URL(path, siteRoot), 'utf8')
@@ -30,63 +31,60 @@ test('the internal specimen is prerendered but excluded from public discovery', 
   assert.deepEqual(INTERNAL_PATHS, ['/lab/body-demo-standard'])
   assert.equal(PRERENDER_PATHS.length, 48)
   assert.equal(PUBLIC_PATHS.includes(INTERNAL_PATHS[0]), false)
-  const meta = getPageMeta(INTERNAL_PATHS[0], SITE_CONFIGS.international)
+  const meta = getPageMeta(INTERNAL_PATHS[0], SITE)
   assert.equal(meta.indexable, false)
   assert.equal(meta.canonical, null)
-  assert.deepEqual(meta.alternates, [])
 })
 
-test('both regions use host-aware canonical and equivalent hreflang alternates', () => {
-  assert.equal(SITE_ORIGIN, SITE_CONFIGS.international.origin)
-  assert.equal(SITE_CONFIGS.international.origin, 'https://dp.betaoi.cc')
-  assert.equal(SITE_CONFIGS.china.origin, 'https://dp.betaoi.cn')
-  assert.equal(
-    SITE_CONFIGS.international.analytics.cloudflareWebAnalytics.delivery,
-    'automatic',
-  )
-  assert.equal(
-    SITE_CONFIGS.china.analytics.cloudflareWebAnalytics.delivery,
-    'static',
-  )
-  assert.equal(
-    SITE_CONFIGS.china.analytics.cloudflareWebAnalytics.token,
-    'c113fb69d7e84d38a645c5160f6f1bda',
-  )
+test('the single origin owns every canonical and emits no hreflang alternates', () => {
+  assert.equal(SITE_ORIGIN, SITE.origin)
+  assert.equal(SITE.origin, 'https://dp.round1.cc')
+  assert.equal(SITE.hostname, 'dp.round1.cc')
+  assert.equal(SITE.language, 'zh-Hans')
+  // API 一律同源：没有跨域端点，也就没有跨站 CORS 面。
+  assert.equal(SITE.analyticsEndpoint, '/api/analytics')
+  assert.equal(SITE.feedbackEndpoint, '/api/feedback')
 
   for (const path of PUBLIC_PATHS) {
-    for (const site of Object.values(SITE_CONFIGS)) {
-      const meta = getPageMeta(path, site)
-      assert.equal(meta.canonical, `${site.origin}${path}`)
-      assert.equal(meta.indexable, true)
-      assert.equal(meta.alternates.length, 3)
-      assert.deepEqual(meta.alternates, [
-        {
-          hreflang: 'zh-Hans',
-          href: `${SITE_CONFIGS.international.origin}${path}`,
-        },
-        {
-          hreflang: 'zh-CN',
-          href: `${SITE_CONFIGS.china.origin}${path}`,
-        },
-        {
-          hreflang: 'x-default',
-          href: `${SITE_CONFIGS.international.origin}${path}`,
-        },
-      ])
-      assert.ok(meta.description.length >= 30)
-      assert.ok(meta.summary.length >= 30)
-      assert.match(meta.dateModified, /^\d{4}-\d{2}-\d{2}$/)
-    }
+    const meta = getPageMeta(path, SITE)
+    assert.equal(meta.canonical, `${SITE.origin}${path}`)
+    assert.equal(meta.indexable, true)
+    assert.equal('alternates' in meta, false)
+    assert.ok(meta.description.length >= 30)
+    assert.ok(meta.summary.length >= 30)
+    assert.match(meta.dateModified, /^\d{4}-\d{2}-\d{2}$/)
+  }
+})
+
+test('nothing in the shipped site still points at a retired domain or region', async () => {
+  const files = [
+    'src/config/site.ts',
+    'src/lib/pageMeta.ts',
+    'src/lib/seoHead.ts',
+    'src/lib/discovery.ts',
+    'src/analytics/index.ts',
+    'index.html',
+    'wrangler.jsonc',
+    'worker.js',
+    'public/sitemap.xml',
+    'public/robots.txt',
+    'public/llms.txt',
+  ]
+  for (const file of files) {
+    const source = await siteSource(file)
+    assert.doesNotMatch(source, /betaoi/i, file)
+    assert.doesNotMatch(source, /edgeone/i, file)
+    assert.doesNotMatch(source, /hreflang/i, file)
   }
 })
 
 test('all families and lessons derive branded metadata from the catalog', () => {
-  const home = getPageMeta('/', SITE_CONFIGS.international)
+  const home = getPageMeta('/', SITE)
   assert.equal(home.title, 'DP大师 · DP Master')
   assert.doesNotMatch(home.description, /动态规划交互式教程/)
 
   for (const part of PARTS) {
-    const family = getPageMeta(`/part/${part.id}`, SITE_CONFIGS.international)
+    const family = getPageMeta(`/part/${part.id}`, SITE)
     assert.equal(family.title, `${part.title} · DP大师`)
     assert.match(family.description, new RegExp(part.title))
     assert.equal(family.routeKind, 'family')
@@ -94,7 +92,7 @@ test('all families and lessons derive branded metadata from the catalog', () => 
     for (const type of part.types.filter((entry) => entry.status === 'ready')) {
       const lesson = getPageMeta(
         `/part/${part.id}/${type.slug}`,
-        SITE_CONFIGS.international,
+        SITE,
       )
       assert.equal(lesson.title, `${type.title} · ${part.title} · DP大师`)
       assert.equal(lesson.ogType, 'article')
@@ -105,12 +103,11 @@ test('all families and lessons derive branded metadata from the catalog', () => 
 })
 
 test('unknown routes are explicitly non-indexable and have no canonical alternates', () => {
-  const meta = getPageMeta('/part/z/missing', SITE_CONFIGS.international)
+  const meta = getPageMeta('/part/z/missing', SITE)
   assert.equal(meta.title, '页面未找到 · DP大师')
   assert.equal(meta.canonical, null)
   assert.equal(meta.indexable, false)
   assert.equal(meta.routeKind, 'not-found')
-  assert.deepEqual(meta.alternates, [])
 })
 
 test('RouteMeta owns every dynamic SEO tag including JSON-LD and noindex', async () => {
@@ -120,7 +117,7 @@ test('RouteMeta owns every dynamic SEO tag including JSON-LD and noindex', async
   ])
 
   assert.match(adapter, /useLocation\(\)/)
-  assert.match(adapter, /getRuntimeSiteConfig\(\)/)
+  assert.match(adapter, /const site = SITE/)
   assert.match(adapter, /getPageMeta\(location\.pathname,\s*site\)/)
   assert.match(adapter, /document\.title\s*=\s*page\.title/)
   for (const key of [
@@ -138,7 +135,8 @@ test('RouteMeta owns every dynamic SEO tag including JSON-LD and noindex', async
   }
   assert.match(adapter, /structuredDataForPage/)
   assert.match(adapter, /application\/ld\+json/)
-  assert.match(adapter, /hreflang/)
+  // 单域站点没有 alternate：RouteMeta 不得再往 head 里塞 hreflang。
+  assert.doesNotMatch(adapter, /hreflang/)
   assert.match(adapter, /rel\s*=\s*['"]canonical['"]/)
   assert.match(appContent, /<RouteMeta \/>/)
   assert.equal((appContent.match(/<RouteMeta \/>/g) || []).length, 1)
@@ -156,29 +154,45 @@ test('discovery files expose the 47 approved URLs and real summaries', async () 
       siteSource('src/lib/publicRoutes.ts'),
       siteSource('package.json').then(JSON.parse),
     ])
-  const expected = PUBLIC_PATHS.map((path) => `${SITE_CONFIGS.international.origin}${path}`)
+  const expected = PUBLIC_PATHS.map((path) => `${SITE.origin}${path}`)
   const actual = [...sitemap.matchAll(/<loc>([^<]+)<\/loc>/g)].map((match) => match[1])
 
   assert.deepEqual(actual, expected)
-  assert.equal((sitemap.match(/<xhtml:link /g) || []).length, 47 * 3)
-  assert.match(sitemap, /hreflang="zh-Hans"/)
-  assert.match(sitemap, /hreflang="zh-CN"/)
-  assert.match(sitemap, /hreflang="x-default"/)
+  // 单域站点的 sitemap 不带 xhtml alternate，连命名空间都不该出现。
+  assert.equal((sitemap.match(/<xhtml:link /g) || []).length, 0)
+  assert.doesNotMatch(sitemap, /xmlns:xhtml/)
+  assert.equal((sitemap.match(/<lastmod>/g) || []).length, 47)
+
   assert.match(robots, /User-agent:\s*\*/)
   assert.match(robots, /Allow:\s*\//)
-  assert.match(robots, /Sitemap: https:\/\/dp\.betaoi\.cc\/sitemap\.xml/)
+  assert.match(robots, /Sitemap: https:\/\/dp\.round1\.cc\/sitemap\.xml/)
+  // GEO：显式放行生成式引擎，包括两个「不列即视为拒绝」的选择性令牌。
+  for (const agent of ['GPTBot', 'ClaudeBot', 'PerplexityBot', 'Google-Extended', 'Applebot-Extended']) {
+    assert.ok(robots.includes(`User-agent: ${agent}` + NEWLINE), agent)
+  }
+
   assert.equal(routeSummaries.routes.length, 47)
   assert.equal(routeSummaries.brand, 'DP大师')
+  assert.equal(routeSummaries.origin, SITE.origin)
+  assert.equal('region' in routeSummaries, false)
   assert.ok(routeSummaries.routes.every((route) => /^\d{4}-\d{2}-\d{2}$/.test(route.lastModified)))
-  assert.equal((sitemap.match(/<lastmod>/g) || []).length, 47)
+  assert.ok(routeSummaries.routes.every((route) => !('alternates' in route)))
+
   assert.equal(
-    (llms.match(/^- \[[^\]]+\]\(https:\/\/dp\.betaoi\.cc/gm) || []).length,
+    (llms.match(/^- \[[^\]]+\]\(https:\/\/dp\.round1\.cc/gm) || []).length,
     47,
   )
-  assert.match(llms, /## 可引用页面/)
+  // llms.txt 按家族分节，比一张 47 条的平表更好被生成式引擎消化。
+  assert.match(llms, /^## 入口$/m)
+  assert.match(llms, /^## 使用说明$/m)
+  assert.equal((llms.match(/^## /gm) || []).length, 2 + PARTS.length)
+  assert.match(llms, /无账号、无登录、无付费墙/)
+
   assert.match(generator, /\.\.\/src\/lib\/publicRoutes\.ts/)
   assert.match(generator, /generateDiscoveryFiles/)
   assert.match(generator, /collectRouteLastModified/)
+  // index.html 的 head 也由生成器产出，手工维护会和 SITE.origin 漂移。
+  assert.match(generator, /replaceRouteHead/)
   assert.match(lastModified, /gitNames\(\['diff', '--name-only', '-z', 'HEAD'/)
   assert.match(lastModified, /gitNames\(\['ls-files', '--others', '--exclude-standard', '-z'/)
   assert.match(lastModified, /files\.some\(\(file\) => dirtyFiles\.has\(file\)\)/)
@@ -191,13 +205,11 @@ test('discovery files expose the 47 approved URLs and real summaries', async () 
 
 test('static HTML gives crawlers complete homepage metadata before React runs', async () => {
   const html = await siteSource('index.html')
+  assert.match(html, /<html lang="zh-Hans">/)
   assert.match(html, /<meta name="description" content="[^"]{30,}"/)
   assert.match(html, /<meta name="abstract" content="[^"]{30,}"/)
   assert.match(html, /<meta name="robots" content="index,follow"/)
-  assert.match(html, /<link rel="canonical" href="https:\/\/dp\.betaoi\.cc\/"/)
-  assert.match(html, /hreflang="zh-Hans"/)
-  assert.match(html, /hreflang="zh-CN"/)
-  assert.match(html, /hreflang="x-default"/)
+  assert.match(html, /<link rel="canonical" href="https:\/\/dp\.round1\.cc\/"/)
   for (const property of ['og:title', 'og:description', 'og:url', 'og:type', 'og:site_name']) {
     assert.match(html, new RegExp(`<meta property="${property}" content="[^"]+"`))
   }
@@ -205,33 +217,40 @@ test('static HTML gives crawlers complete homepage metadata before React runs', 
   assert.match(html, /<script[^>]+type="application\/ld\+json">/)
   assert.match(html, /"@graph"/)
   assert.match(html, /"@type":\s*"WebSite"/)
-  assert.match(html, /"url":\s*"https:\/\/dp\.betaoi\.cc\/"/)
+  assert.match(html, /"url":\s*"https:\/\/dp\.round1\.cc\/"/)
   assert.match(html, /og\/dpmaster-social\.jpg/)
+  // GEO：站内检索是真实可深链的，声明成 SearchAction 才对生成式引擎有意义。
+  assert.match(html, /"@type":\s*"SearchAction"/)
+  assert.match(html, /problems\?q=\{search_term_string\}/)
+  assert.match(html, /"isAccessibleForFree":\s*true/)
 })
 
-test('build contracts provide two region outputs, SSR prerendering, hydration, and real 404s', async () => {
-  const [regions, prerender, main, wrangler, postbuild, preview, packageJson] =
+test('build contracts provide one Cloudflare output, SSR prerendering, hydration, and real 404s', async () => {
+  const [buildScript, prerender, main, wrangler, preview, packageJson] =
     await Promise.all([
-      siteSource('scripts/build-regions.mjs'),
+      siteSource('scripts/build.mjs'),
       siteSource('scripts/prerender.mjs'),
       siteSource('src/main.tsx'),
       siteSource('wrangler.jsonc'),
-      siteSource('scripts/postbuild.mjs'),
       siteSource('scripts/preview.mjs'),
       siteSource('package.json').then(JSON.parse),
     ])
 
-  assert.match(regions, /dist\/cloudflare/)
-  assert.match(regions, /dist\/edgeone/)
+  // 只有一个产物目录，也只有一个发布目标。
+  assert.match(buildScript, /const outDir = resolve\('dist'\)/)
+  assert.doesNotMatch(buildScript, /regions/)
   assert.match(prerender, /PRERENDER_PATHS/)
   assert.match(prerender, /404\.html/)
   assert.match(prerender, /renderRouteHead/)
-  assert.match(prerender, /renderStaticWebAnalytics/)
   assert.match(main, /hydrateRoot/)
   assert.match(wrangler, /"not_found_handling":\s*"404-page"/)
-  assert.match(postbuild, /status:\s*404/)
-  assert.match(postbuild, /x-robots-tag/)
+  assert.match(wrangler, /"pattern":\s*"dp\.round1\.cc"/)
+  assert.match(wrangler, /"zone_name":\s*"round1\.cc"/)
+  assert.match(wrangler, /"directory":\s*"\.\/dist\/"/)
   assert.match(preview, /const status = file \? 200 : 404/)
-  assert.equal(packageJson.scripts.build, 'tsc -b && node scripts/build-regions.mjs')
+  assert.match(preview, /resolve\('dist'\)/)
+  assert.equal(packageJson.scripts.build, 'tsc -b && node scripts/build.mjs')
+  assert.equal(packageJson.scripts.release, 'pnpm verify && pnpm deploy:cf')
+  assert.equal(packageJson.scripts['deploy:eo'], undefined)
   assert.match(packageJson.scripts.preview, /scripts\/preview\.mjs/)
 })

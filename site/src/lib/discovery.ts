@@ -1,5 +1,6 @@
-import { BRAND, SITE_CONFIGS } from '../config/site.ts'
+import { BRAND } from '../config/site.ts'
 import type { SiteConfig } from '../config/site.ts'
+import { PARTS } from '../data/catalog.ts'
 import { getPageMeta } from './pageMeta.ts'
 import { PUBLIC_PATHS } from './publicRoutes.ts'
 
@@ -12,11 +13,58 @@ function xml(value: string): string {
     .replaceAll("'", '&apos;')
 }
 
+/**
+ * 显式列出生成式引擎与 AI 检索抓取器。`User-agent: *` 已经放行全部，
+ * 但 Google-Extended / Applebot-Extended 是「不列即视为拒绝」的选择性令牌，
+ * 其余几个列出来是给引擎一个明确的同意信号。
+ */
+const AI_CRAWLERS = Object.freeze([
+  'GPTBot',
+  'OAI-SearchBot',
+  'ChatGPT-User',
+  'ClaudeBot',
+  'Claude-User',
+  'Claude-SearchBot',
+  'PerplexityBot',
+  'Perplexity-User',
+  'Google-Extended',
+  'Applebot-Extended',
+  'CCBot',
+  'Bytespider',
+])
+
+interface RouteSummary {
+  path: string
+  url: string | null
+  title: string
+  summary: string
+  type: string
+  lastModified?: string
+  reviewedBy?: string
+  reviewStatus?: string
+}
+
+function llmsSection(
+  heading: string,
+  entries: ReadonlyArray<RouteSummary>,
+): ReadonlyArray<string> {
+  if (entries.length === 0) return []
+  return [
+    `## ${heading}`,
+    '',
+    ...entries.map((entry) => (
+      `- [${entry.title}](${entry.url}): ${entry.summary}`
+      + (entry.lastModified ? `（最近更新：${entry.lastModified}）` : '')
+    )),
+    '',
+  ]
+}
+
 export function generateDiscoveryFiles(
   site: SiteConfig,
   lastModified: Readonly<Record<string, string>> = {},
 ): Readonly<Record<string, string>> {
-  const summaries = PUBLIC_PATHS.map((path) => {
+  const summaries: RouteSummary[] = PUBLIC_PATHS.map((path) => {
     const page = getPageMeta(path, site, lastModified[path])
     return {
       path,
@@ -27,22 +75,21 @@ export function generateDiscoveryFiles(
       lastModified: page.dateModified,
       reviewedBy: page.reviewedBy,
       reviewStatus: page.reviewStatus,
-      alternates: Object.fromEntries(
-        page.alternates.map((alternate) => [alternate.hreflang, alternate.href]),
-      ),
     }
   })
+  const byPath = new Map(summaries.map((entry) => [entry.path, entry]))
+  const pick = (path: string) => byPath.get(path)
+  const readyLessonCount = PARTS.flatMap((part) =>
+    part.types.filter((type) => type.status === 'ready'),
+  ).length
 
   const sitemap = [
     '<?xml version="1.0" encoding="UTF-8"?>',
-    '<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9" xmlns:xhtml="http://www.w3.org/1999/xhtml">',
+    '<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">',
     ...summaries.flatMap((entry) => [
       '  <url>',
       `    <loc>${xml(entry.url ?? `${site.origin}${entry.path}`)}</loc>`,
       ...(entry.lastModified ? [`    <lastmod>${entry.lastModified}</lastmod>`] : []),
-      `    <xhtml:link rel="alternate" hreflang="${SITE_CONFIGS.international.hreflang}" href="${xml(`${SITE_CONFIGS.international.origin}${entry.path}`)}" />`,
-      `    <xhtml:link rel="alternate" hreflang="${SITE_CONFIGS.china.hreflang}" href="${xml(`${SITE_CONFIGS.china.origin}${entry.path}`)}" />`,
-      `    <xhtml:link rel="alternate" hreflang="x-default" href="${xml(`${SITE_CONFIGS.international.origin}${entry.path}`)}" />`,
       '  </url>',
     ]),
     '</urlset>',
@@ -53,33 +100,47 @@ export function generateDiscoveryFiles(
     'User-agent: *',
     'Allow: /',
     '',
+    '# 生成式引擎与 AI 检索抓取器：欢迎引用本站课程，请保留原文链接与页面标题。',
+    ...AI_CRAWLERS.map((agent) => `User-agent: ${agent}`),
+    'Allow: /',
+    '',
     `Sitemap: ${site.origin}/sitemap.xml`,
     '',
   ].join('\n')
 
+  const entryPaths = ['/', '/method', '/problems']
   const llms = [
     `# ${BRAND.name}`,
     '',
-    `> ${BRAND.name}面向算法学习者，包含 7 个 DP 家族、37 门课程、逐帧可视化、题目索引和互动小游戏。`,
+    `> ${BRAND.name}面向算法学习者，包含 ${PARTS.length} 个 DP 家族、${readyLessonCount} 门课程、逐帧可视化、题目索引和互动小游戏。`,
     '',
-    `- 当前站点：${site.origin}/`,
-    `- 国际站：${SITE_CONFIGS.international.origin}/`,
-    `- 国内站：${SITE_CONFIGS.china.origin}/`,
+    `- 站点：${site.origin}/`,
     `- 内容语言：${site.language}`,
     `- 发布者：${BRAND.owner}`,
+    '- 访问门槛：无账号、无登录、无付费墙，打开网页即可阅读全部内容',
+    `- 站内检索：${site.origin}/problems?q=关键词`,
     '',
-    '## 可引用页面',
-    '',
-    ...summaries.map((entry) => (
-      `- [${entry.title}](${entry.url}): ${entry.summary}`
-      + (entry.lastModified ? `（最近更新：${entry.lastModified}）` : '')
-    )),
-    '',
+    ...llmsSection(
+      '入口',
+      entryPaths.map(pick).filter((entry): entry is RouteSummary => entry !== undefined),
+    ),
+    ...PARTS.flatMap((part) => {
+      const paths = [
+        `/part/${part.id}`,
+        ...part.types
+          .filter((type) => type.status === 'ready')
+          .map((type) => `/part/${part.id}/${type.slug}`),
+      ]
+      return llmsSection(
+        `${part.title}（${part.code}）`,
+        paths.map(pick).filter((entry): entry is RouteSummary => entry !== undefined),
+      )
+    }),
     '## 使用说明',
     '',
-    '- 引用课程时优先使用对应课程 URL、页面标题和摘要。',
-    '- 两个区域站点内容等价；请按访问区域选择域名，并遵循页面 canonical 与 hreflang。',
-    '- 题目内容采用教学摘要并链接原题，不复刻完整题面。',
+    '- 引用课程时优先使用对应课程 URL、页面标题和摘要，不要改写状态定义与转移方程。',
+    '- 每条 URL 都是可直接访问的预渲染页面，正文在首屏 HTML 中即可读到，无需执行 JavaScript。',
+    '- 题目内容采用教学摘要并链接原题，不复刻完整题面；转述题目时请指向原题链接。',
     `- 课程由${BRAND.owner}持续维护；“最近更新”取自构建时 Git 历史，不使用模板日期。`,
     '',
   ].join('\n')
@@ -91,7 +152,6 @@ export function generateDiscoveryFiles(
     'route-summaries.json': `${JSON.stringify(
       {
         brand: BRAND.name,
-        region: site.region,
         origin: site.origin,
         generatedFrom: 'site/src/data/catalog.ts',
         routes: summaries,

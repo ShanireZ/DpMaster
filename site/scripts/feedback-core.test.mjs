@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict'
 import test from 'node:test'
-import * as feedback from '../functions/_feedback-core.js'
+import * as feedback from '../worker/feedback-core.js'
 
 const VALID = {
   kind: '内容错漏',
@@ -8,7 +8,7 @@ const VALID = {
   path: '/part/a/01',
   description: '这里的状态转移公式需要复核',
   contact: '',
-  url: 'https://dp.betaoi.cc/part/a/01',
+  url: 'https://dp.round1.cc/part/a/01',
   viewport: '1280×720',
   screen: '2560×1440 @ 2x',
   ua: 'test-agent',
@@ -19,20 +19,17 @@ const VALID = {
   ts: '2026-07-10T10:00:00.000Z',
 }
 
-function request(body = VALID, headers = {}, eo, url = 'https://dp.betaoi.cc/api/feedback') {
-  const req = new Request(url, {
+function request(body = VALID, headers = {}, url = 'https://dp.round1.cc/api/feedback') {
+  return new Request(url, {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
-      Origin: 'https://dp.betaoi.cc',
+      Origin: 'https://dp.round1.cc',
       'CF-Connecting-IP': '203.0.113.42',
       ...headers,
     },
     body: typeof body === 'string' ? body : JSON.stringify(body),
   })
-  // EdgeOne 运行时把客户端 GEO/IP 挂在 request.eo 上，而不是 HTTP 头。
-  if (eo !== undefined) req.eo = eo
-  return req
 }
 
 function runtime(overrides = {}) {
@@ -81,43 +78,18 @@ test('rejects cross-origin browser requests', async () => {
   assert.equal((await response.json()).error, 'forbidden_origin')
 })
 
-test('accepts the allowlisted .cc origin on the .cn endpoint and echoes CORS headers', async () => {
-  const { value } = runtime({
-    fetch: async () => new Response('{}', { status: 200 }),
-  })
-  // .cc 浏览器跨域直连 .cn：origin 为 dp.betaoi.cc、URL 为 dp.betaoi.cn。
-  const response = await feedback.handleFeedback(
-    request(
-      VALID,
-      { Origin: 'https://dp.betaoi.cc', 'CF-Connecting-IP': '' },
-      { geo: { countryCodeAlpha2: 'CN' }, uuid: 'eo-test', clientIp: '9.9.9.9' },
-      'https://dp.betaoi.cn/api/feedback',
-    ),
-    { FEEDBACK_WEBHOOK_URL: 'https://hooks.example.test' },
-    value,
-  )
-
-  assert.equal(response.status, 200)
-  assert.equal(response.headers.get('Access-Control-Allow-Origin'), 'https://dp.betaoi.cc')
-  assert.match(response.headers.get('Vary') || '', /Origin/)
-})
-
-test('denies non-allowlisted origins on the .cn endpoint without CORS headers', async () => {
+test('denies every cross-site origin: the site is single-origin', async () => {
   const { value } = runtime({
     fetch: async () => new Response('{}', { status: 200 }),
   })
   const response = await feedback.handleFeedback(
-    request(
-      VALID,
-      { Origin: 'https://evil.example' },
-      undefined,
-      'https://dp.betaoi.cn/api/feedback',
-    ),
+    request(VALID, { Origin: 'https://evil.example' }),
     { FEEDBACK_WEBHOOK_URL: 'https://hooks.example.test' },
     value,
   )
 
   assert.equal(response.status, 403)
+  assert.equal((await response.json()).error, 'forbidden_origin')
   assert.equal(response.headers.get('Access-Control-Allow-Origin'), null)
 })
 
@@ -187,7 +159,7 @@ test('forwards the new schema with automatic diagnostics and server-derived IP',
   const text = forwardedBody.text.content
   assert.match(text, /DP大师 · 问题反馈/)
   assert.match(text, /类型：内容错漏/)
-  assert.match(text, /网址：https:\/\/dp\.betaoi\.cc\/part\/a\/01/)
+  assert.match(text, /网址：https:\/\/dp\.round1\.cc\/part\/a\/01/)
   assert.match(text, /浏览器：Google Chrome 140\.0\.0\.0/)
   assert.match(text, /设备：Windows 15\.0/)
   assert.match(text, /视口：1280×720；屏幕：2560×1440 @ 2x/)
@@ -196,17 +168,20 @@ test('forwards the new schema with automatic diagnostics and server-derived IP',
   assert.doesNotMatch(text, /198\.51\.100\.8/)
 })
 
-test('derives IP from EdgeOne request.eo.clientIp, ignoring forgeable headers', async () => {
+test('derives IP from CF-Connecting-IP, ignoring forgeable headers and body fields', async () => {
   const { value, logs } = runtime({
     fetch: async () => new Response('{}', { status: 200 }),
   })
-  // EdgeOne 不注入 IP 头：客户端伪造的 cf-connecting-ip / x-real-ip / x-forwarded-for
-  // 必须被忽略，只信平台属性 request.eo.clientIp。
+  // Cloudflare 保证注入并覆盖 cf-connecting-ip。客户端伪造的 x-real-ip /
+  // x-forwarded-for 和请求体里的 ip 都不得影响展示 IP 与限流键。
   const response = await feedback.handleFeedback(
     request(
       { ...VALID, ip: '198.51.100.8' },
-      { 'CF-Connecting-IP': '6.6.6.6', 'X-Real-Ip': '6.6.6.6', 'X-Forwarded-For': '6.6.6.6' },
-      { geo: { countryCodeAlpha2: 'CN' }, uuid: 'eo-test', clientIp: '203.0.113.99' },
+      {
+        'CF-Connecting-IP': '203.0.113.99',
+        'X-Real-Ip': '6.6.6.6',
+        'X-Forwarded-For': '6.6.6.6',
+      },
     ),
     { FEEDBACK_WEBHOOK_URL: 'https://hooks.example.test' },
     value,
@@ -217,47 +192,35 @@ test('derives IP from EdgeOne request.eo.clientIp, ignoring forgeable headers', 
   assert.notEqual(logs[0].feedback.ip, 'anonymous')
 })
 
-test('falls back to anonymous on EdgeOne when eo.clientIp is absent', async () => {
+test('falls back to anonymous when no platform IP header is present', async () => {
   const { value, logs } = runtime({
     fetch: async () => new Response('{}', { status: 200 }),
   })
-  // eo 存在但 clientIp 缺失，以及 eo 完全不存在，都应回退 anonymous。
-  for (const eo of [{}, undefined]) {
-    const response = await feedback.handleFeedback(
-      request(VALID, { 'CF-Connecting-IP': '', 'X-Real-Ip': '', 'X-Forwarded-For': '' }, eo),
-      { FEEDBACK_WEBHOOK_URL: 'https://hooks.example.test' },
-      value,
-    )
-    assert.equal(response.status, 200)
-  }
-  assert.ok(
-    logs
-      .filter((entry) => entry.event === 'feedback_received')
-      .every((entry) => entry.feedback.ip === 'anonymous'),
+  const response = await feedback.handleFeedback(
+    request(VALID, { 'CF-Connecting-IP': '', 'X-Real-Ip': '', 'X-Forwarded-For': '' }),
+    { FEEDBACK_WEBHOOK_URL: 'https://hooks.example.test' },
+    value,
   )
+  assert.equal(response.status, 200)
+  assert.equal(logs[0].feedback.ip, 'anonymous')
 })
 
-test('rate-limits EdgeOne submitters by eo.clientIp, not a shared anonymous bucket', async () => {
+test('rate-limits submitters by the platform IP, not a shared anonymous bucket', async () => {
   const limiter = feedback.createFeedbackLimiter({ limit: 1, windowMs: 1_800_000 })
-  // 不注入 sourceKey：生产 EdgeOne 路径的限流键就是推导出的 IP。
+  // 不注入 sourceKey：生产路径的限流键就是推导出的 IP。
   const { value } = runtime({ limiter, sourceKey: undefined })
-  const edgeOneRequest = (clientIp) =>
-    request(
-      VALID,
-      { 'CF-Connecting-IP': '', 'X-Real-Ip': '', 'X-Forwarded-For': '' },
-      { geo: { countryCodeAlpha2: 'CN' }, uuid: 'eo-test', clientIp },
-    )
+  const fromIp = (clientIp) => request(VALID, { 'CF-Connecting-IP': clientIp })
 
   // 无 webhook 配置时，限流通过后才会走到 503 delivery_unavailable。
-  const first = await feedback.handleFeedback(edgeOneRequest('203.0.113.1'), {}, value)
+  const first = await feedback.handleFeedback(fromIp('203.0.113.1'), {}, value)
   assert.equal(first.status, 503)
 
   // 同一 IP 的第二次提交命中限流（429），而不是共享 anonymous 桶。
-  const second = await feedback.handleFeedback(edgeOneRequest('203.0.113.1'), {}, value)
+  const second = await feedback.handleFeedback(fromIp('203.0.113.1'), {}, value)
   assert.equal(second.status, 429)
 
   // 不同 IP 拥有独立限流桶，不受影响。
-  const other = await feedback.handleFeedback(edgeOneRequest('203.0.113.2'), {}, value)
+  const other = await feedback.handleFeedback(fromIp('203.0.113.2'), {}, value)
   assert.equal(other.status, 503)
 })
 
@@ -278,8 +241,8 @@ test('accepts a trusted relay request and uses the forwarded client IP', async (
   const { value, logs } = runtime({
     fetch: async () => new Response('{}', { status: 200 }),
   })
-  // .cn 收到 .cc 的可信转发：即使 EdgeOne 平台给了 eo.clientIp（Cloudflare 出口 IP），
-  // 密钥匹配时也必须用转发头里的原始客户端 IP 作为展示 IP 与限流键。
+  // relay 主机侧收到上游 Worker 的可信转发：密钥匹配时必须用转发头里的
+  // 原始客户端 IP 作为展示 IP 与限流键，而不是平台看到的上游出口 IP。
   const response = await feedback.handleFeedback(
     request(
       VALID,
@@ -288,7 +251,6 @@ test('accepts a trusted relay request and uses the forwarded client IP', async (
         'X-Dp-Relay-Secret': 'relay-secret-123',
         'X-Dp-Client-Ip': '203.0.113.77',
       },
-      { geo: { countryCodeAlpha2: 'CN' }, uuid: 'eo-test', clientIp: '9.9.9.9' },
     ),
     { FEEDBACK_WEBHOOK_URL: 'https://hooks.example.test', FEEDBACK_RELAY_SECRET: 'relay-secret-123' },
     value,
@@ -306,14 +268,13 @@ test('ignores relay headers when the shared secret does not match', async () => 
     request(
       VALID,
       { 'X-Dp-Relay-Secret': 'wrong-secret', 'X-Dp-Client-Ip': '203.0.113.77' },
-      { geo: { countryCodeAlpha2: 'CN' }, uuid: 'eo-test', clientIp: '9.9.9.9' },
     ),
     { FEEDBACK_WEBHOOK_URL: 'https://hooks.example.test', FEEDBACK_RELAY_SECRET: 'right-secret' },
     value,
   )
 
   assert.equal(response.status, 200)
-  assert.equal(logs[0].feedback.ip, '9.9.9.9')
+  assert.equal(logs[0].feedback.ip, '203.0.113.42')
 })
 
 test('relays feedback to FEEDBACK_RELAY_URL with secret and client IP', async () => {
@@ -330,7 +291,7 @@ test('relays feedback to FEEDBACK_RELAY_URL with secret and client IP', async ()
   const response = await feedback.handleFeedback(
     request(VALID),
     {
-      FEEDBACK_RELAY_URL: 'https://dp.betaoi.cn/api/feedback',
+      FEEDBACK_RELAY_URL: 'https://relay.example.test/api/feedback',
       FEEDBACK_RELAY_SECRET: 'relay-secret-123',
     },
     value,
@@ -338,7 +299,7 @@ test('relays feedback to FEEDBACK_RELAY_URL with secret and client IP', async ()
 
   assert.equal(response.status, 200)
   assert.equal((await response.json()).requestId, 'relayed-id')
-  assert.equal(relayRequest.url, 'https://dp.betaoi.cn/api/feedback')
+  assert.equal(relayRequest.url, 'https://relay.example.test/api/feedback')
   assert.equal(relayRequest.init.headers['x-dp-relay-secret'], 'relay-secret-123')
   assert.equal(relayRequest.init.headers['x-dp-client-ip'], '203.0.113.42')
   assert.equal(relayRequest.init.body, JSON.stringify(VALID))
@@ -354,7 +315,7 @@ test('propagates 429 from the relay as rate_limited', async () => {
   const response = await feedback.handleFeedback(
     request(VALID),
     {
-      FEEDBACK_RELAY_URL: 'https://dp.betaoi.cn/api/feedback',
+      FEEDBACK_RELAY_URL: 'https://relay.example.test/api/feedback',
       FEEDBACK_RELAY_SECRET: 'relay-secret-123',
     },
     value,
@@ -373,7 +334,7 @@ test('fails visibly when the relay cannot be reached', async () => {
   const response = await feedback.handleFeedback(
     request(VALID),
     {
-      FEEDBACK_RELAY_URL: 'https://dp.betaoi.cn/api/feedback',
+      FEEDBACK_RELAY_URL: 'https://relay.example.test/api/feedback',
       FEEDBACK_RELAY_SECRET: 'relay-secret-123',
     },
     value,
@@ -391,14 +352,13 @@ test('falls back to platform IP when a trusted relay omits the client IP', async
     request(
       VALID,
       { 'X-Dp-Relay-Secret': 'relay-secret-123' },
-      { geo: { countryCodeAlpha2: 'CN' }, uuid: 'eo-test', clientIp: '9.9.9.9' },
     ),
     { FEEDBACK_WEBHOOK_URL: 'https://hooks.example.test', FEEDBACK_RELAY_SECRET: 'relay-secret-123' },
     value,
   )
 
   assert.equal(response.status, 200)
-  assert.equal(logs[0].feedback.ip, '9.9.9.9')
+  assert.equal(logs[0].feedback.ip, '203.0.113.42')
 })
 
 test('rejects a non-literal client IP from a trusted relay', async () => {
@@ -408,15 +368,15 @@ test('rejects a non-literal client IP from a trusted relay', async () => {
   const response = await feedback.handleFeedback(
     request(
       VALID,
-      { 'X-Dp-Relay-Secret': 'relay-secret-123', 'X-Dp-Client-Ip': '9.9.9.9, evil' },
-      { geo: { countryCodeAlpha2: 'CN' }, uuid: 'eo-test', clientIp: '9.9.9.9' },
+      { 'X-Dp-Relay-Secret': 'relay-secret-123', 'X-Dp-Client-Ip': '203.0.113.77, evil' },
     ),
     { FEEDBACK_WEBHOOK_URL: 'https://hooks.example.test', FEEDBACK_RELAY_SECRET: 'relay-secret-123' },
     value,
   )
 
   assert.equal(response.status, 200)
-  assert.equal(logs[0].feedback.ip, '9.9.9.9')
+  // 转发头不是合法 IP 字面量，整条丢弃并回退平台 IP。
+  assert.equal(logs[0].feedback.ip, '203.0.113.42')
 })
 
 test('never forwards a trusted relay request again, even when relay is misconfigured', async () => {
@@ -433,11 +393,10 @@ test('never forwards a trusted relay request again, even when relay is misconfig
     request(
       VALID,
       { 'X-Dp-Relay-Secret': 'relay-secret-123', 'X-Dp-Client-Ip': '203.0.113.77' },
-      { geo: { countryCodeAlpha2: 'CN' }, uuid: 'eo-test', clientIp: '9.9.9.9' },
     ),
     {
       FEEDBACK_WEBHOOK_URL: 'https://hooks.example.test',
-      FEEDBACK_RELAY_URL: 'https://dp.betaoi.cn/api/feedback',
+      FEEDBACK_RELAY_URL: 'https://relay.example.test/api/feedback',
       FEEDBACK_RELAY_SECRET: 'relay-secret-123',
     },
     value,
@@ -454,7 +413,7 @@ test('returns 502 and relays the failure alert through the relay channel', async
     errorLog: (entry) => logs.push(entry),
     fetch: async (url, init) => {
       fetches.push({ url, init })
-      if (url === 'https://dp.betaoi.cn/api/feedback') {
+      if (url === 'https://relay.example.test/api/feedback') {
         relayCalls++
         // 第一次调用是反馈 relay（失败），第二次是告警 relay（成功）。
         return relayCalls === 1
@@ -467,7 +426,7 @@ test('returns 502 and relays the failure alert through the relay channel', async
   const response = await feedback.handleFeedback(
     request(VALID),
     {
-      FEEDBACK_RELAY_URL: 'https://dp.betaoi.cn/api/feedback',
+      FEEDBACK_RELAY_URL: 'https://relay.example.test/api/feedback',
       FEEDBACK_RELAY_SECRET: 'relay-secret-123',
       ALERT_WEBHOOK_URL: 'https://alert.example.test',
     },
@@ -479,7 +438,7 @@ test('returns 502 and relays the failure alert through the relay channel', async
   assert.ok(logs.some((entry) => entry.event === 'feedback_delivery_failed'))
   const alertCall = fetches.find(({ init }) => init.headers['x-dp-relay-kind'] === 'alert')
   assert.ok(alertCall)
-  assert.equal(alertCall.url, 'https://dp.betaoi.cn/api/feedback')
+  assert.equal(alertCall.url, 'https://relay.example.test/api/feedback')
   assert.equal(alertCall.init.headers['x-dp-relay-secret'], 'relay-secret-123')
   assert.match(JSON.parse(alertCall.init.body).text, /反馈通道异常/)
 })
@@ -495,7 +454,7 @@ test('does not call the direct webhook when relay is configured', async () => {
   const response = await feedback.handleFeedback(
     request(VALID),
     {
-      FEEDBACK_RELAY_URL: 'https://dp.betaoi.cn/api/feedback',
+      FEEDBACK_RELAY_URL: 'https://relay.example.test/api/feedback',
       FEEDBACK_RELAY_SECRET: 'relay-secret-123',
       FEEDBACK_WEBHOOK_URL: 'https://hooks.example.test',
     },
@@ -503,7 +462,7 @@ test('does not call the direct webhook when relay is configured', async () => {
   )
 
   assert.equal(response.status, 200)
-  assert.deepEqual(fetches, ['https://dp.betaoi.cn/api/feedback'])
+  assert.deepEqual(fetches, ['https://relay.example.test/api/feedback'])
 })
 
 test('a forged relay IP cannot shift the limiter bucket without the secret', async () => {
@@ -517,7 +476,6 @@ test('a forged relay IP cannot shift the limiter bucket without the secret', asy
     request(
       VALID,
       { 'X-Dp-Relay-Secret': 'wrong-secret', 'X-Dp-Client-Ip': clientIp },
-      { geo: { countryCodeAlpha2: 'CN' }, uuid: 'eo-test', clientIp: '9.9.9.9' },
     )
 
   const first = await feedback.handleFeedback(
@@ -549,7 +507,6 @@ test('forwards a trusted alert relay to the local ALERT_WEBHOOK_URL', async () =
     request(
       { text: 'DP大师反馈通道异常\n编号：abc' },
       { 'X-Dp-Relay-Secret': 'relay-secret-123', 'X-Dp-Relay-Kind': 'alert' },
-      { geo: { countryCodeAlpha2: 'CN' }, uuid: 'eo-test', clientIp: '9.9.9.9' },
     ),
     {
       FEEDBACK_WEBHOOK_URL: 'https://hooks.example.test',
@@ -574,7 +531,6 @@ test('rejects an alert relay when no alert channel is configured', async () => {
     request(
       { text: 'DP大师前端告警' },
       { 'X-Dp-Relay-Secret': 'relay-secret-123', 'X-Dp-Relay-Kind': 'alert' },
-      { geo: { countryCodeAlpha2: 'CN' }, uuid: 'eo-test', clientIp: '9.9.9.9' },
     ),
     {
       FEEDBACK_WEBHOOK_URL: 'https://hooks.example.test',
@@ -595,7 +551,6 @@ test('falls through to feedback validation when the alert relay secret is wrong'
     request(
       { text: 'DP大师前端告警' },
       { 'X-Dp-Relay-Secret': 'wrong-secret', 'X-Dp-Relay-Kind': 'alert' },
-      { geo: { countryCodeAlpha2: 'CN' }, uuid: 'eo-test', clientIp: '9.9.9.9' },
     ),
     {
       FEEDBACK_WEBHOOK_URL: 'https://hooks.example.test',
@@ -623,11 +578,10 @@ test('never forwards an alert relay again, even when relay is misconfigured', as
     request(
       { text: 'DP大师前端告警' },
       { 'X-Dp-Relay-Secret': 'relay-secret-123', 'X-Dp-Relay-Kind': 'alert' },
-      { geo: { countryCodeAlpha2: 'CN' }, uuid: 'eo-test', clientIp: '9.9.9.9' },
     ),
     {
       FEEDBACK_WEBHOOK_URL: 'https://hooks.example.test',
-      FEEDBACK_RELAY_URL: 'https://dp.betaoi.cn/api/feedback',
+      FEEDBACK_RELAY_URL: 'https://relay.example.test/api/feedback',
       FEEDBACK_RELAY_SECRET: 'relay-secret-123',
       ALERT_WEBHOOK_URL: 'https://alert.example.test',
     },
