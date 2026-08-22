@@ -253,57 +253,28 @@ a.nav-type.active::before { opacity: 1; transform: scaleY(1); }
     visibility 0s linear;
 }
 
-.sidebar-records {
+.sidebar-footer {
   display: grid;
-  gap: 7px;
+  gap: 4px;
+  justify-items: center;
   margin-top: auto;
-  padding: var(--sp-5) var(--sp-3) var(--sp-1);
+  padding: var(--sp-5) var(--sp-3) var(--sp-3);
   color: var(--text-3);
   font-size: 11px;
   line-height: 1.4;
   text-align: center;
+  white-space: nowrap;
   opacity: 1;
   visibility: visible;
   transition:
     opacity 0.14s var(--ease) 0.14s,
     visibility 0s linear;
 }
-.sidebar-records__intro {
-  display: grid;
-  gap: 4px;
-  justify-items: center;
-  margin-bottom: var(--sp-2);
-  white-space: nowrap;
-}
-.sidebar-records__motto { color: var(--text-2); }
-.sidebar-records__copyright {
+.sidebar-footer__motto { color: var(--text-2); }
+.sidebar-footer__copyright {
   font-family: var(--font-display);
   font-size: 9px;
   letter-spacing: -0.02em;
-}
-.sidebar-record {
-  display: flex;
-  align-items: center;
-  gap: var(--sp-2);
-  justify-content: center;
-  min-width: 0;
-  color: inherit;
-  white-space: nowrap;
-}
-.sidebar-record__icon {
-  width: 18px;
-  height: 18px;
-  flex: none;
-  object-fit: contain;
-}
-.sidebar-record--icp {
-  transition: color var(--t-fast);
-}
-.sidebar-record--icp:hover { color: var(--text-2); }
-.sidebar-record--icp:focus-visible {
-  color: var(--text-1);
-  outline: 2px solid var(--accent-2);
-  outline-offset: 3px;
 }
 
 .sidebar-collapse {
@@ -506,7 +477,7 @@ a.nav-type.active::before { opacity: 1; transform: scaleY(1); }
 
   .shell--sidebar-collapsed .nav-part__title,
   .shell--sidebar-collapsed .nav-part::after,
-  .shell--sidebar-collapsed .sidebar-records {
+  .shell--sidebar-collapsed .sidebar-footer {
     opacity: 0;
     visibility: hidden;
     pointer-events: none;
