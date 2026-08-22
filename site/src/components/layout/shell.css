@@ -256,14 +256,17 @@ a.nav-type.active::before { opacity: 1; transform: scaleY(1); }
 .sidebar-footer {
   display: grid;
   gap: 4px;
-  justify-items: center;
   margin-top: auto;
   padding: var(--sp-5) var(--sp-3) var(--sp-3);
   color: var(--text-3);
   font-size: 11px;
   line-height: 1.4;
   text-align: center;
-  white-space: nowrap;
+  overflow-wrap: anywhere;
+  /* 署名文案会变长（侧栏可用宽只有 188px）。这里不能用 nowrap：一旦子项
+     超出轨道，grid 的 justify-items: center 会退化成起始对齐，结果既撑破
+     侧栏又看着没居中。让它换行、交给 text-align 居中，并给不可断的长串
+     兜底。 */
   opacity: 1;
   visibility: visible;
   transition:
@@ -275,6 +278,8 @@ a.nav-type.active::before { opacity: 1; transform: scaleY(1); }
   font-family: var(--font-display);
   font-size: 9px;
   letter-spacing: -0.02em;
+  /* 两行短文案，均分断行比默认的贪心断行整齐。 */
+  text-wrap: balance;
 }
 
 .sidebar-collapse {

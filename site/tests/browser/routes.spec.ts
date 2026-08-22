@@ -601,3 +601,76 @@ test('first client-side route change keeps the application shell mounted', async
   expect(await page.locator('html').getAttribute('data-shell-was-missing')).toBeNull()
   expect(await page.locator('html').getAttribute('data-route-content-overlapped')).toBeNull()
 })
+
+test('sidebar footer text stays inside the rail and centered at every sidebar width', async ({
+  page,
+}) => {
+  // 回归防线：版权署名从「AzureL蔚澜算法」加长为「Round1 & AzureL蔚澜算法」后，
+  // 页脚的 white-space: nowrap 让文字撑破了侧栏。
+  // ★ 必须量文字行盒而不是元素盒：overflow-wrap: anywhere 会把 fit-content
+  // 收敛到轨道宽，元素盒看着没溢出，溢出的是里面的文字。
+  // ★ 也必须覆盖最窄的桌面宽度：宽视口下侧栏更宽，装得下就测不出来。
+  const measure = () =>
+    page.evaluate(() => {
+      const footer = document.querySelector('.sidebar-footer')
+      if (!footer) throw new Error('sidebar footer is missing')
+      const style = getComputedStyle(footer)
+      const box = footer.getBoundingClientRect()
+      const left = box.left + Number.parseFloat(style.paddingLeft)
+      const right = box.right - Number.parseFloat(style.paddingRight)
+
+      const lines: Array<{ overflowLeft: number; overflowRight: number; centerOffset: number }> = []
+      for (const child of footer.children) {
+        const range = document.createRange()
+        range.selectNodeContents(child)
+        const byLine = new Map<number, { left: number; right: number }>()
+        for (const rect of range.getClientRects()) {
+          const key = Math.round(rect.top)
+          const seen = byLine.get(key)
+          byLine.set(key, {
+            left: Math.min(seen?.left ?? rect.left, rect.left),
+            right: Math.max(seen?.right ?? rect.right, rect.right),
+          })
+        }
+        for (const line of byLine.values()) {
+          lines.push({
+            overflowLeft: left - line.left,
+            overflowRight: line.right - right,
+            centerOffset: (line.left + line.right) / 2 - (left + right) / 2,
+          })
+        }
+      }
+
+      const inner = document.querySelector('.sidebar-inner')
+      return {
+        lines,
+        railOverflow: inner ? inner.scrollWidth - inner.clientWidth : 0,
+        documentOverflow:
+          document.documentElement.scrollWidth - document.documentElement.clientWidth,
+      }
+    })
+
+  const assertContained = (result: Awaited<ReturnType<typeof measure>>, label: string) => {
+    expect(result.lines.length, label).toBeGreaterThan(0)
+    for (const line of result.lines) {
+      expect(line.overflowLeft, label).toBeLessThanOrEqual(0.5)
+      expect(line.overflowRight, label).toBeLessThanOrEqual(0.5)
+      expect(Math.abs(line.centerOffset), label).toBeLessThanOrEqual(1)
+    }
+    expect(result.railOverflow, label).toBeLessThanOrEqual(0)
+    expect(result.documentOverflow, label).toBeLessThanOrEqual(0)
+  }
+
+  for (const width of [1025, 1280, 1440]) {
+    await page.setViewportSize({ width, height: 900 })
+    await page.goto('/')
+    await expect(page.locator('.sidebar-footer')).toBeVisible()
+    assertContained(await measure(), `desktop ${width}px`)
+  }
+
+  await page.setViewportSize({ width: 390, height: 844 })
+  await page.goto('/')
+  await page.getByRole('button', { expanded: false }).first().click()
+  await expect(page.locator('.sidebar-footer')).toBeVisible()
+  assertContained(await measure(), 'mobile drawer')
+})
