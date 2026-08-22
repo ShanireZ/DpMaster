@@ -313,7 +313,32 @@ Invoke-WebRequest `
 
 ★ **这条链路当前是断的，需要先定方案。**
 
-Cloudflare 数据中心出口到钉钉 `oapi.dingtalk.com` 的 TLS 握手被系统性打断，稳定 525（2026-08 多轮实测复现；普通海外节点到钉钉正常）。旧架构靠「浏览器跨域直连国内站 → 国内站转发进钉钉」绕开，国内站退役后这条路没了，而 Worker 直连钉钉本来就不通。
+Cloudflare 数据中心出口到钉钉 `oapi.dingtalk.com` 的 TLS 握手被系统性打断，稳定 525（2026-08 多轮实测复现；普通海外节点到钉钉正常）。旧架构靠「浏览器跨域直连国内站 → 国内站转发进钉钉」绕开，国内站退役后这条路没了。
+
+### 2026-08-22 出口探针实测结论
+
+★ **`connect()` 能到钉钉，`fetch()` 不能。方案已定：Worker 内直发，不需要 relay 主机、不需要换渠道、不需要 Tunnel。**
+
+| 目标 | `fetch()` | `connect()` |
+| --- | --- | --- |
+| `oapi.dingtalk.com` | 525 | **200 OK** |
+| `api.dingtalk.com` | 525 | **200 OK** |
+| `qyapi.weixin.qq.com` | 525 | 403（应用层回的） |
+| `open.feishu.cn` | 525 | 404 |
+| `open.larksuite.com` | 525 | 404 |
+| `api.telegram.org` | 302 | 302 |
+| `www.cloudflare.com`（自检） | 200 | 拒绝——文档禁止连 CF 自己的 IP 段 |
+
+POST 往返（`{"mode":"post"}`，不带 token，不投递任何消息）同样成功：
+
+- `oapi.dingtalk.com/robot/send` → `HTTP/1.1 200`，`application/json`，
+  body `{"errcode":40035,"errmsg":"缺少参数 access_token"}`
+- `api.dingtalk.com/v1.0/robot/oToMessages/batchSend` → `HTTP/1.1 400`，
+  body `{"code":"AuthenticationFailed.MissingParameter",...}`
+
+两条都是钉钉**应用层**的回复：请求体发过去了、被解析了，只因为缺凭证才拒绝。响应均为 `Content-Length` 定长，未出现 chunked（解析器两种都支持）。
+
+★ **原来「Cloudflare 出口到中国境内基础设施不通」这个说法是错的**：海外的 `open.larksuite.com` 同样 525，而 `api.telegram.org` 正常。这不是地理问题，是特定一批对端拒绝 Cloudflare 反代出口；`connect()` 换了出口前缀就通了（官方文档：TCP 出站的出口前缀不在 Cloudflare 公开 IP 段内）。
 
 代码侧的 relay 协议（`FEEDBACK_RELAY_URL` + `x-dp-relay-secret` / `x-dp-client-ip` / `x-dp-relay-kind: alert`）完整保留且有测试覆盖，只是没有主机指向它。`site/worker/feedback-core.js` 既是 Worker 处理器，也是 relay 主机侧的参考实现。
 
