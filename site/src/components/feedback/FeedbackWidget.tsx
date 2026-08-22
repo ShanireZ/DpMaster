@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from 'react'
 import { useLocation } from 'react-router-dom'
 import { MessageSquarePlus, X, Send, Check, Loader2 } from 'lucide-react'
+import { platformLabel } from './platform.ts'
 import { getPart } from '../../data/catalog'
 import { SITE } from '../../config/site.ts'
 import { trackAnalyticsEvent } from '../../analytics/index.ts'
@@ -117,7 +118,7 @@ async function collectDiagnostics(): Promise<Diagnostics> {
   const bitness = String(highEntropy.bitness || '').trim()
   const model = String(highEntropy.model || '').trim()
   const device = [
-    platform && `${platform}${platformVersion ? ` ${platformVersion}` : ''}`,
+    platformLabel(platform, platformVersion),
     architecture && `${architecture}${bitness ? ` ${bitness} 位` : ''}`,
     model,
     uaData?.mobile === true ? '移动设备' : uaData?.mobile === false ? '桌面设备' : '',

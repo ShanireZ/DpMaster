@@ -50,6 +50,40 @@ function sourceFromRequest(request) {
   return forwarded || 'anonymous'
 }
 
+/**
+ * 从 Cloudflare 的 `request.cf` 取粗粒度地理位置，用来给反馈里的 IP 加注解。
+ *
+ * 用平台字段而不是第三方 IP 库：`request.cf` 由 Cloudflare 边缘填充，客户端
+ * 伪造不了，也不需要额外出站请求。国家码经 Intl.DisplayNames 转成中文；
+ * 城市与一级行政区是 Cloudflare 给的英文原文，不做翻译（没有可信的映射表）。
+ *
+ * ★ 经 relay 转发时必须返回空：那时 `request.cf` 描述的是 relay 主机的位置，
+ * 不是访客的，标上去就是错的。
+ */
+function geoFromRequest(request, { relayed = false } = {}) {
+  if (relayed) return ''
+  const cf = request.cf
+  if (!cf || typeof cf !== 'object') return ''
+  const parts = []
+  const country = String(cf.country || '').trim()
+  if (country) {
+    let label = country
+    try {
+      label = new Intl.DisplayNames(['zh'], { type: 'region' }).of(country) || country
+    } catch {
+      // 运行时没有对应 ICU 数据时退回两位国家码。
+    }
+    parts.push(label)
+  }
+  const region = String(cf.region || '').trim()
+  const city = String(cf.city || '').trim()
+  // region 与 city 常常重复（例如「Shanghai / Shanghai」），去重后更好读。
+  for (const value of [region, city]) {
+    if (value && !parts.includes(value)) parts.push(value)
+  }
+  return clip(parts.join(' · '), 120)
+}
+
 const RELAY_SECRET_HEADER = 'x-dp-relay-secret'
 const RELAY_CLIENT_IP_HEADER = 'x-dp-client-ip'
 const RELAY_KIND_HEADER = 'x-dp-relay-kind'
@@ -276,7 +310,7 @@ function buildText(data, id) {
     data.viewport && `视口：${clip(data.viewport, 40)}；屏幕：${clip(data.screen, 80)}`,
     data.locale && `区域：${clip(data.locale, 80)}；时区：${clip(data.timezone, 120)}`,
     data.ua && `UA：${clip(data.ua, 300)}`,
-    `IP：${clip(data.ip, 80)}`,
+    `IP：${clip(data.ip, 80)}${data.geo ? `（${data.geo}）` : ''}`,
     `时间：${clip(data.ts, 40)}`,
   ]
     .filter(Boolean)
@@ -345,7 +379,9 @@ async function handleFeedbackCore(request, env, runtime) {
   const kind = env.FEEDBACK_WEBHOOK_KIND || 'wecom'
   const log = runtime.log || defaultLog
   const errorLog = runtime.errorLog || defaultErrorLog
-  const feedback = { ...normalized.value, ip }
+  // 地区注解跟着 IP 走：经 relay 转发时 request.cf 描述的是 relay 主机，必须省略。
+  const geo = runtime.geo ? runtime.geo(request) : geoFromRequest(request, { relayed: Boolean(relay) })
+  const feedback = { ...normalized.value, ip, ...(geo ? { geo } : {}) }
   const receipt = {
     event: 'feedback_received',
     requestId: id,

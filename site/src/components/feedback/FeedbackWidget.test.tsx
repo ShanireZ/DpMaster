@@ -2,6 +2,7 @@ import { describe, it, expect, vi, afterEach } from 'vitest'
 import { render, screen, fireEvent, waitFor } from '@testing-library/react'
 import { MemoryRouter } from 'react-router-dom'
 import FeedbackWidget from './FeedbackWidget.tsx'
+import { platformLabel } from './platform.ts'
 
 function renderWidget(path = '/') {
   return render(
@@ -105,5 +106,37 @@ describe('<FeedbackWidget>', () => {
     expect(screen.queryByRole('checkbox')).toBeNull()
     expect(screen.queryByText(/当前页面/)).toBeNull()
     expect(screen.queryByText(/复现步骤/)).toBeNull()
+  })
+})
+
+describe('platformLabel', () => {
+  // 映射表出处：learn.microsoft.com/microsoft-edge/web-platform/how-to-detect-win11
+  // （2026-06 版）—— Windows 的 platformVersion 是 UniversalApiContract 版本，
+  // 不是营销版本号，所以 Windows 11 会报「15.0」这种数字。
+  it('把 Windows 的 UniversalApiContract 版本翻成营销版本名', () => {
+    expect(platformLabel('Windows', '15.0.0')).toBe('Windows 11')
+    expect(platformLabel('Windows', '13.0.0')).toBe('Windows 11')
+    expect(platformLabel('Windows', '10.0.0')).toBe('Windows 10')
+    expect(platformLabel('Windows', '1.0.0')).toBe('Windows 10')
+    expect(platformLabel('Windows', '0.0.0')).toBe('Windows 7/8/8.1')
+  })
+
+  it('详表未列出的 11 / 12 跟随官方示例归入 Windows 10', () => {
+    // 微软的示例代码是 >=13 → Win11，>0 → Win10；详表里 11、12 没列，
+    // 但不能因此自创第三种判法。
+    expect(platformLabel('Windows', '11.0.0')).toBe('Windows 10')
+    expect(platformLabel('Windows', '12.0.0')).toBe('Windows 10')
+  })
+
+  it('非 Windows 平台的 platformVersion 本身就是真实系统版本，原样展示', () => {
+    expect(platformLabel('macOS', '14.5.0')).toBe('macOS 14.5.0')
+    expect(platformLabel('Android', '15.0.0')).toBe('Android 15.0.0')
+    expect(platformLabel('Linux', '')).toBe('Linux')
+  })
+
+  it('缺失或不可解析的输入不产生垃圾文本', () => {
+    expect(platformLabel('', '15.0.0')).toBe('')
+    expect(platformLabel('Windows', '')).toBe('Windows')
+    expect(platformLabel('Windows', 'unknown')).toBe('Windows')
   })
 })

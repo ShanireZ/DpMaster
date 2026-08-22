@@ -30,7 +30,7 @@ Metadata is capped at eight scalar fields. The browser automatically adds `build
 
 The UI collects feedback separately. Page name/path and feedback copy are sent only after explicit submission. Contact is optional. Full URL, user agent, and viewport are opt-in diagnostics. A successful receipt means the configured webhook confirmed delivery; a missing or failed webhook returns 503/502 and the UI offers a copy fallback.
 
-The receiver never trusts a client-supplied IP. On Cloudflare it uses the platform-injected `cf-connecting-ip` header, which the platform guarantees and overwrites. `x-real-ip` / `x-forwarded-for` are fallbacks only for a non-Cloudflare relay host, and the rate limiter keys on the same derived IP. A relay may override the IP with `x-dp-client-ip`, but only when `x-dp-relay-secret` matches in constant time and the value is a bare IPv4/IPv6 literal.
+The receiver never trusts a client-supplied IP. On Cloudflare it uses the platform-injected `cf-connecting-ip` header, which the platform guarantees and overwrites. The delivered message annotates that IP with a coarse region (country name plus first-level region and city) taken from `request.cf`, for the same reason: it is edge-supplied and cannot be forged. ★ A relayed submission drops the annotation — `request.cf` would then describe the relay host, not the visitor. `x-real-ip` / `x-forwarded-for` are fallbacks only for a non-Cloudflare relay host, and the rate limiter keys on the same derived IP. A relay may override the IP with `x-dp-client-ip`, but only when `x-dp-relay-secret` matches in constant time and the value is a bare IPv4/IPv6 literal.
 
 # Outbound Delivery Is An Open Problem
 
