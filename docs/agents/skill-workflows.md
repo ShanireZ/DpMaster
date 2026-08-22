@@ -48,7 +48,7 @@ Superpowers is a process-skill suite. Its rules guide how work is approached; th
 Modern Web Guidance is a mandatory research step for modern browser-facing implementation, not a general-purpose engineering skill.
 
 - Use it at the start of every HTML, CSS, client-side JavaScript, frontend component, layout, motion, browser API, or web-performance task.
-- Search first with an action-oriented query, then retrieve the relevant guide IDs. On Windows, use `npx.cmd`; read the installed skill for the current `--skill-version` value rather than copying a stale version from this file.
+- Search first with an action-oriented query, then retrieve the relevant guide IDs. Run the CLI through pnpm — `pnpm dlx modern-web-guidance@latest search "<query>" --skill-version <value>` — because the toolchain contract rules out the upstream skill's own package runner, which also needs a Windows-specific suffix. Read the installed skill for the current `--skill-version` value rather than copying a stale version from this file.
 - If search results are vague or low-confidence, list the available guides before choosing one.
 - Treat Baseline Widely Available features as safe by default. For newer features, follow the retrieved fallback guidance unless the project declares a stricter or more specific browser-support contract.
 - Do not invoke it for backend routes, databases, CI/CD, Docker, Git, or ordinary local scripts.
