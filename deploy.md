@@ -248,6 +248,30 @@ wrangler tail dpmaster
 
 `robots.txt` 除 `User-agent: *` 外，还显式声明了一组生成式引擎抓取器（`GPTBot`、`OAI-SearchBot`、`ChatGPT-User`、`ClaudeBot`、`Claude-User`、`Claude-SearchBot`、`PerplexityBot`、`Perplexity-User`、`Google-Extended`、`Applebot-Extended`、`CCBot`、`Bytespider`）并放行。其中 `Google-Extended` 与 `Applebot-Extended` 是「不列即视为拒绝」的选择性令牌，删掉它们等于收回授权。
 
+★ **上线实测发现：Cloudflare 在边缘往 robots.txt 里注入了一段托管内容，与仓库这份直接冲突，尚未解决。**
+
+`curl https://dp.round1.cc/robots.txt` 返回的正文里，仓库那份之前多出一整段 `# BEGIN Cloudflare Managed content`：
+
+```
+User-agent: *
+Content-Signal: search=yes,ai-train=no,use=reference
+Allow: /
+
+User-agent: GPTBot
+Disallow: /
+（ClaudeBot / CCBot / Google-Extended / Applebot-Extended / Bytespider /
+  Amazonbot / meta-externalagent 同样 Disallow）
+```
+
+也就是说 **Cloudflare 的 AI Crawl Control 正在 `Disallow` 仓库这份明确 `Allow` 的同一批抓取器**，并且用 `Content-Signal` 声明了 `ai-train=no`。同一个 user-agent 出现在两个组里，各家抓取器的合并与优先级实现并不一致，靠「后面的 Allow 覆盖前面的 Disallow」是不可靠的。
+
+这不是代码问题，改不了——托管段由 Cloudflare Dashboard 的 AI Crawl Control 注入。需要 owner 在两种立场里选一个：
+
+1. **欢迎生成式引擎**（当前仓库这份的立场）：到 Cloudflare Dashboard 关掉该域的 AI Crawl Control / 托管 robots.txt，让仓库这份单独生效。
+2. **拒绝 AI 训练**（当前边缘这份的立场）：保留 Dashboard 设置，并把仓库 `src/lib/discovery.ts` 里的 `AI_CRAWLERS` 放行组删掉，避免两边互相打脸。
+
+在选定之前，本站对生成式引擎的实际策略是**未定义的**。
+
 同时确认以下文件可匿名访问且返回 200：
 
 - `/robots.txt`
@@ -260,6 +284,7 @@ wrangler tail dpmaster
 前端只调用统一的 `trackAnalyticsEvent`，事件白名单见 `site/src/analytics/index.ts`。
 
 - Cloudflare Web Analytics / RUM 由 Cloudflare 代理**自动注入**，Rocket Loader 保持关闭。源码与预渲染产物都不得再加手工 beacon；`pnpm check:html` 会在构建后拒绝任何一份带 beacon 的 HTML。
+  ★ **上线实测：`dp.round1.cc` 上还没有自动注入。** `curl https://dp.round1.cc/ | grep cloudflareinsights` 无输出。自动注入是**按主机名**在 Dashboard 里开的，旧域名上的开关不会跟着域名迁移过来。需要到 Cloudflare Dashboard → Web Analytics 为 `dp.round1.cc` 新建/启用一次，然后重新 `curl` 确认 HTML 里出现 `cloudflareinsights` 才算恢复。在此之前只有第一方 `/api/analytics` 事件在记录，没有独立的 RUM 曲线。
 - 站内路由、学习与反馈漏斗事件发送到同源 `/api/analytics`，成功返回 204，由 Worker 写入 `dpmaster` Analytics Engine 数据集。
 - 接收器拒绝跨站请求、未知事件、未知 Provider、非 JSON 和过大请求；只记录裁剪后的路径、标题及少量原始类型元数据，不读取反馈内容、联系方式、Cookie 或账号标识。
 - 统计失败由客户端静默降级，不影响课程、小游戏、导航或反馈提交。
@@ -389,7 +414,7 @@ curl.exe -s -X POST https://dp.round1.cc/api/_diag/egress -H "x-dp-diag-secret: 
 | `/api/feedback` 返回 HTML              | 请求方法是否是 `POST`，URL 是否真的指向 `/api/feedback`，Worker 是否是最新版本。                    |
 | 未知路径返回 200                       | `not_found_handling` 是否仍是 `404-page`，`dist/404.html` 是否存在。                                |
 | `/api/analytics` 返回 403              | 请求带了非本站 `Origin`；统计端点只允许同源浏览器请求。                                            |
-| `/api/_diag/egress` 返回 404           | 未配 `EGRESS_DIAG_SECRET`，或 `x-dp-diag-secret` 不匹配。这是设计行为：不泄露端点是否存在。         |
+| `/api/_diag/egress` 返回 405 / 404     | 未配 `EGRESS_DIAG_SECRET`，或 `x-dp-diag-secret` 不匹配。请求落回静态资源，与任意未知路径完全一致（POST → 405，GET → 404，响应体皆空）——这是设计行为，不泄露端点是否存在。 |
 | 页面 canonical 指向旧域名              | 发布的是迁移前的旧产物；重新 `pnpm build`，`pnpm check:seo` 会拒绝残留旧域名。                      |
 | `Failed to fetch dynamically imported module` / `Unable to preload CSS` | 先确认 HTML 为 `max-age=0` / `no-cache` 且报错的哈希资源返回正确的 JS/CSS；客户端会按 build + path 自动恢复刷新一次，重复告警说明资源仍不可用，需查 Worker 静态资源请求日志。 |
 | 端点返回 502 / 503                   | 检查生产环境的 `FEEDBACK_WEBHOOK_URL`，再按 `requestId` 查 `feedback_delivery_failed` / `feedback_delivery_unavailable`。 |

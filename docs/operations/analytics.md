@@ -52,7 +52,7 @@ Whichever path wins, record the decision here and in `deploy.md`, and delete the
 
 `POST /api/_diag/egress` measures both egress paths (`fetch()` and `connect()`) against DingTalk's two ingresses, WeCom, Feishu, Lark international, Telegram, and a Cloudflare control host. Every target is probed with a side-effect-free `GET /` or `HEAD /`; no message is ever sent.
 
-The endpoint does not exist until `EGRESS_DIAG_SECRET` is set on the Worker, and an unauthenticated or mis-keyed request falls through to static assets and returns an ordinary 404 — the endpoint's existence is not observable. Unset the variable once the transport decision is made.
+The endpoint does not exist until `EGRESS_DIAG_SECRET` is set on the Worker. An unauthenticated or mis-keyed request falls through to static assets and answers exactly like any unknown path — POST gets 405 (Workers Static Assets rejects non-GET/HEAD), GET gets 404, both with an empty body — so the endpoint's existence is not observable. Verified against production 2026-08-22. Unset the variable once the transport decision is made.
 
 ```bash
 curl.exe -s -X POST https://dp.round1.cc/api/_diag/egress -H "x-dp-diag-secret: THE_SECRET"
@@ -100,7 +100,7 @@ GROUP BY path, metric
 ORDER BY metric, p75 DESC
 ```
 
-Keep Cloudflare Web Analytics enabled for independent request/page-view trends; use the first-party dataset for route, feedback, search, outbound-problem, and RUM funnels. The deployment relies exclusively on Cloudflare automatic injection (Rocket Loader stays off); neither the source nor the prerender output may add a second beacon, and `pnpm check:html` fails the build if one appears in any HTML document. Course visits are represented only by ordinary route page views; the site does not record lesson-start, lesson-completion, or local learning-progress state.
+★ As of 2026-08-22 automatic injection is **not yet enabled for `dp.round1.cc`** — the toggle is per-hostname and did not follow the domain migration. Until it is switched on in the dashboard there is no independent RUM curve, only the first-party dataset below. Keep Cloudflare Web Analytics enabled for independent request/page-view trends; use the first-party dataset for route, feedback, search, outbound-problem, and RUM funnels. The deployment relies exclusively on Cloudflare automatic injection (Rocket Loader stays off); neither the source nor the prerender output may add a second beacon, and `pnpm check:html` fails the build if one appears in any HTML document. Course visits are represented only by ordinary route page views; the site does not record lesson-start, lesson-completion, or local learning-progress state.
 
 # Alerts And Secrets
 
