@@ -27,17 +27,43 @@ function useHeroTheme() {
     return () => observer.disconnect()
   }, [])
 
-  useEffect(() => {
-    const alternate = new Image()
-    alternate.src = theme === 'light'
-      ? '/og/dpmaster-social.jpg'
-      : '/og/dpmaster-social-light.jpg'
-    return () => {
-      alternate.src = ''
-    }
-  }, [theme])
-
   return theme
+}
+
+/**
+ * 首屏 hero 底图。它是 LCP 元素，所以刻意用 `<picture>` 而不是 CSS 背景 ——
+ * `image-set()` 引用的图片不会被预加载扫描器发现，用在 LCP 候选上反而会拖慢
+ * 加载。格式按「最优先在前」排：AVIF → WebP → JPEG，浏览器命中第一个支持的。
+ *
+ * ★ 两套主题是两份不同的美术处理（RMSE 0.87），不能靠滤镜合并成一张。
+ * 预渲染产物固定输出 dark 版；light 主题的访客水合后会换成 light 版，
+ * 但 index.html 的内联主题脚本已经按真实主题注入了 preload，届时直接命中缓存。
+ */
+function HeroImage({ theme }: { theme: HeroTheme }) {
+  const base = theme === 'light' ? '/og/dpmaster-social-light' : '/og/dpmaster-social'
+  return (
+    <picture>
+      <source
+        type="image/avif"
+        srcSet={`${base}-760.avif 760w, ${base}.avif 1200w`}
+        sizes="100vw"
+      />
+      <source
+        type="image/webp"
+        srcSet={`${base}-760.webp 760w, ${base}.webp 1200w`}
+        sizes="100vw"
+      />
+      <img
+        className="home-hero__image"
+        src={`${base}.jpg`}
+        alt=""
+        width="1200"
+        height="630"
+        fetchPriority="high"
+        decoding="async"
+      />
+    </picture>
+  )
 }
 
 export default function Home() {
@@ -50,16 +76,7 @@ export default function Home() {
       <HomeMotionController rootRef={rootRef} />
 
       <section className="home-hero" aria-labelledby="home-hero-title">
-        <img
-          className="home-hero__image"
-          src={heroTheme === 'light'
-            ? '/og/dpmaster-social-light.jpg'
-            : '/og/dpmaster-social.jpg'}
-          alt=""
-          width="1200"
-          height="630"
-          fetchPriority="high"
-        />
+        <HeroImage theme={heroTheme} />
         <div className="home-hero__shade" aria-hidden="true" />
         <div className="home-hero__frame">
           <div className="home-hero__content">
