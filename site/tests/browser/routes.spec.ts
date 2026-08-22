@@ -1,6 +1,6 @@
 import { expect, test, type Page, type Response } from '@playwright/test'
 
-const origin = 'https://dp.betaoi.cc'
+const origin = 'https://dp.round1.cc'
 
 interface RouteExpectation {
   path: string
@@ -89,19 +89,8 @@ async function assertRoute(
     'href',
     `${origin}${route.path}`,
   )
-  await expect(page.locator('link[rel="alternate"]')).toHaveCount(3)
-  await expect(page.locator('link[hreflang="zh-Hans"]')).toHaveAttribute(
-    'href',
-    `${origin}${route.path}`,
-  )
-  await expect(page.locator('link[hreflang="zh-CN"]')).toHaveAttribute(
-    'href',
-    `https://dp.betaoi.cn${route.path}`,
-  )
-  await expect(page.locator('link[hreflang="x-default"]')).toHaveAttribute(
-    'href',
-    `${origin}${route.path}`,
-  )
+  // 单域站点没有语言备选：一条 alternate 都不该出现。
+  await expect(page.locator('link[rel="alternate"]')).toHaveCount(0)
   await expect(page.locator('meta[property="og:type"]')).toHaveAttribute(
     'content',
     route.ogType,
@@ -165,7 +154,7 @@ test('direct lesson response contains prerendered HTML before JavaScript hydrati
   expect(html).not.toContain('<div id="root"></div>')
   expect(html).toContain('<h1')
   expect(html).toContain('01 背包')
-  expect(html).toContain('<link rel="canonical" href="https://dp.betaoi.cc/part/a/01"')
+  expect(html).toContain('<link rel="canonical" href="https://dp.round1.cc/part/a/01"')
   expect(html).toContain('"@type":["Course","LearningResource","TechArticle"]')
   expect(html).toContain('data-dp-route-css')
   expect(html).not.toContain('<!--$?-->')

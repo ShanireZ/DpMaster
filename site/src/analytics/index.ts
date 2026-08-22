@@ -1,5 +1,7 @@
-import { getRuntimeSiteConfig } from '../config/site.ts'
-import type { AnalyticsProviderKind } from '../config/site.ts'
+import { SITE } from '../config/site.ts'
+
+/** 唯一的统计 Provider。站点只发布到 Cloudflare Worker。 */
+export const ANALYTICS_PROVIDER = 'cloudflare'
 
 export type AnalyticsEventName =
   | 'page_view'
@@ -21,27 +23,20 @@ export interface AnalyticsEvent {
   metadata?: Record<string, string | number | boolean>
 }
 
-interface AnalyticsProvider {
-  readonly name: AnalyticsProviderKind
-  initialize(): void
-  track(event: AnalyticsEvent): void
-}
-
-function sendFirstPartyEvent(
-  provider: AnalyticsProviderKind,
-  endpoint: string,
-  event: AnalyticsEvent,
-): void {
-  const site = getRuntimeSiteConfig()
-  if (window.location.hostname !== site.hostname) return
+/**
+ * Cloudflare Web Analytics / RUM 由 Cloudflare 代理自动注入，源码与预渲染产物
+ * 都不得再手工加 beacon，否则同一次浏览会被重复统计。这里只发第一方事件。
+ */
+function sendFirstPartyEvent(event: AnalyticsEvent): void {
+  // 只在生产域名上报：localhost、预览域和任何镜像都不写入数据集。
+  if (window.location.hostname !== SITE.hostname) return
 
   const body = JSON.stringify({
-    provider,
+    provider: ANALYTICS_PROVIDER,
     event: event.event,
     path: event.path,
     title: event.title ?? '',
     metadata: {
-      region: site.region,
       build: import.meta.env.VITE_BUILD_ID || 'local',
       ...(event.metadata ?? {}),
     },
@@ -51,7 +46,10 @@ function sendFirstPartyEvent(
   try {
     if (
       typeof navigator.sendBeacon === 'function' &&
-      navigator.sendBeacon(endpoint, new Blob([body], { type: 'application/json' }))
+      navigator.sendBeacon(
+        SITE.analyticsEndpoint,
+        new Blob([body], { type: 'application/json' }),
+      )
     ) {
       return
     }
@@ -59,7 +57,7 @@ function sendFirstPartyEvent(
     // sendBeacon 不可用时降级为 keepalive fetch。
   }
 
-  void fetch(endpoint, {
+  void fetch(SITE.analyticsEndpoint, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body,
@@ -69,48 +67,7 @@ function sendFirstPartyEvent(
   })
 }
 
-function cloudflareProvider(): AnalyticsProvider {
-  const site = getRuntimeSiteConfig()
-  return {
-    name: 'cloudflare',
-    initialize() {
-      // `.cc` 的 Web Analytics / RUM 由 Cloudflare 代理自动注入。
-      // 源码不得再注入 beacon，否则同一次浏览会重复统计。
-    },
-    track(event) {
-      sendFirstPartyEvent('cloudflare', site.analytics.endpoint, event)
-    },
-  }
-}
-
-function tencentEdgeOneProvider(): AnalyticsProvider {
-  const site = getRuntimeSiteConfig()
-  return {
-    name: 'tencent-edgeone',
-    initialize() {
-      // Cloudflare Web Analytics 已在 EdgeOne HTML 产物中静态注入；
-      // 站内路由、学习与反馈事件仍通过同源端点发送到 EdgeOne。
-    },
-    track(event) {
-      sendFirstPartyEvent('tencent-edgeone', site.analytics.endpoint, event)
-    },
-  }
-}
-
-let activeProvider: AnalyticsProvider | undefined
-
-function provider(): AnalyticsProvider | undefined {
-  if (typeof window === 'undefined') return undefined
-  if (!activeProvider) {
-    activeProvider =
-      getRuntimeSiteConfig().analytics.provider === 'cloudflare'
-        ? cloudflareProvider()
-        : tencentEdgeOneProvider()
-    activeProvider.initialize()
-  }
-  return activeProvider
-}
-
 export function trackAnalyticsEvent(event: AnalyticsEvent): void {
-  provider()?.track(event)
+  if (typeof window === 'undefined') return
+  sendFirstPartyEvent(event)
 }

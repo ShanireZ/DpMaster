@@ -1,4 +1,4 @@
-import { BRAND, SITE_CONFIGS } from '../config/site.ts'
+import { BRAND } from '../config/site.ts'
 import type { SiteConfig } from '../config/site.ts'
 import type { PageMeta } from './pageMeta.ts'
 import { getPart } from '../data/catalog.ts'
@@ -37,10 +37,20 @@ export function structuredDataForPage(page: PageMeta, site: SiteConfig): object 
       '@type': 'WebSite',
       '@id': websiteId,
       name: BRAND.name,
+      alternateName: BRAND.subtitle,
       url: `${site.origin}/`,
       description: `${BRAND.name}用精讲、逐帧可视化、题目索引和小游戏讲清动态规划。`,
       inLanguage: site.language,
       publisher: { '@id': publisherId },
+      // 题目索引把查询写进 ?q=，是真实可深链的站内检索。
+      potentialAction: {
+        '@type': 'SearchAction',
+        target: {
+          '@type': 'EntryPoint',
+          urlTemplate: `${site.origin}/problems?q={search_term_string}`,
+        },
+        'query-input': 'required name=search_term_string',
+      },
     },
   ]
 
@@ -65,6 +75,16 @@ export function structuredDataForPage(page: PageMeta, site: SiteConfig): object 
       publisher: { '@id': publisherId },
       learningResourceType: page.routeKind === 'lesson' ? '课程讲解' : undefined,
       educationalLevel: page.routeKind === 'lesson' ? '算法竞赛学习者' : undefined,
+      // 无账号、无付费墙：对生成式引擎和 Google 的 Course 富结果都是关键事实。
+      isAccessibleForFree: true,
+      // 课程时长没有可信来源，因此不声明 hasCourseInstance / courseWorkload：
+      // Course 富结果的资格换不来编造的数字。
+      ...(page.routeKind === 'lesson'
+        ? {
+            educationalUse: '自学',
+            audience: { '@type': 'EducationalAudience', educationalRole: 'student' },
+          }
+        : {}),
       teaches: page.teaches.length > 0 ? page.teaches : undefined,
       dateModified: page.dateModified,
       reviewedBy: page.reviewedBy ? {
@@ -127,11 +147,6 @@ export function renderRouteHead(page: PageMeta, site: SiteConfig): string {
   if (page.canonical) {
     tags.push(`    <link rel="canonical" href="${escapeHtml(page.canonical)}" />`)
   }
-  for (const alternate of page.alternates) {
-    tags.push(
-      `    <link rel="alternate" hreflang="${escapeHtml(alternate.hreflang)}" href="${escapeHtml(alternate.href)}" />`,
-    )
-  }
 
   tags.push(
     `    <meta property="og:title" content="${escapeHtml(page.title)}" />`,
@@ -165,6 +180,3 @@ export function replaceRouteHead(documentHtml: string, routeHead: string): strin
   return `${documentHtml.slice(0, start)}${routeHead}${documentHtml.slice(end + ROUTE_HEAD_END.length)}`
 }
 
-export function alternateOrigins(): ReadonlyArray<string> {
-  return [SITE_CONFIGS.international.origin, SITE_CONFIGS.china.origin]
-}

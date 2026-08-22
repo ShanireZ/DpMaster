@@ -2,7 +2,7 @@ import { useEffect, useRef, useState } from 'react'
 import { useLocation } from 'react-router-dom'
 import { MessageSquarePlus, X, Send, Check, Loader2 } from 'lucide-react'
 import { getPart } from '../../data/catalog'
-import { getRuntimeSiteConfig } from '../../config/site.ts'
+import { SITE } from '../../config/site.ts'
 import { trackAnalyticsEvent } from '../../analytics/index.ts'
 import './feedback.css'
 
@@ -266,7 +266,7 @@ export default function FeedbackWidget() {
       metadata: { kind },
     })
     try {
-      const res = await fetch(getRuntimeSiteConfig().feedbackEndpoint, {
+      const res = await fetch(SITE.feedbackEndpoint, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(await payload()),

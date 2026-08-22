@@ -4,11 +4,13 @@ export function clip(value, maxLength) {
 }
 
 /**
- * 跨站直连白名单：.cc 的 Cloudflare 出口到国内基础设施（钉钉/EdgeOne）
- * 的 TLS 被系统性打断，.cc 浏览器改直连 .cn 的 API；因此 .cn 允许 .cc 的
- * origin。列表只含第一方站点，其余跨站一律拒绝。
+ * 跨站直连白名单。站点收敛成单域单 Worker 后，浏览器请求一律同源，
+ * 白名单为空 —— 任何带 Origin 且非同源的请求都会被拒绝。
+ *
+ * 保留这个机制而不是删掉：如果告警链路日后改成「另一台主机跑 relay」，
+ * relay 侧复用本模块时需要放行 dp.round1.cc 的 origin。
  */
-export const CROSS_ORIGIN_ALLOWLIST = new Set(['https://dp.betaoi.cc'])
+export const CROSS_ORIGIN_ALLOWLIST = new Set()
 
 /** 判定请求的 CORS 决策：{ origin, allowed, cross }。 */
 export function corsDecision(request) {
@@ -136,7 +138,7 @@ export async function forwardWebhook({
 }
 
 /**
- * 经 .cn 的 /api/feedback 端点可信转发（relay 协议）。
+ * 向 relay 主机的 /api/feedback 端点做可信转发（relay 协议）。
  * 共享密钥 x-dp-relay-secret 由接收侧恒定时间校验；x-dp-relay-kind 区分
  * 反馈（省略）与告警（alert）；x-dp-client-ip 携带原始客户端 IP。
  * body 是已序列化的字符串，由调用方负责。

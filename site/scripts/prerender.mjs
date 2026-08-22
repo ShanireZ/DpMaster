@@ -2,21 +2,12 @@ import { mkdirSync, readFileSync, rmSync, writeFileSync } from 'node:fs'
 import { dirname, join } from 'node:path'
 import { pathToFileURL } from 'node:url'
 import { JSDOM } from 'jsdom'
-import { getSiteConfig } from '../src/config/site.ts'
+import { SITE } from '../src/config/site.ts'
 import { generateDiscoveryFiles } from '../src/lib/discovery.ts'
 import { getPageMeta } from '../src/lib/pageMeta.ts'
 import { PRERENDER_PATHS } from '../src/lib/publicRoutes.ts'
 import { renderRouteHead, replaceRouteHead } from '../src/lib/seoHead.ts'
 import { renderRouteAssetLinks } from './route-assets.mjs'
-
-const CLOUDFLARE_WEB_ANALYTICS_SRC =
-  'https://static.cloudflareinsights.com/beacon.min.js'
-
-export function renderStaticWebAnalytics(site) {
-  const webAnalytics = site.analytics.cloudflareWebAnalytics
-  if (webAnalytics.delivery !== 'static') return ''
-  return `<!-- Cloudflare Web Analytics --><script type='module' src='${CLOUDFLARE_WEB_ANALYTICS_SRC}' data-cf-beacon='{"token": "${webAnalytics.token}"}'></script><!-- End Cloudflare Web Analytics -->`
-}
 
 export function settleSuspenseMarkup(markup) {
   if (!markup.includes('<!--$?-->')) return markup
@@ -60,13 +51,7 @@ export function settleSuspenseMarkup(markup) {
   return settled
 }
 
-function documentForRoute(
-  template,
-  routeMarkup,
-  routeHead,
-  routeCss,
-  staticAnalytics,
-) {
+function documentForRoute(template, routeMarkup, routeHead, routeCss) {
   const withHead = replaceRouteHead(template, routeHead)
   const root = '<div id="root"></div>'
   if (!withHead.includes(root)) throw new Error('Built index.html is missing the empty root')
@@ -80,10 +65,9 @@ function documentForRoute(
   const withCss = missingAssets
     ? withHead.replace('</head>', `${missingAssets}\n  </head>`)
     : withHead
-  const withMarkup = withCss.replace(root, `<div id="root">${routeMarkup}</div>`)
-  return staticAnalytics
-    ? withMarkup.replace('</body>', `    ${staticAnalytics}\n  </body>`)
-    : withMarkup
+  // 产物里不注入任何统计 beacon：Cloudflare Web Analytics / RUM 由 Cloudflare
+  // 代理自动注入，手工再加一份会让同一次浏览重复计数。scripts/check-html.mjs 锁死这条。
+  return withCss.replace(root, `<div id="root">${routeMarkup}</div>`)
 }
 
 function writeHtml(path, content) {
@@ -101,16 +85,14 @@ function writeRouteVariants(outDir, path, content) {
   writeHtml(join(outDir, relative, 'index.html'), content)
 }
 
-export async function prerenderRegion(region, outDir, serverEntry) {
-  const site = getSiteConfig(region)
+export async function prerenderSite(outDir, serverEntry) {
+  const site = SITE
   const indexPath = join(outDir, 'index.html')
   const manifestPath = join(outDir, '.vite', 'manifest.json')
   const template = readFileSync(indexPath, 'utf8')
-    .replace('<html lang="zh-CN">', `<html lang="${site.language}">`)
   const manifest = JSON.parse(readFileSync(manifestPath, 'utf8'))
-  const staticAnalytics = renderStaticWebAnalytics(site)
   const { renderRoute } = await import(
-    `${pathToFileURL(serverEntry).href}?region=${region}&time=${Date.now()}`
+    `${pathToFileURL(serverEntry).href}?time=${Date.now()}`
   )
 
   for (const path of PRERENDER_PATHS) {
@@ -124,7 +106,6 @@ export async function prerenderRegion(region, outDir, serverEntry) {
         markup,
         renderRouteHead(page, site),
         renderRouteAssetLinks(manifest, path),
-        staticAnalytics,
       ),
     )
   }
@@ -139,7 +120,6 @@ export async function prerenderRegion(region, outDir, serverEntry) {
       notFoundMarkup,
       renderRouteHead(notFound, site),
       renderRouteAssetLinks(manifest, notFoundPath),
-      staticAnalytics,
     ),
   )
 
@@ -148,7 +128,7 @@ export async function prerenderRegion(region, outDir, serverEntry) {
   }
   rmSync(join(outDir, '.vite'), { recursive: true, force: true })
   console.log(
-    `[prerender] ${region}: ${PRERENDER_PATHS.length} routes hydrated + real 404 + discovery files`,
+    `[prerender] ${PRERENDER_PATHS.length} routes hydrated + real 404 + discovery files`,
   )
 }
 
@@ -157,18 +137,13 @@ if (process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href) 
     const index = process.argv.indexOf(flag)
     return index >= 0 ? process.argv[index + 1] : undefined
   }
-  const region = valueAfter('--region')
   const outDir = valueAfter('--out-dir')
   const serverEntry = valueAfter('--server-entry')
-  if (
-    !['international', 'china'].includes(region) ||
-    !outDir ||
-    !serverEntry
-  ) {
+  if (!outDir || !serverEntry) {
     console.error(
-      'Usage: node scripts/prerender.mjs --region <international|china> --out-dir <dir> --server-entry <file>',
+      'Usage: node scripts/prerender.mjs --out-dir <dir> --server-entry <file>',
     )
     process.exit(2)
   }
-  await prerenderRegion(region, outDir, serverEntry)
+  await prerenderSite(outDir, serverEntry)
 }

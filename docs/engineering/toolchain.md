@@ -43,7 +43,7 @@ Dependency upgrades are independent tasks. `pnpm maintenance:check` compares the
 
 The scheduled GitHub workflow maintains one rolling issue for drift. It does not edit source, create upgrade pull requests, or deploy. Pull requests and main-branch pushes run CI only.
 
-`pnpm release` is the sole complete production-release entry point. It runs the full verification gate once, reuses the resulting regional artifacts, and then deploys Cloudflare followed by EdgeOne. Production credentials stay local to the platform CLIs; GitHub Actions never receives them.
+`pnpm release` is the sole complete production-release entry point. It runs the full verification gate once, reuses the resulting `dist/` artifact, and deploys the Cloudflare Worker. Production credentials stay local to the Wrangler CLI; GitHub Actions never receives them.
 
 # Task and documentation lifecycle
 

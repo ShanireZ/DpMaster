@@ -35,7 +35,7 @@ Invalid family/type routes and unregistered content should fall through to `NotF
 
 All seven family pages and all 37 completed lesson pages are public and indexable. Together with the home and two static pages, the build prerenders 47 HTML routes and hydrates them in the browser, so games, feedback, and client navigation remain interactive. Lesson titles follow `课程名 · 家族名 · DP大师`.
 
-The international Cloudflare build uses `https://dp.betaoi.cc`; the China EdgeOne build uses `https://dp.betaoi.cn`. Each public page canonicalizes to its current host and publishes reciprocal `zh-Hans`, `zh-CN`, and `x-default` alternates, Git-derived `lastmod`, route summaries, a shared Open Graph image, Course/LearningResource/TechArticle or CollectionPage JSON-LD, and Breadcrumb JSON-LD where applicable. Each region has its own sitemap, robots file, `llms.txt`, and machine-readable route summaries. Unknown paths use the themed `NotFound` page with an HTTP 404 response, `noindex,nofollow`, and no canonical.
+The site publishes to one origin, `https://dp.round1.cc`, from a single Cloudflare Worker. Every public page canonicalizes to itself and publishes no language alternates, plus Git-derived `lastmod`, route summaries, a shared Open Graph image, Course/LearningResource/TechArticle or CollectionPage JSON-LD, and Breadcrumb JSON-LD where applicable. One sitemap, one robots file — carrying an explicit allow group for generative-engine crawlers — one family-grouped `llms.txt`, and one machine-readable route-summary file. Unknown paths use the themed `NotFound` page with an HTTP 404 response, `noindex,nofollow`, and no canonical.
 
 # Learning Surface
 

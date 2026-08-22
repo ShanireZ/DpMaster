@@ -1,7 +1,8 @@
 {
-	// Cloudflare Workers 静态资源托管（路子 A：Workers Static Assets）+ 一个极薄 Worker。
-	// 静态文件由资源绑定直出；/api/feedback 与 /api/analytics 由 worker.js 接住，
-	// 其余已知路由直出预渲染 HTML，未知路径返回 404.html + HTTP 404。文档：
+	// Cloudflare Workers 静态资源托管（Workers Static Assets）+ 一个极薄 Worker。
+	// 这是站点唯一的发布目标：静态文件由资源绑定直出；/api/feedback、/api/analytics
+	// 与诊断端点由 worker.js 接住，其余已知路由直出预渲染 HTML，未知路径返回
+	// 404.html + HTTP 404。文档：
 	//   https://developers.cloudflare.com/workers/static-assets/binding/
 	"$schema": "node_modules/wrangler/config-schema.json",
 	"name": "dpmaster",
@@ -11,11 +12,11 @@
 	"preview_urls": false,
 	"routes": [
 		{
-			"pattern": "dp.betaoi.cc",
+			"pattern": "dp.round1.cc",
 			"custom_domain": true,
 			"enabled": true,
 			"previews_enabled": false,
-			"zone_name": "betaoi.cc"
+			"zone_name": "round1.cc"
 		}
 	],
 	"compatibility_date": "2026-07-06",
@@ -25,7 +26,7 @@
 		"FEEDBACK_WEBHOOK_KIND": "dingtalk",
 		"ALERT_WEBHOOK_KIND": "dingtalk"
 	},
-	// Webhook URL / secret 在 Cloudflare Dashboard 配置；部署时保留这些变量。
+	// Webhook URL / secret / 诊断密钥在 Cloudflare Dashboard 配置；部署时保留这些变量。
 	"keep_vars": true,
 	"observability": {
 		"enabled": true,
@@ -46,7 +47,7 @@
 		}
 	],
 	"assets": {
-		"directory": "./dist/cloudflare/",
+		"directory": "./dist/",
 		// 让 Worker 能通过 env.ASSETS.fetch() 取静态资源和 404 页面。
 		"binding": "ASSETS",
 		// 已知路由由预渲染的 .html 文件直出；未知路径返回 404.html + HTTP 404。

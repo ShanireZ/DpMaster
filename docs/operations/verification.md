@@ -19,7 +19,7 @@ Run from `site/`:
 pnpm verify
 ```
 
-`pnpm verify` checks generated content and discovery artifacts, runs Node and React tests, runs TypeScript-aware zero-warning lint with deprecated API rejection, builds and prerenders both regional targets with TypeScript 7, writes the EdgeOne API/404 Adapter, verifies regional analytics, runs the browser matrix, and enforces the asset budget on both regional asset directories.
+`pnpm verify` checks generated content and discovery artifacts, runs Node and React tests, runs TypeScript-aware zero-warning lint with deprecated API rejection, builds and prerenders `dist/` with TypeScript 7, verifies the HTML contract (page count plus no manual Web Analytics beacon), runs the browser matrix, and enforces the asset budget on `dist/assets`.
 
 To rerun only the browser smoke suite after a production build:
 
@@ -52,10 +52,10 @@ Two game tests cover the catalog-owned lazy boundary and shared runtime contract
 
 For browser-facing changes, keep those automated samples representative and manually inspect additional affected routes when needed. Confirm:
 
-* Each route has the expected title, description, abstract, host-local canonical, three hreflang links, Open Graph URL/type, structured-data graph, and exactly one `h1`.
+* Each route has the expected title, description, abstract, self-referencing canonical, zero hreflang links, Open Graph URL/type, structured-data graph, and exactly one `h1`.
 * Completed lesson titles follow `课程名 · 家族名 · DP大师` and use Open Graph type `article`.
-* The `.cc` HTML/sitemap/robots/llms files use `https://dp.betaoi.cc`; the `.cn` equivalents use `https://dp.betaoi.cn`.
-* An unknown URL returns HTTP 404, has `noindex,nofollow`, and has no canonical or hreflang.
+* Every HTML/sitemap/robots/llms artifact uses `https://dp.round1.cc` and no retired domain survives anywhere in the build.
+* An unknown URL returns HTTP 404, has `noindex,nofollow`, and has no canonical.
 * Sidebar and breadcrumb current-page semantics follow navigation.
 * Initial page load does not steal focus; later keyboard route navigation focuses `#main-content` without scrolling, and activating the first-target skip link focuses the same element.
 * Lesson outline clicks, direct fragment URLs, and history navigation place the target below the sticky top bar on desktop and mobile; ordinary route changes start at the top instead of inheriting a smooth scroll from the prior page.
@@ -100,6 +100,6 @@ Deployment checks live in root [deploy.md](../../deploy.md). At minimum after de
 * Submit a feedback test.
 * Confirm `POST /api/analytics` returns 204 for a valid same-origin event and inspect the platform log.
 * Confirm the receipt is `ok: true`, `status: delivered`, and includes a `requestId`.
-* Check Cloudflare or EdgeOne logs for the matching `feedback_received` event.
+* Check the Cloudflare Worker logs for the matching `feedback_received` event.
 * Check the matching `feedback_webhook` status and destination message. Missing configuration or forwarding failure must return 503/502 and must not show a successful browser receipt.
 * For a rate-limit smoke test, use a disposable source and confirm request 11 inside 30 minutes returns 429 with `Retry-After`. The built-in limiter is per edge instance; configure the same policy at platform level when global enforcement is required.

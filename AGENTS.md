@@ -5,9 +5,10 @@
 ## Project identity
 
 - 产品与文档显示名是 **DP大师**。
-- 为兼容现有发布链路，保留目录名 `DpMaster`、GitHub 仓库 `ShanireZ/DpMaster`、Cloudflare/EdgeOne 项目名 `dpmaster`；国际站 `dp.betaoi.cc` 发布到 Cloudflare，国内站 `dp.betaoi.cn` 发布到 Tencent EdgeOne，不要把显示名改动机械扩散到这些标识。
+- 为兼容现有发布链路，保留目录名 `DpMaster`、GitHub 仓库 `ShanireZ/DpMaster`、Cloudflare Worker 名 `dpmaster`，不要把显示名或域名改动机械扩散到这些标识。
+- **只有一个发布目标**：`site/dist/` 发布到 Cloudflare Workers Static Assets，域名 `https://dp.round1.cc`。★ 2026-08 起国内 EdgeOne 站与 betaoi 双域已退役，不得以任何形式复活区域、双域或第二个发布平台。
 - 站点是 `site/` 下的静态 React/Vite 应用，不引入账号、数据库或在线评测后端。
-- `pnpm build` 必须保持两个区域产物：`site/dist/cloudflare/` 与 `site/dist/edgeone/`。两个产物共享课程功能，但 canonical、sitemap、robots、llms.txt 与统计 Provider 必须按区域生成。
+- `pnpm build` 只产出 `site/dist/`。canonical 一律自指，且**不输出任何 hreflang 备选**——单域站点没有语言备选这回事。
 
 ## Source of truth
 
@@ -18,10 +19,9 @@
 
 ## Cloudflare Web Analytics / RUM contract
 
-- Rocket Loader 保持关闭，Web Analytics / RUM 保持开启。国际站 `dp.betaoi.cc` 只使用 Cloudflare 自动注入，源码与预渲染产物不得再加入手工 beacon。
-- 国内站 `dp.betaoi.cn` 的 EdgeOne 产物必须在每个可访问 HTML 中手工加载 `https://static.cloudflareinsights.com/beacon.min.js`（`type="module"`），统一公开 site token 为 `c113fb69d7e84d38a645c5160f6f1bda`；localhost、预览域和国际站产物不得手工加载。
+- Rocket Loader 保持关闭，Web Analytics / RUM 保持开启，且**只使用 Cloudflare 代理自动注入**。源码、预渲染产物和任何 HTML 都不得出现手工 beacon —— 多一份就是同一次浏览重复统计。`pnpm check:html` 是这条的门禁。
 - 任何覆盖 Analytics 页面响应的 CSP 都必须在 `script-src` 放行 `https://static.cloudflareinsights.com`，并在 `connect-src` 放行 `'self' https://cloudflareinsights.com`，同时保留站点自身需要的来源。
-- 区域构建、预渲染、CSP 或部署合同变化时，必须由测试锁住 `.cc` 自动 / `.cn` 手工、统一 token、每个国内 HTML 恰好一个 snippet，以及国际产物零手工 snippet。
+- 构建、预渲染、CSP 或部署合同变化时，必须由测试锁住「HTML 数量正确」与「零手工 beacon」这两条。
 
 ## Commands
 
@@ -41,11 +41,17 @@ pnpm build
 pnpm verify
 ```
 
-`pnpm verify` 是完整本地 gate：内容与 SEO 一致性、Node 内容测试、React 组件测试、零 warning lint、TypeScript/Vite 构建、Playwright 浏览器路由检查和资产预算。
+`pnpm verify` 是完整本地 gate：内容与 SEO 一致性、Node 内容测试、React 组件测试、零 warning lint、TypeScript/Vite 构建、HTML 产物合同、Playwright 浏览器路由检查和资产预算。
 
-`pnpm release` 是唯一完整生产发布入口：先通过 `pnpm verify` 并复用该次构建产物，再依次发布 Cloudflare 与 EdgeOne。GitHub Actions 只运行 CI，不保存生产密钥，也不部署。
+`pnpm release` 是唯一完整生产发布入口：先通过 `pnpm verify` 并复用该次构建产物，再发布 Cloudflare Worker。GitHub Actions 只运行 CI，不保存生产密钥，也不部署。
 
-发布 CLI `wrangler` 与 `edgeone` 由发布机**全局安装并提前登录**，不在 `package.json` 锁版；安装、登录、升级与版本基线（供 `pnpm maintenance:check` 巡检读取）均以根目录 `deploy.md` 的“全局 CLI 准备”与“全局 CLI 基线”节为准。全局升级 CLI 后必须同步该基线表并重跑 `pnpm verify`。
+发布 CLI `wrangler` 由发布机**全局安装并提前登录**，不在 `package.json` 锁版；安装、登录、升级与版本基线（供 `pnpm maintenance:check` 巡检读取）均以根目录 `deploy.md` 的“全局 CLI 准备”与“全局 CLI 基线”节为准。全局升级 CLI 后必须同步该基线表并重跑 `pnpm verify`。
+
+## Outbound delivery
+
+- Cloudflare 出口到钉钉 `oapi.dingtalk.com` 的 TLS 被系统性打断（2026-08 实测稳定 525）。国内站退役后，**Worker 到钉钉当前没有任何已验证通路**，反馈与告警送达是待决问题。
+- relay 协议（`FEEDBACK_RELAY_URL` + `x-dp-relay-secret` / `x-dp-client-ip` / `x-dp-relay-kind`）保留且有测试覆盖，`site/worker/feedback-core.js` 同时是 relay 主机侧的参考实现。不要因为“暂时没用上”就删掉它。
+- 选型前先跑 `POST /api/_diag/egress` 出口探针拿真实错误，方案与判据见 `deploy.md` 的「反馈与告警送达」。定案后必须同步 `deploy.md`、`docs/operations/analytics.md` 与本节，并从 Worker 变量里删掉 `EGRESS_DIAG_SECRET`。
 
 ## Toolchain and compatibility
 

@@ -1,4 +1,4 @@
-// 反馈处理核心 —— 被 Cloudflare Worker / Pages Functions / EdgeOne 共用。
+// 反馈处理核心 —— Cloudflare Worker 与（可选的）外部 relay 主机共用。
 // 仅依赖 Fetch API 与 Web Crypto；运行时 Adapter 不得复制校验、限流或回执语义。
 import {
   applyCors,
@@ -6,7 +6,7 @@ import {
   corsDecision,
   forwardRelay,
   forwardWebhook,
-} from './_webhook-core.js'
+} from './webhook-core.js'
 
 const BODY_LIMIT_BYTES = 16_000
 const DEFAULT_LIMIT = 10
@@ -41,13 +41,9 @@ const defaultLog = (entry) => console.log('[feedback]', JSON.stringify(entry))
 const defaultErrorLog = (entry) => console.error('[feedback]', JSON.stringify(entry))
 
 function sourceFromRequest(request) {
-  // 平台注入的客户端 IP 在两个托管商身上的位置不同：
-  // - EdgeOne：request.eo.clientIp 运行时属性。该运行时上任何 IP 相关请求头
-  //   （含 cf-connecting-ip）都是客户端可伪造的，一律不可信。
-  // - Cloudflare：cf-connecting-ip 请求头（Worker 里平台保证注入并覆盖）。
-  // x-real-ip / x-forwarded-for 只作为非平台部署的兜底，同样可伪造。
-  const eo = request.eo
-  if (eo) return String(eo.clientIp || '').trim() || 'anonymous'
+  // Cloudflare Worker 里 cf-connecting-ip 由平台保证注入并覆盖，可信。
+  // x-real-ip / x-forwarded-for 只作为非 Cloudflare 部署（外部 relay 主机）的
+  // 兜底，客户端可伪造；relay 会用 x-dp-client-ip 携带经密钥认证的真实 IP。
   const forwarded = request.headers.get('cf-connecting-ip')
     || request.headers.get('x-real-ip')
     || request.headers.get('x-forwarded-for')?.split(',')[0]?.trim()
@@ -71,8 +67,8 @@ function secureEqual(a, b) {
 }
 
 /**
- * 识别来自 .cc Worker 的可信转发请求。
- * .cc 的 Cloudflare 出口到钉钉 TLS 不通（525），反馈与告警都经 .cn 中转；
+ * 识别来自上游 Worker 的可信转发请求（relay 主机侧使用）。
+ * Cloudflare 出口到钉钉的 TLS 被打断，反馈与告警需要经一台能连钉钉的主机中转；
  * 转发请求携带共享密钥（x-dp-relay-secret），只有密钥匹配才视为可信。
  * 返回 { trusted, clientIp }：clientIp 仅在 x-dp-client-ip 为合法 IPv4/IPv6
  * 字面量时给出，否则为 null（调用方回退平台 IP）。
@@ -93,7 +89,7 @@ async function forwardRelayFeedback({ relayUrl, secret, clientIp, rawBody, fetch
   return forwardRelay({ relayUrl, secret, clientIp, body: rawBody, fetchImpl })
 }
 
-/** 告警送达：relay 模式经 .cn 中转，否则直连告警机器人。告警失败不得影响主流程。 */
+/** 告警送达：配了 relay 就经 relay 主机中转，否则直连告警机器人。告警失败不得影响主流程。 */
 async function deliverAlert({ env, runtime, text }) {
   const relayUrl = env.FEEDBACK_RELAY_URL
   if (relayUrl) {
@@ -135,9 +131,9 @@ async function alertFailure({ env, runtime, requestId, relay, webhook }) {
 }
 
 /**
- * .cn 侧处理来自 .cc 的告警 relay（x-dp-relay-kind: alert）：
- * 密钥已由 trustedRelay 验证，这里按转发 IP 限流后转发到 .cn 自己的
- * ALERT_WEBHOOK_URL（EdgeOne 国内节点 → 钉钉可达）。告警分流直接返回，
+ * relay 主机侧处理来自上游 Worker 的告警转发（x-dp-relay-kind: alert）：
+ * 密钥已由 trustedRelay 验证，这里按转发 IP 限流后转发到 relay 主机自己的
+ * ALERT_WEBHOOK_URL（该主机到钉钉可达）。告警分流直接返回，
  * 不会再进入反馈 relay 分支，天然防循环。
  */
 async function handleRelayAlert({ env, runtime, data, ip }) {
@@ -310,8 +306,8 @@ async function handleFeedbackCore(request, env, runtime) {
     return fail('bad_json', '反馈内容不是有效的 JSON', 400)
   }
 
-  // 告警分流：.cc 的告警也经本端点 relay（x-dp-relay-kind: alert），
-  // 由 .cn 转发到自己的 ALERT_WEBHOOK_URL。仅在密钥匹配时生效，
+  // 告警分流：上游 Worker 的告警也经本端点 relay（x-dp-relay-kind: alert），
+  // 由 relay 主机转发到自己的 ALERT_WEBHOOK_URL。仅在密钥匹配时生效，
   // 且必须在反馈格式校验之前，因为告警 body（{text}）不是反馈格式。
   const relay = trustedRelay(request, env)
   if (relay && request.headers.get(RELAY_KIND_HEADER) === RELAY_ALERT_KIND) {
@@ -369,7 +365,7 @@ async function handleFeedbackCore(request, env, runtime) {
     )
   }
 
-  // .cc 的 Cloudflare 出口到钉钉 TLS 不通（525），配置 relay 时经 .cn 中转进钉钉。
+  // Cloudflare 出口到钉钉 TLS 被打断，配置 relay 时经 relay 主机中转进钉钉。
   // 已识别为可信转发的请求（secret 匹配）绝不再次转发，防止误配造成转发循环。
   if (relayUrl && !relay) {
     let relayed

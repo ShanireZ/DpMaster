@@ -23,8 +23,7 @@
   "scripts": {
     "dev": "vite",
     "prebuild": "pnpm content:generate && pnpm seo:generate",
-    "build": "tsc -b && node scripts/build-regions.mjs",
-    "postbuild": "node scripts/postbuild.mjs",
+    "build": "tsc -b && node scripts/build.mjs",
     "test": "node --test scripts/*.test.mjs",
     "test:unit": "vitest run",
     "test:unit:watch": "vitest",
@@ -33,15 +32,14 @@
     "seo:generate": "node scripts/generate-seo.mjs --write",
     "check:content": "node scripts/generate-problems.mjs --check",
     "check:seo": "node scripts/generate-seo.mjs --check",
-    "check:analytics": "node scripts/check-regional-analytics.mjs",
-    "check:assets": "node scripts/check-assets.mjs dist/cloudflare/assets && node scripts/check-assets.mjs dist/edgeone/assets",
+    "check:html": "node scripts/check-html.mjs",
+    "check:assets": "node scripts/check-assets.mjs dist/assets",
     "test:browser": "playwright test",
-    "verify": "pnpm check:content && pnpm check:seo && pnpm test && pnpm test:unit && pnpm lint && pnpm build && pnpm check:analytics && pnpm test:browser && pnpm check:assets",
+    "verify": "pnpm check:content && pnpm check:seo && pnpm test && pnpm test:unit && pnpm lint && pnpm build && pnpm check:html && pnpm test:browser && pnpm check:assets",
     "maintenance:check": "node scripts/check-toolchain-drift.mjs",
     "preview": "node scripts/preview.mjs",
     "deploy:cf": "wrangler deploy",
-    "deploy:eo": "edgeone makers deploy ./dist/edgeone -n dpmaster -e production",
-    "release": "pnpm verify && pnpm deploy:cf && pnpm deploy:eo"
+    "release": "pnpm verify && pnpm deploy:cf"
   },
   "dependencies": {
     "@fontsource/jetbrains-mono": "^5.3.0",

@@ -23,9 +23,9 @@ const packageEntries = [
   ...Object.entries(packageJson.dependencies ?? {}),
   ...Object.entries(packageJson.devDependencies ?? {}),
 ]
-// wrangler / edgeone 由发布机全局安装，基线声明在 deploy.md 的「全局 CLI 基线」表格。
+// wrangler 由发布机全局安装，基线声明在 deploy.md 的「全局 CLI 基线」表格。
 const globalCliBaselines = Object.fromEntries(
-  [...deployDoc.matchAll(/^\| (wrangler|edgeone) \| (\d+\.\d+\.\d+) \|$/gm)].map(
+  [...deployDoc.matchAll(/^\| (wrangler) \| (\d+\.\d+\.\d+) \|$/gm)].map(
     (match) => [match[1], match[2]],
   ),
 )
@@ -123,9 +123,6 @@ await Promise.all([
     'pnpm',
     packageJson.packageManager.replace(/^pnpm@/, ''),
     () => latestPackageVersion('pnpm'),
-  ),
-  record('EdgeOne CLI（全局）', globalCliBaselines.edgeone, () =>
-    latestPackageVersion('edgeone'),
   ),
   record('Wrangler CLI（全局）', globalCliBaselines.wrangler, () =>
     latestPackageVersion('wrangler'),

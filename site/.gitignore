@@ -23,17 +23,12 @@ dist-ssr
 *.sln
 *.sw?
 
-# Tencent Cloud EdgeOne
+# Local env / deployment auth
 .env
 .env.*
 !.env.example
 .dev.vars
 .dev.vars.*
-# 忽略 .edgeone/ 的内容而非目录本身 —— 目录一旦被排除，里面的文件就再也无法用 ! 重新纳入，
-# 而 project.example.json 是要提交的模板。
-.edgeone/*
-!.edgeone/project.example.json
-.tef_dist/
 
 # Cloudflare / Wrangler local auth and deployment state
 .wrangler/

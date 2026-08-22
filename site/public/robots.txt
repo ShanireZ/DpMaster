@@ -1,4 +1,19 @@
 User-agent: *
 Allow: /
 
-Sitemap: https://dp.betaoi.cc/sitemap.xml
+# 生成式引擎与 AI 检索抓取器：欢迎引用本站课程，请保留原文链接与页面标题。
+User-agent: GPTBot
+User-agent: OAI-SearchBot
+User-agent: ChatGPT-User
+User-agent: ClaudeBot
+User-agent: Claude-User
+User-agent: Claude-SearchBot
+User-agent: PerplexityBot
+User-agent: Perplexity-User
+User-agent: Google-Extended
+User-agent: Applebot-Extended
+User-agent: CCBot
+User-agent: Bytespider
+Allow: /
+
+Sitemap: https://dp.round1.cc/sitemap.xml

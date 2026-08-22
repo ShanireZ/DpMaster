@@ -1,8 +1,8 @@
-// 区域无关的第一方统计接收器。只记录无身份、无联系方式的有限事件字段。
-import { applyCors, corsDecision, forwardRelay, forwardWebhook } from './_webhook-core.js'
+// 第一方统计接收器。只记录无身份、无联系方式的有限事件字段。
+import { applyCors, corsDecision, forwardRelay, forwardWebhook } from './webhook-core.js'
 
 const BODY_LIMIT_BYTES = 4_000
-const PROVIDERS = new Set(['cloudflare', 'tencent-edgeone'])
+const PROVIDERS = new Set(['cloudflare'])
 const EVENTS = new Set([
   'page_view',
   'feedback_opened',
@@ -114,7 +114,8 @@ async function handleAnalyticsCore(request, runtime) {
       `页面：${entry.path}`,
       `详情：${JSON.stringify(entry.metadata)}`,
     ].join('\n')
-    // .cc 直连钉钉 525：配了 relay 时告警也经 .cn 中转，否则直连告警机器人。
+    // Cloudflare 出口直连钉钉握手被打断：配了 relay 时告警经 relay 主机中转，
+    // 否则直连告警机器人。目标由环境变量决定，代码不绑定任何具体主机。
     const alert = (env.FEEDBACK_RELAY_URL
       ? forwardRelay({
           relayUrl: env.FEEDBACK_RELAY_URL,

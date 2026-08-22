@@ -1,14 +1,14 @@
 import assert from 'node:assert/strict'
 import test from 'node:test'
-import { handleAnalytics } from '../functions/_analytics-core.js'
+import { handleAnalytics } from '../worker/analytics-core.js'
 import worker from '../worker.js'
 
 function request(body, options = {}) {
-  return new Request(options.url ?? 'https://dp.betaoi.cc/api/analytics', {
+  return new Request(options.url ?? 'https://dp.round1.cc/api/analytics', {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
-      Origin: 'https://dp.betaoi.cc',
+      Origin: 'https://dp.round1.cc',
       ...options.headers,
     },
     body: JSON.stringify(body),
@@ -89,58 +89,52 @@ test('analytics rejects cross-origin and unsupported provider or event values', 
 
 test('Cloudflare worker exposes the analytics endpoint and keeps static assets isolated', async () => {
   const env = { ASSETS: { fetch: async () => new Response('asset') } }
-  const get = await worker.fetch(new Request('https://dp.betaoi.cc/api/analytics'), env)
+  const get = await worker.fetch(new Request('https://dp.round1.cc/api/analytics'), env)
   assert.equal(get.status, 405)
   assert.equal(get.headers.get('Allow'), 'POST')
 
   const options = await worker.fetch(
-    new Request('https://dp.betaoi.cc/api/analytics', { method: 'OPTIONS' }),
+    new Request('https://dp.round1.cc/api/analytics', { method: 'OPTIONS' }),
     env,
   )
   assert.equal(options.status, 204)
 })
 
-test('worker preflight answers CORS headers for the allowlisted .cc origin', async () => {
+test('cross-site analytics is rejected outright: the site is single-origin', async () => {
   const env = { ASSETS: { fetch: async () => new Response('asset') } }
   const preflight = await worker.fetch(
-    new Request('https://dp.betaoi.cn/api/analytics', {
+    new Request('https://dp.round1.cc/api/analytics', {
       method: 'OPTIONS',
       headers: {
-        Origin: 'https://dp.betaoi.cc',
+        Origin: 'https://evil.example.test',
         'Access-Control-Request-Method': 'POST',
       },
     }),
     env,
   )
   assert.equal(preflight.status, 204)
-  assert.equal(preflight.headers.get('Access-Control-Allow-Origin'), 'https://dp.betaoi.cc')
-  assert.match(preflight.headers.get('Access-Control-Allow-Methods') || '', /POST/)
-})
+  assert.equal(preflight.headers.get('Access-Control-Allow-Origin'), null)
 
-test('analytics accepts the allowlisted .cc origin on the .cn endpoint with CORS headers', async () => {
   const response = await handleAnalytics(
     request(
       { provider: 'cloudflare', event: 'page_view', path: '/' },
-      {
-        headers: { Origin: 'https://dp.betaoi.cc' },
-        url: 'https://dp.betaoi.cn/api/analytics',
-      },
+      { headers: { Origin: 'https://evil.example.test' } },
     ),
     { log: () => {} },
   )
-  assert.equal(response.status, 204)
-  assert.equal(response.headers.get('Access-Control-Allow-Origin'), 'https://dp.betaoi.cc')
+  assert.equal(response.status, 403)
+  assert.equal(JSON.parse(await response.text()).error, 'forbidden_origin')
 })
 
-test('analytics providers stay on configured hosts and never inject a source beacon', async () => {
+test('the single analytics provider stays on the production host and never inject a source beacon', async () => {
   const source = await import('node:fs/promises').then(({ readFile }) =>
     readFile(new URL('../src/analytics/index.ts', import.meta.url), 'utf8'),
   )
-  assert.match(source, /window\.location\.hostname !== site\.hostname/)
-  assert.doesNotMatch(source, /static\.cloudflareinsights\.com\/beacon\.min\.js/)
+  assert.match(source, /window\.location\.hostname !== SITE\.hostname/)
+  assert.doesNotMatch(source, /static\.cloudflareinsights\.com/)
   assert.doesNotMatch(source, /script\.dataset\.cfBeacon/)
-  assert.match(source, /sendFirstPartyEvent\('cloudflare'/)
-  assert.match(source, /sendFirstPartyEvent\('tencent-edgeone'/)
+  assert.match(source, /ANALYTICS_PROVIDER = 'cloudflare'/)
+  assert.doesNotMatch(source, /tencent-edgeone/)
   assert.match(source, /navigator\.sendBeacon/)
   assert.match(source, /keepalive:\s*true/)
 })
@@ -157,7 +151,7 @@ test('relays alert events through the relay channel when configured', async () =
     {
       log: () => {},
       env: {
-        FEEDBACK_RELAY_URL: 'https://dp.betaoi.cn/api/feedback',
+        FEEDBACK_RELAY_URL: 'https://relay.example.test/api/feedback',
         FEEDBACK_RELAY_SECRET: 'relay-secret-123',
         ALERT_WEBHOOK_URL: 'https://alert.example.test',
       },
@@ -169,7 +163,7 @@ test('relays alert events through the relay channel when configured', async () =
   )
 
   assert.equal(response.status, 204)
-  assert.equal(alerted.url, 'https://dp.betaoi.cn/api/feedback')
+  assert.equal(alerted.url, 'https://relay.example.test/api/feedback')
   assert.equal(alerted.init.headers['x-dp-relay-kind'], 'alert')
   assert.equal(alerted.init.headers['x-dp-relay-secret'], 'relay-secret-123')
   assert.match(JSON.parse(alerted.init.body).text, /client_error/)

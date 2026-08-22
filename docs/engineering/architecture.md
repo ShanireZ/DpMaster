@@ -26,7 +26,9 @@ sources:
   - resource: ../../site/src/analytics/
   - resource: ../../site/src/components/seo/RouteMeta.tsx
   - resource: ../../site/src/entry-server.tsx
-  - resource: ../../site/scripts/build-regions.mjs
+  - resource: ../../site/worker.js
+  - resource: ../../site/worker/
+  - resource: ../../site/scripts/build.mjs
   - resource: ../../site/scripts/prerender.mjs
   - resource: ../../site/scripts/generate-seo.mjs
   - resource: ../../site/tests/browser/
@@ -65,19 +67,18 @@ The manifest intentionally keeps only dependencies imported by current source. D
 | `site/src/components/dp-engine/` | Shared visualization, playback, controls, and safe-caption rendering. |
 | `site/src/components/games/` | One game per family; games consume public result Interfaces instead of teaching frames. |
 | `site/src/components/games/runtime/` | Shared deterministic random source, round statistics, lazy audio, and viewport gate for the seven games. |
-| `site/src/config/site.ts` | DP大师 brand, the two production hosts, regional build identity, and analytics-provider configuration. |
+| `site/src/config/site.ts` | DP大师 brand, copyright holders, and the single production host with its same-origin API endpoints. |
 | `site/src/lib/publicRoutes.ts` | Catalog-derived authority for the 48 prerendered and indexable routes. |
-| `site/src/lib/pageMeta.ts` | Pure host-aware route metadata authority for titles, summaries, canonicals, alternates, breadcrumbs, and indexing policy. |
+| `site/src/lib/pageMeta.ts` | Pure route metadata authority for titles, summaries, canonicals, breadcrumbs, and indexing policy. |
 | `site/src/lib/seoHead.ts` | Server/client shared head and JSON-LD generation. |
-| `site/src/lib/discovery.ts` | Region-aware sitemap, robots, llms.txt, and route-summary generation. |
+| `site/src/lib/discovery.ts` | Sitemap, robots (including the AI-crawler group), llms.txt, and route-summary generation. |
 | `site/src/components/seo/RouteMeta.tsx` | Applies route metadata to the live document head after client navigation. |
-| `site/src/analytics/` | Provider-neutral event interface; selects Cloudflare or Tencent EdgeOne from the runtime host. |
+| `site/src/analytics/` | First-party event interface; posts to the same-origin endpoint on the production host only. |
 | `site/src/entry-server.tsx` | React 19 static rendering entry used by the prerender build. |
-| `site/scripts/build-regions.mjs` | Builds the Cloudflare and EdgeOne clients plus isolated production SSR bundles. |
-| `site/scripts/prerender.mjs` | Writes route HTML, 404.html, and per-region discovery files. |
-| `site/functions/` | Shared feedback and privacy-bounded first-party analytics endpoint cores. |
-| `site/worker.js` | Current Cloudflare Workers entry. |
-| `site/scripts/postbuild.mjs` | EdgeOne feedback/analytics API and real-404 catch-all generator. |
+| `site/scripts/build.mjs` | Builds the client plus an isolated production SSR bundle, then prerenders. |
+| `site/scripts/prerender.mjs` | Writes route HTML, 404.html, and the discovery files into the build output. |
+| `site/worker/` | Shared feedback, privacy-bounded first-party analytics, and egress-probe cores. |
+| `site/worker.js` + `site/worker/` | The single deployment adapter: same-origin feedback, analytics, and egress diagnostics. |
 
 # Routing And Splitting
 
@@ -85,7 +86,7 @@ The manifest intentionally keeps only dependencies imported by current source. D
 
 Family art is a second, deliberately smaller registry: `familyArtRegistry.ts` maps each A–G `partId` to a lazy module implementing `HeroArt`, `JourneyArt`, and `LessonPlate`. It never owns course titles, slugs, order, or copy. Every ready lesson has a unique semantic plate; `PartGlyph` remains a defensive unknown-family fallback rather than a production course path.
 
-`pnpm build` produces `site/dist/cloudflare/` for `dp.betaoi.cc` and `site/dist/edgeone/` for `dp.betaoi.cn`. For each region, Vite first emits the client and an isolated production SSR entry; a fresh Node production process calls React 19 `prerender()` for all 47 paths and writes both clean-URL variants. The prerender pass resolves the current lesson and family-art module synchronously, injects that route's exact CSS and module-preload graph, and rejects unresolved streamed Suspense segments. Before `hydrateRoot`, the browser explicitly prepares the current route view, current lesson module, and current family-art module while leaving the prerendered DOM visible; hydration therefore attaches to identical content instead of replacing the page with a lazy fallback. The client does not eagerly import unrelated route views or family art after hydration. If a deployment changes a hashed dynamic asset while an older document is still open, `preloadRecovery.ts` handles Vite's `vite:preloadError` before route imports run and performs at most one recovery reload per build and path. Development-only empty roots still use `createRoot`.
+`pnpm build` produces a single `site/dist/` for `dp.round1.cc`. Vite first emits the client and an isolated production SSR entry; a fresh Node production process calls React 19 `prerender()` for all 47 paths and writes both clean-URL variants. The prerender pass resolves the current lesson and family-art module synchronously, injects that route's exact CSS and module-preload graph, and rejects unresolved streamed Suspense segments. Before `hydrateRoot`, the browser explicitly prepares the current route view, current lesson module, and current family-art module while leaving the prerendered DOM visible; hydration therefore attaches to identical content instead of replacing the page with a lazy fallback. The client does not eagerly import unrelated route views or family art after hydration. If a deployment changes a hashed dynamic asset while an older document is still open, `preloadRecovery.ts` handles Vite's `vite:preloadError` before route imports run and performs at most one recovery reload per build and path. Development-only empty roots still use `createRoot`.
 
 Family pages wrap the catalog-owned lazy game in `DeferredGame`. Its one-way `IntersectionObserver` gate starts rendering about 400 px before the game reaches the viewport; there is no manual load path, and browsers without IntersectionObserver render immediately. Creating a lazy React element does not invoke its dynamic import until the gate renders it, so the game JS/CSS chunks stay off the initial family-page request when the section is not yet near.
 
@@ -93,25 +94,25 @@ Problem metadata is extracted from lesson JSX by `site/scripts/generate-problems
 
 All 29 teaching solver surfaces are Adapters over the algorithm boundary: public callers import `site/src/algorithms/<domain>/index.ts`, while the adjacent internal Module owns the sole transition loop and emits UI-neutral domain events. Teaching code records those events and adapts them to `VizModel`; games and ordinary readouts use public typed results and must not import internal Modules or recover answers from teaching frames. Executable architecture tests enumerate the 29 Adapters. The 39 public solver entry points that return one of the 38 named `*Result` Interfaces each have an independent small-case oracle or property for their primary outcome. Key witness and auxiliary fields also have explicit legality or consistency invariants, including `chosen`, `guards`, and `layout`, plus representative path, index, argument, and ordering fields; this coverage claim does not extend to every incidental field. The UI-only `solveRerootDistanceBrute` helper returns an anonymous object and is outside this 39-entry named-Result count.
 
-Known deep links are physical prerendered HTML assets. Cloudflare uses Static Assets `404-page`; EdgeOne uses the generated catch-all for API paths and unmatched navigation. Both platforms return the themed `404.html` with a real HTTP 404 for unknown paths. See root [deploy.md](../../deploy.md) for the platform contracts.
+Known deep links are physical prerendered HTML assets. Cloudflare Workers Static Assets serves them and uses `404-page` for anything unmatched, returning the themed `404.html` with a real HTTP 404. See root [deploy.md](../../deploy.md) for the platform contract.
 
 # SEO And Accessibility
 
-`pageMeta.ts` is the shared route metadata authority. It receives the active `SiteConfig`, so each regional build self-canonicalizes while both builds publish reciprocal `zh-Hans`, `zh-CN`, and `x-default` alternates. Unknown routes are non-indexable and deliberately have no canonical or hreflang links.
+`pageMeta.ts` is the shared route metadata authority. The site has a single origin, so every public page canonicalizes to itself and publishes no language alternates at all. Unknown routes are non-indexable and deliberately have no canonical link.
 
-`seoHead.ts` renders the same head contract at build time that `RouteMeta` maintains after client navigation: title, description, citable abstract, robots, canonical, hreflang, Open Graph, Twitter, and a Schema.org graph. Every indexable page includes Organization and WebSite nodes; lessons add Course, family pages add CollectionPage, other pages add WebPage, and routes with hierarchy add BreadcrumbList.
+`seoHead.ts` renders the same head contract at build time that `RouteMeta` maintains after client navigation: title, description, citable abstract, robots, canonical, Open Graph, Twitter, and a Schema.org graph. Every indexable page includes Organization and WebSite nodes and states `isAccessibleForFree`; the WebSite node declares a `SearchAction` pointing at the real `?q=` problem search. Lessons add Course/LearningResource/TechArticle with `educationalUse` and an `EducationalAudience`, family pages add CollectionPage plus an ItemList of their ready lessons, other pages add WebPage, and routes with hierarchy add BreadcrumbList. Course duration is deliberately not declared: there is no trustworthy source for it, so `hasCourseInstance` is omitted rather than fabricated.
 
-`site/scripts/generate-seo.mjs` writes the international checked-in baseline. The regional prerender step regenerates `sitemap.xml`, `robots.txt`, `llms.txt`, and `route-summaries.json` inside each deployment target. All four artifacts derive from the same 47-path catalog contract: home, seven families, 37 completed lessons, method, and problem index. `pnpm check:seo` rejects drift.
+`site/scripts/generate-seo.mjs` writes the checked-in baseline for `sitemap.xml`, `robots.txt`, `llms.txt`, `route-summaries.json`, and the home-route head inside `index.html`; the prerender step regenerates the four discovery files into the build output. All of them derive from the same 47-path catalog contract: home, seven families, 37 completed lessons, method, and problem index. `llms.txt` is grouped by family rather than published as one flat list, and `robots.txt` carries an explicit allow group for generative-engine crawlers, including the opt-in `Google-Extended` and `Applebot-Extended` tokens. `pnpm check:seo` rejects drift, including a hand-edited `index.html` head.
 
-# Regional Analytics
+# Analytics
 
-The client exposes a bounded event vocabulary for page views/404s, Web Vitals, lesson starts/completions, problem search/outbound actions, feedback lifecycle, and safe client-error reports. The international provider injects the configured Cloudflare Web Analytics beacon only on the exact `.cc` production hostname and writes accepted first-party events to Analytics Engine. The China prerender build statically injects the same Web Analytics beacon exactly once into every EdgeOne HTML document, including the real 404; EdgeOne access logs still supply platform request analysis, while the same-origin endpoint writes limited client-route events to structured function logs. A postbuild contract rejects missing, duplicate, or cross-region static snippets. See [Analytics and Alerting](/operations/analytics.md).
+The client exposes a bounded event vocabulary for page views/404s, Web Vitals, lesson starts/completions, problem search/outbound actions, feedback lifecycle, and safe client-error reports. Events are posted to the same-origin endpoint only when the browser is on the exact production hostname, and the Worker writes accepted events to Analytics Engine. Cloudflare Web Analytics / RUM is injected by the Cloudflare proxy; neither the source nor the prerender output may add a manual beacon, and `pnpm check:html` fails the build if one appears in any HTML document. See [Analytics and Alerting](/operations/analytics.md).
 
 The receiver rejects cross-origin requests, unknown providers/events, non-JSON or oversized payloads, clips strings and primitive metadata, and logs no cookies, account identifiers, contact fields, or payment data. Analytics failures are swallowed by the client and cannot block lessons, games, or feedback.
 
 The shell owns cross-route accessibility and positioning behavior: a keyboard-visible skip link targets the focusable `main`, navigation uses current-page semantics, the mobile drawer exposes expanded/controlled state and a real close button, and a polite status region announces route changes. After a client pathname change, the shell focuses `#main-content` with `preventScroll`; a previous-path guard leaves focus unchanged on initial load. Ordinary route changes reset scroll immediately so the new page cannot inherit an in-flight smooth animation from the old page. Fragment navigation is coordinated through `hashNavigation.ts`: it waits for the new DOM, applies the target's declared scroll margin or the sticky-topbar fallback, and briefly corrects layout shifts unless the learner starts another pointer, wheel, touch, or keyboard interaction. Lesson headings receive their stable fragment IDs when the hydrated lesson outline is built, so `TypePage` repeats the fragment restore after those dynamic targets exist. Reduced-motion preference turns requested smooth fragment moves into immediate positioning.
 
-The production-preview browser gate runs against the international `dist/cloudflare` build through the custom strict preview server. It covers direct prerendered deep links, hydration, live client navigation, metadata/current-page state, fragment offsets on desktop and mobile, one representative lesson from every family, immediate cross-page scroll reset, real 404 behavior, focus, deferred game loading, seeded replay and round-stat lifecycles, and rejects browser console or page errors. Node contracts separately inspect both regional origins and build outputs.
+The production-preview browser gate runs against the `dist` build through the custom strict preview server. It covers direct prerendered deep links, hydration, live client navigation, metadata/current-page state, fragment offsets on desktop and mobile, one representative lesson from every family, immediate cross-page scroll reset, real 404 behavior, focus, deferred game loading, seeded replay and round-stat lifecycles, and rejects browser console or page errors. Node contracts separately inspect the origin, the discovery artifacts, and the build output.
 
 # Playback And Captions
 

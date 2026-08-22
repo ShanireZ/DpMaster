@@ -87,8 +87,8 @@ describe('isModuleLoadError', () => {
   // 三家浏览器措辞各不相同，而我们只拿得到 message。少认一种，那家浏览器的用户
   // 就完全走不到自动恢复 —— 而且不会有任何迹象表明少认了。
   it.each([
-    'Failed to fetch dynamically imported module: https://dp.betaoi.cn/assets/KnapsackGroup-CS9oy4kI.js',
-    'error loading dynamically imported module: https://dp.betaoi.cn/assets/KnapsackGroup-CS9oy4kI.js',
+    'Failed to fetch dynamically imported module: https://dp.round1.cc/assets/KnapsackGroup-CS9oy4kI.js',
+    'error loading dynamically imported module: https://dp.round1.cc/assets/KnapsackGroup-CS9oy4kI.js',
     'Importing a module script failed.',
     'Failed to load module script: expected a JavaScript module',
   ])('recognises %s', (message) => {

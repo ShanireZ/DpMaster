@@ -1,4 +1,4 @@
-import { BRAND, SITE_CONFIGS, SITE_ORIGIN, getRuntimeSiteConfig } from '../config/site.ts'
+import { BRAND, SITE, SITE_ORIGIN } from '../config/site.ts'
 import type { SiteConfig } from '../config/site.ts'
 import { getLesson, getPart } from '../data/catalog.ts'
 import { getLessonEditorial } from '../data/editorial.ts'
@@ -17,7 +17,6 @@ export interface PageMeta {
   description: string
   summary: string
   canonical: string | null
-  alternates: ReadonlyArray<{ hreflang: string; href: string }>
   ogType: 'website' | 'article'
   routeKind: 'home' | 'family' | 'lesson' | 'static' | 'not-found'
   indexable: boolean
@@ -69,23 +68,6 @@ function href(origin: string, path: string): string {
   return `${origin}${path}`
 }
 
-function alternates(path: string): PageMeta['alternates'] {
-  return [
-    {
-      hreflang: SITE_CONFIGS.international.hreflang,
-      href: href(SITE_CONFIGS.international.origin, path),
-    },
-    {
-      hreflang: SITE_CONFIGS.china.hreflang,
-      href: href(SITE_CONFIGS.china.origin, path),
-    },
-    {
-      hreflang: 'x-default',
-      href: href(SITE_CONFIGS.international.origin, path),
-    },
-  ]
-}
-
 function meta(
   site: SiteConfig,
   path: string,
@@ -108,7 +90,6 @@ function meta(
     description,
     summary: options.summary ?? description,
     canonical: href(site.origin, path),
-    alternates: alternates(path),
     ogType,
     routeKind,
     indexable: true,
@@ -122,7 +103,7 @@ function meta(
 
 export function getPageMeta(
   pathname: string,
-  site: SiteConfig = getRuntimeSiteConfig(),
+  site: SiteConfig = SITE,
   lastModified?: string,
 ): PageMeta {
   const path = normalizePathname(pathname)
@@ -164,7 +145,6 @@ export function getPageMeta(
       description: internalMeta.description,
       summary: internalMeta.description,
       canonical: null,
-      alternates: [],
       ogType: 'website',
       routeKind: 'static',
       indexable: false,
@@ -235,7 +215,6 @@ export function getPageMeta(
     description: `该页面不在${BRAND.name}当前的课程目录中，请返回首页、家族目录或题目索引继续学习动态规划。`,
     summary: '请求的页面不在当前课程目录中。',
     canonical: null,
-    alternates: [],
     ogType: 'website',
     routeKind: 'not-found',
     indexable: false,

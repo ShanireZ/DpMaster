@@ -27,12 +27,7 @@ pnpm-debug.log*
 !.env.example
 .dev.vars
 .dev.vars.*
-# 忽略 .edgeone/ 的内容而非目录本身 —— 目录一旦被排除，里面的文件就再也无法用 ! 重新纳入，
-# 而 project.example.json 是要提交的模板。
-**/.edgeone/*
-!**/.edgeone/project.example.json
 **/.wrangler/
-**/.tef_dist/
 **/wrangler-account.json
 **/node_modules/.cache/wrangler/
 
