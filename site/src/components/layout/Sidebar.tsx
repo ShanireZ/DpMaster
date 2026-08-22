@@ -119,7 +119,7 @@ export default function Sidebar({ onNavigate }: { onNavigate?: () => void }) {
       <footer className="sidebar-footer" aria-label="站点信息">
         <p className="sidebar-footer__motto">{BRAND.slogan}</p>
         <p className="sidebar-footer__copyright">
-          © 2026 {BRAND.owner}. All rights reserved.
+          © 2026 {BRAND.copyrightHolder}. All rights reserved.
         </p>
       </footer>
     </div>
