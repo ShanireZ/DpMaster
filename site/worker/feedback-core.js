@@ -256,24 +256,31 @@ export function createFeedbackLimiter({ limit = DEFAULT_LIMIT, windowMs = DEFAUL
 
 const defaultLimiter = createFeedbackLimiter()
 
+/**
+ * 拼投递到 IM 的消息文本。
+ * ★ 诊断信息（浏览器 / 设备 / 视口 / 区域 / UA）是**用户勾选才附带**的，默认不带。
+ * 这些行必须在缺省时整行省略，否则绝大多数反馈都会带一串空标签。
+ * 规则与 FeedbackWidget 的「复制反馈内容」兜底文本保持一致。
+ */
 function buildText(data, id) {
-  const lines = [
+  return [
     '🐞 DP大师 · 问题反馈',
     `编号：${id}`,
     `类型：${clip(data.kind, 20)}`,
     `页面：${clip(data.page, 120)}（${clip(data.path, 160)}）`,
     `描述：${clip(data.description, 2000)}`,
+    data.contact && `联系：${clip(data.contact, 120)}`,
+    data.url && `网址：${clip(data.url, 500)}`,
+    data.browser && `浏览器：${clip(data.browser, 160)}`,
+    data.device && `设备：${clip(data.device, 240)}`,
+    data.viewport && `视口：${clip(data.viewport, 40)}；屏幕：${clip(data.screen, 80)}`,
+    data.locale && `区域：${clip(data.locale, 80)}；时区：${clip(data.timezone, 120)}`,
+    data.ua && `UA：${clip(data.ua, 300)}`,
+    `IP：${clip(data.ip, 80)}`,
+    `时间：${clip(data.ts, 40)}`,
   ]
-  if (data.contact) lines.push(`联系：${clip(data.contact, 120)}`)
-  if (data.url) lines.push(`网址：${clip(data.url, 500)}`)
-  lines.push(`浏览器：${clip(data.browser, 160)}`)
-  lines.push(`设备：${clip(data.device, 240)}`)
-  lines.push(`视口：${clip(data.viewport, 40)}；屏幕：${clip(data.screen, 80)}`)
-  lines.push(`区域：${clip(data.locale, 80)}；时区：${clip(data.timezone, 120)}`)
-  lines.push(`UA：${clip(data.ua, 300)}`)
-  lines.push(`IP：${clip(data.ip, 80)}`)
-  lines.push(`时间：${clip(data.ts, 40)}`)
-  return lines.join('\n')
+    .filter(Boolean)
+    .join('\n')
 }
 
 export function handleFeedback(request, env = {}, runtime = {}) {
