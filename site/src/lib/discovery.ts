@@ -14,23 +14,26 @@ function xml(value: string): string {
 }
 
 /**
- * 显式列出生成式引擎与 AI 检索抓取器。`User-agent: *` 已经放行全部，
- * 但 Google-Extended / Applebot-Extended 是「不列即视为拒绝」的选择性令牌，
- * 其余几个列出来是给引擎一个明确的同意信号。
+ * 只列出**检索 / 引用类**抓取器，不列训练类。
+ *
+ * ★ 这份 robots.txt 到了边缘还会被 Cloudflare 的 AI Crawl Control 在前面拼上
+ * 一段托管内容，那段声明 `Content-Signal: search=yes,ai-train=no,use=reference`
+ * 并 Disallow 全部训练类抓取器（GPTBot / ClaudeBot / CCBot / Google-Extended /
+ * Applebot-Extended / Bytespider / Amazonbot / meta-externalagent）。站点立场就是
+ * 托管段那一条：**可以被检索并引用，不提供训练**。
+ *
+ * 所以这里只放行不被托管段拦的那几个。曾经把训练类也列进来，结果同一个文件里
+ * 同一个 user-agent 既 Disallow 又 Allow —— 各家抓取器的分组合并与优先级实现
+ * 并不一致，那种写法的实际效果是未定义的。要改立场，先改 Cloudflare Dashboard，
+ * 再改这里，两边必须同向。
  */
 const AI_CRAWLERS = Object.freeze([
-  'GPTBot',
   'OAI-SearchBot',
   'ChatGPT-User',
-  'ClaudeBot',
-  'Claude-User',
-  'Claude-SearchBot',
   'PerplexityBot',
   'Perplexity-User',
-  'Google-Extended',
-  'Applebot-Extended',
-  'CCBot',
-  'Bytespider',
+  'Claude-User',
+  'Claude-SearchBot',
 ])
 
 interface RouteSummary {
@@ -100,7 +103,8 @@ export function generateDiscoveryFiles(
     'User-agent: *',
     'Allow: /',
     '',
-    '# 生成式引擎与 AI 检索抓取器：欢迎引用本站课程，请保留原文链接与页面标题。',
+    '# AI 检索与引用抓取器：欢迎引用本站课程，请保留原文链接与页面标题。',
+    '# 训练类抓取器不在此列 —— 站点立场是「可检索引用、不提供训练」。',
     ...AI_CRAWLERS.map((agent) => `User-agent: ${agent}`),
     'Allow: /',
     '',

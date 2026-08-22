@@ -166,9 +166,14 @@ test('discovery files expose the 47 approved URLs and real summaries', async () 
   assert.match(robots, /User-agent:\s*\*/)
   assert.match(robots, /Allow:\s*\//)
   assert.match(robots, /Sitemap: https:\/\/dp\.round1\.cc\/sitemap\.xml/)
-  // GEO：显式放行生成式引擎，包括两个「不列即视为拒绝」的选择性令牌。
-  for (const agent of ['GPTBot', 'ClaudeBot', 'PerplexityBot', 'Google-Extended', 'Applebot-Extended']) {
+  // GEO：显式放行检索 / 引用类抓取器。
+  for (const agent of ['OAI-SearchBot', 'ChatGPT-User', 'PerplexityBot', 'Claude-SearchBot']) {
     assert.ok(robots.includes(`User-agent: ${agent}` + NEWLINE), agent)
+  }
+  // ★ 训练类抓取器一律不列：Cloudflare 的托管段在边缘 Disallow 了它们，
+  // 这里再 Allow 就是同一个文件里自相矛盾，实际效果未定义。
+  for (const agent of ['GPTBot', 'ClaudeBot', 'CCBot', 'Google-Extended', 'Applebot-Extended', 'Bytespider']) {
+    assert.ok(!robots.includes(`User-agent: ${agent}` + NEWLINE), agent)
   }
 
   assert.equal(routeSummaries.routes.length, 47)
