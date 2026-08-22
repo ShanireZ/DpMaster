@@ -168,6 +168,45 @@ test('forwards the new schema with automatic diagnostics and server-derived IP',
   assert.doesNotMatch(text, /198\.51\.100\.8/)
 })
 
+test('a submission without opt-in diagnostics carries no empty label rows', async () => {
+  let forwarded
+  const { value: capturing } = runtime({
+    fetch: async (_url, init) => {
+      // ★ 钉钉/企微的 body 形状是 {msgtype, text:{content}} —— .text 是对象不是字符串。
+      forwarded = JSON.parse(init.body).text.content
+      return new Response('{}', { status: 200 })
+    },
+  })
+
+  // 诊断信息（浏览器 / 设备 / 视口 / 区域 / UA）默认不勾选，请求里根本没有这些字段。
+  const minimal = {
+    kind: '其他建议',
+    page: '首页',
+    path: '/',
+    description: '这一条不带任何诊断信息',
+    ts: '2026-08-22T10:00:00.000Z',
+  }
+  const response = await feedback.handleFeedback(
+    request(minimal),
+    { FEEDBACK_WEBHOOK_URL: 'https://hooks.example.test' },
+    capturing,
+  )
+  assert.equal(response.status, 200)
+
+  // ★ 缺省项必须整行省略，而不是留下「浏览器：」这种空标签。
+  for (const label of ['浏览器', '设备', '视口', '区域', 'UA', '联系', '网址']) {
+    assert.doesNotMatch(forwarded, new RegExp(`${label}：`), label)
+  }
+  // 恒有的字段仍要在。
+  assert.match(forwarded, /编号：/)
+  assert.match(forwarded, /类型：其他建议/)
+  assert.match(forwarded, /描述：这一条不带任何诊断信息/)
+  assert.match(forwarded, /IP：203\.0\.113\.42/)
+  assert.match(forwarded, /时间：/)
+  // 不留空行。
+  assert.doesNotMatch(forwarded, /\n\s*\n/)
+})
+
 test('derives IP from CF-Connecting-IP, ignoring forgeable headers and body fields', async () => {
   const { value, logs } = runtime({
     fetch: async () => new Response('{}', { status: 200 }),
