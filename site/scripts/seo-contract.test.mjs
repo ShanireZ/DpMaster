@@ -248,7 +248,7 @@ test('build contracts provide one Cloudflare output, SSR prerendering, hydration
   assert.match(wrangler, /"zone_name":\s*"round1\.cc"/)
   assert.match(wrangler, /"directory":\s*"\.\/dist\/"/)
   assert.match(preview, /const status = file \? 200 : 404/)
-  assert.match(preview, /resolve\('dist'\)/)
+  assert.match(preview, /new URL\('\.\.\/dist\/', import\.meta\.url\)/)
   assert.equal(packageJson.scripts.build, 'tsc -b && node scripts/build.mjs')
   assert.equal(packageJson.scripts.release, 'pnpm verify && pnpm deploy:cf')
   assert.equal(packageJson.scripts['deploy:eo'], undefined)
