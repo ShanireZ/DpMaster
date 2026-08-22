@@ -1,6 +1,7 @@
 import { createReadStream, existsSync, statSync } from 'node:fs'
 import { createServer } from 'node:http'
 import { extname, join, normalize, resolve, sep } from 'node:path'
+import { fileURLToPath } from 'node:url'
 
 const args = process.argv.slice(2)
 const valueAfter = (flag, fallback) => {
@@ -9,7 +10,9 @@ const valueAfter = (flag, fallback) => {
 }
 const host = valueAfter('--host', '127.0.0.1')
 const port = Number(valueAfter('--port', '4173'))
-const root = resolve('dist')
+// 相对脚本自身解析，而不是相对 cwd：Playwright 从 site/ 启动，
+// 工作区级 launch.json 从工作区根启动，两边都要能找到产物。
+const root = resolve(fileURLToPath(new URL('../dist/', import.meta.url)))
 
 const contentTypes = {
   '.css': 'text/css; charset=utf-8',
