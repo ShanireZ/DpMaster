@@ -116,23 +116,11 @@ export default function Sidebar({ onNavigate }: { onNavigate?: () => void }) {
         </NavLink>
       </nav>
 
-      <footer className="sidebar-records" aria-label="备案信息">
-        <div className="sidebar-records__intro">
-          <p className="sidebar-records__motto">{BRAND.slogan}</p>
-          <p className="sidebar-records__copyright">
-            © 2026 {BRAND.owner}. All rights reserved.
-          </p>
-        </div>
-        <div className="sidebar-record">
-          <img className="sidebar-record__icon" src="/beian.png" alt="" />
-          <span>鲁公网安备37100202000975号</span>
-        </div>
-        <a
-          className="sidebar-record sidebar-record--icp"
-          href="https://beian.miit.gov.cn/"
-        >
-          鲁ICP备2026039717号
-        </a>
+      <footer className="sidebar-footer" aria-label="站点信息">
+        <p className="sidebar-footer__motto">{BRAND.slogan}</p>
+        <p className="sidebar-footer__copyright">
+          © 2026 {BRAND.owner}. All rights reserved.
+        </p>
       </footer>
     </div>
   )
