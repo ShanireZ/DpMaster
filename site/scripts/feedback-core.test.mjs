@@ -168,6 +168,86 @@ test('forwards the new schema with automatic diagnostics and server-derived IP',
   assert.doesNotMatch(text, /198\.51\.100\.8/)
 })
 
+test('the IP line is annotated with the Cloudflare-derived region', async () => {
+  let forwarded
+  const { value } = runtime({
+    fetch: async (_url, init) => {
+      forwarded = JSON.parse(init.body).text.content
+      return new Response('{}', { status: 200 })
+    },
+  })
+  const req = request()
+  // request.cf 由 Cloudflare 边缘填充，客户端伪造不了。
+  req.cf = { country: 'BR', region: 'Sao Paulo', city: 'Sao Paulo', timezone: 'America/Sao_Paulo' }
+
+  const response = await feedback.handleFeedback(
+    req,
+    { FEEDBACK_WEBHOOK_URL: 'https://hooks.example.test' },
+    value,
+  )
+  assert.equal(response.status, 200)
+  // 国家码转中文；region 与 city 重复时只保留一份。
+  assert.match(forwarded, /IP：203\.0\.113\.42（巴西 · Sao Paulo）/)
+})
+
+test('region and city are both kept when they differ', async () => {
+  let forwarded
+  const { value } = runtime({
+    fetch: async (_url, init) => {
+      forwarded = JSON.parse(init.body).text.content
+      return new Response('{}', { status: 200 })
+    },
+  })
+  const req = request()
+  req.cf = { country: 'US', region: 'Texas', city: 'Austin' }
+  await feedback.handleFeedback(req, { FEEDBACK_WEBHOOK_URL: 'https://hooks.example.test' }, value)
+  assert.match(forwarded, /IP：203\.0\.113\.42（美国 · Texas · Austin）/)
+})
+
+test('no request.cf means the IP line carries no empty parentheses', async () => {
+  let forwarded
+  const { value } = runtime({
+    fetch: async (_url, init) => {
+      forwarded = JSON.parse(init.body).text.content
+      return new Response('{}', { status: 200 })
+    },
+  })
+  await feedback.handleFeedback(
+    request(),
+    { FEEDBACK_WEBHOOK_URL: 'https://hooks.example.test' },
+    value,
+  )
+  assert.match(forwarded, /IP：203\.0\.113\.42\n/)
+  assert.doesNotMatch(forwarded, /IP：[^\n]*（）/)
+})
+
+test('★ a relayed submission drops the region: request.cf describes the relay host', async () => {
+  let forwarded
+  const { value } = runtime({
+    fetch: async (_url, init) => {
+      forwarded = JSON.parse(init.body).text.content
+      return new Response('{}', { status: 200 })
+    },
+  })
+  const req = request(VALID, {
+    'X-Dp-Relay-Secret': 'relay-secret-123',
+    'X-Dp-Client-Ip': '198.51.100.9',
+  })
+  // 这个 cf 描述的是 relay 主机所在地，不是访客的 —— 标上去就是错的。
+  req.cf = { country: 'SG', region: 'Singapore', city: 'Singapore' }
+
+  await feedback.handleFeedback(
+    req,
+    {
+      FEEDBACK_WEBHOOK_URL: 'https://hooks.example.test',
+      FEEDBACK_RELAY_SECRET: 'relay-secret-123',
+    },
+    value,
+  )
+  assert.match(forwarded, /IP：198\.51\.100\.9/)
+  assert.doesNotMatch(forwarded, /新加坡|Singapore/)
+})
+
 test('a submission without opt-in diagnostics carries no empty label rows', async () => {
   let forwarded
   const { value: capturing } = runtime({
