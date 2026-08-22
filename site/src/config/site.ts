@@ -3,8 +3,8 @@ export const BRAND = Object.freeze({
   subtitle: 'DP Master',
   /** 结构化数据里的发布者 Organization，单一主体。 */
   owner: 'AzureL蔚澜算法',
-  /** 页脚版权行署名，与 `owner` 分开：版权由两方共同持有。 */
-  copyrightHolder: 'Round1 & AzureL蔚澜算法',
+  /** 页脚版权行署名，与 `owner` 分开。 */
+  copyrightHolder: 'Round1',
   slogan: '在算法的海洋中，我就是你的信标',
 })
 
