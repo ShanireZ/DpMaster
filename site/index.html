@@ -16,6 +16,20 @@
       } catch {}
       var dpPart = location.pathname.match(/^\/part\/([a-g])(?:\/|$)/);
       if (dpPart) document.documentElement.dataset.part = dpPart[1];
+      // 首页 hero 是 LCP 元素。这段脚本在 <body> 解析之前就知道主题，于是按真实
+      // 主题注入 preload，让正确那张图在最早的时刻开始下载；主题不匹配时，水合
+      // 后换 src 也能直接命中缓存，不再产生第二次网络请求。
+      if (location.pathname === '/') {
+        var dpHero = document.createElement('link');
+        dpHero.rel = 'preload';
+        dpHero.as = 'image';
+        dpHero.type = 'image/avif';
+        dpHero.fetchPriority = 'high';
+        var dpHeroBase = dpTheme === 'light' ? '/og/dpmaster-social-light' : '/og/dpmaster-social';
+        dpHero.imageSrcset = dpHeroBase + '-760.avif 760w, ' + dpHeroBase + '.avif 1200w';
+        dpHero.imageSizes = '100vw';
+        document.head.appendChild(dpHero);
+      }
     </script>
     <!-- dp-route-head:start -->
     <title>DP大师 · DP Master</title>
