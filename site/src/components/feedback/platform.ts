@@ -15,6 +15,17 @@
  *
  * 其他平台（macOS / Android / iOS）的 platformVersion 本身就是真实系统版本，
  * 原样展示即可。
+ *
+ * ## 拿不到的东西（查证过，别再试）
+ *
+ * - **Windows 的功能更新号（22H2 / 24H2 / 26H2…）拿不到。** 微软的映射表把
+ *   Win10 的每个功能更新单列（1507→1 … 21H2→10），但整个 Windows 11 只写作
+ *   「13+」，没有公布逐个功能更新的对应关系。凭 platformVersion 反推 26H2
+ *   只能靠猜，不做。
+ * - **Linux 完全拿不到版本，更拿不到发行版名。** MDN 明确写着
+ *   Sec-CH-UA-Platform-Version 「The version string on Linux is always empty」，
+ *   这是 UA-CH 刻意做的隐私冻结。所以「Ubuntu 26.04 LTS」这类标签无法实现，
+ *   Linux 只会显示 `Linux`。
  */
 export function platformLabel(platform: string, platformVersion: string): string {
   if (!platform) return ''
