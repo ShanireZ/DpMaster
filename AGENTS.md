@@ -49,9 +49,10 @@ pnpm verify
 
 ## Outbound delivery
 
-- Cloudflare 出口到钉钉 `oapi.dingtalk.com` 的 TLS 被系统性打断（2026-08 实测稳定 525）。国内站退役后，**Worker 到钉钉当前没有任何已验证通路**，反馈与告警送达是待决问题。
-- relay 协议（`FEEDBACK_RELAY_URL` + `x-dp-relay-secret` / `x-dp-client-ip` / `x-dp-relay-kind`）保留且有测试覆盖，`site/worker/feedback-core.js` 同时是 relay 主机侧的参考实现。不要因为“暂时没用上”就删掉它。
-- 选型前先跑 `POST /api/_diag/egress` 出口探针拿真实错误，方案与判据见 `deploy.md` 的「反馈与告警送达」。定案后必须同步 `deploy.md`、`docs/operations/analytics.md` 与本节，并从 Worker 变量里删掉 `EGRESS_DIAG_SECRET`。
+- Cloudflare 反代出口（`fetch()`）到钉钉的 TLS 被系统性打断，稳定 525；而 `connect()`（`cloudflare:sockets`）的出口前缀不在 CF 公开 IP 段内，实测可直达。投递因此走 `site/worker/socket-fetch.js`。
+- ★ **投递顺序必须是「fetch 优先，52x 或抛错才降级到 socket」，不得反过来。** `connect()` 被禁止连 Cloudflare 自己的 IP 段，socket 优先会打死所有托管在 CF 后面的 webhook（Discord / Slack）。普通 4xx/5xx 是对端应用层的回复，不重试。这三条都有测试锁着。
+- relay 协议（`FEEDBACK_RELAY_URL` + `x-dp-relay-secret` / `x-dp-client-ip` / `x-dp-relay-kind`）保留且有测试覆盖，`site/worker/feedback-core.js` 同时是 relay 主机侧的参考实现。当前用不上，但不要因为“暂时没用上”就删掉它。
+- `POST /api/_diag/egress` 是出口探针，只在配了 `EGRESS_DIAG_SECRET` 时存在。★ 删除 secret 后必须**重新部署**才真正关闭 —— secret 是按版本绑定的。
 
 ## Toolchain and compatibility
 

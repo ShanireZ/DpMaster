@@ -188,7 +188,7 @@ pnpm deploy:cf
 | `ALERT_WEBHOOK_URL`       | Secret |           否 | 独立告警机器人；建议与反馈用不同的群或频道。 |
 | `ALERT_WEBHOOK_KIND`      | Text   |           否 | 告警机器人类型，默认沿用反馈类型。           |
 | `ALERT_WEBHOOK_SECRET`    | Secret | 加签模式选填 | 告警机器人的签名密钥。                       |
-| `EGRESS_DIAG_SECRET`      | Secret |           否 | 启用 `POST /api/_diag/egress`。排查期之外应删除。 |
+| `EGRESS_DIAG_SECRET`      | Secret |           否 | 启用 `POST /api/_diag/egress`。排查期之外应删除，**并重新部署**（secret 按版本绑定）。 |
 
 CLI 设置 Secret：
 
@@ -311,7 +311,7 @@ Invoke-WebRequest `
 
 ## 反馈与告警送达
 
-★ **这条链路当前是断的，需要先定方案。**
+★ **方案已定并落地：Worker 内经 raw socket 直发钉钉。**
 
 Cloudflare 数据中心出口到钉钉 `oapi.dingtalk.com` 的 TLS 握手被系统性打断，稳定 525（2026-08 多轮实测复现；普通海外节点到钉钉正常）。旧架构靠「浏览器跨域直连国内站 → 国内站转发进钉钉」绕开，国内站退役后这条路没了。
 
@@ -340,9 +340,21 @@ POST 往返（`{"mode":"post"}`，不带 token，不投递任何消息）同样�
 
 ★ **原来「Cloudflare 出口到中国境内基础设施不通」这个说法是错的**：海外的 `open.larksuite.com` 同样 525，而 `api.telegram.org` 正常。这不是地理问题，是特定一批对端拒绝 Cloudflare 反代出口；`connect()` 换了出口前缀就通了（官方文档：TCP 出站的出口前缀不在 Cloudflare 公开 IP 段内）。
 
-代码侧的 relay 协议（`FEEDBACK_RELAY_URL` + `x-dp-relay-secret` / `x-dp-client-ip` / `x-dp-relay-kind: alert`）完整保留且有测试覆盖，只是没有主机指向它。`site/worker/feedback-core.js` 既是 Worker 处理器，也是 relay 主机侧的参考实现。
+**实现：`site/worker/socket-fetch.js` 是一个最小 HTTPS 客户端，走 `cloudflare:sockets` 的 `connect()`。`forwardWebhook` 的投递顺序是「fetch 优先，只有在 Cloudflare 到源站那一跳失败（52x 或直接抛错）时才降级到 socket」。**
 
-**第一步是实测，不是选型。** 先在 Worker 上配 `EGRESS_DIAG_SECRET`，跑一次出口探针：
+★ 顺序不能反。`connect()` 被禁止连 Cloudflare 自己的 IP 段（探针里 `www.cloudflare.com` 那条就是这么失败的），而 Discord / Slack 这类 webhook 常托管在 Cloudflare 后面 —— socket 优先会把它们全打死。反过来钉钉稳定给 525，正好触发降级。普通 4xx/5xx 是对端应用层的回复，不重试。
+
+投递结果里会带 `transport` 字段（`fetch` / `socket` / `fetch+socket`），排查时一眼看出走的哪条出口。两条都失败时保留 fetch 的结论并附上 socket 的错误原因。
+
+代码侧的 relay 协议（`FEEDBACK_RELAY_URL` + `x-dp-relay-secret` / `x-dp-client-ip` / `x-dp-relay-kind: alert`）完整保留且有测试覆盖，但**现在用不上了** —— 留着是为了日后真需要中转时不用重写。`site/worker/feedback-core.js` 既是 Worker 处理器，也是 relay 主机侧的参考实现。
+
+需要在 Worker 上配的只剩两个：`FEEDBACK_WEBHOOK_URL`（带 `access_token` 的完整钉钉 webhook URL）与 `FEEDBACK_WEBHOOK_SECRET`（加签密钥，`SEC` 开头）。加签是在选出口之前算的，所以降级到 socket 时 `timestamp` / `sign` 原样带上。
+
+## 出口探针
+
+★ 排查完请把 `EGRESS_DIAG_SECRET` 删掉，并**重新部署一次**：secret 是按版本绑定的，只在 Dashboard 删除只会创建新版本，当前生效的版本里还带着它，端点依然可用（2026-08-22 实测确认过这个坑）。
+
+要再测一次出口时，配上 `EGRESS_DIAG_SECRET` 并部署，然后：
 
 ```bash
 curl.exe -s -X POST https://dp.round1.cc/api/_diag/egress -H "x-dp-diag-secret: THE_SECRET"
@@ -354,7 +366,7 @@ curl.exe -s -X POST https://dp.round1.cc/api/_diag/egress -H "x-dp-diag-secret: 
 
 | 方案 | 保钉钉 | 需要额外组件 | 说明 |
 | --- | :--: | --- | --- |
-| raw socket 直连 | 是 | 无 | 用 `cloudflare:sockets` 手写 HTTPS 请求；探针先证明可达。 |
+| raw socket 直连 | 是 | 无 | ✅ **已采用**：用 `cloudflare:sockets` 手写 HTTPS 请求。 |
 | 换钉钉接入点 | 是 | 无 | `api.dingtalk.com` 与 `oapi.dingtalk.com` 是不同 ingress。 |
 | 换通知渠道 | 否 | 无 | Telegram / Discord / Slack / Lark 国际版；`webhookBody()` 已支持多数格式。 |
 | Cloudflare Tunnel + Workers VPC | 是 | 一台常开机器 | 跑 `cloudflared`，Worker 用 `vpc_networks` 绑定后投递。无公网 IP、无入站端口、无需备案；Workers VPC 目前 beta 且对所有 Workers 计划免费。 |
