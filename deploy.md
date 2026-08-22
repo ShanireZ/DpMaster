@@ -283,8 +283,15 @@ Disallow: /
 
 前端只调用统一的 `trackAnalyticsEvent`，事件白名单见 `site/src/analytics/index.ts`。
 
-- Cloudflare Web Analytics / RUM 由 Cloudflare 代理**自动注入**，Rocket Loader 保持关闭。源码与预渲染产物都不得再加手工 beacon；`pnpm check:html` 会在构建后拒绝任何一份带 beacon 的 HTML。
-  ★ **上线实测：`dp.round1.cc` 上还没有自动注入。** `curl https://dp.round1.cc/ | grep cloudflareinsights` 无输出。自动注入是**按主机名**在 Dashboard 里开的，旧域名上的开关不会跟着域名迁移过来。需要到 Cloudflare Dashboard → Web Analytics 为 `dp.round1.cc` 新建/启用一次，然后重新 `curl` 确认 HTML 里出现 `cloudflareinsights` 才算恢复。在此之前只有第一方 `/api/analytics` 事件在记录，没有独立的 RUM 曲线。
+- Cloudflare Web Analytics / RUM 由 Cloudflare 代理**自动注入**，Rocket Loader 保持关闭。源码与预渲染产物都不得再加手工 beacon；`pnpm check:html` 会在构建后拒绝任何一份带 beacon 的 HTML。域名迁移后无需任何操作：`round1.cc` 整个 zone 在 Cloudflare 上，注入照常，Core Web Vitals（LCP / INP / CLS）按 URL 拆分可见。
+
+  ★ **别用光秃秃的 `curl` 判断注入是否生效。** 自动注入只对**看起来像真实浏览器导航**的请求生效，裸 `curl` 拿到的 HTML 里没有 beacon，据此会得出「没生效」的错误结论（2026-08-22 就这么误判过一次）。要验证请带上浏览器请求头：
+
+  ```bash
+  curl.exe -s https://dp.round1.cc/ -H "User-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64) Chrome/140" -H "Accept: text/html" -H "Sec-Fetch-Mode: navigate" -H "Sec-Fetch-Dest: document" | findstr cloudflareinsights
+  ```
+
+  更可靠的判据是直接看 Dashboard 的 Web Analytics 面板有没有 Core Web Vitals 曲线。
 - 站内路由、学习与反馈漏斗事件发送到同源 `/api/analytics`，成功返回 204，由 Worker 写入 `dpmaster` Analytics Engine 数据集。
 - 接收器拒绝跨站请求、未知事件、未知 Provider、非 JSON 和过大请求；只记录裁剪后的路径、标题及少量原始类型元数据，不读取反馈内容、联系方式、Cookie 或账号标识。
 - 统计失败由客户端静默降级，不影响课程、小游戏、导航或反馈提交。
