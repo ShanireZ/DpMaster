@@ -22,6 +22,7 @@
   },
   "scripts": {
     "dev": "vite",
+    "baseline:check": "node scripts/check-baseline.mjs",
     "prebuild": "pnpm content:generate && pnpm seo:generate",
     "build": "tsc -b && node scripts/build.mjs",
     "test": "node --test scripts/*.test.mjs",
@@ -35,12 +36,15 @@
     "check:html": "node scripts/check-html.mjs",
     "check:assets": "node scripts/check-assets.mjs dist/assets",
     "test:browser": "playwright test",
-    "verify": "pnpm check:content && pnpm check:seo && pnpm test && pnpm test:unit && pnpm lint && pnpm build && pnpm check:html && pnpm test:browser && pnpm check:assets",
+    "verify": "pnpm baseline:check && pnpm check:content && pnpm check:seo && pnpm test && pnpm test:unit && pnpm lint && pnpm build && pnpm check:html && pnpm test:browser && pnpm check:assets",
     "maintenance:check": "node scripts/check-toolchain-drift.mjs",
     "preview": "node scripts/preview.mjs",
     "deploy:cf": "wrangler deploy",
     "release": "pnpm verify && pnpm deploy:cf"
   },
+  "browserslist": [
+    "baseline widely available with downstream"
+  ],
   "dependencies": {
     "@fontsource/jetbrains-mono": "^5.3.0",
     "@fontsource/space-grotesk": "^5.3.0",
@@ -63,6 +67,7 @@
     "@types/react": "^19.2.17",
     "@types/react-dom": "^19.2.3",
     "@vitejs/plugin-react": "^6.0.4",
+    "browserslist": "4.28.7",
     "jsdom": "^30.0.1",
     "oxc-parser": "^0.142.0",
     "oxlint": "^1.76.0",

@@ -56,6 +56,8 @@ pnpm verify
 
 ## Toolchain and compatibility
 
+- Web Platform Baseline：`runtime: public-web`、`featureTarget: newly`；生产构建由 `site/baseline-targets.ts` 显式冻结为 Vite 8 的 Widely 目标，`baseline widely available with downstream` 只用于能力审查，不会被误写成 Vite 自动消费的构建配置。
+- `pnpm baseline:check` 校验四大桌面引擎、iOS 与 downstream、批准版本快照及 `vite.config.ts build.target` 接线；它是 `pnpm verify` 的第一道门。六字段声明见 `site/baseline.config.json`。
 - Node 固定在 24 LTS 最新成熟补丁，pnpm 固定在 11 最新成熟版本；直接依赖使用当前稳定主线的 `^` 范围，`pnpm-lock.yaml` 是 CI 的精确解析合同。
 - `site/pnpm-workspace.yaml` 强制 24 小时发布隔离、Node 引擎、依赖构建脚本白名单和依赖状态检查。不得通过排除项、宽松模式或其他包管理器绕过。
 - TypeScript、React、Vite、Oxlint、Vitest、Playwright 和其余依赖保持当前稳定主线。版本升级作为独立 task，经完整验证后形成一个 commit。

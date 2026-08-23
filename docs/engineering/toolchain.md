@@ -7,6 +7,8 @@ status: stable
 generated: { by: openai/codex, at: 2026-07-31T15:32:38+08:00 }
 sources:
   - resource: ../../site/package.json
+  - resource: ../../site/baseline.config.json
+  - resource: ../../site/baseline-targets.ts
   - resource: ../../site/pnpm-workspace.yaml
   - resource: ../../.github/workflows/ci.yml
   - resource: ../../.github/workflows/toolchain-drift.yml
@@ -36,6 +38,8 @@ TypeScript 7 is the source compiler. Oxlint uses TypeScript-aware analysis and t
 Production source uses ESM and current browser standards. Do not add CommonJS shims, legacy browser polyfills, deprecated platform APIs, transitional CLI commands, compatibility selectors, or lint suppression for obsolete behavior. If a required capability has no modern implementation, stop the task and request a user decision with evidence instead of adding a temporary compatibility layer.
 
 The supported browser contract is the current and previous major versions of Chrome, Edge, Firefox, and Safari. Chromium runs the complete automated browser gate; Firefox and WebKit run the tagged cross-browser smoke gate. Real Edge, Safari, and previous-major behavior are checked before a production release.
+
+Web Platform Baseline uses `newly` as the feature ceiling. Vite does not consume Browserslist, so `vite.config.ts` receives the explicit frozen Widely target array from `baseline-targets.ts`; the moving `baseline widely available with downstream` query is an audit input only. `pnpm baseline:check` rejects missing engines, an unapproved query advance, or a disconnected Vite target before the rest of `pnpm verify` runs.
 
 # Maintenance and release
 
