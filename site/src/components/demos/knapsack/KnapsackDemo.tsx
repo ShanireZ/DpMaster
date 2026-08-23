@@ -21,7 +21,9 @@ function Stepper({
 }) {
   const [draft, setDraft] = useState(String(value))
 
-  useEffect(() => setDraft(String(value)), [value])
+  useEffect(() => {
+    queueMicrotask(() => setDraft(String(value)))
+  }, [value])
 
   const commit = () => {
     const parsed = Number(draft)

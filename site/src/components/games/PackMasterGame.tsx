@@ -72,11 +72,18 @@ export default function PackMasterGame() {
   const startRound = round.start
 
   useLayoutEffect(() => {
-    const nextGame = buildPackRound(difficulty, createSeededRandom(roundSeed.seed))
-    setGame(nextGame)
-    setSel(nextGame.items.map(() => false))
-    setRevealed(false)
-    startRound()
+    let active = true
+    queueMicrotask(() => {
+      if (!active) return
+      const nextGame = buildPackRound(difficulty, createSeededRandom(roundSeed.seed))
+      setGame(nextGame)
+      setSel(nextGame.items.map(() => false))
+      setRevealed(false)
+      startRound()
+    })
+    return () => {
+      active = false
+    }
   }, [difficulty, roundSeed, startRound])
 
   const opt = useMemo(() => solveZeroOneKnapsack(game.items, game.cap), [game])

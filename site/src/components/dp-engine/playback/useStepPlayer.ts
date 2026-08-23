@@ -51,20 +51,26 @@ export function useStepPlayer(count: number): StepPlayer {
 
   useEffect(() => {
     if (!playing) return
-    if (index >= safeCount - 1 || safeCount <= 1) {
-      setPlaying(false)
-      return
-    }
+    if (index >= safeCount - 1 || safeCount <= 1) return
     const timer = window.setTimeout(() => {
-      setIndexRaw((current) => nextPlaybackIndex(current, safeCount))
+      const nextIndex = nextPlaybackIndex(index, safeCount)
+      setIndexRaw(nextIndex)
+      if (nextIndex >= safeCount - 1) setPlaying(false)
     }, 640 / speed)
     return () => window.clearTimeout(timer)
   }, [index, playing, safeCount, speed])
 
   // 更换输入/帧轨时暂停，并把焦点帧拉回有效范围。
   useEffect(() => {
-    setPlaying(false)
-    setIndexRaw((current) => clampPlaybackIndex(current, safeCount))
+    let active = true
+    queueMicrotask(() => {
+      if (!active) return
+      setPlaying(false)
+      setIndexRaw((current) => clampPlaybackIndex(current, safeCount))
+    })
+    return () => {
+      active = false
+    }
   }, [safeCount])
 
   return useMemo(

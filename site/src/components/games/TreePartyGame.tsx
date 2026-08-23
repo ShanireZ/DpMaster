@@ -66,11 +66,18 @@ export default function TreePartyGame() {
   const startRound = round.start
 
   useLayoutEffect(() => {
-    const nextGame = buildPartyRound(difficulty, createSeededRandom(roundSeed.seed))
-    setGame(nextGame)
-    setSel(nextGame.weight.map(() => false))
-    setRevealed(false)
-    startRound()
+    let active = true
+    queueMicrotask(() => {
+      if (!active) return
+      const nextGame = buildPartyRound(difficulty, createSeededRandom(roundSeed.seed))
+      setGame(nextGame)
+      setSel(nextGame.weight.map(() => false))
+      setRevealed(false)
+      startRound()
+    })
+    return () => {
+      active = false
+    }
   }, [difficulty, roundSeed, startRound])
 
   const tree = useMemo(() => buildRootedTree(game.parent, game.weight), [game])

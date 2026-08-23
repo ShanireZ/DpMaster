@@ -70,7 +70,7 @@ pnpm add -g wrangler      # gh 用 winget upgrade --id GitHub.cli
 
 | CLI | 当前基线 |
 | --- | --- |
-| wrangler | 4.123.0 |
+| wrangler | 4.125.0 |
 
 ## 部署前准备
 

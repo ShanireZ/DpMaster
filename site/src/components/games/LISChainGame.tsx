@@ -55,10 +55,17 @@ export default function LISChainGame() {
   const startRound = round.start
 
   useLayoutEffect(() => {
-    setSeq(buildSequenceRound(difficulty, createSeededRandom(roundSeed.seed)))
-    setSelOrder([])
-    setRevealed(false)
-    startRound()
+    let active = true
+    queueMicrotask(() => {
+      if (!active) return
+      setSeq(buildSequenceRound(difficulty, createSeededRandom(roundSeed.seed)))
+      setSelOrder([])
+      setRevealed(false)
+      startRound()
+    })
+    return () => {
+      active = false
+    }
   }, [difficulty, roundSeed, startRound])
 
   const dp = useMemo(() => solveLis(seq), [seq])

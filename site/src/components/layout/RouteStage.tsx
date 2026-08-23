@@ -11,7 +11,7 @@ export default function RouteStage() {
   const [hasMounted, setHasMounted] = useState(false)
 
   useEffect(() => {
-    setHasMounted(true)
+    queueMicrotask(() => setHasMounted(true))
   }, [])
 
   return (

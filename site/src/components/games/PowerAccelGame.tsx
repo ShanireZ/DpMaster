@@ -73,11 +73,18 @@ export default function PowerAccelGame() {
   const startRound = round.start
 
   useLayoutEffect(() => {
-    setTarget(buildExponentRound(difficulty, createSeededRandom(roundSeed.seed)))
-    setSteps([])
-    setPicks([])
-    setRevealed(false)
-    startRound()
+    let active = true
+    queueMicrotask(() => {
+      if (!active) return
+      setTarget(buildExponentRound(difficulty, createSeededRandom(roundSeed.seed)))
+      setSteps([])
+      setPicks([])
+      setRevealed(false)
+      startRound()
+    })
+    return () => {
+      active = false
+    }
   }, [difficulty, roundSeed, startRound])
 
   // 当前已达指数集合：{1} ∪ 每步的结果

@@ -25,7 +25,8 @@ export default function Shell() {
 
   useLayoutEffect(() => {
     try {
-      setSidebarCollapsed(window.localStorage.getItem(SIDEBAR_STORAGE_KEY) === 'true')
+      const collapsed = window.localStorage.getItem(SIDEBAR_STORAGE_KEY) === 'true'
+      queueMicrotask(() => setSidebarCollapsed(collapsed))
     } catch {
       // 隐私模式或禁用存储时仍保留当前会话内的侧栏状态。
     }
@@ -44,7 +45,7 @@ export default function Shell() {
     const initial = previousPath.current === undefined
     const changed = !initial && previousPath.current !== location.pathname
     previousPath.current = location.pathname
-    setMobileOpen(false)
+    queueMicrotask(() => setMobileOpen(false))
     let cancelHashScroll: (() => void) | undefined
     if (location.hash) {
       cancelHashScroll = scheduleHashScroll(

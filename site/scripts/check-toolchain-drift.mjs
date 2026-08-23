@@ -19,6 +19,12 @@ const actions = [
   ['pnpm/action-setup', 'v6'],
 ]
 
+// Shiki 4.4.3 把按需 C++ grammar chunk 从约 733 KB 推到 869 KB，突破已验证的
+// 单文件与总资源预算。保留这个可见、可巡检的固定点，直到上游体积回落或拆包方案通过门禁。
+const approvedPackagePins = {
+  shiki: '4.3.1',
+}
+
 const packageEntries = [
   ...Object.entries(packageJson.dependencies ?? {}),
   ...Object.entries(packageJson.devDependencies ?? {}),
@@ -72,7 +78,10 @@ async function latestPackageVersion(name) {
       (version) =>
         Date.parse(metadata.time?.[version] ?? 0) <= maturityCutoff,
     )
-    .filter((version) => name !== '@types/node' || version.startsWith('24.'))
+    .filter(
+      (version) =>
+        name !== '@types/node' || version.startsWith(`${nodeMajor}.`),
+    )
     .toSorted(compareVersions)
     .at(-1)
 }
@@ -105,10 +114,22 @@ async function latestActionMajor(repository) {
 const checks = []
 const failures = []
 
-async function record(label, current, getLatest) {
+async function record(
+  label,
+  current,
+  getLatest,
+  isDrifted = (declared, latest) => declared !== latest,
+  approval,
+) {
   try {
     const latest = await getLatest()
-    checks.push({ label, current, latest, drifted: current !== latest })
+    checks.push({
+      label,
+      current,
+      latest,
+      drifted: isDrifted(current, latest),
+      approval,
+    })
   } catch (error) {
     failures.push({
       label,
@@ -123,13 +144,23 @@ await Promise.all([
     'pnpm',
     packageJson.packageManager.replace(/^pnpm@/, ''),
     () => latestPackageVersion('pnpm'),
+    (current, latest) => compareVersions(current, latest) < 0,
   ),
   record('Wrangler CLI（全局）', globalCliBaselines.wrangler, () =>
     latestPackageVersion('wrangler'),
   ),
-  ...packageEntries.map(([name, range]) =>
-    record(name, numericVersion(range), () => latestPackageVersion(name)),
-  ),
+  ...packageEntries.map(([name, range]) => {
+    const approvedPin = approvedPackagePins[name]
+    return record(
+      name,
+      numericVersion(range),
+      () => latestPackageVersion(name),
+      approvedPin
+        ? (current) => current !== approvedPin
+        : (current, latest) => current !== latest,
+      approvedPin ? `资源预算批准固定 ${approvedPin}` : undefined,
+    )
+  }),
   ...actions.map(([repository, current]) =>
     record(`GitHub Action ${repository}`, current, () =>
       latestActionMajor(repository),
@@ -146,7 +177,7 @@ console.log(`生成时间：${new Date().toISOString()}`)
 console.log('')
 
 if (drifted.length === 0 && failures.length === 0) {
-  console.log('当前声明版本均处于约定的最新稳定主线。')
+  console.log('当前声明版本均处于约定的最新稳定主线或已批准固定点。')
 } else {
   if (drifted.length > 0) {
     console.log('## 待升级')
@@ -176,7 +207,7 @@ console.log('|---|---:|---:|---|')
 for (const check of checks) {
   console.log(
     `| ${check.label} | ${check.current} | ${check.latest} | ${
-      check.drifted ? '需升级' : '已对齐'
+      check.drifted ? '需升级' : (check.approval ?? '已对齐')
     } |`,
   )
 }

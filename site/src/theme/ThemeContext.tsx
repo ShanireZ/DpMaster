@@ -24,8 +24,11 @@ export function ThemeProvider({ children }: { children: ReactNode }) {
       } catch {
         /* ignore */
       }
-      if (saved === 'light') setTheme('light')
-      else document.documentElement.dataset.theme = 'dark'
+      if (saved === 'light') {
+        queueMicrotask(() => setTheme('light'))
+        return
+      }
+      document.documentElement.dataset.theme = 'dark'
       return
     }
     document.documentElement.dataset.theme = theme
