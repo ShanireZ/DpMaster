@@ -1,0 +1,44 @@
+{
+  "runtime": "public-web",
+  "featureTarget": "newly",
+  "buildTarget": {
+    "strategy": "explicit-browsers",
+    "targets": ["chrome111", "edge111", "firefox114", "safari16.4", "ios16.4"],
+    "consumer": "vite.config.ts build.target",
+    "reason": "显式冻结 Vite 8 的 Baseline Widely Available 目标，避免默认值随未来主版本静默改变。"
+  },
+  "policyQuery": "baseline widely available with downstream",
+  "downstream": {
+    "enabled": true,
+    "requiredBrowsers": ["android", "and_chr", "and_ff", "samsung"],
+    "reason": "公网学习站需要把 Chromium/Firefox Android 与 Samsung Internet 纳入能力审查。"
+  },
+  "requiredBrowsers": ["chrome", "edge", "firefox", "safari", "ios_saf"],
+  "approvedMinimums": {
+    "chrome": 121,
+    "edge": 121,
+    "firefox": 123,
+    "safari": 17.2,
+    "ios_saf": 17.2,
+    "android": 151,
+    "and_chr": 151,
+    "and_ff": 153,
+    "samsung": 25
+  },
+  "negativeQuery": "baseline newly available",
+  "criticalFallback": "Newly 能力必须渐进增强；课程正文、导航、题目索引和反馈入口在不支持时仍须可用。",
+  "verification": [
+    "pnpm baseline:check",
+    "pnpm verify",
+    "Chromium 全量 + Firefox/WebKit 跨浏览器冒烟",
+    "发布前真实 Edge/Safari 抽检",
+    "Cloudflare Web Analytics RUM 季度复核"
+  ],
+  "snapshot": {
+    "approvedAt": "2026-08-23",
+    "browserslist": "4.28.7",
+    "vite": "8.1.5",
+    "baselineBrowserMapping": "2.11.17",
+    "caniuseLite": "1.0.30001809"
+  }
+}

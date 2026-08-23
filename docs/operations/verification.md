@@ -19,7 +19,7 @@ Run from `site/`:
 pnpm verify
 ```
 
-`pnpm verify` checks generated content and discovery artifacts, runs Node and React tests, runs TypeScript-aware zero-warning lint with deprecated API rejection, builds and prerenders `dist/` with TypeScript 7, verifies the HTML contract (page count plus no manual Web Analytics beacon), runs the browser matrix, and enforces the asset budget on `dist/assets`.
+`pnpm verify` first runs `pnpm baseline:check`, then checks generated content and discovery artifacts, runs Node and React tests, runs TypeScript-aware zero-warning lint with deprecated API rejection, builds and prerenders `dist/` with TypeScript 7, verifies the HTML contract (page count plus no manual Web Analytics beacon), runs the browser matrix, and enforces the asset budget on `dist/assets`.
 
 To rerun only the browser smoke suite after a production build:
 
