@@ -45,6 +45,8 @@ Web Platform Baseline uses `newly` as the feature ceiling. Vite does not consume
 
 Dependency upgrades are independent tasks. `pnpm maintenance:check` compares the declared Node, pnpm, package, external deployment CLI, and GitHub Action baselines with the latest stable versions that have completed the 24-hour quarantine.
 
+Shiki is deliberately fixed at 4.3.1: 4.4.3 increased the lazily loaded C++ grammar chunk from about 733 KB to 869 KB and broke both the per-file and total asset budgets. The maintenance checker treats this as an explicit approved pin, not as silent drift; remove it only after a smaller upstream release or a verified split-loading design passes `pnpm verify`.
+
 The scheduled GitHub workflow maintains one rolling issue for drift. It does not edit source, create upgrade pull requests, or deploy. Pull requests and main-branch pushes run CI only.
 
 `pnpm release` is the sole complete production-release entry point. It runs the full verification gate once, reuses the resulting `dist/` artifact, and deploys the Cloudflare Worker. Production credentials stay local to the Wrangler CLI; GitHub Actions never receives them.

@@ -10,7 +10,7 @@ export function DeferredGame({ children, label }: { children: ReactNode; label: 
   useEffect(() => {
     if (ready || typeof window === 'undefined') return
     if (!('IntersectionObserver' in window)) {
-      setReady(true)
+      queueMicrotask(() => setReady(true))
       return
     }
 

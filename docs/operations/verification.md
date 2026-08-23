@@ -30,7 +30,7 @@ pnpm test:browser
 
 Install the local browser runtimes once with `pnpm exec playwright install chromium firefox webkit`. CI installs all three engines and their system dependencies before invoking the complete verification gate. Chromium runs all browser specifications; Firefox and WebKit run tests tagged `@cross-browser`.
 
-Algorithm verification runs directly on Node 24's TypeScript stripping support and includes:
+Algorithm verification runs directly on the repository-pinned Node runtime's TypeScript stripping support and includes:
 
 * independent small-case oracles or property checks for the primary outcome of all 39 public solver entry points that return the 38 named `*Result` Interfaces;
 * weighted and node-weighted reroot distance oracles, weighted in/out and eccentricity checks, exhaustive exact-`Q` root-connected tree-knapsack subsets, and exhaustive tree path, distance-two, independent-set, and dominating-set checks;

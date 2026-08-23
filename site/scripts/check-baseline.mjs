@@ -58,6 +58,8 @@ function policyErrors(query) {
 
 assert.equal(policy.buildTarget.consumer, 'vite.config.ts build.target')
 assert.deepEqual(VITE_BASELINE_TARGETS, policy.buildTarget.targets)
+assert.equal(packageJson.devDependencies.browserslist, policy.snapshot.browserslist)
+assert.equal(packageJson.devDependencies.vite.replace(/^\^/, ''), policy.snapshot.vite)
 assert.ok(
   packageJson.browserslist.includes(policy.policyQuery),
   'package.json 未声明 Baseline Widely with downstream 能力审查查询',

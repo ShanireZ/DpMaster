@@ -102,8 +102,15 @@ export default function StoneMergeGame() {
   }
 
   useLayoutEffect(() => {
-    resetWith(buildStoneRound(difficulty, createSeededRandom(roundSeed.seed)))
-    startRound()
+    let active = true
+    queueMicrotask(() => {
+      if (!active) return
+      resetWith(buildStoneRound(difficulty, createSeededRandom(roundSeed.seed)))
+      startRound()
+    })
+    return () => {
+      active = false
+    }
   }, [difficulty, roundSeed, startRound])
 
   // 点一堆：首点选中；再点相邻堆则合并；点非相邻堆则改选它；点自己则取消

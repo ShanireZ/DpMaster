@@ -54,11 +54,18 @@ export default function RerootGame() {
   const startRound = round.start
 
   useLayoutEffect(() => {
-    setN(DIFFS[difficulty].n)
-    setEdges(buildTreeRound(difficulty, createSeededRandom(roundSeed.seed)))
-    setRootSel(0)
-    setRevealed(false)
-    startRound()
+    let active = true
+    queueMicrotask(() => {
+      if (!active) return
+      setN(DIFFS[difficulty].n)
+      setEdges(buildTreeRound(difficulty, createSeededRandom(roundSeed.seed)))
+      setRootSel(0)
+      setRevealed(false)
+      startRound()
+    })
+    return () => {
+      active = false
+    }
   }, [difficulty, roundSeed, startRound])
 
   // 换根一次算好每点距离和（O(n)），并布局
