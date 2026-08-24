@@ -83,12 +83,18 @@ assert.equal(policy.downstream.enabled, true)
 assert.ok(policy.downstream.reason?.trim(), 'downstream 必须记录理由')
 assert.ok(policy.criticalFallback?.trim(), 'criticalFallback 不得为空')
 assert.ok(policy.verification?.length > 0, 'verification 不得为空')
-assert.match(policy.snapshot.approvedAt, /^\d{4}-\d{2}-\d{2}$/)
+assert.match(policy.snapshot.approvedAt, /^\d{4}-\d{2}-\d{2}$/u)
 const approvedAt = Date.parse(`${policy.snapshot.approvedAt}T00:00:00Z`)
+const normalizedApprovedAt = Number.isFinite(approvedAt)
+  ? new Date(approvedAt).toISOString().slice(0, 10)
+  : ''
+const now = new Date()
+const todayAt = Date.UTC(now.getFullYear(), now.getMonth(), now.getDate())
 assert.ok(
   Number.isFinite(approvedAt) &&
-    approvedAt <= Date.now() &&
-    Date.now() - approvedAt <= 100 * 24 * 60 * 60 * 1000,
+    normalizedApprovedAt === policy.snapshot.approvedAt &&
+    approvedAt <= todayAt &&
+    todayAt - approvedAt <= 92 * 24 * 60 * 60 * 1000,
   'Baseline 快照日期无效或已超过季度复核期',
 )
 assert.deepEqual(VITE_BASELINE_TARGETS, policy.buildTarget.targets)
