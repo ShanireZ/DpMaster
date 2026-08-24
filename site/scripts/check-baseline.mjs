@@ -1,14 +1,33 @@
 import assert from 'node:assert/strict'
+import { existsSync } from 'node:fs'
 import { readFile } from 'node:fs/promises'
-import { resolve } from 'node:path'
+import { createRequire } from 'node:module'
+import { dirname, resolve } from 'node:path'
 
 import browserslist from 'browserslist'
+import { loadConfigFromFile } from 'vite'
 
 import { VITE_BASELINE_TARGETS } from '../baseline-targets.ts'
 
 const root = process.cwd()
 const policy = JSON.parse(await readFile(resolve(root, 'baseline.config.json'), 'utf8'))
 const packageJson = JSON.parse(await readFile(resolve(root, 'package.json'), 'utf8'))
+const require = createRequire(import.meta.url)
+
+function packageJsonForModule(modulePath) {
+  let directory = dirname(modulePath)
+  while (true) {
+    const candidate = resolve(directory, 'package.json')
+    if (existsSync(candidate)) return candidate
+    const parent = dirname(directory)
+    if (parent === directory) throw new Error(`找不到 ${modulePath} 所属的 package.json`)
+    directory = parent
+  }
+}
+
+async function packageVersion(packageJsonPath) {
+  return JSON.parse(await readFile(packageJsonPath, 'utf8')).version
+}
 
 function parseVersion(raw) {
   const value = Number(raw.split('-')[0])
@@ -56,14 +75,59 @@ function policyErrors(query) {
   return errors
 }
 
+assert.equal(policy.runtime, 'public-web')
+assert.equal(policy.featureTarget, 'newly')
+assert.equal(policy.buildTarget.strategy, 'explicit-browsers')
 assert.equal(policy.buildTarget.consumer, 'vite.config.ts build.target')
+assert.equal(policy.downstream.enabled, true)
+assert.ok(policy.downstream.reason?.trim(), 'downstream 必须记录理由')
+assert.ok(policy.criticalFallback?.trim(), 'criticalFallback 不得为空')
+assert.ok(policy.verification?.length > 0, 'verification 不得为空')
+assert.match(policy.snapshot.approvedAt, /^\d{4}-\d{2}-\d{2}$/)
+const approvedAt = Date.parse(`${policy.snapshot.approvedAt}T00:00:00Z`)
+assert.ok(
+  Number.isFinite(approvedAt) &&
+    approvedAt <= Date.now() &&
+    Date.now() - approvedAt <= 100 * 24 * 60 * 60 * 1000,
+  'Baseline 快照日期无效或已超过季度复核期',
+)
 assert.deepEqual(VITE_BASELINE_TARGETS, policy.buildTarget.targets)
-assert.equal(packageJson.devDependencies.browserslist, policy.snapshot.browserslist)
-assert.equal(packageJson.devDependencies.vite.replace(/^\^/, ''), policy.snapshot.vite)
 assert.ok(
   packageJson.browserslist.includes(policy.policyQuery),
   'package.json 未声明 Baseline Widely with downstream 能力审查查询',
 )
+
+const loadedViteConfig = await loadConfigFromFile(
+  { command: 'build', mode: 'production', isSsrBuild: false, isPreview: false },
+  resolve(root, 'vite.config.ts'),
+  root,
+)
+assert.ok(loadedViteConfig, 'Vite 未能加载 vite.config.ts')
+assert.deepEqual(
+  loadedViteConfig.config.build?.target,
+  VITE_BASELINE_TARGETS,
+  'Vite 实际 build.target 没有消费共享 Baseline 目标',
+)
+
+const browserslistPackage = require.resolve('browserslist/package.json')
+const browserslistRequire = createRequire(browserslistPackage)
+const actualSnapshot = {
+  browserslist: await packageVersion(browserslistPackage),
+  vite: await packageVersion(require.resolve('vite/package.json')),
+  baselineBrowserMapping: await packageVersion(
+    packageJsonForModule(browserslistRequire.resolve('baseline-browser-mapping')),
+  ),
+  caniuseLite: await packageVersion(
+    packageJsonForModule(browserslistRequire.resolve('caniuse-lite')),
+  ),
+}
+for (const key of ['browserslist', 'vite', 'baselineBrowserMapping', 'caniuseLite']) {
+  assert.equal(
+    actualSnapshot[key],
+    policy.snapshot[key],
+    `Baseline 数据快照 ${key} 发生变化，必须人工复核`,
+  )
+}
 
 const productionErrors = policyErrors(policy.policyQuery)
 assert.deepEqual(productionErrors, [], `Baseline 生产策略未通过：\n- ${productionErrors.join('\n- ')}`)

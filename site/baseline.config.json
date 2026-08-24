@@ -35,7 +35,7 @@
     "Cloudflare Web Analytics RUM 季度复核"
   ],
   "snapshot": {
-    "approvedAt": "2026-08-23",
+    "approvedAt": "2026-08-24",
     "browserslist": "4.28.8",
     "vite": "8.2.2",
     "baselineBrowserMapping": "2.11.17",
