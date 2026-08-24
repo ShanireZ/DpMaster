@@ -66,7 +66,7 @@ pnpm verify
 
 ## Task and documentation governance
 
-- 一个用户确认的 task 只创建一个聚焦 commit。完成后自动总结全部完成项并 commit；不 push，push 由用户执行。
+- 一个用户确认的 task 只创建一个聚焦 commit。完成并验证后直接 commit 到本地 `main`，不要为等待推送而把已完成改动留在工作树；agent 不得 `git push`，由 owner 汇总一个或多个本地 commit 后一次 push，使 GitHub Actions 只为该次 push 的最终 SHA 跑一轮。延后 push 不得弱化本地门禁。
 - 遇到会改变视觉方向、产品规则、兼容策略或发布合同的选择，提供对比证据并使用无倒计时弹窗确认，不得静默代替用户拍板。
 - `docs/` 是 Google Open Knowledge Format v0.2 的长期当前事实包，不保存临时进度、流水日志或已完成计划。`handoff/` 保存当前任务计划、评审门和勾选清单。
 - 任务清单只能在对应工作通过验证后改为 `[x]`。行为、架构或命令变化必须同步更新 `AGENTS.md`、OKF 概念和公开文档，并及时删除漂移内容。
