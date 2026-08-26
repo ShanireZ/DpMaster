@@ -14,6 +14,14 @@ import {
 const siteRoot = new URL('../', import.meta.url)
 const NEWLINE = String.fromCharCode(10)
 
+function isW3CDateTime(value) {
+  return (
+    typeof value === 'string'
+    && /^\d{4}-\d{2}-\d{2}T/.test(value)
+    && !Number.isNaN(Date.parse(value))
+  )
+}
+
 async function siteSource(path) {
   return readFile(new URL(path, siteRoot), 'utf8')
 }
@@ -53,7 +61,7 @@ test('the single origin owns every canonical and emits no hreflang alternates', 
     assert.equal('alternates' in meta, false)
     assert.ok(meta.description.length >= 30)
     assert.ok(meta.summary.length >= 30)
-    assert.match(meta.dateModified, /^\d{4}-\d{2}-\d{2}$/)
+    assert.equal(isW3CDateTime(meta.dateModified), true)
   }
 })
 
@@ -191,7 +199,7 @@ test('discovery files expose the 47 approved URLs and real summaries', async () 
   assert.equal(routeSummaries.brand, 'DP大师')
   assert.equal(routeSummaries.origin, SITE.origin)
   assert.equal('region' in routeSummaries, false)
-  assert.ok(routeSummaries.routes.every((route) => /^\d{4}-\d{2}-\d{2}$/.test(route.lastModified)))
+  assert.ok(routeSummaries.routes.every((route) => isW3CDateTime(route.lastModified)))
   assert.ok(routeSummaries.routes.every((route) => !('alternates' in route)))
 
   assert.equal(
@@ -214,7 +222,10 @@ test('discovery files expose the 47 approved URLs and real summaries', async () 
   assert.match(lastModified, /gitNames\(\['diff', '--name-only', '-z', 'HEAD'/)
   assert.match(lastModified, /gitNames\(\['ls-files', '--others', '--exclude-standard', '-z'/)
   assert.match(lastModified, /files\.some\(\(file\) => dirtyFiles\.has\(file\)\)/)
-  assert.match(lastModified, /localDate\(now\)/)
+  assert.match(lastModified, /workingTreeDate/)
+  assert.match(lastModified, /--format=%cI/)
+  assert.match(lastModified, /normalizeContentForDigest/)
+  assert.match(lastModified, /semanticRouteFiles/)
   assert.equal(Object.keys(ROUTE_CONTENT_DIGESTS).length, PUBLIC_PATHS.length)
   assert.ok(Object.values(ROUTE_CONTENT_DIGESTS).every((digest) => /^[0-9a-f]{64}$/.test(digest)))
   assert.match(publicRoutes, /\.\.\/data\/catalog\.ts/)

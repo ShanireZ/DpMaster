@@ -50,7 +50,11 @@ async function negotiatedResponse(request, env, url, representation) {
   if (representation === null) {
     return new Response(request.method === 'HEAD' ? null : 'Not Acceptable', {
       status: 406,
-      headers: { Vary: 'Accept', 'X-Robots-Tag': 'noindex, nofollow' },
+      headers: {
+        'Content-Type': 'text/plain;charset=UTF-8',
+        Vary: 'Accept',
+        'X-Robots-Tag': 'noindex, nofollow',
+      },
     })
   }
   const assetRequest = representation === 'markdown'
