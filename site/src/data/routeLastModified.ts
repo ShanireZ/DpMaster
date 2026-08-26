@@ -1,5 +1,5 @@
 // 由 scripts/generate-seo.mjs 从源码时间证据生成，请勿手改。
-export const ROUTE_CONTENT_DIGEST_VERSION = 13
+export const ROUTE_CONTENT_DIGEST_VERSION = 14
 export const ROUTE_LAST_MODIFIED: Readonly<Record<string, string>> = Object.freeze({
   "/": "2026-08-22T23:46:11+08:00",
   "/part/a": "2026-08-22T11:47:40+08:00",
