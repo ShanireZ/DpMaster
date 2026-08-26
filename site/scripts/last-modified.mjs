@@ -6,6 +6,7 @@ import { PUBLIC_PATHS } from '../src/lib/publicRoutes.ts'
 import { semanticRouteFiles } from './semantic-source-graph.mjs'
 
 const projectRoot = fileURLToPath(new URL('../../', import.meta.url))
+export const ROUTE_CONTENT_DIGEST_VERSION = 1
 
 function gitNames(args) {
   const result = spawnSync('git', args, {
@@ -77,17 +78,23 @@ export function resolveContentLastModified({
   currentDigest,
   previousLastModified,
   candidateLastModified,
+  evidenceSchemaChanged = false,
   pathname = '<unknown>',
 }) {
   if (previousDigest && previousDigest === currentDigest && previousLastModified) {
     return previousLastModified
   }
-  if (
-    previousDigest
-    && previousDigest !== currentDigest
-    && previousLastModified === candidateLastModified
-  ) {
-    throw new Error(`Semantic content changed without lastmod advancing for ${pathname}`)
+  if (previousDigest && previousDigest !== currentDigest && previousLastModified) {
+    if (evidenceSchemaChanged) return previousLastModified
+    const previousTime = Date.parse(previousLastModified)
+    const candidateTime = Date.parse(candidateLastModified)
+    if (
+      Number.isNaN(previousTime)
+      || Number.isNaN(candidateTime)
+      || candidateTime <= previousTime
+    ) {
+      throw new Error(`Semantic content changed without lastmod advancing for ${pathname}`)
+    }
   }
   return candidateLastModified
 }
@@ -95,7 +102,11 @@ export function resolveContentLastModified({
 export function collectRouteContentEvidence({
   previousLastModified = {},
   previousContentDigests = {},
+  previousContentDigestVersion = 0,
 } = {}) {
+  const evidenceSchemaChanged = (
+    previousContentDigestVersion !== ROUTE_CONTENT_DIGEST_VERSION
+  )
   const filesByRoute = new Map(
     PUBLIC_PATHS.map((pathname) => [pathname, semanticRouteFiles(pathname)]),
   )
@@ -117,16 +128,26 @@ export function collectRouteContentEvidence({
         candidateLastModified: files.some((file) => dirtyFiles.has(file))
           ? workingTreeDate(files.filter((file) => dirtyFiles.has(file)))
           : gitDate(files),
+        evidenceSchemaChanged,
         pathname,
       }),
     ]),
   )
-  return { lastModified, contentDigests }
+  return {
+    lastModified,
+    contentDigests,
+    contentDigestVersion: ROUTE_CONTENT_DIGEST_VERSION,
+  }
 }
 
-export function renderRouteLastModifiedModule(lastModified, contentDigests = {}) {
+export function renderRouteLastModifiedModule(
+  lastModified,
+  contentDigests = {},
+  contentDigestVersion = ROUTE_CONTENT_DIGEST_VERSION,
+) {
   return [
-    '// 由 scripts/generate-seo.mjs 从 Git 历史生成，请勿手改。',
+    '// 由 scripts/generate-seo.mjs 从源码时间证据生成，请勿手改。',
+    `export const ROUTE_CONTENT_DIGEST_VERSION = ${contentDigestVersion}`,
     `export const ROUTE_LAST_MODIFIED: Readonly<Record<string, string>> = Object.freeze(${JSON.stringify(lastModified, null, 2)})`,
     `export const ROUTE_CONTENT_DIGESTS: Readonly<Record<string, string>> = Object.freeze(${JSON.stringify(contentDigests, null, 2)})`,
     '',

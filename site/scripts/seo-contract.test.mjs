@@ -3,7 +3,10 @@ import { readFile } from 'node:fs/promises'
 import test from 'node:test'
 import { SITE, SITE_ORIGIN } from '../src/config/site.ts'
 import { PARTS } from '../src/data/catalog.ts'
-import { ROUTE_CONTENT_DIGESTS } from '../src/data/routeLastModified.ts'
+import {
+  ROUTE_CONTENT_DIGEST_VERSION,
+  ROUTE_CONTENT_DIGESTS,
+} from '../src/data/routeLastModified.ts'
 import { getPageMeta } from '../src/lib/pageMeta.ts'
 import {
   INTERNAL_PATHS,
@@ -226,6 +229,7 @@ test('discovery files expose the 47 approved URLs and real summaries', async () 
   assert.match(lastModified, /--format=%cI/)
   assert.match(lastModified, /normalizeContentForDigest/)
   assert.match(lastModified, /semanticRouteFiles/)
+  assert.equal(ROUTE_CONTENT_DIGEST_VERSION, 1)
   assert.equal(Object.keys(ROUTE_CONTENT_DIGESTS).length, PUBLIC_PATHS.length)
   assert.ok(Object.values(ROUTE_CONTENT_DIGESTS).every((digest) => /^[0-9a-f]{64}$/.test(digest)))
   assert.match(publicRoutes, /\.\.\/data\/catalog\.ts/)

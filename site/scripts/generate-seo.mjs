@@ -14,6 +14,7 @@ import {
 const routeEvidence = collectRouteContentEvidence({
   previousLastModified: previousRouteEvidence.ROUTE_LAST_MODIFIED,
   previousContentDigests: previousRouteEvidence.ROUTE_CONTENT_DIGESTS ?? {},
+  previousContentDigestVersion: previousRouteEvidence.ROUTE_CONTENT_DIGEST_VERSION ?? 0,
 })
 const { lastModified } = routeEvidence
 const files = generateDiscoveryFiles(SITE, lastModified)
@@ -23,7 +24,11 @@ const outputs = Object.entries(files).map(([name, content]) => [
 ])
 outputs.push([
   new URL('../src/data/routeLastModified.ts', import.meta.url),
-  renderRouteLastModifiedModule(lastModified, routeEvidence.contentDigests),
+  renderRouteLastModifiedModule(
+    lastModified,
+    routeEvidence.contentDigests,
+    routeEvidence.contentDigestVersion,
+  ),
 ])
 
 // index.html 的首页 head 由渲染 47 条路由的同一个渲染器生成。手工维护过一次

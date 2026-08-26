@@ -252,7 +252,7 @@ wrangler tail dpmaster
 
 ## Sitemap 与搜索平台提交
 
-构建把 sitemap 写进发布目录，线上地址固定为 `https://dp.round1.cc/sitemap.xml`，列出 47 个页面，每条带 Git 派生的 `lastmod`。单域站点不输出 hreflang 互指，`xmlns:xhtml` 命名空间也不再出现。
+构建把 sitemap 写进发布目录，线上地址固定为 `https://dp.round1.cc/sitemap.xml`，列出 47 个页面，每条带源码证据派生的 `lastmod`：已提交源码取 Git 提交时间，工作树编辑取文件修改时间，绝不使用模板或构建日期。单域站点不输出 hreflang 互指，`xmlns:xhtml` 命名空间也不再出现。
 
 ★ 域名迁移后必须重新提交，旧域名的验证与 sitemap 记录不会自动继承：
 
