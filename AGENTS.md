@@ -15,6 +15,7 @@
 - `site/src/data/catalog.ts` 是 DP 家族、课程顺序、正文懒加载和家族游戏懒加载的权威 Module。
 - 题目语料以课程正文中的 `ExampleCard` / `Exercise` 为准。
 - `site/src/data/problems.ts` 是生成文件；不要手改。课程题目变化后运行 `pnpm content:generate`。
+- `site/src/lib/publicRoutes.ts` 的 `PUBLIC_PATHS` 是公开 URL、sitemap、预渲染和同 URL Markdown 内容协商的唯一集合权威；内部标本与未知路由不得进入公开表示。
 - 部署与反馈操作以根目录 `deploy.md` 为准；长期工程知识维护在 `docs/` OKF 文档包。
 
 ## Cloudflare Web Analytics / RUM contract
@@ -57,7 +58,8 @@ pnpm verify
 ## Toolchain and compatibility
 
 - Web Platform Baseline：`runtime: public-web`、`featureTarget: newly`；生产构建由 `site/baseline-targets.ts` 显式冻结为 Vite 8 的 Widely 目标，`baseline widely available with downstream` 只用于能力审查，不会被误写成 Vite 自动消费的构建配置。
-- `pnpm baseline:check` 校验四大桌面引擎、iOS 与 downstream、批准版本快照及 `vite.config.ts build.target` 接线；它是 `pnpm verify` 的第一道门。六字段声明见 `site/baseline.config.json`。
+- `pnpm baseline:check` 校验四大桌面引擎、iOS 与 downstream、批准版本快照及 `vite.config.ts build.target` 接线；它是 `pnpm verify` 的第一道门。Baseline 六字段以及 Modern Web Guidance、sitemap、Markdown 内容协商的当前声明统一维护在 `site/baseline.config.json`。
+- 已批准公开页面同时提供 HTML 与 `text/markdown` 表示，源代码策略为 `ai-train=yes, search=yes, ai-input=yes`。Worker 必须按 `Accept` 协商、合并 `Vary: Accept`、隔离表示 ETag/缓存键并隐藏 `/_representations/`；Cloudflare AI Crawl Control 的线上策略必须在发布移交中同向验证。
 - Node 与 pnpm 版本以 `site/.node-version`、`site/package.json` 和 `site/pnpm-workspace.yaml` 为权威；直接依赖使用当前获准主线的 `^` 范围，`pnpm-lock.yaml` 是 CI 的精确解析合同。
 - `site/pnpm-workspace.yaml` 强制 24 小时发布隔离、Node 引擎、依赖构建脚本白名单和依赖状态检查。不得通过排除项、宽松模式或其他包管理器绕过。
 - TypeScript、React、Vite、Oxlint、Vitest、Playwright 和其余依赖保持当前稳定主线。版本升级作为独立 task，经完整验证后形成一个 commit。

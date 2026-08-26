@@ -166,14 +166,24 @@ test('discovery files expose the 47 approved URLs and real summaries', async () 
   assert.match(robots, /User-agent:\s*\*/)
   assert.match(robots, /Allow:\s*\//)
   assert.match(robots, /Sitemap: https:\/\/dp\.round1\.cc\/sitemap\.xml/)
-  // GEO：显式放行检索 / 引用类抓取器。
-  for (const agent of ['OAI-SearchBot', 'ChatGPT-User', 'PerplexityBot', 'Claude-SearchBot']) {
+  // GEO：已批准公开内容允许检索、引用、输入与训练；源代码立场保持单向明确。
+  for (const agent of [
+    'GPTBot',
+    'OAI-SearchBot',
+    'ChatGPT-User',
+    'ClaudeBot',
+    'Claude-User',
+    'Claude-SearchBot',
+    'PerplexityBot',
+    'Perplexity-User',
+    'Google-Extended',
+    'Applebot-Extended',
+    'CCBot',
+    'Bytespider',
+    'Amazonbot',
+    'meta-externalagent',
+  ]) {
     assert.ok(robots.includes(`User-agent: ${agent}` + NEWLINE), agent)
-  }
-  // ★ 训练类抓取器一律不列：Cloudflare 的托管段在边缘 Disallow 了它们，
-  // 这里再 Allow 就是同一个文件里自相矛盾，实际效果未定义。
-  for (const agent of ['GPTBot', 'ClaudeBot', 'CCBot', 'Google-Extended', 'Applebot-Extended', 'Bytespider']) {
-    assert.ok(!robots.includes(`User-agent: ${agent}` + NEWLINE), agent)
   }
 
   assert.equal(routeSummaries.routes.length, 47)
@@ -192,6 +202,8 @@ test('discovery files expose the 47 approved URLs and real summaries', async () 
   assert.match(llms, /^## 使用说明$/m)
   assert.equal((llms.match(/^## /gm) || []).length, 2 + PARTS.length)
   assert.match(llms, /无账号、无登录、无付费墙/)
+  assert.match(llms, /ai-train=yes, search=yes, ai-input=yes/)
+  assert.match(llms, /同一 URL 请求 `text\/markdown`/)
 
   assert.match(generator, /\.\.\/src\/lib\/publicRoutes\.ts/)
   assert.match(generator, /generateDiscoveryFiles/)

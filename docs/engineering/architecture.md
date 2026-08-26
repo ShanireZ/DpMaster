@@ -30,6 +30,8 @@ sources:
   - resource: ../../site/worker/
   - resource: ../../site/scripts/build.mjs
   - resource: ../../site/scripts/prerender.mjs
+  - resource: ../../site/scripts/markdown-representation.mjs
+  - resource: ../../site/worker/content-negotiation.js
   - resource: ../../site/scripts/generate-seo.mjs
   - resource: ../../site/tests/browser/
 ---
@@ -68,7 +70,7 @@ The manifest intentionally keeps only dependencies imported by current source. D
 | `site/src/components/games/` | One game per family; games consume public result Interfaces instead of teaching frames. |
 | `site/src/components/games/runtime/` | Shared deterministic random source, round statistics, lazy audio, and viewport gate for the seven games. |
 | `site/src/config/site.ts` | DP大师 brand, copyright holders, and the single production host with its same-origin API endpoints. |
-| `site/src/lib/publicRoutes.ts` | Catalog-derived authority for the 48 prerendered and indexable routes. |
+| `site/src/lib/publicRoutes.ts` | Catalog-derived authority for 47 public routes plus one separately declared internal prerender specimen. |
 | `site/src/lib/pageMeta.ts` | Pure route metadata authority for titles, summaries, canonicals, breadcrumbs, and indexing policy. |
 | `site/src/lib/seoHead.ts` | Server/client shared head and JSON-LD generation. |
 | `site/src/lib/discovery.ts` | Sitemap, robots (including the AI-crawler group), llms.txt, and route-summary generation. |
@@ -76,9 +78,10 @@ The manifest intentionally keeps only dependencies imported by current source. D
 | `site/src/analytics/` | First-party event interface; posts to the same-origin endpoint on the production host only. |
 | `site/src/entry-server.tsx` | React 19 static rendering entry used by the prerender build. |
 | `site/scripts/build.mjs` | Builds the client plus an isolated production SSR bundle, then prerenders. |
-| `site/scripts/prerender.mjs` | Writes route HTML, 404.html, and the discovery files into the build output. |
+| `site/scripts/prerender.mjs` | Writes route HTML, one Markdown representation per public route, 404.html, and discovery files. |
+| `site/scripts/markdown-representation.mjs` | DOM-based projection from locally prerendered semantic HTML to compact Markdown; it is not a second hand-written content source. |
 | `site/worker/` | Shared feedback, privacy-bounded first-party analytics, and egress-probe cores. |
-| `site/worker.js` + `site/worker/` | The single deployment adapter: same-origin feedback, analytics, and egress diagnostics. |
+| `site/worker.js` + `site/worker/` | The single deployment adapter: public-page content negotiation plus same-origin feedback, analytics, and egress diagnostics. |
 
 # Routing And Splitting
 
@@ -86,7 +89,7 @@ The manifest intentionally keeps only dependencies imported by current source. D
 
 Family art is a second, deliberately smaller registry: `familyArtRegistry.ts` maps each A–G `partId` to a lazy module implementing `HeroArt`, `JourneyArt`, and `LessonPlate`. It never owns course titles, slugs, order, or copy. Every ready lesson has a unique semantic plate; `PartGlyph` remains a defensive unknown-family fallback rather than a production course path.
 
-`pnpm build` produces a single `site/dist/` for `dp.round1.cc`. Vite first emits the client and an isolated production SSR entry; a fresh Node production process calls React 19 `prerender()` for all 47 paths and writes both clean-URL variants. The prerender pass resolves the current lesson and family-art module synchronously, injects that route's exact CSS and module-preload graph, and rejects unresolved streamed Suspense segments. Before `hydrateRoot`, the browser explicitly prepares the current route view, current lesson module, and current family-art module while leaving the prerendered DOM visible; hydration therefore attaches to identical content instead of replacing the page with a lazy fallback. The client does not eagerly import unrelated route views or family art after hydration. If a deployment changes a hashed dynamic asset while an older document is still open, `preloadRecovery.ts` handles Vite's `vite:preloadError` before route imports run and performs at most one recovery reload per build and path. Development-only empty roots still use `createRoot`.
+`pnpm build` produces a single `site/dist/` for `dp.round1.cc`. Vite first emits the client and an isolated production SSR entry; a fresh Node production process calls React 19 `prerender()` for 47 public paths plus one internal specimen and writes both clean-URL variants. In the same pass, each public document's semantic `<main>` is traversed with JSDOM and projected into an internal `/_representations/markdown/**` asset. This preserves content structure and static visual descriptions while excluding scripts, controls, navigation noise, hidden state, and the internal specimen. The prerender pass resolves the current lesson and family-art module synchronously, injects that route's exact CSS and module-preload graph, and rejects unresolved streamed Suspense segments. Before `hydrateRoot`, the browser explicitly prepares the current route view, current lesson module, and current family-art module while leaving the prerendered DOM visible; hydration therefore attaches to identical content instead of replacing the page with a lazy fallback. The client does not eagerly import unrelated route views or family art after hydration. If a deployment changes a hashed dynamic asset while an older document is still open, `preloadRecovery.ts` handles Vite's `vite:preloadError` before route imports run and performs at most one recovery reload per build and path. Development-only empty roots still use `createRoot`.
 
 Family pages wrap the catalog-owned lazy game in `DeferredGame`. Its one-way `IntersectionObserver` gate starts rendering about 400 px before the game reaches the viewport; there is no manual load path, and browsers without IntersectionObserver render immediately. Creating a lazy React element does not invoke its dynamic import until the gate renders it, so the game JS/CSS chunks stay off the initial family-page request when the section is not yet near.
 
@@ -96,13 +99,15 @@ All 29 teaching solver surfaces are Adapters over the algorithm boundary: public
 
 Known deep links are physical prerendered HTML assets. Cloudflare Workers Static Assets serves them and uses `404-page` for anything unmatched, returning the themed `404.html` with a real HTTP 404. See root [deploy.md](../../deploy.md) for the platform contract.
 
+For a registered public `GET` or `HEAD`, `worker/content-negotiation.js` selects HTML or Markdown from `Accept`; HTML wins equal preferences and the Worker returns 406 when both supported media types are explicitly unacceptable. Markdown is fetched only through a distinct internal asset URL, so its ETag and static-asset cache key cannot collide with HTML. Both representations add `Vary: Accept`, alternate links, `nosniff`, and the approved public `Content-Signal`; direct requests to the internal prefix return 404. APIs, ordinary assets, the internal specimen, and unknown routes bypass negotiation.
+
 # SEO And Accessibility
 
 `pageMeta.ts` is the shared route metadata authority. The site has a single origin, so every public page canonicalizes to itself and publishes no language alternates at all. Unknown routes are non-indexable and deliberately have no canonical link.
 
 `seoHead.ts` renders the same head contract at build time that `RouteMeta` maintains after client navigation: title, description, citable abstract, robots, canonical, Open Graph, Twitter, and a Schema.org graph. Every indexable page includes Organization and WebSite nodes and states `isAccessibleForFree`; the WebSite node declares a `SearchAction` pointing at the real `?q=` problem search. Lessons add Course/LearningResource/TechArticle with `educationalUse` and an `EducationalAudience`, family pages add CollectionPage plus an ItemList of their ready lessons, other pages add WebPage, and routes with hierarchy add BreadcrumbList. Course duration is deliberately not declared: there is no trustworthy source for it, so `hasCourseInstance` is omitted rather than fabricated.
 
-`site/scripts/generate-seo.mjs` writes the checked-in baseline for `sitemap.xml`, `robots.txt`, `llms.txt`, `route-summaries.json`, and the home-route head inside `index.html`; the prerender step regenerates the four discovery files into the build output. All of them derive from the same 47-path catalog contract: home, seven families, 37 completed lessons, method, and problem index. `llms.txt` is grouped by family rather than published as one flat list, and `robots.txt` carries an explicit allow group for generative-engine crawlers, including the opt-in `Google-Extended` and `Applebot-Extended` tokens. `pnpm check:seo` rejects drift, including a hand-edited `index.html` head.
+`site/scripts/generate-seo.mjs` writes the checked-in baseline for `sitemap.xml`, `robots.txt`, `llms.txt`, `route-summaries.json`, and the home-route head inside `index.html`; the prerender step regenerates the four discovery files into the build output. All of them derive from the same 47-path catalog contract: home, seven families, 37 completed lessons, method, and problem index. `llms.txt` is grouped by family and declares the same-URL Markdown interface and approved public content signal. `robots.txt` explicitly allows both retrieval and training crawlers; a release is incomplete until Cloudflare AI Crawl Control is confirmed not to inject a conflicting managed no-train block. `pnpm check:seo` rejects generated-artifact drift, including a hand-edited `index.html` head.
 
 # Analytics
 

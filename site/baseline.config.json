@@ -34,6 +34,77 @@
     "发布前真实 Edge/Safari 抽检",
     "Cloudflare Web Analytics RUM 季度复核"
   ],
+  "modernWebGuidance": {
+    "status": "required",
+    "reviewedAt": "2026-08-26",
+    "skillVersion": "2026_05_16-c5e78707",
+    "foundationGuides": [
+      "accessibility",
+      "html",
+      "css",
+      "forms",
+      "performance",
+      "security",
+      "privacy"
+    ],
+    "queries": [
+      {
+        "query": "serve an alternate Markdown representation for prerendered public pages with HTTP content negotiation while preserving semantic HTML, accessible fallback text, caching, and conditional requests",
+        "guideIds": ["html", "performance"],
+        "scope": [
+          "worker.js",
+          "worker/content-negotiation.js",
+          "scripts/prerender.mjs",
+          "scripts/markdown-representation.mjs"
+        ]
+      }
+    ],
+    "applicablePaths": [
+      "src/**",
+      "worker.js",
+      "worker/**",
+      "scripts/prerender.mjs",
+      "scripts/markdown-representation.mjs"
+    ],
+    "deviations": [],
+    "verification": [
+      "pnpm test",
+      "pnpm build",
+      "pnpm check:html",
+      "pnpm test:browser"
+    ]
+  },
+  "sitemap": {
+    "status": "enabled",
+    "canonicalOrigin": "https://dp.round1.cc",
+    "routeSource": "src/lib/publicRoutes.ts#PUBLIC_PATHS",
+    "output": "/sitemap.xml",
+    "robotsAdvertised": true,
+    "notApplicableReason": null,
+    "verification": [
+      "pnpm check:seo",
+      "pnpm test",
+      "pnpm check:html"
+    ]
+  },
+  "markdownNegotiation": {
+    "status": "enabled",
+    "paths": ["src/lib/publicRoutes.ts#PUBLIC_PATHS"],
+    "source": "scripts/prerender.mjs 的本地 React SSR 语义 HTML",
+    "mediaType": "text/markdown; charset=utf-8",
+    "contentLanguage": "zh-CN",
+    "contentSignal": {
+      "ai-train": "yes",
+      "search": "yes",
+      "ai-input": "yes"
+    },
+    "notApplicableReason": null,
+    "verification": [
+      "pnpm test",
+      "pnpm build",
+      "pnpm check:html"
+    ]
+  },
   "snapshot": {
     "approvedAt": "2026-08-24",
     "browserslist": "4.28.8",

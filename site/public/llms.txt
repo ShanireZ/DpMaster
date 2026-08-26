@@ -7,6 +7,8 @@
 - 发布者：AzureL蔚澜算法
 - 访问门槛：无账号、无登录、无付费墙，打开网页即可阅读全部内容
 - 站内检索：https://dp.round1.cc/problems?q=关键词
+- 公开内容信号：ai-train=yes, search=yes, ai-input=yes
+- 内容协商：在同一 URL 请求 `text/markdown` 可读取无浏览器交互噪音的 Markdown 表示
 
 ## 入口
 
