@@ -3,10 +3,13 @@ import { createHash } from 'node:crypto'
 import { readFileSync, statSync } from 'node:fs'
 import { fileURLToPath } from 'node:url'
 import { PUBLIC_PATHS } from '../src/lib/publicRoutes.ts'
-import { semanticRouteFiles } from './semantic-source-graph.mjs'
+import {
+  semanticRouteFiles,
+  semanticSourceForDigest,
+} from './semantic-source-graph.mjs'
 
 const projectRoot = fileURLToPath(new URL('../../', import.meta.url))
-export const ROUTE_CONTENT_DIGEST_VERSION = 1
+export const ROUTE_CONTENT_DIGEST_VERSION = 2
 
 function gitNames(args) {
   const result = spawnSync('git', args, {
@@ -35,9 +38,8 @@ function routeContentDigest(files) {
   for (const file of files) {
     digest.update(file)
     digest.update('\0')
-    digest.update(normalizeContentForDigest(
-      readFileSync(new URL(`../../${file}`, import.meta.url), 'utf8'),
-    ))
+    const source = readFileSync(new URL(`../../${file}`, import.meta.url), 'utf8')
+    digest.update(normalizeContentForDigest(semanticSourceForDigest(file, source)))
     digest.update('\0')
   }
   return digest.digest('hex')
@@ -85,14 +87,18 @@ export function resolveContentLastModified({
     return previousLastModified
   }
   if (previousDigest && previousDigest !== currentDigest && previousLastModified) {
-    if (evidenceSchemaChanged) return previousLastModified
     const previousTime = Date.parse(previousLastModified)
     const candidateTime = Date.parse(candidateLastModified)
     if (
       Number.isNaN(previousTime)
       || Number.isNaN(candidateTime)
-      || candidateTime <= previousTime
     ) {
+      throw new Error(`Semantic content changed without lastmod advancing for ${pathname}`)
+    }
+    if (evidenceSchemaChanged && candidateTime <= previousTime) {
+      return previousLastModified
+    }
+    if (candidateTime <= previousTime) {
       throw new Error(`Semantic content changed without lastmod advancing for ${pathname}`)
     }
   }

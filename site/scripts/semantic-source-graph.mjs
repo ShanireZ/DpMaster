@@ -9,6 +9,41 @@ const projectRoot = fileURLToPath(new URL('../../', import.meta.url))
 const PARSED_EXTENSIONS = new Set(['.js', '.jsx', '.mjs', '.ts', '.tsx'])
 const RESOLVED_EXTENSIONS = ['.ts', '.tsx', '.js', '.jsx', '.mjs', '.json']
 const SELF_GENERATED_FILES = new Set(['site/src/data/routeLastModified.ts'])
+const NON_SEMANTIC_FILES = new Set([
+  'site/src/components/feedback/FeedbackWidget.tsx',
+  'site/src/components/layout/ErrorBoundary.tsx',
+  'site/src/components/layout/Sidebar.tsx',
+  'site/src/components/layout/TopBar.tsx',
+  'site/src/components/seo/RouteMeta.tsx',
+  'site/src/lib/hashNavigation.ts',
+  'site/src/pages/HomeMotionController.tsx',
+  'site/src/theme/ThemeContext.tsx',
+])
+const NON_SEMANTIC_PREFIXES = ['site/src/analytics/']
+const SEMANTIC_ELEMENT_SLICES = new Map([
+  ['site/src/app/AppContent.tsx', ['<Routes>', '</Routes>']],
+  ['site/src/components/layout/Shell.tsx', ['<main ', '</main>']],
+  ['site/src/components/layout/RouteStage.tsx', ['<motion.div', '</motion.div>']],
+])
+
+function isNonSemanticFile(path) {
+  return (
+    NON_SEMANTIC_FILES.has(path)
+    || NON_SEMANTIC_PREFIXES.some((prefix) => path.startsWith(prefix))
+  )
+}
+
+export function semanticSourceForDigest(path, source) {
+  const markers = SEMANTIC_ELEMENT_SLICES.get(path)
+  if (!markers) return source
+  const [startMarker, endMarker] = markers
+  const start = source.indexOf(startMarker)
+  const end = source.indexOf(endMarker, start)
+  if (start < 0 || end < 0) {
+    throw new Error(`Missing semantic source slice for ${path}`)
+  }
+  return source.slice(start, end + endMarker.length)
+}
 
 function projectPath(path) {
   return relative(projectRoot, path).replaceAll('\\', '/')
@@ -57,7 +92,7 @@ export function semanticRouteFiles(pathname) {
       .map((moduleId) => `site/${moduleId}`),
   )
   const pending = [
-    resolve(projectRoot, 'site/src/components/layout/Shell.tsx'),
+    resolve(projectRoot, 'site/src/entry-server.tsx'),
     resolve(projectRoot, 'site/src/lib/pageMeta.ts'),
     resolve(projectRoot, 'site/src/lib/seoHead.ts'),
     ...routeModules.map((moduleId) => resolve(projectRoot, 'site', moduleId)),
@@ -69,6 +104,7 @@ export function semanticRouteFiles(pathname) {
     if (!path) continue
     const relativePath = projectPath(path)
     if (SELF_GENERATED_FILES.has(relativePath)) continue
+    if (isNonSemanticFile(relativePath)) continue
     if (
       routePages.has(relativePath)
       && !allowedPages.has(relativePath)
