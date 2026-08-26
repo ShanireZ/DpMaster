@@ -7,10 +7,10 @@ test('lesson evidence follows the full static semantic dependency graph', () => 
   const files = new Set(semanticRouteFiles('/part/a/01'))
 
   for (const file of [
-    'site/src/entry-server.tsx',
-    'site/src/app/AppContent.tsx',
     'site/src/components/layout/Shell.tsx',
     'site/src/config/site.ts',
+    'site/src/lib/pageMeta.ts',
+    'site/src/lib/seoHead.ts',
     'site/src/pages/TypePage.tsx',
     'site/src/components/PartGlyph.tsx',
     'site/src/content/a/Knapsack01.tsx',
@@ -21,6 +21,9 @@ test('lesson evidence follows the full static semantic dependency graph', () => 
   }
   assert.equal(files.has('site/src/pages/Home.tsx'), false)
   assert.equal(files.has('site/src/data/routeLastModified.ts'), false)
+  assert.equal(files.has('site/src/analytics/AnalyticsRouteTracker.tsx'), false)
+  assert.equal(files.has('site/src/analytics/AnalyticsRuntime.tsx'), false)
+  assert.equal(files.has('site/src/entry-server.tsx'), false)
 })
 
 test('home evidence includes its route-only motion controller', () => {

@@ -57,7 +57,8 @@ export function semanticRouteFiles(pathname) {
       .map((moduleId) => `site/${moduleId}`),
   )
   const pending = [
-    resolve(projectRoot, 'site/src/entry-server.tsx'),
+    resolve(projectRoot, 'site/src/components/layout/Shell.tsx'),
+    resolve(projectRoot, 'site/src/lib/pageMeta.ts'),
     resolve(projectRoot, 'site/src/lib/seoHead.ts'),
     ...routeModules.map((moduleId) => resolve(projectRoot, 'site', moduleId)),
   ]
