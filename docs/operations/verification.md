@@ -44,7 +44,7 @@ Pure TypeScript Modules imported by Node tests must use explicit `.ts` extension
 
 # SEO And Accessibility Checks
 
-`pnpm check:seo` verifies the 47-path catalog, route metadata, checked-in single-origin sitemap/robots baseline, `llms.txt`, 47-entry route summaries, and Git-derived `lastmod` data. It also checks the source contracts for the one Cloudflare output, React prerender/hydration, route CSS injection, canonical metadata, and real 404 behavior. `pnpm check:html` then requires the sitemap/public-route/Markdown sets to agree, rejects missing or extra Markdown assets, browser-only markup and internal-path leakage, and requires each Markdown representation to remain less than half the size of its corresponding HTML. When routes, lesson readiness, or route-owned source files change, run `pnpm seo:generate` and review the generated files before committing them.
+`pnpm check:seo` verifies the 47-path catalog, route metadata, checked-in single-origin sitemap/robots baseline, `llms.txt`, 47-entry route summaries, and Git-derived `lastmod` data. A stored SHA-256 digest ties every route's `lastmod` to its exact route-owned source set, so a same-day semantic edit still advances the timestamp while an unchanged regeneration remains deterministic. The gate also checks the source contracts for the one Cloudflare output, React prerender/hydration, route CSS injection, canonical metadata, and real 404 behavior. `pnpm check:html` then requires the sitemap/public-route/Markdown sets to agree; rejects missing or extra Markdown assets, browser-only markup, internal-path leakage, illegal heading hierarchies, and unresolved same-origin links; regenerates every Markdown document twice from its matching semantic HTML to prove exact same-source parity and determinism; and requires each representation to remain less than half the size of its HTML. When routes, lesson readiness, or route-owned source files change, run `pnpm seo:generate` and review the generated files before committing them.
 
 The browser gate runs Chromium against built `dist/` through a strict, non-reused custom preview server. Route tests directly open `/`, `/part/a`, `/part/a/01`, `/method`, and `/part/g/plug`, then exercise live client navigation and keyboard focus. They check HTTP status, prerendered HTML, absence of pending streamed-Suspense placeholders, route CSS at first paint, hydration without errors, CLS below `0.05`, title/description/abstract/canonical/zero-hreflang/Open Graph/JSON-LD metadata, one visible `h1`, route announcements, current-page semantics, initial-load focus, changed-route focus, and skip-link focus. Navigation-positioning tests click a representative lesson outline in each of the seven families, restore a direct lesson fragment, verify the mobile outline and an ordinary family-page fragment, and require a changed route to reset old-page scroll immediately. An unknown path must return 404 with `noindex,nofollow`, no canonical, and the themed not-found heading. Worker-level Node tests separately cover the Accept matrix, 406 behavior, HEAD parity, representation-specific ETags, hidden internal assets, and unaffected API/static/unknown paths.
 
@@ -95,8 +95,11 @@ When changing lesson content:
 
 Deployment checks live in root [deploy.md](../../deploy.md). At minimum after deployment:
 
-* Open a normal route and a direct deep link on both domains.
-* Confirm each domain self-canonicalizes and links to both regional variants.
+* Open a normal route and a direct deep link on `https://dp.round1.cc`; confirm both self-canonicalize and emit zero hreflang links.
+* Run GET and HEAD against a public route with `Accept: text/html` and `Accept: text/markdown`, then request an unacceptable media type and confirm 406.
+* Confirm both successful representations carry distinct ETag values, `Vary: Accept`, the appropriate alternate/canonical `Link`, and `Content-Signal: ai-train=yes, search=yes, ai-input=yes`.
+* Alternate HTML, Markdown, and HTML requests through the final edge to prove the cache never crosses representations; direct requests under `/_representations/` must return 404.
+* Inspect the final `robots.txt` and confirm Cloudflare has not injected `ai-train=no` or crawler `Disallow` rules that conflict with the repository policy.
 * Request a made-up path and confirm HTTP 404 plus `noindex,nofollow`.
 * Submit a feedback test.
 * Confirm `POST /api/analytics` returns 204 for a valid same-origin event and inspect the platform log.

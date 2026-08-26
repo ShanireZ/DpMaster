@@ -3,6 +3,7 @@ import { readFile } from 'node:fs/promises'
 import test from 'node:test'
 import { SITE, SITE_ORIGIN } from '../src/config/site.ts'
 import { PARTS } from '../src/data/catalog.ts'
+import { ROUTE_CONTENT_DIGESTS } from '../src/data/routeLastModified.ts'
 import { getPageMeta } from '../src/lib/pageMeta.ts'
 import {
   INTERNAL_PATHS,
@@ -154,7 +155,7 @@ test('discovery files expose the 47 approved URLs and real summaries', async () 
       siteSource('src/lib/publicRoutes.ts'),
       siteSource('package.json').then(JSON.parse),
     ])
-  const expected = PUBLIC_PATHS.map((path) => `${SITE.origin}${path}`)
+  const expected = PUBLIC_PATHS.map((path) => `${SITE.origin}${path}`).sort()
   const actual = [...sitemap.matchAll(/<loc>([^<]+)<\/loc>/g)].map((match) => match[1])
 
   assert.deepEqual(actual, expected)
@@ -207,13 +208,15 @@ test('discovery files expose the 47 approved URLs and real summaries', async () 
 
   assert.match(generator, /\.\.\/src\/lib\/publicRoutes\.ts/)
   assert.match(generator, /generateDiscoveryFiles/)
-  assert.match(generator, /collectRouteLastModified/)
+  assert.match(generator, /collectRouteContentEvidence/)
   // index.html 的 head 也由生成器产出，手工维护会和 SITE.origin 漂移。
   assert.match(generator, /replaceRouteHead/)
   assert.match(lastModified, /gitNames\(\['diff', '--name-only', '-z', 'HEAD'/)
   assert.match(lastModified, /gitNames\(\['ls-files', '--others', '--exclude-standard', '-z'/)
   assert.match(lastModified, /files\.some\(\(file\) => dirtyFiles\.has\(file\)\)/)
-  assert.match(lastModified, /localDate\(\)/)
+  assert.match(lastModified, /localDate\(now\)/)
+  assert.equal(Object.keys(ROUTE_CONTENT_DIGESTS).length, PUBLIC_PATHS.length)
+  assert.ok(Object.values(ROUTE_CONTENT_DIGESTS).every((digest) => /^[0-9a-f]{64}$/.test(digest)))
   assert.match(publicRoutes, /\.\.\/data\/catalog\.ts/)
   assert.equal(packageJson.scripts['check:seo'], 'node scripts/generate-seo.mjs --check')
   assert.match(packageJson.scripts.prebuild, /seo:generate/)
@@ -270,4 +273,23 @@ test('build contracts provide one Cloudflare output, SSR prerendering, hydration
   assert.equal(packageJson.scripts.release, 'pnpm verify && pnpm deploy:cf')
   assert.equal(packageJson.scripts['deploy:eo'], undefined)
   assert.match(packageJson.scripts.preview, /scripts\/preview\.mjs/)
+})
+
+test('deployment verification documents the single-origin negotiation exit gate', async () => {
+  const verification = await siteSource('../docs/operations/verification.md')
+
+  assert.doesNotMatch(verification, /both domains|regional variants/i)
+  for (const contract of [
+    'dp.round1.cc',
+    'text/markdown',
+    'HEAD',
+    '406',
+    'ETag',
+    'Vary: Accept',
+    '/_representations/',
+    'Content-Signal',
+    'ai-train=yes, search=yes, ai-input=yes',
+  ]) {
+    assert.ok(verification.includes(contract), contract)
+  }
 })

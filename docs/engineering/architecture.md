@@ -71,6 +71,7 @@ The manifest intentionally keeps only dependencies imported by current source. D
 | `site/src/components/games/runtime/` | Shared deterministic random source, round statistics, lazy audio, and viewport gate for the seven games. |
 | `site/src/config/site.ts` | DP大师 brand, copyright holders, and the single production host with its same-origin API endpoints. |
 | `site/src/lib/publicRoutes.ts` | Catalog-derived authority for 47 public routes plus one separately declared internal prerender specimen. |
+| `site/src/lib/publicWebContract.ts` | Shared internal representation paths and public `Content-Signal` contract consumed by generation, discovery, and the Worker. |
 | `site/src/lib/pageMeta.ts` | Pure route metadata authority for titles, summaries, canonicals, breadcrumbs, and indexing policy. |
 | `site/src/lib/seoHead.ts` | Server/client shared head and JSON-LD generation. |
 | `site/src/lib/discovery.ts` | Sitemap, robots (including the AI-crawler group), llms.txt, and route-summary generation. |
@@ -79,7 +80,7 @@ The manifest intentionally keeps only dependencies imported by current source. D
 | `site/src/entry-server.tsx` | React 19 static rendering entry used by the prerender build. |
 | `site/scripts/build.mjs` | Builds the client plus an isolated production SSR bundle, then prerenders. |
 | `site/scripts/prerender.mjs` | Writes route HTML, one Markdown representation per public route, 404.html, and discovery files. |
-| `site/scripts/markdown-representation.mjs` | DOM-based projection from locally prerendered semantic HTML to compact Markdown; it is not a second hand-written content source. |
+| `site/scripts/markdown-representation.mjs` | Deterministic DOM-based projection from locally prerendered semantic HTML to compact Markdown with a normalized legal heading outline; it is not a second hand-written content source. |
 | `site/worker/` | Shared feedback, privacy-bounded first-party analytics, and egress-probe cores. |
 | `site/worker.js` + `site/worker/` | The single deployment adapter: public-page content negotiation plus same-origin feedback, analytics, and egress diagnostics. |
 
@@ -99,7 +100,7 @@ All 29 teaching solver surfaces are Adapters over the algorithm boundary: public
 
 Known deep links are physical prerendered HTML assets. Cloudflare Workers Static Assets serves them and uses `404-page` for anything unmatched, returning the themed `404.html` with a real HTTP 404. See root [deploy.md](../../deploy.md) for the platform contract.
 
-For a registered public `GET` or `HEAD`, `worker/content-negotiation.js` selects HTML or Markdown from `Accept`; HTML wins equal preferences and the Worker returns 406 when both supported media types are explicitly unacceptable. Markdown is fetched only through a distinct internal asset URL, so its ETag and static-asset cache key cannot collide with HTML. Both representations add `Vary: Accept`, alternate links, `nosniff`, and the approved public `Content-Signal`; direct requests to the internal prefix return 404. APIs, ordinary assets, the internal specimen, and unknown routes bypass negotiation.
+For a registered public `GET` or `HEAD`, `worker/content-negotiation.js` selects HTML or Markdown from `Accept`; HTML wins equal preferences and the Worker returns 406 when both supported media types are explicitly unacceptable. Markdown is fetched only through a distinct internal asset URL, so its ETag and static-asset cache key cannot collide with HTML. Both representations add `Vary: Accept`, alternate links, `nosniff`, and the approved public `Content-Signal`; direct requests to the internal prefix return 404. `HEAD` executes the same matrix and headers but never returns a body. APIs, ordinary assets, the internal specimen, and unknown routes bypass negotiation. The internal path mapper and public signal live in `publicWebContract.ts`, preventing the generator, discovery files, and Worker from silently diverging.
 
 # SEO And Accessibility
 
@@ -107,7 +108,7 @@ For a registered public `GET` or `HEAD`, `worker/content-negotiation.js` selects
 
 `seoHead.ts` renders the same head contract at build time that `RouteMeta` maintains after client navigation: title, description, citable abstract, robots, canonical, Open Graph, Twitter, and a Schema.org graph. Every indexable page includes Organization and WebSite nodes and states `isAccessibleForFree`; the WebSite node declares a `SearchAction` pointing at the real `?q=` problem search. Lessons add Course/LearningResource/TechArticle with `educationalUse` and an `EducationalAudience`, family pages add CollectionPage plus an ItemList of their ready lessons, other pages add WebPage, and routes with hierarchy add BreadcrumbList. Course duration is deliberately not declared: there is no trustworthy source for it, so `hasCourseInstance` is omitted rather than fabricated.
 
-`site/scripts/generate-seo.mjs` writes the checked-in baseline for `sitemap.xml`, `robots.txt`, `llms.txt`, `route-summaries.json`, and the home-route head inside `index.html`; the prerender step regenerates the four discovery files into the build output. All of them derive from the same 47-path catalog contract: home, seven families, 37 completed lessons, method, and problem index. `llms.txt` is grouped by family and declares the same-URL Markdown interface and approved public content signal. `robots.txt` explicitly allows both retrieval and training crawlers; a release is incomplete until Cloudflare AI Crawl Control is confirmed not to inject a conflicting managed no-train block. `pnpm check:seo` rejects generated-artifact drift, including a hand-edited `index.html` head.
+`site/scripts/generate-seo.mjs` writes the checked-in baseline for `sitemap.xml`, `robots.txt`, `llms.txt`, `route-summaries.json`, and the home-route head inside `index.html`; the prerender step regenerates the four discovery files into the build output. All of them derive from the same 47-path catalog contract: home, seven families, 37 completed lessons, method, and problem index. Sitemap entries are sorted by canonical URL. Each route records both its Git-derived `lastmod` and a SHA-256 digest of its route-owned source files: an unchanged digest preserves the previous timestamp, while changed content cannot retain the old timestamp even when both builds happen on the same day. `llms.txt` is grouped by family and declares the same-URL Markdown interface and approved public content signal. `robots.txt` explicitly allows both retrieval and training crawlers; a release is incomplete until Cloudflare AI Crawl Control is confirmed not to inject a conflicting managed no-train block. `pnpm check:seo` rejects generated-artifact drift, including a hand-edited `index.html` head.
 
 # Analytics
 

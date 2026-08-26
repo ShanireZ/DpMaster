@@ -1,6 +1,7 @@
 import { JSDOM } from 'jsdom'
 import { mkdirSync, writeFileSync } from 'node:fs'
 import { dirname, join } from 'node:path'
+import { markdownAssetRelativePath } from '../src/lib/publicWebContract.ts'
 
 const SKIPPED_TAGS = new Set([
   'button',
@@ -98,7 +99,11 @@ function renderNode(node, context) {
     return `\n\n\`\`\`${language}\n${code}\n\`\`\`\n\n`
   }
   if (/^h[1-6]$/.test(tag)) {
-    const level = Number(tag[1])
+    const sourceLevel = Number(tag[1])
+    const level = context.lastHeadingLevel === 0
+      ? 1
+      : Math.min(sourceLevel, context.lastHeadingLevel + 1)
+    context.lastHeadingLevel = level
     return `\n\n${'#'.repeat(level)} ${compact(renderChildren(element, context))}\n\n`
   }
   if (tag === 'p') return `\n\n${compact(renderChildren(element, context))}\n\n`
@@ -140,19 +145,13 @@ export function renderMarkdownRepresentation({ html, canonical, summary }) {
   const main = document.querySelector('main')
   if (!main) throw new Error(`Prerendered route ${canonical} is missing <main>`)
 
-  const body = renderNode(main, { canonical })
+  const body = renderNode(main, { canonical, lastHeadingLevel: 0 })
     .replace(/[ \t]+\n/g, '\n')
     .replace(/\n[ \t]+/g, '\n')
     .replace(/\n{3,}/g, '\n\n')
     .trim()
   const summaryBlock = summary ? `> ${compact(summary)}\n\n` : ''
   return `${summaryBlock}${body}\n\n---\n\n[在原页面查看完整互动内容](${canonical})\n`
-}
-
-export function markdownAssetRelativePath(pathname) {
-  return pathname === '/'
-    ? '_representations/markdown/index.md'
-    : `_representations/markdown${pathname}.md`
 }
 
 export function writeMarkdownRepresentation({
