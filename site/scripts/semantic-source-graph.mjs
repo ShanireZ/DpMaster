@@ -30,6 +30,44 @@ const CLIENT_EFFECT_CALLEES = new Set([
   'useInsertionEffect',
   'useLayoutEffect',
 ])
+const MUTATING_MEMBER_CALLEES = new Set([
+  'add',
+  'clear',
+  'copyWithin',
+  'delete',
+  'fill',
+  'pop',
+  'push',
+  'reverse',
+  'set',
+  'shift',
+  'sort',
+  'splice',
+  'unshift',
+])
+const STATIC_TARGET_MUTATORS = new Map([
+  ['Object', new Set([
+    'assign',
+    'defineProperties',
+    'defineProperty',
+    'setPrototypeOf',
+  ])],
+  ['Reflect', new Set([
+    'defineProperty',
+    'deleteProperty',
+    'set',
+    'setPrototypeOf',
+  ])],
+])
+const EXPRESSION_WRAPPERS = new Set([
+  'ChainExpression',
+  'ParenthesizedExpression',
+  'TSAsExpression',
+  'TSInstantiationExpression',
+  'TSNonNullExpression',
+  'TSSatisfiesExpression',
+  'TSTypeAssertion',
+])
 
 function isNonSemanticFile(path) {
   return (
@@ -94,7 +132,7 @@ function semanticBindingGraph(program) {
   const nodeParents = new WeakMap()
   const declaredIdentifiers = new WeakSet()
 
-  function declare(pattern, scope, semanticNode) {
+  function declare(pattern, scope, semanticNode, metadata = {}) {
     for (const identifier of bindingIdentifiers(pattern)) {
       declaredIdentifiers.add(identifier)
       const existing = scope.bindings.get(identifier.name)
@@ -104,6 +142,7 @@ function semanticBindingGraph(program) {
         scope.bindings.set(identifier.name, {
           executionScope: nearestFunctionScope(scope),
           identifier,
+          ...metadata,
           semanticNodes: new Set(semanticNode ? [semanticNode] : []),
           writes: [],
         })
@@ -140,11 +179,18 @@ function semanticBindingGraph(program) {
       for (const [child, childKey] of childNodes(node)) build(child, blockScope, node, childKey)
       return
     }
+    if (node.type === 'SwitchStatement') {
+      build(node.discriminant, scope, node, 'discriminant')
+      const lexicalScope = createScope(scope, 'block')
+      for (const switchCase of node.cases ?? []) {
+        build(switchCase, lexicalScope, node, 'cases')
+      }
+      return
+    }
     if (
       node.type === 'ForStatement'
       || node.type === 'ForInStatement'
       || node.type === 'ForOfStatement'
-      || node.type === 'SwitchStatement'
     ) {
       const lexicalScope = createScope(scope, 'block')
       for (const [child, childKey] of childNodes(node)) build(child, lexicalScope, node, childKey)
@@ -171,6 +217,13 @@ function semanticBindingGraph(program) {
       }
       return
     }
+    if (node.type === 'StaticBlock') {
+      const staticBlockScope = createScope(scope, 'block')
+      for (const [child, childKey] of childNodes(node)) {
+        build(child, staticBlockScope, node, childKey)
+      }
+      return
+    }
     if (node.type === 'CatchClause') {
       const catchScope = createScope(scope, 'block')
       if (node.param) declare(node.param, catchScope, node.param)
@@ -179,7 +232,16 @@ function semanticBindingGraph(program) {
     }
     if (node.type === 'ImportDeclaration') {
       for (const specifier of node.specifiers ?? []) {
-        if (specifier.local) declare(specifier.local, scope, null)
+        if (!specifier.local) continue
+        const importedName = specifier.type === 'ImportSpecifier'
+          ? (specifier.imported?.name ?? specifier.imported?.value)
+          : specifier.type === 'ImportNamespaceSpecifier'
+            ? '*'
+            : 'default'
+        declare(specifier.local, scope, node, {
+          importSource: node.source?.value,
+          importedName,
+        })
       }
       for (const [child, childKey] of childNodes(node)) build(child, scope, node, childKey)
       return
@@ -217,10 +279,39 @@ function semanticBindingGraph(program) {
       }
     } else if (node.type === 'MemberExpression') {
       writtenBindings(node.object, bindings)
-    } else if (node.type === 'ParenthesizedExpression') {
+    } else if (node.type === 'RestElement' || node.type === 'SpreadElement') {
+      writtenBindings(node.argument, bindings)
+    } else if (EXPRESSION_WRAPPERS.has(node.type)) {
       writtenBindings(node.expression, bindings)
     }
     return bindings
+  }
+
+  function memberName(member) {
+    if (member.type !== 'MemberExpression') return null
+    if (!member.computed && member.property.type === 'Identifier') {
+      return member.property.name
+    }
+    if (member.computed && member.property.type === 'StringLiteral') {
+      return member.property.value
+    }
+    return null
+  }
+
+  function isReactEffectCall(call) {
+    const callee = call.callee
+    if (callee.type === 'Identifier') {
+      const binding = lookup(callee)
+      return binding?.importSource === 'react'
+        && CLIENT_EFFECT_CALLEES.has(binding.importedName)
+    }
+    if (callee.type !== 'MemberExpression') return false
+    const hookName = memberName(callee)
+    if (!CLIENT_EFFECT_CALLEES.has(hookName)) return false
+    if (callee.object.type !== 'Identifier') return false
+    const binding = lookup(callee.object)
+    return binding?.importSource === 'react'
+      && (binding.importedName === '*' || binding.importedName === 'default')
   }
 
   function enclosingExecutionStatement(node, executionScope) {
@@ -236,18 +327,58 @@ function semanticBindingGraph(program) {
   }
 
   function indexWrites(node) {
-    if (node.type === 'AssignmentExpression') {
-      const executionScope = nearestFunctionScope(nodeScopes.get(node))
-      const semanticNode = enclosingExecutionStatement(node, executionScope)
-      for (const binding of writtenBindings(node.left)) {
-        binding.writes.push({ executionScope, semanticNode })
+    const executionScope = nearestFunctionScope(nodeScopes.get(node))
+    const semanticNode = enclosingExecutionStatement(node, executionScope)
+    const record = (target, kind = 'write') => {
+      for (const binding of writtenBindings(target)) {
+        binding.writes.push({
+          executionScope,
+          kind,
+          mutationNode: node,
+          semanticNode,
+        })
       }
     }
+    if (node.type === 'AssignmentExpression') {
+      record(node.left)
+    }
     if (node.type === 'UpdateExpression') {
-      const executionScope = nearestFunctionScope(nodeScopes.get(node))
-      const semanticNode = enclosingExecutionStatement(node, executionScope)
-      for (const binding of writtenBindings(node.argument)) {
-        binding.writes.push({ executionScope, semanticNode })
+      record(node.argument)
+    }
+    if (node.type === 'UnaryExpression' && node.operator === 'delete') {
+      record(node.argument)
+    }
+    if (
+      (node.type === 'ForInStatement' || node.type === 'ForOfStatement')
+      && node.left.type !== 'VariableDeclaration'
+    ) {
+      record(node.left)
+    }
+    if (node.type === 'CallExpression' && !isReactEffectCall(node)) {
+      const callee = node.callee
+      const method = callee.type === 'MemberExpression' ? memberName(callee) : null
+      const staticOwner = callee.type === 'MemberExpression'
+        && callee.object.type === 'Identifier'
+        ? callee.object.name
+        : null
+      const isStaticTargetMutator = method
+        && STATIC_TARGET_MUTATORS.get(staticOwner)?.has(method)
+      if (isStaticTargetMutator) {
+        record(node.arguments?.[0])
+      } else if (callee.type === 'MemberExpression') {
+        record(
+          callee.object,
+          MUTATING_MEMBER_CALLEES.has(method) ? 'write' : 'ambiguous-mutation',
+        )
+        if (!MUTATING_MEMBER_CALLEES.has(method)) {
+          for (const argument of node.arguments ?? []) {
+            record(argument, 'ambiguous-mutation')
+          }
+        }
+      } else {
+        for (const argument of node.arguments ?? []) {
+          record(argument, 'ambiguous-mutation')
+        }
       }
     }
     for (const [child] of childNodes(node)) indexWrites(child)
@@ -307,14 +438,12 @@ function semanticBindingGraph(program) {
   function isClientOnlyEffectScope(scope) {
     const functionNode = scope.ownerNode
     const relation = nodeParents.get(functionNode)
-    if (!relation || relation.parent.type !== 'CallExpression') return false
-    const callee = relation.parent.callee
-    const calleeName = callee.type === 'Identifier'
-      ? callee.name
-      : callee.type === 'MemberExpression' && !callee.computed
-        ? callee.property.name
-        : null
-    return CLIENT_EFFECT_CALLEES.has(calleeName)
+    return Boolean(
+      relation
+      && relation.key === 'arguments'
+      && relation.parent.type === 'CallExpression'
+      && isReactEffectCall(relation.parent),
+    )
   }
 
   return {
@@ -367,11 +496,21 @@ export function semanticSourceForDigest(path, source) {
             pendingNodes.push(semanticNode)
           }
           for (const write of binding.writes) {
+            const mutationAlreadySelected = [...slices].some((slice) => (
+              slice.start <= write.mutationNode.start
+              && slice.end >= write.mutationNode.end
+            ))
+            if (mutationAlreadySelected) continue
+            if (bindingGraph.isClientOnlyEffectScope(write.executionScope)) continue
+            if (write.kind === 'ambiguous-mutation') {
+              throw new Error(
+                `Unsupported ambiguous mutation of ${binding.identifier.name} in ${path}`,
+              )
+            }
             if (
               write.executionScope !== binding.executionScope
               && write.executionScope !== rootExecutionScope
             ) {
-              if (bindingGraph.isClientOnlyEffectScope(write.executionScope)) continue
               throw new Error(
                 `Unsupported nested semantic write to ${binding.identifier.name} in ${path}`,
               )

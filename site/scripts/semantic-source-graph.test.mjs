@@ -182,7 +182,7 @@ test('mixed-module closure follows lexical symbols instead of bare names', () =>
     semanticSourceForDigest('site/src/app/AppContent.tsx', conditionalAfter),
   )
 
-  const effectBefore = `function AppContent() { let label = '正文'; useEffect(() => { label = '客户端一' }, []); return <Routes>{label}</Routes> }`
+  const effectBefore = `import { useEffect } from 'react'\nfunction AppContent() { let label = '正文'; useEffect(() => { label = '客户端一' }, []); return <Routes>{label}</Routes> }`
   const effectAfter = effectBefore.replace('客户端一', '客户端二')
   assert.equal(
     semanticSourceForDigest('site/src/app/AppContent.tsx', effectBefore),
@@ -229,5 +229,129 @@ test('mixed-module closure follows lexical symbols instead of bare names', () =>
   assert.notEqual(
     semanticSourceForDigest('site/src/app/AppContent.tsx', fieldBefore),
     semanticSourceForDigest('site/src/app/AppContent.tsx', fieldAfterSemanticChange),
+  )
+
+  const staticBlockBefore = `const label = '正文一'\nclass RouteLabel { static value = label; static { const label = '客户端' } }\nfunction AppContent() { return <Routes>{RouteLabel.value}</Routes> }`
+  const staticBlockAfter = staticBlockBefore.replace('正文一', '正文二')
+  assert.notEqual(
+    semanticSourceForDigest('site/src/app/AppContent.tsx', staticBlockBefore),
+    semanticSourceForDigest('site/src/app/AppContent.tsx', staticBlockAfter),
+  )
+
+  const importBefore = `import { ViewA as View } from './views'\nfunction AppContent() { return <Routes><View /></Routes> }`
+  const importAfter = importBefore.replace('ViewA as View', 'ViewB as View')
+  assert.notEqual(
+    semanticSourceForDigest('site/src/app/AppContent.tsx', importBefore),
+    semanticSourceForDigest('site/src/app/AppContent.tsx', importAfter),
+  )
+})
+
+test('mixed-module closure tracks every supported mutation of selected bindings', () => {
+  const forOfBefore = `function AppContent() { let label = '正文'; for (label of ['循环一']) {} return <Routes>{label}</Routes> }`
+  const forOfAfter = forOfBefore.replace('循环一', '循环二')
+  assert.notEqual(
+    semanticSourceForDigest('site/src/app/AppContent.tsx', forOfBefore),
+    semanticSourceForDigest('site/src/app/AppContent.tsx', forOfAfter),
+  )
+
+  const forInBefore = `function AppContent() { let label = '正文'; for (label in { 键一: true }) {} return <Routes>{label}</Routes> }`
+  const forInAfter = forInBefore.replace('键一', '键二')
+  assert.notEqual(
+    semanticSourceForDigest('site/src/app/AppContent.tsx', forInBefore),
+    semanticSourceForDigest('site/src/app/AppContent.tsx', forInAfter),
+  )
+
+  const deleteBefore = `const state = { value: '正文' }\nfunction AppContent() { delete state.value; return <Routes>{state.value}</Routes> }`
+  const deleteAfter = deleteBefore.replace('delete state.value', 'delete state.other')
+  assert.notEqual(
+    semanticSourceForDigest('site/src/app/AppContent.tsx', deleteBefore),
+    semanticSourceForDigest('site/src/app/AppContent.tsx', deleteAfter),
+  )
+
+  const pushBefore = `const items = []\nfunction AppContent() { items.push('正文一'); return <Routes>{items.join(',')}</Routes> }`
+  const pushAfter = pushBefore.replace('正文一', '正文二')
+  assert.notEqual(
+    semanticSourceForDigest('site/src/app/AppContent.tsx', pushBefore),
+    semanticSourceForDigest('site/src/app/AppContent.tsx', pushAfter),
+  )
+
+  const assignBefore = `const state = {}\nfunction AppContent() { Object.assign(state, { value: '正文一' }); return <Routes>{state.value}</Routes> }`
+  const assignAfter = assignBefore.replace('正文一', '正文二')
+  assert.notEqual(
+    semanticSourceForDigest('site/src/app/AppContent.tsx', assignBefore),
+    semanticSourceForDigest('site/src/app/AppContent.tsx', assignAfter),
+  )
+
+  const typedAssignmentBefore = `const state = { value: '正文' }\nfunction AppContent() { (state as { value: string }).value = '正文一'; return <Routes>{state.value}</Routes> }`
+  const typedAssignmentAfter = typedAssignmentBefore.replace('正文一', '正文二')
+  assert.notEqual(
+    semanticSourceForDigest('site/src/app/AppContent.tsx', typedAssignmentBefore),
+    semanticSourceForDigest('site/src/app/AppContent.tsx', typedAssignmentAfter),
+  )
+
+  const ambiguousReceiverCall = `const state = { value: '正文' }\nfunction AppContent() { state.inspect(); return <Routes>{state.value}</Routes> }`
+  assert.throws(
+    () => semanticSourceForDigest('site/src/app/AppContent.tsx', ambiguousReceiverCall),
+    /Unsupported ambiguous mutation of state/,
+  )
+
+
+  const ambiguousArgumentCall = `const state = { value: '正文' }\nfunction mutate(value) { value.value = '变化' }\nfunction AppContent() { mutate(state); return <Routes>{state.value}</Routes> }`
+  assert.throws(
+    () => semanticSourceForDigest('site/src/app/AppContent.tsx', ambiguousArgumentCall),
+    /Unsupported ambiguous mutation of state/,
+  )
+})
+
+test('mixed-module closure recognizes React effects by import provenance', () => {
+  for (const hook of ['useEffect', 'useLayoutEffect', 'useInsertionEffect']) {
+    const before = `import { ${hook} as afterRender } from 'react'\nfunction AppContent() { let label = '正文'; afterRender(() => { label = '客户端一' }, []); return <Routes>{label}</Routes> }`
+    const after = before.replace('客户端一', '客户端二')
+    assert.equal(
+      semanticSourceForDigest('site/src/app/AppContent.tsx', before),
+      semanticSourceForDigest('site/src/app/AppContent.tsx', after),
+      hook,
+    )
+  }
+
+  const namespaceBefore = `import * as React from 'react'\nfunction AppContent() { let label = '正文'; React.useEffect(() => { label = '客户端一' }, []); return <Routes>{label}</Routes> }`
+  const namespaceAfter = namespaceBefore.replace('客户端一', '客户端二')
+  assert.equal(
+    semanticSourceForDigest('site/src/app/AppContent.tsx', namespaceBefore),
+    semanticSourceForDigest('site/src/app/AppContent.tsx', namespaceAfter),
+  )
+
+  const defaultBefore = `import React from 'react'\nfunction AppContent() { let label = '正文'; React.useLayoutEffect(() => { label = '客户端一' }, []); return <Routes>{label}</Routes> }`
+  const defaultAfter = defaultBefore.replace('客户端一', '客户端二')
+  assert.equal(
+    semanticSourceForDigest('site/src/app/AppContent.tsx', defaultBefore),
+    semanticSourceForDigest('site/src/app/AppContent.tsx', defaultAfter),
+  )
+
+  const fakeLocalHook = `function useEffect(callback) { callback() }\nfunction AppContent() { let label = '正文'; useEffect(() => { label = '同步变化' }); return <Routes>{label}</Routes> }`
+  assert.throws(
+    () => semanticSourceForDigest('site/src/app/AppContent.tsx', fakeLocalHook),
+    /Unsupported nested semantic write to label/,
+  )
+
+  const fakeMemberHook = `const scheduler = { useEffect(callback) { callback() } }\nfunction AppContent() { let label = '正文'; scheduler.useEffect(() => { label = '同步变化' }); return <Routes>{label}</Routes> }`
+  assert.throws(
+    () => semanticSourceForDigest('site/src/app/AppContent.tsx', fakeMemberHook),
+    /Unsupported nested semantic write to label/,
+  )
+
+  const shadowedReactHook = `import { useEffect } from 'react'\nfunction AppContent() { function useEffect(callback) { callback() } let label = '正文'; useEffect(() => { label = '同步变化' }); return <Routes>{label}</Routes> }`
+  assert.throws(
+    () => semanticSourceForDigest('site/src/app/AppContent.tsx', shadowedReactHook),
+    /Unsupported nested semantic write to label/,
+  )
+})
+
+test('switch discriminants resolve outside the switch lexical scope', () => {
+  const before = `function AppContent() { const mode = '外层一'; let label = '正文'; switch (mode) { case 'x': const mode = '分支'; label = mode } return <Routes>{label}</Routes> }`
+  const after = before.replace('外层一', '外层二')
+  assert.notEqual(
+    semanticSourceForDigest('site/src/app/AppContent.tsx', before),
+    semanticSourceForDigest('site/src/app/AppContent.tsx', after),
   )
 })
