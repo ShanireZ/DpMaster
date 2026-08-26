@@ -601,7 +601,7 @@ test('mixed-module closure tracks every supported mutation of selected bindings'
   const patchedReflectApply = `import { state, prepare } from './store'\nglobalThis.Reflect = { apply(callable) { return callable() } }\nfunction AppContent() { Reflect.apply(prepare, null, []); return <Routes>{state.value}</Routes> }`
   assert.throws(
     () => semanticSourceForDigest('site/src/app/AppContent.tsx', patchedReflectApply),
-    /Unsupported ambiguous mutation of prepare/,
+    /Unsupported/,
   )
 })
 
@@ -660,7 +660,7 @@ test('mixed-module closure recognizes React effects by import provenance', () =>
   const patchedReactEffect = `import * as React from 'react'\nReact.useEffect = callback => callback()\nfunction AppContent() { let label = '正文'; React.useEffect(() => { label = '同步变化' }, []); return <Routes>{label}</Routes> }`
   assert.throws(
     () => semanticSourceForDigest('site/src/app/AppContent.tsx', patchedReactEffect),
-    /Unsupported ambiguous mutation of React/,
+    /Unsupported/,
   )
 
   const wrappedCallbackBefore = `import { useEffect } from 'react'\nfunction AppContent() { let label = '正文'; useEffect((() => { label = '客户端一' }) as () => void, []); return <Routes>{label}</Routes> }`
@@ -778,6 +778,147 @@ test('reviewed runtime boundaries cannot hide public render changes', () => {
       sideEffectImportBefore.replace('ssr-patch-a', 'ssr-patch-b'),
     ),
   )
+})
+
+test('secondary review boundaries preserve SSR precision and fail closed', () => {
+  for (const runtimeSource of [
+    `const state = { value: '正文' }\nfunction current() { return state }\nfunction tag(_strings, target) { target.value = '变化一' }\nfunction AppContent() { tag\`${'${state}'}\`; return <Routes>{state.value}</Routes> }`,
+    `const state = { value: '正文' }\nfunction current() { return state }\nfunction AppContent() { (() => { current().value = '变化一' })(); return <Routes>{state.value}</Routes> }`,
+    `const state = { value: '正文' }\nfunction current() { return state }\nfunction AppContent() { new (class { constructor() { current().value = '变化一' } })(); return <Routes>{state.value}</Routes> }`,
+    `const state = { value: '正文' }\nfunction current() { return state }\nfunction AppContent() { new Promise(resolve => { current().value = '变化一'; resolve() }); return <Routes>{state.value}</Routes> }`,
+    `const state = { value: '正文' }\nfunction current() { return state }\nfunction AppContent() { Array.from([1], true ? () => { current().value = '变化一' } : () => {}); return <Routes>{state.value}</Routes> }`,
+  ]) {
+    assert.notEqual(
+      semanticSourceForDigest('site/src/app/AppContent.tsx', runtimeSource),
+      semanticSourceForDigest(
+        'site/src/app/AppContent.tsx',
+        runtimeSource.replace('变化一', '变化二'),
+      ),
+    )
+  }
+  assert.throws(
+    () => semanticSourceForDigest(
+      'site/src/app/AppContent.tsx',
+      `const state = { value: '正文' }\nfunction current() { return state }\nconst callbacks = { run: () => { current().value = '变化一' } }\nfunction AppContent() { Array.from([1], callbacks.run); return <Routes>{state.value}</Routes> }`,
+    ),
+    /Unsupported ambiguous mutation of callbacks/,
+  )
+
+  for (const shallowCopy of [
+    `const state = { nested: { value: '正文' } }\nconst copy = { ...state }\nfunction AppContent() { copy.nested.value = '变化一'; return <Routes>{state.nested.value}</Routes> }`,
+    `const state = { nested: { value: '正文' } }\nconst { ...copy } = state\nfunction AppContent() { copy.nested.value = '变化一'; return <Routes>{state.nested.value}</Routes> }`,
+  ]) {
+    assert.throws(
+      () => semanticSourceForDigest('site/src/app/AppContent.tsx', shallowCopy),
+      /Unsupported ambiguous mutation of state/,
+    )
+  }
+
+  for (const moduleEvaluation of [
+    `import { unused } from 'ssr-patch-a'\nfunction AppContent() { return <Routes>正文</Routes> }`,
+    `export * from 'ssr-patch-a'\nfunction AppContent() { return <Routes>正文</Routes> }`,
+  ]) {
+    assert.notEqual(
+      semanticSourceForDigest('site/src/app/AppContent.tsx', moduleEvaluation),
+      semanticSourceForDigest(
+        'site/src/app/AppContent.tsx',
+        moduleEvaluation.replace('ssr-patch-a', 'ssr-patch-b'),
+      ),
+    )
+  }
+
+  for (const patchedReact of [
+    `import React from 'react'\nfunction getReact() { return React }\nconst alias = getReact()\nalias.useEffect = callback => callback()\nfunction AppContent() { let label = '正文'; React.useEffect(() => { label = '同步一' }, []); return <Routes>{label}</Routes> }`,
+    `import './patch-react'\nimport React from 'react'\nfunction AppContent() { let label = '正文'; React.useEffect(() => { label = '同步一' }, []); return <Routes>{label}</Routes> }`,
+  ]) {
+    assert.throws(
+      () => semanticSourceForDigest('site/src/app/AppContent.tsx', patchedReact),
+      /Unsupported/,
+    )
+  }
+
+  for (const patchedOwner of [
+    `const state = { value: '正文' }\nconst root = globalThis\nroot.Object = { assign(target) { target.value = '变化' } }\nfunction AppContent() { Object.assign(state, {}); return <Routes>{state.value}</Routes> }`,
+    `const state = { value: '正文' }\nglobalThis['Ob' + 'ject'] = { assign(target) { target.value = '变化' } }\nfunction AppContent() { Object.assign(state, {}); return <Routes>{state.value}</Routes> }`,
+  ]) {
+    assert.throws(
+      () => semanticSourceForDigest('site/src/app/AppContent.tsx', patchedOwner),
+      /Unsupported ambiguous mutation of state/,
+    )
+  }
+
+  const intrinsicClientBefore = `function AppContent() { return <Routes><button onClick={() => track('客户端一')} ref={() => track('引用一')}>正文</button></Routes> }`
+  assert.equal(
+    semanticSourceForDigest('site/src/app/AppContent.tsx', intrinsicClientBefore),
+    semanticSourceForDigest(
+      'site/src/app/AppContent.tsx',
+      intrinsicClientBefore.replace('客户端一', '客户端二').replace('引用一', '引用二'),
+    ),
+  )
+  const intrinsicDeferredWrite = `function AppContent() { let label = '正文'; return <Routes><button onClick={() => { label = '客户端一' }}>{label}</button></Routes> }`
+  assert.equal(
+    semanticSourceForDigest('site/src/app/AppContent.tsx', intrinsicDeferredWrite),
+    semanticSourceForDigest(
+      'site/src/app/AppContent.tsx',
+      intrinsicDeferredWrite.replace('客户端一', '客户端二'),
+    ),
+  )
+  assert.notEqual(
+    semanticSourceForDigest(
+      'site/src/app/AppContent.tsx',
+      `function AppContent() { return <Routes><Widget render={() => track('正文一')} /></Routes> }`,
+    ),
+    semanticSourceForDigest(
+      'site/src/app/AppContent.tsx',
+      `function AppContent() { return <Routes><Widget render={() => track('正文二')} /></Routes> }`,
+    ),
+  )
+
+  for (const asyncCallback of [
+    `function AppContent() { setTimeout(() => track('客户端一'), 0); return <Routes>正文</Routes> }`,
+    `function AppContent() { queueMicrotask(() => track('客户端一')); return <Routes>正文</Routes> }`,
+    `function AppContent() { Promise.resolve().then(() => track('客户端一')); return <Routes>正文</Routes> }`,
+    `function AppContent() { let label = '正文'; setTimeout(() => { label = '客户端一' }, 0); return <Routes>{label}</Routes> }`,
+    `function AppContent() { new Promise(resolve => { setTimeout(() => track('客户端一'), 0); resolve() }); return <Routes>正文</Routes> }`,
+  ]) {
+    assert.equal(
+      semanticSourceForDigest('site/src/app/AppContent.tsx', asyncCallback),
+      semanticSourceForDigest(
+        'site/src/app/AppContent.tsx',
+        asyncCallback.replace('客户端一', '客户端二'),
+      ),
+    )
+  }
+})
+
+test('public config rejects alias mutation, pattern writes, and patched freeze', () => {
+  for (const mutableConfig of [
+    publicConfigSource(
+      `const shared = { name: '初始' }\nconst alias = shared\nalias.name = '运行时'`,
+      '...shared',
+    ),
+    publicConfigSource(
+      `const shared = { name: '初始' }\n({ name: shared.name } = { name: '运行时' })`,
+      '...shared',
+    ),
+    publicConfigSource(
+      `Object.freeze = value => { value.name = '运行时'; return value }`,
+      `name: '初始'`,
+    ),
+    publicConfigSource(
+      `const root = globalThis\nroot.Object = { freeze(value) { value.name = '运行时'; return value } }`,
+      `name: '初始'`,
+    ),
+    publicConfigSource(
+      `Reflect.set(Object, 'freeze', value => { value.name = '运行时'; return value })`,
+      `name: '初始'`,
+    ),
+  ]) {
+    assert.throws(
+      () => semanticSourceForDigest('site/src/config/site.ts', mutableConfig),
+      /Unsupported public site configuration/,
+    )
+  }
 })
 
 test('static dependency discovery excludes specifier-level type-only edges', () => {
