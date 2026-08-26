@@ -149,6 +149,37 @@ test('mixed shell modules hash their AST-backed render dependencies', () => {
   )
 })
 
+test('runtime AST projection ignores proven client-effect callback bodies', () => {
+  const before = `import { useEffect } from 'react'\nexport function Demo({ value }) { useEffect(() => { queueMicrotask(() => sync('客户端一')) }, [value]); return <p>{value}</p> }`
+  const afterClientChange = before.replace('客户端一', '客户端二')
+  const afterDependencyChange = before.replace('[value]', '[value, enabled]')
+  const fakeHookBefore = `function useEffect(callback) { callback() }\nexport function Demo() { useEffect(() => sync('同步一')); return <p>正文</p> }`
+  const patchedNamespaceBefore = `import * as React from 'react'\nObject.assign(React, { useEffect: callback => callback() })\nexport function Demo() { React.useEffect(() => sync('同步一')); return <p>正文</p> }`
+
+  assert.equal(
+    semanticSourceForDigest('site/src/components/Demo.tsx', before),
+    semanticSourceForDigest('site/src/components/Demo.tsx', afterClientChange),
+  )
+  assert.notEqual(
+    semanticSourceForDigest('site/src/components/Demo.tsx', before),
+    semanticSourceForDigest('site/src/components/Demo.tsx', afterDependencyChange),
+  )
+  assert.notEqual(
+    semanticSourceForDigest('site/src/components/Demo.tsx', fakeHookBefore),
+    semanticSourceForDigest(
+      'site/src/components/Demo.tsx',
+      fakeHookBefore.replace('同步一', '同步二'),
+    ),
+  )
+  assert.notEqual(
+    semanticSourceForDigest('site/src/components/Demo.tsx', patchedNamespaceBefore),
+    semanticSourceForDigest(
+      'site/src/components/Demo.tsx',
+      patchedNamespaceBefore.replace('同步一', '同步二'),
+    ),
+  )
+})
+
 test('mixed-module closure follows lexical symbols instead of bare names', () => {
   const shadowBefore = `const label = '正文一'\nfunction AppContent() { return <Routes>{label}</Routes> }\nfunction clientOnly() { const label = '客户端一'; return label }`
   const shadowAfterSemanticChange = shadowBefore.replace('正文一', '正文二')
@@ -191,12 +222,15 @@ test('mixed-module closure follows lexical symbols instead of bare names', () =>
   )
 
   const ambiguousHelperWrite = `let label = '正文'\nfunction prepare() { label = '变化' }\nfunction AppContent() { prepare(); return <Routes>{label}</Routes> }`
-  assert.throws(
-    () => semanticSourceForDigest(
+  assert.notEqual(
+    semanticSourceForDigest(
       'site/src/app/AppContent.tsx',
       ambiguousHelperWrite,
     ),
-    /Unsupported nested semantic write to label/,
+    semanticSourceForDigest(
+      'site/src/app/AppContent.tsx',
+      ambiguousHelperWrite.replace('变化', '变化二'),
+    ),
   )
 
   const attributeBefore = `const path = '客户端一'\nfunction AppContent() { return <Routes path="/fixed" /> }`
@@ -290,7 +324,7 @@ test('mixed-module closure tracks every supported mutation of selected bindings'
     semanticSourceForDigest('site/src/app/AppContent.tsx', deleteAfter),
   )
 
-  const pushBefore = `const items = []\nfunction AppContent() { items.push('正文一'); return <Routes>{items.join(',')}</Routes> }`
+  const pushBefore = `const items = []\nfunction AppContent() { items.push('正文一'); return <Routes>{items[0]}</Routes> }`
   const pushAfter = pushBefore.replace('正文一', '正文二')
   assert.notEqual(
     semanticSourceForDigest('site/src/app/AppContent.tsx', pushBefore),
@@ -336,6 +370,19 @@ test('mixed-module closure tracks every supported mutation of selected bindings'
     )
   }
 
+  const lateContainerAlias = `const state = { value: '正文' }\nconst holder = {}\nholder.current = state\nfunction AppContent() { holder.current.value = '变化'; return <Routes>{state.value}</Routes> }`
+  assert.throws(
+    () => semanticSourceForDigest('site/src/app/AppContent.tsx', lateContainerAlias),
+    /Unsupported ambiguous mutation of state/,
+  )
+
+  const spreadCopyBefore = `const state = { value: '正文' }\nconst holder = { current: { ...state } }\nfunction AppContent() { holder.current.value = '副本一'; return <Routes>{state.value}</Routes> }`
+  const spreadCopyAfter = spreadCopyBefore.replace('副本一', '副本二')
+  assert.equal(
+    semanticSourceForDigest('site/src/app/AppContent.tsx', spreadCopyBefore),
+    semanticSourceForDigest('site/src/app/AppContent.tsx', spreadCopyAfter),
+  )
+
   const aliasRebindBefore = `const state = { value: '正文' }\nlet alias = state\nfunction AppContent() { alias = { value: '客户端一' }; return <Routes>{state.value}</Routes> }`
   const aliasRebindAfter = aliasRebindBefore.replace('客户端一', '客户端二')
   assert.equal(
@@ -377,25 +424,53 @@ test('mixed-module closure tracks every supported mutation of selected bindings'
 
 
   const ambiguousArgumentCall = `const state = { value: '正文' }\nfunction mutate(value) { value.value = '变化' }\nfunction AppContent() { mutate(state); return <Routes>{state.value}</Routes> }`
-  assert.throws(
-    () => semanticSourceForDigest('site/src/app/AppContent.tsx', ambiguousArgumentCall),
-    /Unsupported ambiguous mutation of state/,
+  assert.notEqual(
+    semanticSourceForDigest('site/src/app/AppContent.tsx', ambiguousArgumentCall),
+    semanticSourceForDigest(
+      'site/src/app/AppContent.tsx',
+      ambiguousArgumentCall.replace('变化', '变化二'),
+    ),
   )
 
   const importedClosureCall = `import { state, prepare } from './store'\nfunction AppContent() { prepare(); return <Routes>{state.value}</Routes> }`
-  assert.throws(
-    () => semanticSourceForDigest('site/src/app/AppContent.tsx', importedClosureCall),
-    /Unsupported ambient mutation from prepare/,
+  assert.notEqual(
+    semanticSourceForDigest('site/src/app/AppContent.tsx', importedClosureCall),
+    semanticSourceForDigest(
+      'site/src/app/AppContent.tsx',
+      importedClosureCall.replace('prepare(); ', ''),
+    ),
   )
 
-  for (const importedAliasCall of [
-    `import { state, prepare } from './store'\nconst run = prepare\nfunction AppContent() { run(); return <Routes>{state.value}</Routes> }`,
-    `import { state, controller } from './store'\nfunction AppContent() { controller.prepare(); return <Routes>{state.value}</Routes> }`,
-    `import { state } from './store'\nimport { prepare } from './store/index'\nfunction AppContent() { prepare(); return <Routes>{state.value}</Routes> }`,
+  for (const [call, importedAliasCall] of [
+    ['run(); ', `import { state, prepare } from './store'\nconst run = prepare\nfunction AppContent() { run(); return <Routes>{state.value}</Routes> }`],
+    ['prepare(); ', `import { state } from './store'\nimport { prepare } from './store/index'\nfunction AppContent() { prepare(); return <Routes>{state.value}</Routes> }`],
   ]) {
-    assert.throws(
-      () => semanticSourceForDigest('site/src/app/AppContent.tsx', importedAliasCall),
-      /Unsupported ambient mutation/,
+    assert.notEqual(
+      semanticSourceForDigest('site/src/app/AppContent.tsx', importedAliasCall),
+      semanticSourceForDigest(
+        'site/src/app/AppContent.tsx',
+        importedAliasCall.replace(call, ''),
+      ),
+    )
+  }
+
+  const importedMemberCall = `import { state, controller } from './store'\nfunction AppContent() { controller.prepare(); return <Routes>{state.value}</Routes> }`
+  assert.throws(
+    () => semanticSourceForDigest('site/src/app/AppContent.tsx', importedMemberCall),
+    /Unsupported ambiguous mutation of controller/,
+  )
+
+  for (const [call, crossModuleCall] of [
+    ['prepare(); ', `import { state } from './store'\nimport { prepare } from './prepare'\nfunction AppContent() { prepare(); return <Routes>{state.value}</Routes> }`],
+    ['prepare(); ', `import { state } from './store'\nimport { prepare } from './barrel'\nfunction AppContent() { prepare(); return <Routes>{state.value}</Routes> }`],
+    ['Reflect.apply(prepare, null, []); ', `import { state, prepare } from './store'\nfunction AppContent() { Reflect.apply(prepare, null, []); return <Routes>{state.value}</Routes> }`],
+  ]) {
+    assert.notEqual(
+      semanticSourceForDigest('site/src/app/AppContent.tsx', crossModuleCall),
+      semanticSourceForDigest(
+        'site/src/app/AppContent.tsx',
+        crossModuleCall.replace(call, ''),
+      ),
     )
   }
 
@@ -413,9 +488,39 @@ test('mixed-module closure tracks every supported mutation of selected bindings'
   )
 
   const dynamicTarget = `const state = { value: '正文' }\nfunction current() { return state }\nfunction AppContent() { current().value = '变化'; return <Routes>{state.value}</Routes> }`
+  assert.notEqual(
+    semanticSourceForDigest('site/src/app/AppContent.tsx', dynamicTarget),
+    semanticSourceForDigest(
+      'site/src/app/AppContent.tsx',
+      dynamicTarget.replace('变化', '变化二'),
+    ),
+  )
+
+  for (const hiddenDynamicTarget of [
+    `const state = { value: '正文' }\nfunction current() { return state }\ncurrent().value = '变化'\nfunction AppContent() { return <Routes>{state.value}</Routes> }`,
+    `const state = { value: '正文' }\nfunction current() { return state }\nfunction prepare() { current().value = '变化' }\nfunction AppContent() { prepare(); return <Routes>{state.value}</Routes> }`,
+    `const state = { value: '正文' }\nfunction current() { return state }\nfunction AppContent() { const alias = current(); alias.value = '变化'; return <Routes>{state.value}</Routes> }`,
+    `const state = { value: '正文' }\nconst holder = { get current() { return state } }\nfunction AppContent() { holder.current.value = '变化'; return <Routes>{state.value}</Routes> }`,
+  ]) {
+    assert.notEqual(
+      semanticSourceForDigest('site/src/app/AppContent.tsx', hiddenDynamicTarget),
+      semanticSourceForDigest(
+        'site/src/app/AppContent.tsx',
+        hiddenDynamicTarget.replace('变化', '变化二'),
+      ),
+    )
+  }
+
+  const customConstructorTarget = `const state = { value: '正文' }\nclass Holder { constructor() { this.current = state } }\nconst holder = new Holder()\nfunction AppContent() { holder.current.value = '变化'; return <Routes>{state.value}</Routes> }`
   assert.throws(
-    () => semanticSourceForDigest('site/src/app/AppContent.tsx', dynamicTarget),
-    /Unsupported dynamic mutation target/,
+    () => semanticSourceForDigest('site/src/app/AppContent.tsx', customConstructorTarget),
+    /Unsupported ambiguous mutation of state/,
+  )
+
+  const dynamicImportedGetter = `import { state, prepare } from './store'\nconst controller = { get run() { return prepare } }\nfunction AppContent() { controller.run(); return <Routes>{state.value}</Routes> }`
+  assert.throws(
+    () => semanticSourceForDigest('site/src/app/AppContent.tsx', dynamicImportedGetter),
+    /Unsupported ambiguous mutation of controller/,
   )
 
   const customNamedMutator = `const state = { value: '正文' }\nconst mutator = { set(target, value) { target.value = value } }\nfunction AppContent() { mutator.set(state, '正文一'); return <Routes>{state.value}</Routes> }`
@@ -427,7 +532,7 @@ test('mixed-module closure tracks every supported mutation of selected bindings'
   const shadowedObjectMutator = `const state = { value: '正文' }\nconst Object = { assign(target, source) { target.value = source.value } }\nfunction AppContent() { Object.assign(state, { value: '正文一' }); return <Routes>{state.value}</Routes> }`
   assert.throws(
     () => semanticSourceForDigest('site/src/app/AppContent.tsx', shadowedObjectMutator),
-    /Unsupported ambiguous mutation of state/,
+    /Unsupported ambiguous mutation of Object/,
   )
 
   const patchedGlobalObject = `const state = { value: '正文' }\nconst other = {}\nObject.assign = (_target, source) => { source.value = '变化' }\nfunction AppContent() { Object.assign(other, state); return <Routes>{state.value}</Routes> }`
@@ -436,15 +541,24 @@ test('mixed-module closure tracks every supported mutation of selected bindings'
     /Unsupported ambiguous mutation of state/,
   )
 
-  for (const indirectGlobalPatch of [
-    `const state = { value: '正文' }\nglobalThis.Object.assign = target => { target.value = '变化' }\nfunction AppContent() { Object.assign(state, {}); return <Routes>{state.value}</Routes> }`,
-    `const state = { value: '正文' }\nconst BuiltinObject = Object\nBuiltinObject.assign = target => { target.value = '变化' }\nfunction AppContent() { Object.assign(state, {}); return <Routes>{state.value}</Routes> }`,
+  for (const [name, indirectGlobalPatch] of [
+    ['member', `const state = { value: '正文' }\nglobalThis.Object.assign = target => { target.value = '变化' }\nfunction AppContent() { Object.assign(state, {}); return <Routes>{state.value}</Routes> }`],
+    ['alias', `const state = { value: '正文' }\nconst BuiltinObject = Object\nBuiltinObject.assign = target => { target.value = '变化' }\nfunction AppContent() { Object.assign(state, {}); return <Routes>{state.value}</Routes> }`],
+    ['owner', `const state = { value: '正文' }\nglobalThis.Object = { assign(target) { target.value = '变化' } }\nfunction AppContent() { Object.assign(state, {}); return <Routes>{state.value}</Routes> }`],
+    ['defineProperty', `const state = { value: '正文' }\nObject.defineProperty(globalThis, 'Object', { value: { assign(target) { target.value = '变化' } } })\nfunction AppContent() { Object.assign(state, {}); return <Routes>{state.value}</Routes> }`],
   ]) {
     assert.throws(
       () => semanticSourceForDigest('site/src/app/AppContent.tsx', indirectGlobalPatch),
       /Unsupported ambiguous mutation of state/,
+      name,
     )
   }
+
+  const patchedReflectApply = `import { state, prepare } from './store'\nglobalThis.Reflect = { apply(callable) { return callable() } }\nfunction AppContent() { Reflect.apply(prepare, null, []); return <Routes>{state.value}</Routes> }`
+  assert.throws(
+    () => semanticSourceForDigest('site/src/app/AppContent.tsx', patchedReflectApply),
+    /Unsupported ambiguous mutation of prepare/,
+  )
 })
 
 test('mixed-module closure recognizes React effects by import provenance', () => {
@@ -479,6 +593,32 @@ test('mixed-module closure recognizes React effects by import provenance', () =>
     semanticSourceForDigest('site/src/app/AppContent.tsx', stableAliasAfter),
   )
 
+  for (const memberAliasBefore of [
+    `import * as React from 'react'\nconst useAfterRender = React.useEffect\nfunction AppContent() { let label = '正文'; useAfterRender(() => { label = '客户端一' }, []); return <Routes>{label}</Routes> }`,
+    `import React from 'react'\nconst { useEffect: useAfterRender } = React\nfunction AppContent() { let label = '正文'; useAfterRender(() => { label = '客户端一' }, []); return <Routes>{label}</Routes> }`,
+  ]) {
+    const memberAliasAfter = memberAliasBefore.replace('客户端一', '客户端二')
+    assert.equal(
+      semanticSourceForDigest('site/src/app/AppContent.tsx', memberAliasBefore),
+      semanticSourceForDigest('site/src/app/AppContent.tsx', memberAliasAfter),
+    )
+  }
+
+  const mixedEffectAlias = `import { useEffect } from 'react'\nfunction runNow(callback) { callback() }\nconst afterRender = false ? useEffect : runNow\nfunction AppContent() { let label = '正文'; afterRender(() => { label = '同步变化' }, []); return <Routes>{label}</Routes> }`
+  assert.notEqual(
+    semanticSourceForDigest('site/src/app/AppContent.tsx', mixedEffectAlias),
+    semanticSourceForDigest(
+      'site/src/app/AppContent.tsx',
+      mixedEffectAlias.replace('同步变化', '同步变化二'),
+    ),
+  )
+
+  const patchedReactEffect = `import * as React from 'react'\nReact.useEffect = callback => callback()\nfunction AppContent() { let label = '正文'; React.useEffect(() => { label = '同步变化' }, []); return <Routes>{label}</Routes> }`
+  assert.throws(
+    () => semanticSourceForDigest('site/src/app/AppContent.tsx', patchedReactEffect),
+    /Unsupported nested semantic write to label/,
+  )
+
   const wrappedCallbackBefore = `import { useEffect } from 'react'\nfunction AppContent() { let label = '正文'; useEffect((() => { label = '客户端一' }) as () => void, []); return <Routes>{label}</Routes> }`
   const wrappedCallbackAfter = wrappedCallbackBefore.replace('客户端一', '客户端二')
   assert.equal(
@@ -487,21 +627,27 @@ test('mixed-module closure recognizes React effects by import provenance', () =>
   )
 
   const fakeLocalHook = `function useEffect(callback) { callback() }\nfunction AppContent() { let label = '正文'; useEffect(() => { label = '同步变化' }); return <Routes>{label}</Routes> }`
-  assert.throws(
-    () => semanticSourceForDigest('site/src/app/AppContent.tsx', fakeLocalHook),
-    /Unsupported nested semantic write to label/,
+  assert.notEqual(
+    semanticSourceForDigest('site/src/app/AppContent.tsx', fakeLocalHook),
+    semanticSourceForDigest(
+      'site/src/app/AppContent.tsx',
+      fakeLocalHook.replace('同步变化', '同步变化二'),
+    ),
   )
 
   const fakeMemberHook = `const scheduler = { useEffect(callback) { callback() } }\nfunction AppContent() { let label = '正文'; scheduler.useEffect(() => { label = '同步变化' }); return <Routes>{label}</Routes> }`
   assert.throws(
     () => semanticSourceForDigest('site/src/app/AppContent.tsx', fakeMemberHook),
-    /Unsupported nested semantic write to label/,
+    /Unsupported ambiguous mutation of scheduler/,
   )
 
   const shadowedReactHook = `import { useEffect } from 'react'\nfunction AppContent() { function useEffect(callback) { callback() } let label = '正文'; useEffect(() => { label = '同步变化' }); return <Routes>{label}</Routes> }`
-  assert.throws(
-    () => semanticSourceForDigest('site/src/app/AppContent.tsx', shadowedReactHook),
-    /Unsupported nested semantic write to label/,
+  assert.notEqual(
+    semanticSourceForDigest('site/src/app/AppContent.tsx', shadowedReactHook),
+    semanticSourceForDigest(
+      'site/src/app/AppContent.tsx',
+      shadowedReactHook.replace('同步变化', '同步变化二'),
+    ),
   )
 })
 

@@ -68,6 +68,21 @@ const EXPRESSION_WRAPPERS = new Set([
   'TSSatisfiesExpression',
   'TSTypeAssertion',
 ])
+const TYPE_ONLY_KEYS = new Set([
+  'accessibility',
+  'abstract',
+  'declare',
+  'definite',
+  'implements',
+  'importKind',
+  'optional',
+  'override',
+  'readonly',
+  'returnType',
+  'typeAnnotation',
+  'typeArguments',
+  'typeParameters',
+])
 
 function isNonSemanticFile(path) {
   return (
@@ -91,6 +106,132 @@ function childNodes(node) {
     }
   }
   return children
+}
+
+function projectRuntimeObject(value, overrides = {}, options = {}) {
+  const projected = {}
+  const source = { ...value, ...overrides }
+  for (const key of Object.keys(source).sort()) {
+    if (
+      key === 'end'
+      || key === 'loc'
+      || key === 'raw'
+      || key === 'start'
+      || TYPE_ONLY_KEYS.has(key)
+    ) continue
+    const child = runtimeAstProjection(source[key], options)
+    if (child !== null) projected[key] = child
+  }
+  return projected
+}
+
+function runtimeAstProjection(value, options = {}) {
+  if (Array.isArray(value)) {
+    return value
+      .map((item) => runtimeAstProjection(item, options))
+      .filter((item) => item !== null)
+  }
+  if (typeof value === 'string') {
+    return value.replaceAll('\r\n', '\n').replaceAll('\r', '\n')
+  }
+  if (!value || typeof value !== 'object') return value
+  if (value.type === 'CallExpression' && options.isClientEffectCall?.(value)) {
+    return projectRuntimeObject(value, {
+      arguments: [
+        { type: 'ClientEffectCallback' },
+        ...(value.arguments?.slice(1) ?? []),
+      ],
+    }, options)
+  }
+  if (EXPRESSION_WRAPPERS.has(value.type)) {
+    return runtimeAstProjection(value.expression, options)
+  }
+  if (value.type === 'TSParameterProperty') {
+    return runtimeAstProjection(value.parameter, options)
+  }
+  if (
+    typeof value.type === 'string'
+    && value.type.startsWith('TS')
+    && value.type !== 'TSEnumDeclaration'
+    && value.type !== 'TSModuleDeclaration'
+  ) return null
+  if (value.type === 'ImportDeclaration') {
+    const specifiers = value.specifiers.filter((specifier) => specifier.importKind !== 'type')
+    if (value.importKind === 'type' || (value.specifiers.length > 0 && specifiers.length === 0)) {
+      return null
+    }
+    return projectRuntimeObject(value, { specifiers }, options)
+  }
+  if (value.type === 'ExportNamedDeclaration') {
+    const specifiers = value.specifiers.filter((specifier) => specifier.exportKind !== 'type')
+    if (value.exportKind === 'type' || (value.specifiers.length > 0 && specifiers.length === 0)) {
+      return null
+    }
+    return projectRuntimeObject(value, { specifiers }, options)
+  }
+  if (value.type === 'ExportAllDeclaration' && value.exportKind === 'type') return null
+
+  return projectRuntimeObject(value, {}, options)
+}
+
+function objectExpression(node) {
+  if (node?.type === 'ObjectExpression') return node
+  if (
+    node?.type === 'CallExpression'
+    && node.callee.type === 'MemberExpression'
+    && node.callee.object.type === 'Identifier'
+    && node.callee.object.name === 'Object'
+    && memberNameFromNode(node.callee) === 'freeze'
+  ) return objectExpression(node.arguments?.[0])
+  return null
+}
+
+function memberNameFromNode(member) {
+  if (member?.type !== 'MemberExpression') return null
+  if (!member.computed && member.property.type === 'Identifier') return member.property.name
+  if (
+    member.computed
+    && (member.property.type === 'StringLiteral' || member.property.type === 'Literal')
+  ) return member.property.value
+  return null
+}
+
+function publicSiteConfigProjection(program) {
+  const selectedKeys = new Map([
+    ['BRAND', new Set(['name', 'owner', 'subtitle'])],
+    ['SITE', new Set(['language', 'origin'])],
+  ])
+  const projection = {}
+  for (const statement of program.body) {
+    const declaration = statement.type === 'ExportNamedDeclaration'
+      ? statement.declaration
+      : statement
+    if (declaration?.type !== 'VariableDeclaration') continue
+    for (const declarator of declaration.declarations) {
+      if (declarator.id.type !== 'Identifier') continue
+      if (declarator.id.name === 'SITE_ORIGIN') {
+        projection.SITE_ORIGIN = runtimeAstProjection(declarator.init)
+        continue
+      }
+      const keys = selectedKeys.get(declarator.id.name)
+      if (!keys) continue
+      const object = objectExpression(declarator.init)
+      if (!object) throw new Error(`Expected ${declarator.id.name} to be an object literal`)
+      projection[declarator.id.name] = object.properties.flatMap((property) => {
+        if (property.type !== 'Property') return []
+        const name = property.key.type === 'Identifier'
+          ? property.key.name
+          : property.key.value
+        return keys.has(name)
+          ? [{ name, value: runtimeAstProjection(property.value) }]
+          : []
+      })
+    }
+  }
+  if (!projection.BRAND || !projection.SITE || !projection.SITE_ORIGIN) {
+    throw new Error('Missing public site configuration projection')
+  }
+  return projection
 }
 
 function bindingIdentifiers(pattern, identifiers = []) {
@@ -156,9 +297,11 @@ function semanticBindingGraph(program, path) {
   const nodeParents = new WeakMap()
   const declaredIdentifiers = new WeakSet()
   const importedBindingsByIdentity = new Map()
+  const synchronousCalls = []
   const unresolvedMutations = []
 
   function declare(pattern, scope, semanticNode, metadata = {}) {
+    const { valueOrigins = [], ...bindingMetadata } = metadata
     for (const identifier of bindingIdentifiers(pattern)) {
       declaredIdentifiers.add(identifier)
       const existing = scope.bindings.get(identifier.name)
@@ -167,9 +310,11 @@ function semanticBindingGraph(program, path) {
       } else {
         const binding = {
           aliasUnstable: false,
+          dynamicIdentity: false,
           executionScope: nearestFunctionScope(scope),
           identifier,
-          ...metadata,
+          valueOrigins: new Set(valueOrigins),
+          ...bindingMetadata,
           semanticNodes: new Set(semanticNode ? [semanticNode] : []),
           writes: [],
         }
@@ -192,15 +337,23 @@ function semanticBindingGraph(program, path) {
       || node.type === 'FunctionExpression'
       || node.type === 'ArrowFunctionExpression'
     ) {
-      if (node.type === 'FunctionDeclaration' && node.id) declare(node.id, scope, node)
+      if (node.type === 'FunctionDeclaration' && node.id) {
+        declare(node.id, scope, node, { valueOrigins: ['other'] })
+      }
       const functionScope = createScope(scope, 'function', node)
       if (node.type === 'FunctionExpression' && node.id) {
-        declare(node.id, functionScope, node)
+        declare(node.id, functionScope, node, { valueOrigins: ['other'] })
       }
-      for (const parameter of node.params ?? []) declare(parameter, functionScope, parameter)
+      for (const parameter of node.params ?? []) {
+        declare(parameter, functionScope, parameter, { valueOrigins: ['other'] })
+      }
       if (node.id) build(node.id, functionScope, node, 'id')
       for (const parameter of node.params ?? []) build(parameter, functionScope, node, 'params')
       if (node.body) build(node.body, functionScope, node, 'body', true)
+      for (const [child, childKey] of childNodes(node)) {
+        if (child === node.id || child === node.body || childKey === 'params') continue
+        build(child, functionScope, node, childKey)
+      }
       return
     }
     if (node.type === 'BlockStatement') {
@@ -234,13 +387,17 @@ function semanticBindingGraph(program, path) {
       return
     }
     if (node.type === 'ClassDeclaration' || node.type === 'ClassExpression') {
-      if (node.type === 'ClassDeclaration' && node.id) declare(node.id, scope, node)
+      if (node.type === 'ClassDeclaration' && node.id) {
+        declare(node.id, scope, node, { valueOrigins: ['other'] })
+      }
       const classScope = createScope(scope, 'class')
       if (node.type === 'ClassDeclaration' && node.id) {
         const classBinding = scope.bindings.get(node.id.name)
         if (classBinding) classScope.bindings.set(node.id.name, classBinding)
       }
-      if (node.type === 'ClassExpression' && node.id) declare(node.id, classScope, node)
+      if (node.type === 'ClassExpression' && node.id) {
+        declare(node.id, classScope, node, { valueOrigins: ['other'] })
+      }
       for (const [child, childKey] of childNodes(node)) {
         build(child, child === node.id ? scope : classScope, node, childKey)
       }
@@ -275,6 +432,13 @@ function semanticBindingGraph(program, path) {
           importIdentity: canonicalImportIdentity(path, node.source?.value),
           importSource: node.source?.value,
           importedName,
+          valueOrigins: node.source?.value === 'react'
+            && CLIENT_EFFECT_CALLEES.has(importedName)
+            ? ['react-effect']
+            : node.source?.value === 'react'
+              && (importedName === '*' || importedName === 'default')
+              ? ['react-namespace']
+              : ['other'],
         })
         const binding = scope.bindings.get(specifier.local.name)
         if (binding && node.source) {
@@ -352,7 +516,6 @@ function semanticBindingGraph(program, path) {
     } else if (node.type === 'ObjectExpression') {
       for (const property of node.properties) {
         if (property.type === 'Property') identityBindings(property.value, bindings)
-        if (property.type === 'SpreadElement') identityBindings(property.argument, bindings)
       }
     } else if (node.type === 'NewExpression') {
       for (const argument of node.arguments ?? []) identityBindings(argument, bindings)
@@ -399,6 +562,29 @@ function semanticBindingGraph(program, path) {
     return false
   }
 
+  function hasDynamicInitializer(node) {
+    if (!node || typeof node !== 'object') return false
+    if (node.type === 'CallExpression' || node.type === 'NewExpression') return true
+    if (node.type === 'ObjectExpression') {
+      return node.properties.some((property) => (
+        property.type === 'Property'
+        && (property.kind === 'get' || property.kind === 'set' || hasDynamicInitializer(property.value))
+      ))
+    }
+    if (node.type === 'ArrayExpression') return node.elements.some(hasDynamicInitializer)
+    if (node.type === 'ConditionalExpression') {
+      return hasDynamicInitializer(node.consequent) || hasDynamicInitializer(node.alternate)
+    }
+    if (node.type === 'LogicalExpression') {
+      return hasDynamicInitializer(node.left) || hasDynamicInitializer(node.right)
+    }
+    if (node.type === 'SequenceExpression') {
+      return node.expressions.some(hasDynamicInitializer)
+    }
+    if (EXPRESSION_WRAPPERS.has(node.type)) return hasDynamicInitializer(node.expression)
+    return false
+  }
+
   function mergeAliases(bindings, unstable = false) {
     const uniqueBindings = [...new Set(bindings)]
     if (uniqueBindings.length < 2) return
@@ -434,16 +620,23 @@ function semanticBindingGraph(program, path) {
 
   function indexAliases(node) {
     if (node.type === 'VariableDeclarator' && node.init) {
+      const targets = reassignedBindings(node.id)
+      if (hasDynamicInitializer(node.init)) {
+        for (const target of targets) target.dynamicIdentity = true
+      }
       mergeAliases([
-        ...reassignedBindings(node.id),
+        ...targets,
         ...identityBindings(node.init),
       ])
     }
     if (node.type === 'AssignmentExpression' && node.operator === '=') {
       const targets = reassignedBindings(node.left)
       for (const target of targets) {
-        if (target.aliases.size < 2) continue
+        target.aliasUnstable = true
         for (const binding of target.aliases) binding.aliasUnstable = true
+      }
+      if (hasDynamicInitializer(node.right)) {
+        for (const target of targets) target.dynamicIdentity = true
       }
       mergeAliases([
         ...targets,
@@ -454,12 +647,136 @@ function semanticBindingGraph(program, path) {
   }
   indexAliases(program)
 
+  function exactOrigin(binding, origin) {
+    return binding?.valueOrigins.size === 1 && binding.valueOrigins.has(origin)
+  }
+
+  function expressionValueOrigins(node) {
+    if (!node || typeof node !== 'object') return new Set(['other'])
+    if (node.type === 'Identifier') {
+      const binding = lookup(node)
+      return binding ? new Set(binding.valueOrigins) : new Set(['other'])
+    }
+    if (node.type === 'MemberExpression') {
+      const objectOrigins = expressionValueOrigins(node.object)
+      return objectOrigins.size === 1
+        && objectOrigins.has('react-namespace')
+        && CLIENT_EFFECT_CALLEES.has(memberNameFromNode(node))
+        ? new Set(['react-effect'])
+        : new Set(['other'])
+    }
+    if (node.type === 'ConditionalExpression') {
+      return new Set([
+        ...expressionValueOrigins(node.consequent),
+        ...expressionValueOrigins(node.alternate),
+      ])
+    }
+    if (node.type === 'LogicalExpression') {
+      return new Set([
+        ...expressionValueOrigins(node.left),
+        ...expressionValueOrigins(node.right),
+      ])
+    }
+    if (node.type === 'SequenceExpression') {
+      return new Set(node.expressions.flatMap((expression) => [
+        ...expressionValueOrigins(expression),
+      ]))
+    }
+    if (EXPRESSION_WRAPPERS.has(node.type)) return expressionValueOrigins(node.expression)
+    return new Set(['other'])
+  }
+
+  function addValueOrigins(bindings, origins) {
+    let changed = false
+    for (const binding of bindings) {
+      for (const origin of origins) {
+        if (binding.valueOrigins.has(origin)) continue
+        binding.valueOrigins.add(origin)
+        changed = true
+      }
+    }
+    return changed
+  }
+
+  function indexValueOrigins() {
+    let changed = true
+    while (changed) {
+      changed = false
+      function visit(node) {
+        if (node.type === 'VariableDeclarator' && node.init) {
+          const initOrigins = expressionValueOrigins(node.init)
+          if (
+            node.id.type === 'ObjectPattern'
+            && initOrigins.size === 1
+            && initOrigins.has('react-namespace')
+          ) {
+            for (const property of node.id.properties) {
+              if (property.type !== 'Property') continue
+              const name = property.key.type === 'Identifier'
+                ? property.key.name
+                : property.key.value
+              changed = addValueOrigins(
+                reassignedBindings(property.value),
+                new Set(CLIENT_EFFECT_CALLEES.has(name) ? ['react-effect'] : ['other']),
+              ) || changed
+            }
+          } else {
+            changed = addValueOrigins(reassignedBindings(node.id), initOrigins) || changed
+          }
+        }
+        if (node.type === 'AssignmentExpression' && node.operator === '=') {
+          changed = addValueOrigins(
+            reassignedBindings(node.left),
+            expressionValueOrigins(node.right),
+          ) || changed
+        }
+        for (const [child] of childNodes(node)) visit(child)
+      }
+      visit(program)
+    }
+  }
+  indexValueOrigins()
+
+  const patchedReactBindings = new Set()
+  function indexPatchedReactBindings(node) {
+    const target = node.type === 'AssignmentExpression'
+      ? node.left
+      : node.type === 'UpdateExpression'
+        ? node.argument
+        : node.type === 'UnaryExpression' && node.operator === 'delete'
+          ? node.argument
+          : null
+    if (target?.type === 'MemberExpression') {
+      for (const binding of identityBindings(target.object)) {
+        if (!exactOrigin(binding, 'react-namespace')) continue
+        for (const alias of binding.aliases) patchedReactBindings.add(alias)
+      }
+    }
+    const possiblyEscapedValues = [
+      ...(node.type === 'CallExpression' ? node.arguments ?? [] : []),
+      ...(node.type === 'AssignmentExpression' && isMemberMutationTarget(node.left)
+        ? [node.right]
+        : []),
+    ]
+    for (const value of possiblyEscapedValues) {
+      for (const binding of identityBindings(value)) {
+        if (!exactOrigin(binding, 'react-namespace')) continue
+        for (const alias of binding.aliases) patchedReactBindings.add(alias)
+      }
+    }
+    for (const [child] of childNodes(node)) indexPatchedReactBindings(child)
+  }
+  indexPatchedReactBindings(program)
+
   function memberName(member) {
     if (member.type !== 'MemberExpression') return null
     if (!member.computed && member.property.type === 'Identifier') {
       return member.property.name
     }
-    if (member.computed && member.property.type === 'StringLiteral') {
+    if (
+      member.computed
+      && (member.property.type === 'StringLiteral' || member.property.type === 'Literal')
+    ) {
       return member.property.value
     }
     return null
@@ -472,10 +789,8 @@ function semanticBindingGraph(program, path) {
       return Boolean(
         binding
         && !binding.aliasUnstable
-        && [...binding.aliases].some((alias) => (
-          alias.importSource === 'react'
-          && CLIENT_EFFECT_CALLEES.has(alias.importedName)
-        )),
+        && exactOrigin(binding, 'react-effect')
+        && ![...binding.aliases].some((alias) => patchedReactBindings.has(alias)),
       )
     }
     if (callee.type !== 'MemberExpression') return false
@@ -486,10 +801,8 @@ function semanticBindingGraph(program, path) {
     return Boolean(
       binding
       && !binding.aliasUnstable
-      && [...binding.aliases].some((alias) => (
-        alias.importSource === 'react'
-        && (alias.importedName === '*' || alias.importedName === 'default')
-      )),
+      && exactOrigin(binding, 'react-namespace')
+      && ![...binding.aliases].some((alias) => patchedReactBindings.has(alias)),
     )
   }
 
@@ -560,13 +873,12 @@ function semanticBindingGraph(program, path) {
 
   function indexPatchedStaticOwners(node) {
     if (node.type === 'AssignmentExpression' || node.type === 'UpdateExpression') {
-      const owner = mutationMemberOwner(
-        node.type === 'AssignmentExpression' ? node.left : node.argument,
-      )
+      const target = node.type === 'AssignmentExpression' ? node.left : node.argument
+      const owner = mutationMemberOwner(target) ?? globalStaticOwner(target)
       if (owner) patchedStaticOwners.add(owner)
     }
     if (node.type === 'UnaryExpression' && node.operator === 'delete') {
-      const owner = mutationMemberOwner(node.argument)
+      const owner = mutationMemberOwner(node.argument) ?? globalStaticOwner(node.argument)
       if (owner) patchedStaticOwners.add(owner)
     }
     if (node.type === 'CallExpression' && node.callee.type === 'MemberExpression') {
@@ -579,6 +891,19 @@ function semanticBindingGraph(program, path) {
       ) {
         patchedStaticOwners.add(globalStaticOwner(node.arguments[0]))
       }
+      const replacedOwner = (
+        node.arguments?.[1]?.type === 'StringLiteral'
+        || node.arguments?.[1]?.type === 'Literal'
+      )
+        && STATIC_TARGET_MUTATORS.has(node.arguments[1].value)
+        && unboundGlobalContainer(node.arguments?.[0])
+        && (
+          (owner === 'Object' && (method === 'defineProperty' || method === 'defineProperties'))
+          || (owner === 'Reflect' && method === 'set')
+        )
+        ? node.arguments[1].value
+        : null
+      if (replacedOwner) patchedStaticOwners.add(replacedOwner)
     }
     for (const [child] of childNodes(node)) indexPatchedStaticOwners(child)
   }
@@ -587,10 +912,25 @@ function semanticBindingGraph(program, path) {
   function indexWrites(node) {
     const executionScope = nearestFunctionScope(nodeScopes.get(node))
     const semanticNode = enclosingExecutionStatement(node, executionScope)
-    const record = (target, kind = 'write', { propagateAliases = true } = {}) => {
+    const record = (
+      target,
+      kind = 'write',
+      { propagateAliases = true, trackDynamic = true } = {},
+    ) => {
       const directBindings = new Set(writtenBindings(target))
-      if (directBindings.size === 0 && containsDynamicIdentity(target)) {
-        unresolvedMutations.push({ executionScope, mutationNode: node })
+      if (
+        trackDynamic
+        && (
+          (directBindings.size === 0 && containsDynamicIdentity(target))
+          || [...directBindings].some((binding) => binding.dynamicIdentity)
+        )
+      ) {
+        unresolvedMutations.push({
+          executionScope,
+          message: 'Unsupported dynamic mutation target',
+          mutationNode: node,
+          semanticNode,
+        })
       }
       const aliasedBindings = propagateAliases
         ? new Set([...directBindings].flatMap((binding) => [...binding.aliases]))
@@ -611,6 +951,9 @@ function semanticBindingGraph(program, path) {
       record(node.left, 'write', {
         propagateAliases: isMemberMutationTarget(node.left),
       })
+      if (isMemberMutationTarget(node.left)) {
+        record(node.right, 'ambiguous-mutation', { trackDynamic: false })
+      }
     }
     if (node.type === 'UpdateExpression') {
       record(node.argument, 'write', {
@@ -628,6 +971,60 @@ function semanticBindingGraph(program, path) {
     }
     if (node.type === 'CallExpression' && !isReactEffectCall(node)) {
       const callee = node.callee
+      const calleeInputs = callee.type === 'MemberExpression'
+        ? [callee.object]
+        : [callee]
+      const isGlobalReflectApply = callee.type === 'MemberExpression'
+        && callee.object.type === 'Identifier'
+        && callee.object.name === 'Reflect'
+        && !lookup(callee.object)
+        && memberName(callee) === 'apply'
+      const reflectApplyCallable = isGlobalReflectApply
+        && !patchedStaticOwners.has('Reflect')
+        ? node.arguments?.[0]
+        : null
+      const invocationInputs = [
+        callee.type === 'MemberExpression' ? callee.object : callee,
+        ...(reflectApplyCallable ? [reflectApplyCallable] : []),
+      ]
+      const calleeBindings = new Set(
+        calleeInputs.flatMap((input) => identityBindings(input)),
+      )
+      const invocationBindings = new Set(
+        invocationInputs.flatMap((input) => identityBindings(input)),
+      )
+      const calleeAliases = new Set(
+        [...calleeBindings].flatMap((binding) => [...binding.aliases]),
+      )
+      const invocationAliases = new Set(
+        [...invocationBindings].flatMap((binding) => [...binding.aliases]),
+      )
+      const callableIsInspectable = [...invocationAliases].some((binding) => (
+        !binding.importSource || binding.importSource.startsWith('.')
+      ))
+      if ([...calleeAliases].some((binding) => binding.dynamicIdentity)) {
+        unresolvedMutations.push({
+          executionScope,
+          message: 'Unsupported dynamic call target',
+          mutationNode: node,
+          semanticNode,
+        })
+      }
+      if (isGlobalReflectApply && patchedStaticOwners.has('Reflect')) {
+        unresolvedMutations.push({
+          executionScope,
+          message: 'Unsupported patched Reflect.apply target',
+          mutationNode: node,
+          semanticNode,
+        })
+      }
+      if (callableIsInspectable) {
+        synchronousCalls.push({
+          executionScope,
+          mutationNode: node,
+          semanticNode,
+        })
+      }
       const method = callee.type === 'MemberExpression' ? memberName(callee) : null
       const staticOwner = callee.type === 'MemberExpression'
         && callee.object.type === 'Identifier'
@@ -641,15 +1038,19 @@ function semanticBindingGraph(program, path) {
       if (isStaticTargetMutator) {
         record(node.arguments?.[0])
         for (const argument of node.arguments?.slice(1) ?? []) {
-          record(argument, 'ambiguous-mutation')
+          record(argument, 'ambiguous-mutation', { trackDynamic: false })
         }
       } else if (callee.type === 'MemberExpression') {
         record(
           callee.object,
           MUTATING_MEMBER_CALLEES.has(method) ? 'write' : 'ambiguous-mutation',
+          { trackDynamic: false },
         )
-        for (const argument of node.arguments ?? []) {
-          record(argument, 'ambiguous-mutation')
+        const possiblyMutatedArguments = reflectApplyCallable
+          ? node.arguments?.slice(1) ?? []
+          : node.arguments ?? []
+        for (const argument of possiblyMutatedArguments) {
+          record(argument, 'ambiguous-mutation', { trackDynamic: false })
         }
         const receiverBindings = new Set(identityBindings(callee.object))
         const receiverAliases = new Set(
@@ -673,8 +1074,10 @@ function semanticBindingGraph(program, path) {
           }
         }
       } else {
-        for (const argument of node.arguments ?? []) {
-          record(argument, 'ambiguous-mutation')
+        if (!callableIsInspectable) {
+          for (const argument of node.arguments ?? []) {
+            record(argument, 'ambiguous-mutation', { trackDynamic: false })
+          }
         }
         if (callee.type === 'Identifier') {
           const calleeBinding = lookup(callee)
@@ -696,6 +1099,13 @@ function semanticBindingGraph(program, path) {
               })
             }
           }
+        }
+      }
+    }
+    if (node.type === 'VariableDeclarator' && node.init?.type === 'ObjectExpression') {
+      for (const property of node.init.properties) {
+        if (property.type === 'SpreadElement') {
+          record(property.argument, 'write', { trackDynamic: false })
         }
       }
     }
@@ -754,43 +1164,56 @@ function semanticBindingGraph(program, path) {
   }
 
   function isClientOnlyEffectScope(scope) {
-    const functionNode = scope.ownerNode
-    let callbackNode = functionNode
-    let relation = nodeParents.get(callbackNode)
-    while (
-      relation
-      && EXPRESSION_WRAPPERS.has(relation.parent.type)
-      && relation.key === 'expression'
-    ) {
-      callbackNode = relation.parent
-      relation = nodeParents.get(callbackNode)
+    let currentScope = scope
+    while (currentScope) {
+      const functionNode = currentScope.ownerNode
+      if (functionNode?.type === 'Program') return false
+      let callbackNode = functionNode
+      let relation = nodeParents.get(callbackNode)
+      while (
+        relation
+        && EXPRESSION_WRAPPERS.has(relation.parent.type)
+        && relation.key === 'expression'
+      ) {
+        callbackNode = relation.parent
+        relation = nodeParents.get(callbackNode)
+      }
+      if (
+        relation
+        && relation.key === 'arguments'
+        && relation.parent.type === 'CallExpression'
+        && isReactEffectCall(relation.parent)
+      ) return true
+      currentScope = currentScope.parent
     }
-    return Boolean(
-      relation
-      && relation.key === 'arguments'
-      && relation.parent.type === 'CallExpression'
-      && isReactEffectCall(relation.parent),
-    )
+    return false
   }
 
   return {
     childNodes,
     executionScopeFor: (node) => nearestFunctionScope(nodeScopes.get(node)),
     isClientOnlyEffectScope,
+    isClientEffectCall: isReactEffectCall,
     isReference,
     lookup,
+    synchronousCalls,
     unresolvedMutations,
   }
 }
 
 export function semanticSourceForDigest(path, source) {
   const rootName = SEMANTIC_ELEMENT_ROOTS.get(path)
-  if (!rootName) return source
+  if (!PARSED_EXTENSIONS.has(extname(path))) return source
   const { program, errors } = parseSync(path, source)
   if (errors.length > 0) {
     throw new Error(`Unable to parse semantic source ${path}: ${errors[0].message}`)
   }
+  if (path === 'site/src/config/site.ts') {
+    return JSON.stringify(publicSiteConfigProjection(program))
+  }
   const bindingGraph = semanticBindingGraph(program, path)
+  const projectionOptions = { isClientEffectCall: bindingGraph.isClientEffectCall }
+  if (!rootName) return JSON.stringify(runtimeAstProjection(program, projectionOptions))
   const roots = []
   function findRoots(node) {
     if (
@@ -808,6 +1231,20 @@ export function semanticSourceForDigest(path, source) {
   const rootExecutionScope = bindingGraph.executionScopeFor(roots[0])
   const visitedBindings = new Set()
   const pendingNodes = [roots[0]]
+  const executesDuringRootRender = (entry) => (
+    entry.executionScope === rootExecutionScope
+    || entry.executionScope.ownerNode?.type === 'Program'
+  )
+  for (const entry of [
+    ...bindingGraph.synchronousCalls,
+    ...bindingGraph.unresolvedMutations,
+  ]) {
+    if (!executesDuringRootRender(entry)) continue
+    if (bindingGraph.isClientOnlyEffectScope(entry.executionScope)) continue
+    if (slices.has(entry.semanticNode)) continue
+    slices.add(entry.semanticNode)
+    pendingNodes.push(entry.semanticNode)
+  }
   while (pendingNodes.length > 0) {
     const selectedNode = pendingNodes.pop()
     function collectReferences(node) {
@@ -824,20 +1261,20 @@ export function semanticSourceForDigest(path, source) {
             pendingNodes.push(semanticNode)
           }
           for (const write of binding.writes) {
+            if (bindingGraph.isClientOnlyEffectScope(write.executionScope)) continue
+            if (write.kind === 'ambiguous-mutation') {
+              throw new Error(
+                `Unsupported ambiguous mutation of ${binding.identifier.name} in ${path}`,
+              )
+            }
             const mutationAlreadySelected = [...slices].some((slice) => (
               slice.start <= write.mutationNode.start
               && slice.end >= write.mutationNode.end
             ))
             if (mutationAlreadySelected) continue
-            if (bindingGraph.isClientOnlyEffectScope(write.executionScope)) continue
             if (write.kind === 'ambient-mutation') {
               throw new Error(
                 `Unsupported ambient mutation from ${write.ambientCallee} in ${path}`,
-              )
-            }
-            if (write.kind === 'ambiguous-mutation') {
-              throw new Error(
-                `Unsupported ambiguous mutation of ${binding.identifier.name} in ${path}`,
               )
             }
             if (
@@ -860,18 +1297,6 @@ export function semanticSourceForDigest(path, source) {
     collectReferences(selectedNode)
   }
 
-  for (const write of bindingGraph.unresolvedMutations) {
-    if (write.executionScope !== rootExecutionScope) continue
-    if (bindingGraph.isClientOnlyEffectScope(write.executionScope)) continue
-    const mutationAlreadySelected = [...slices].some((slice) => (
-      slice.start <= write.mutationNode.start
-      && slice.end >= write.mutationNode.end
-    ))
-    if (!mutationAlreadySelected) {
-      throw new Error(`Unsupported dynamic mutation target in ${path}`)
-    }
-  }
-
   const orderedSlices = [...slices]
     .sort((left, right) => left.start - right.start)
   const outermostSlices = orderedSlices.filter((node, index) => {
@@ -882,9 +1307,9 @@ export function semanticSourceForDigest(path, source) {
       && other.end >= end
     ))
   })
-  return outermostSlices
-    .map((node) => source.slice(node.start, node.end))
-    .join('\n')
+  return JSON.stringify(outermostSlices.map((node) => (
+    runtimeAstProjection(node, projectionOptions)
+  )))
 }
 
 function projectPath(path) {
