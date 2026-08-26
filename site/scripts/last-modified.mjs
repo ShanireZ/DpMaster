@@ -9,7 +9,10 @@ import {
 } from './semantic-source-graph.mjs'
 
 const projectRoot = fileURLToPath(new URL('../../', import.meta.url))
-export const ROUTE_CONTENT_DIGEST_VERSION = 6
+export const ROUTE_CONTENT_DIGEST_VERSION = 7
+
+const historicalSourceCache = new Map()
+const headSourceCache = new Map()
 
 function gitNames(args) {
   const result = spawnSync('git', args, {
@@ -43,6 +46,97 @@ function routeContentDigest(files) {
     digest.update('\0')
   }
   return digest.digest('hex')
+}
+
+function gitSource(file, revision) {
+  const result = spawnSync('git', ['show', `${revision}:${file}`], {
+    cwd: projectRoot,
+    encoding: 'utf8',
+  })
+  return result.status === 0 ? result.stdout : null
+}
+
+function historicalSource(file, lastModified) {
+  const cacheKey = `${file}\0${lastModified}`
+  if (historicalSourceCache.has(cacheKey)) return historicalSourceCache.get(cacheKey)
+  const revision = spawnSync(
+    'git',
+    ['log', '-1', '--format=%H', `--until=${lastModified}`, '--', file],
+    { cwd: projectRoot, encoding: 'utf8' },
+  )
+  if (revision.status !== 0) {
+    throw new Error(`Unable to inspect historical semantic source ${file}: ${revision.stderr.trim()}`)
+  }
+  const hash = revision.stdout.trim()
+  const source = hash ? gitSource(file, hash) : null
+  historicalSourceCache.set(cacheKey, source)
+  return source
+}
+
+function headSource(file) {
+  if (!headSourceCache.has(file)) headSourceCache.set(file, gitSource(file, 'HEAD'))
+  return headSourceCache.get(file)
+}
+
+function semanticProjection(path, source) {
+  return source === null
+    ? null
+    : normalizeContentForDigest(semanticSourceForDigest(path, source))
+}
+
+export function semanticProjectionChanged(path, currentSource, previousSource) {
+  return semanticProjection(path, currentSource) !== semanticProjection(path, previousSource)
+}
+
+function latestDate(dates) {
+  return dates.reduce((latest, candidate) => (
+    !latest || Date.parse(candidate) > Date.parse(latest) ? candidate : latest
+  ), null)
+}
+
+function latestSemanticGitDate(file, previousLastModified) {
+  const history = spawnSync(
+    'git',
+    ['log', `--since=${previousLastModified}`, '--format=%H%x09%cI', 'HEAD', '--', file],
+    { cwd: projectRoot, encoding: 'utf8' },
+  )
+  if (history.status !== 0) {
+    throw new Error(`Unable to inspect semantic history for ${file}: ${history.stderr.trim()}`)
+  }
+  for (const line of history.stdout.split('\n').filter(Boolean)) {
+    const [revision, committedAt] = line.split('\t')
+    if (semanticProjectionChanged(
+      file,
+      gitSource(file, revision),
+      gitSource(file, `${revision}^`),
+    )) return committedAt
+  }
+  throw new Error(`Semantic source changed without a matching Git revision for ${file}`)
+}
+
+function semanticChangeEvidence(files, previousLastModified) {
+  const dates = []
+  for (const file of files) {
+    const currentSource = readFileSync(new URL(`../../${file}`, import.meta.url), 'utf8')
+    if (!semanticProjectionChanged(
+      file,
+      currentSource,
+      historicalSource(file, previousLastModified),
+    )) continue
+
+    const currentDiffersFromHead = semanticProjectionChanged(
+      file,
+      currentSource,
+      headSource(file),
+    )
+    dates.push(currentDiffersFromHead
+      ? new Date(statSync(new URL(`../../${file}`, import.meta.url)).mtimeMs).toISOString()
+      : latestSemanticGitDate(file, previousLastModified))
+  }
+  return {
+    candidateLastModified: latestDate(dates),
+    hasSemanticContentChange: dates.length > 0,
+  }
 }
 
 function workingTreeDate(files) {
@@ -81,14 +175,14 @@ export function resolveContentLastModified({
   previousLastModified,
   candidateLastModified,
   evidenceSchemaChanged = false,
-  hasWorkingTreeEvidence = false,
+  hasSemanticContentChange = false,
   pathname = '<unknown>',
 }) {
   if (previousDigest && previousDigest === currentDigest && previousLastModified) {
     return previousLastModified
   }
   if (previousDigest && previousDigest !== currentDigest && previousLastModified) {
-    if (evidenceSchemaChanged && !hasWorkingTreeEvidence) {
+    if (evidenceSchemaChanged && !hasSemanticContentChange) {
       return previousLastModified
     }
     const previousTime = Date.parse(previousLastModified)
@@ -127,16 +221,30 @@ export function collectRouteContentEvidence({
 
   const lastModified = Object.fromEntries(
     [...filesByRoute].map(([pathname, files]) => {
-      const hasWorkingTreeEvidence = files.some((file) => dirtyFiles.has(file))
+      const digestChanged = (
+        previousContentDigests[pathname]
+        && previousContentDigests[pathname] !== contentDigests[pathname]
+      )
+      const semanticEvidence = previousLastModified[pathname] && digestChanged
+        ? semanticChangeEvidence(files, previousLastModified[pathname])
+        : null
+      if (
+        digestChanged
+        && !evidenceSchemaChanged
+        && semanticEvidence
+        && !semanticEvidence.hasSemanticContentChange
+      ) {
+        throw new Error(`Digest changed without semantic source evidence for ${pathname}`)
+      }
+      const dirtyRouteFiles = files.filter((file) => dirtyFiles.has(file))
       return [pathname, resolveContentLastModified({
         previousDigest: previousContentDigests[pathname],
         currentDigest: contentDigests[pathname],
         previousLastModified: previousLastModified[pathname],
-        candidateLastModified: hasWorkingTreeEvidence
-          ? workingTreeDate(files.filter((file) => dirtyFiles.has(file)))
-          : gitDate(files),
+        candidateLastModified: semanticEvidence?.candidateLastModified
+          ?? (dirtyRouteFiles.length > 0 ? workingTreeDate(dirtyRouteFiles) : gitDate(files)),
         evidenceSchemaChanged,
-        hasWorkingTreeEvidence,
+        hasSemanticContentChange: semanticEvidence?.hasSemanticContentChange ?? false,
         pathname,
       })]
     }),

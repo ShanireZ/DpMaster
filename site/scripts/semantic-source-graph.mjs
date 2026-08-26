@@ -139,12 +139,24 @@ function nearestVarScope(scope) {
   return current
 }
 
-function semanticBindingGraph(program) {
+function canonicalImportIdentity(importerPath, specifier) {
+  if (!specifier.startsWith('.')) return specifier
+  const importer = resolve(projectRoot, importerPath)
+  const resolvedImport = resolveStaticImport(importer, specifier)
+  if (resolvedImport) return projectPath(resolvedImport)
+
+  const unresolved = projectPath(resolve(dirname(importer), specifier))
+    .replace(/\.(?:m?[jt]sx?|json)$/u, '')
+  return unresolved.endsWith('/index') ? unresolved.slice(0, -'/index'.length) : unresolved
+}
+
+function semanticBindingGraph(program, path) {
   const rootScope = createScope(null, 'program', program)
   const nodeScopes = new WeakMap()
   const nodeParents = new WeakMap()
   const declaredIdentifiers = new WeakSet()
-  const importedBindingsBySource = new Map()
+  const importedBindingsByIdentity = new Map()
+  const unresolvedMutations = []
 
   function declare(pattern, scope, semanticNode, metadata = {}) {
     for (const identifier of bindingIdentifiers(pattern)) {
@@ -249,22 +261,27 @@ function semanticBindingGraph(program) {
     }
     if (node.type === 'ImportDeclaration') {
       for (const specifier of node.specifiers ?? []) {
-        if (!specifier.local) continue
+        if (
+          !specifier.local
+          || node.importKind === 'type'
+          || specifier.importKind === 'type'
+        ) continue
         const importedName = specifier.type === 'ImportSpecifier'
           ? (specifier.imported?.name ?? specifier.imported?.value)
           : specifier.type === 'ImportNamespaceSpecifier'
             ? '*'
             : 'default'
         declare(specifier.local, scope, specifier, {
+          importIdentity: canonicalImportIdentity(path, node.source?.value),
           importSource: node.source?.value,
           importedName,
         })
         const binding = scope.bindings.get(specifier.local.name)
         if (binding && node.source) {
           binding.semanticNodes.add(node.source)
-          const sourceBindings = importedBindingsBySource.get(node.source.value) ?? new Set()
-          sourceBindings.add(binding)
-          importedBindingsBySource.set(node.source.value, sourceBindings)
+          const identityBindings = importedBindingsByIdentity.get(binding.importIdentity) ?? new Set()
+          identityBindings.add(binding)
+          importedBindingsByIdentity.set(binding.importIdentity, identityBindings)
         }
       }
       for (const [child, childKey] of childNodes(node)) build(child, scope, node, childKey)
@@ -303,6 +320,8 @@ function semanticBindingGraph(program) {
       }
     } else if (node.type === 'MemberExpression') {
       writtenBindings(node.object, bindings)
+    } else if (node.type === 'NewExpression') {
+      for (const argument of node.arguments ?? []) writtenBindings(argument, bindings)
     } else if (node.type === 'ConditionalExpression') {
       writtenBindings(node.consequent, bindings)
       writtenBindings(node.alternate, bindings)
@@ -328,6 +347,15 @@ function semanticBindingGraph(program) {
       if (binding) bindings.push(binding)
     } else if (node.type === 'MemberExpression') {
       identityBindings(node.object, bindings)
+    } else if (node.type === 'ArrayExpression') {
+      for (const element of node.elements) identityBindings(element, bindings)
+    } else if (node.type === 'ObjectExpression') {
+      for (const property of node.properties) {
+        if (property.type === 'Property') identityBindings(property.value, bindings)
+        if (property.type === 'SpreadElement') identityBindings(property.argument, bindings)
+      }
+    } else if (node.type === 'NewExpression') {
+      for (const argument of node.arguments ?? []) identityBindings(argument, bindings)
     } else if (node.type === 'ConditionalExpression') {
       identityBindings(node.consequent, bindings)
       identityBindings(node.alternate, bindings)
@@ -350,6 +378,24 @@ function semanticBindingGraph(program) {
     if (EXPRESSION_WRAPPERS.has(node.type)) {
       return isMemberMutationTarget(node.expression)
     }
+    return false
+  }
+
+  function containsDynamicIdentity(node) {
+    if (!node || typeof node !== 'object') return false
+    if (node.type === 'CallExpression') return true
+    if (node.type === 'MemberExpression') return containsDynamicIdentity(node.object)
+    if (node.type === 'ConditionalExpression') {
+      return containsDynamicIdentity(node.consequent)
+        || containsDynamicIdentity(node.alternate)
+    }
+    if (node.type === 'LogicalExpression') {
+      return containsDynamicIdentity(node.left) || containsDynamicIdentity(node.right)
+    }
+    if (node.type === 'SequenceExpression') {
+      return node.expressions.some(containsDynamicIdentity)
+    }
+    if (EXPRESSION_WRAPPERS.has(node.type)) return containsDynamicIdentity(node.expression)
     return false
   }
 
@@ -423,16 +469,28 @@ function semanticBindingGraph(program) {
     const callee = call.callee
     if (callee.type === 'Identifier') {
       const binding = lookup(callee)
-      return binding?.importSource === 'react'
-        && CLIENT_EFFECT_CALLEES.has(binding.importedName)
+      return Boolean(
+        binding
+        && !binding.aliasUnstable
+        && [...binding.aliases].some((alias) => (
+          alias.importSource === 'react'
+          && CLIENT_EFFECT_CALLEES.has(alias.importedName)
+        )),
+      )
     }
     if (callee.type !== 'MemberExpression') return false
     const hookName = memberName(callee)
     if (!CLIENT_EFFECT_CALLEES.has(hookName)) return false
     if (callee.object.type !== 'Identifier') return false
     const binding = lookup(callee.object)
-    return binding?.importSource === 'react'
-      && (binding.importedName === '*' || binding.importedName === 'default')
+    return Boolean(
+      binding
+      && !binding.aliasUnstable
+      && [...binding.aliases].some((alias) => (
+        alias.importSource === 'react'
+        && (alias.importedName === '*' || alias.importedName === 'default')
+      )),
+    )
   }
 
   function enclosingExecutionStatement(node, executionScope) {
@@ -447,11 +505,93 @@ function semanticBindingGraph(program) {
     return node
   }
 
+  const patchedStaticOwners = new Set()
+  const staticOwnerAliases = new Map()
+
+  function unboundGlobalContainer(node) {
+    if (!node || typeof node !== 'object') return false
+    if (EXPRESSION_WRAPPERS.has(node.type)) return unboundGlobalContainer(node.expression)
+    return node.type === 'Identifier'
+      && ['global', 'globalThis', 'self', 'window'].includes(node.name)
+      && !lookup(node)
+  }
+
+  function globalStaticOwner(node) {
+    if (!node || typeof node !== 'object') return null
+    if (EXPRESSION_WRAPPERS.has(node.type)) return globalStaticOwner(node.expression)
+    if (node.type === 'Identifier') {
+      const binding = lookup(node)
+      if (!binding && STATIC_TARGET_MUTATORS.has(node.name)) return node.name
+      return staticOwnerAliases.get(binding) ?? null
+    }
+    if (node.type === 'MemberExpression' && unboundGlobalContainer(node.object)) {
+      const name = memberName(node)
+      return STATIC_TARGET_MUTATORS.has(name) ? name : null
+    }
+    return null
+  }
+
+  function indexStaticOwnerAliases() {
+    let changed = true
+    while (changed) {
+      changed = false
+      function visit(node) {
+        if (node.type === 'VariableDeclarator' && node.id.type === 'Identifier' && node.init) {
+          const owner = globalStaticOwner(node.init)
+          const binding = lookup(node.id)
+          if (owner && binding && staticOwnerAliases.get(binding) !== owner) {
+            staticOwnerAliases.set(binding, owner)
+            changed = true
+          }
+        }
+        for (const [child] of childNodes(node)) visit(child)
+      }
+      visit(program)
+    }
+  }
+  indexStaticOwnerAliases()
+
+  function mutationMemberOwner(node) {
+    if (!node || typeof node !== 'object') return null
+    if (EXPRESSION_WRAPPERS.has(node.type)) return mutationMemberOwner(node.expression)
+    if (node.type !== 'MemberExpression') return null
+    return globalStaticOwner(node.object)
+  }
+
+  function indexPatchedStaticOwners(node) {
+    if (node.type === 'AssignmentExpression' || node.type === 'UpdateExpression') {
+      const owner = mutationMemberOwner(
+        node.type === 'AssignmentExpression' ? node.left : node.argument,
+      )
+      if (owner) patchedStaticOwners.add(owner)
+    }
+    if (node.type === 'UnaryExpression' && node.operator === 'delete') {
+      const owner = mutationMemberOwner(node.argument)
+      if (owner) patchedStaticOwners.add(owner)
+    }
+    if (node.type === 'CallExpression' && node.callee.type === 'MemberExpression') {
+      const owner = globalStaticOwner(node.callee.object)
+      const method = memberName(node.callee)
+      if (
+        owner
+        && STATIC_TARGET_MUTATORS.get(owner)?.has(method)
+        && globalStaticOwner(node.arguments?.[0])
+      ) {
+        patchedStaticOwners.add(globalStaticOwner(node.arguments[0]))
+      }
+    }
+    for (const [child] of childNodes(node)) indexPatchedStaticOwners(child)
+  }
+  indexPatchedStaticOwners(program)
+
   function indexWrites(node) {
     const executionScope = nearestFunctionScope(nodeScopes.get(node))
     const semanticNode = enclosingExecutionStatement(node, executionScope)
     const record = (target, kind = 'write', { propagateAliases = true } = {}) => {
       const directBindings = new Set(writtenBindings(target))
+      if (directBindings.size === 0 && containsDynamicIdentity(target)) {
+        unresolvedMutations.push({ executionScope, mutationNode: node })
+      }
       const aliasedBindings = propagateAliases
         ? new Set([...directBindings].flatMap((binding) => [...binding.aliases]))
         : directBindings
@@ -496,9 +636,13 @@ function semanticBindingGraph(program) {
       const isStaticTargetMutator = method
         && callee.object.type === 'Identifier'
         && !lookup(callee.object)
+        && !patchedStaticOwners.has(staticOwner)
         && STATIC_TARGET_MUTATORS.get(staticOwner)?.has(method)
       if (isStaticTargetMutator) {
         record(node.arguments?.[0])
+        for (const argument of node.arguments?.slice(1) ?? []) {
+          record(argument, 'ambiguous-mutation')
+        }
       } else if (callee.type === 'MemberExpression') {
         record(
           callee.object,
@@ -507,24 +651,50 @@ function semanticBindingGraph(program) {
         for (const argument of node.arguments ?? []) {
           record(argument, 'ambiguous-mutation')
         }
-      } else {
-        for (const argument of node.arguments ?? []) {
-          record(argument, 'ambiguous-mutation')
-        }
-        if (
-          callee.type === 'Identifier'
-          && lookup(callee)?.importSource?.startsWith('.')
-        ) {
-          const calleeBinding = lookup(callee)
-          for (const binding of importedBindingsBySource.get(calleeBinding.importSource) ?? []) {
-            if (binding === calleeBinding) continue
+        const receiverBindings = new Set(identityBindings(callee.object))
+        const receiverAliases = new Set(
+          [...receiverBindings].flatMap((binding) => [...binding.aliases]),
+        )
+        const importIdentities = new Set(
+          [...receiverAliases]
+            .map((binding) => binding.importIdentity)
+            .filter((identity) => typeof identity === 'string' && identity.startsWith('site/')),
+        )
+        for (const importIdentity of importIdentities) {
+          for (const binding of importedBindingsByIdentity.get(importIdentity) ?? []) {
+            if (receiverAliases.has(binding)) continue
             binding.writes.push({
-              ambientCallee: callee.name,
+              ambientCallee: method ?? '<member call>',
               executionScope,
               kind: 'ambient-mutation',
               mutationNode: node,
               semanticNode,
             })
+          }
+        }
+      } else {
+        for (const argument of node.arguments ?? []) {
+          record(argument, 'ambiguous-mutation')
+        }
+        if (callee.type === 'Identifier') {
+          const calleeBinding = lookup(callee)
+          const calleeAliases = new Set(calleeBinding?.aliases ?? [])
+          const importIdentities = new Set(
+            [...calleeAliases]
+              .map((binding) => binding.importIdentity)
+              .filter((identity) => typeof identity === 'string' && identity.startsWith('site/')),
+          )
+          for (const importIdentity of importIdentities) {
+            for (const binding of importedBindingsByIdentity.get(importIdentity) ?? []) {
+              if (calleeAliases.has(binding)) continue
+              binding.writes.push({
+                ambientCallee: callee.name,
+                executionScope,
+                kind: 'ambient-mutation',
+                mutationNode: node,
+                semanticNode,
+              })
+            }
           }
         }
       }
@@ -585,7 +755,16 @@ function semanticBindingGraph(program) {
 
   function isClientOnlyEffectScope(scope) {
     const functionNode = scope.ownerNode
-    const relation = nodeParents.get(functionNode)
+    let callbackNode = functionNode
+    let relation = nodeParents.get(callbackNode)
+    while (
+      relation
+      && EXPRESSION_WRAPPERS.has(relation.parent.type)
+      && relation.key === 'expression'
+    ) {
+      callbackNode = relation.parent
+      relation = nodeParents.get(callbackNode)
+    }
     return Boolean(
       relation
       && relation.key === 'arguments'
@@ -600,6 +779,7 @@ function semanticBindingGraph(program) {
     isClientOnlyEffectScope,
     isReference,
     lookup,
+    unresolvedMutations,
   }
 }
 
@@ -610,7 +790,7 @@ export function semanticSourceForDigest(path, source) {
   if (errors.length > 0) {
     throw new Error(`Unable to parse semantic source ${path}: ${errors[0].message}`)
   }
-  const bindingGraph = semanticBindingGraph(program)
+  const bindingGraph = semanticBindingGraph(program, path)
   const roots = []
   function findRoots(node) {
     if (
@@ -680,6 +860,18 @@ export function semanticSourceForDigest(path, source) {
     collectReferences(selectedNode)
   }
 
+  for (const write of bindingGraph.unresolvedMutations) {
+    if (write.executionScope !== rootExecutionScope) continue
+    if (bindingGraph.isClientOnlyEffectScope(write.executionScope)) continue
+    const mutationAlreadySelected = [...slices].some((slice) => (
+      slice.start <= write.mutationNode.start
+      && slice.end >= write.mutationNode.end
+    ))
+    if (!mutationAlreadySelected) {
+      throw new Error(`Unsupported dynamic mutation target in ${path}`)
+    }
+  }
+
   const orderedSlices = [...slices]
     .sort((left, right) => left.start - right.start)
   const outermostSlices = orderedSlices.filter((node, index) => {
@@ -715,22 +907,39 @@ function resolveStaticImport(importer, specifier) {
   return resolved
 }
 
-function staticImportSpecifiers(path) {
-  if (!PARSED_EXTENSIONS.has(extname(path))) return []
-  const source = readFileSync(path, 'utf8')
+export function staticImportSpecifiersForSource(path, source) {
   const { program, errors } = parseSync(path, source)
   if (errors.length > 0) {
     throw new Error(`Unable to parse semantic dependency ${path}: ${errors[0].message}`)
   }
   return program.body.flatMap((statement) => {
-    if (
-      statement.type !== 'ImportDeclaration'
-      && statement.type !== 'ExportNamedDeclaration'
-      && statement.type !== 'ExportAllDeclaration'
-    ) return []
-    if (statement.importKind === 'type' || statement.exportKind === 'type') return []
-    return typeof statement.source?.value === 'string' ? [statement.source.value] : []
+    if (typeof statement.source?.value !== 'string') return []
+    if (statement.type === 'ImportDeclaration') {
+      if (statement.importKind === 'type') return []
+      if (
+        statement.specifiers.length > 0
+        && statement.specifiers.every((specifier) => specifier.importKind === 'type')
+      ) return []
+      return [statement.source.value]
+    }
+    if (statement.type === 'ExportNamedDeclaration') {
+      if (statement.exportKind === 'type') return []
+      if (
+        statement.specifiers.length > 0
+        && statement.specifiers.every((specifier) => specifier.exportKind === 'type')
+      ) return []
+      return [statement.source.value]
+    }
+    if (statement.type === 'ExportAllDeclaration') {
+      return statement.exportKind === 'type' ? [] : [statement.source.value]
+    }
+    return []
   })
+}
+
+function staticImportSpecifiers(path) {
+  if (!PARSED_EXTENSIONS.has(extname(path))) return []
+  return staticImportSpecifiersForSource(path, readFileSync(path, 'utf8'))
 }
 
 export function semanticRouteFiles(pathname) {

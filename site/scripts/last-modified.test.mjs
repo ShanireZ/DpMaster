@@ -4,6 +4,7 @@ import test from 'node:test'
 import {
   normalizeContentForDigest,
   resolveContentLastModified,
+  semanticProjectionChanged,
 } from './last-modified.mjs'
 
 test('semantic digests ignore checkout-specific CRLF conversion', () => {
@@ -69,6 +70,7 @@ test('a changed semantic digest requires source-backed lastmod evidence', () => 
       previousLastModified: '2026-08-26T02:29:00.000Z',
       candidateLastModified: '2026-08-26T03:29:00.000Z',
       evidenceSchemaChanged: true,
+      hasSemanticContentChange: false,
     }),
     '2026-08-26T02:29:00.000Z',
   )
@@ -79,8 +81,28 @@ test('a changed semantic digest requires source-backed lastmod evidence', () => 
       previousLastModified: '2026-08-26T02:29:00.000Z',
       candidateLastModified: '2026-08-26T03:29:00.000Z',
       evidenceSchemaChanged: true,
-      hasWorkingTreeEvidence: true,
+      hasSemanticContentChange: true,
     }),
     '2026-08-26T03:29:00.000Z',
+  )
+})
+
+test('schema migrations distinguish pruned client edits from semantic edits', () => {
+  const before = `import { useEffect } from 'react'\nfunction AppContent() { useEffect(() => first()); return <Routes><p>正文一</p></Routes> }`
+  assert.equal(
+    semanticProjectionChanged(
+      'site/src/app/AppContent.tsx',
+      before.replace('first()', 'second()'),
+      before,
+    ),
+    false,
+  )
+  assert.equal(
+    semanticProjectionChanged(
+      'site/src/app/AppContent.tsx',
+      before.replace('正文一', '正文二'),
+      before,
+    ),
+    true,
   )
 })
