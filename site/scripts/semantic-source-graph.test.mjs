@@ -1,11 +1,13 @@
 import assert from 'node:assert/strict'
 import { readFileSync } from 'node:fs'
 import test from 'node:test'
+import { fileURLToPath } from 'node:url'
 
 import { PUBLIC_PATHS } from '../src/lib/publicRoutes.ts'
 import {
   semanticRouteFiles,
   semanticSourceForDigest,
+  resolveStaticImport,
   staticImportSpecifiersForSource,
 } from './semantic-source-graph.mjs'
 
@@ -174,7 +176,7 @@ test('mixed shell modules hash their AST-backed render dependencies', () => {
     semanticSourceForDigest('site/src/app/AppContent.tsx', appAfterRouteBinding),
   )
 
-  const stageBefore = `import { useEffect, useState } from 'react'\nconst routeEase = [0, 1]\nexport default function RouteStage() {\n  const outlet = useOutlet()\n  const hasMounted = useState(false)[0]\n  useEffect(() => first())\n  return <motion.div initial={hasMounted} transition={routeEase}>{outlet}</motion.div>\n}`
+  const stageBefore = `import { useEffect, useState } from 'react'\nimport { useOutlet } from 'react-router-dom'\nconst routeEase = [0, 1]\nexport default function RouteStage() {\n  const outlet = useOutlet()\n  const hasMounted = useState(false)[0]\n  useEffect(() => first())\n  return <motion.div initial={hasMounted} transition={routeEase}>{outlet}</motion.div>\n}`
   const stageAfterClientChange = stageBefore.replace('first()', 'second()')
   const stageAfterOutletChange = stageBefore.replace('useOutlet()', '<p>替换正文</p>')
   assert.equal(
@@ -285,14 +287,14 @@ test('mixed-module closure follows lexical symbols instead of bare names', () =>
     semanticSourceForDigest('site/src/app/AppContent.tsx', attributeAfter),
   )
 
-  const loopBefore = `const label = '正文'\nfor (const label of ['客户端一']) consume(label)\nfunction AppContent() { return <Routes>{label}</Routes> }`
+  const loopBefore = `const label = '正文'\nfor (const label of ['客户端一']) void label\nfunction AppContent() { return <Routes>{label}</Routes> }`
   const loopAfter = loopBefore.replace('客户端一', '客户端二')
   assert.equal(
     semanticSourceForDigest('site/src/app/AppContent.tsx', loopBefore),
     semanticSourceForDigest('site/src/app/AppContent.tsx', loopAfter),
   )
 
-  const switchBefore = `const label = '正文'\nswitch (mode) { case 1: const label = '客户端一'; consume(label) }\nfunction AppContent() { return <Routes>{label}</Routes> }`
+  const switchBefore = `const label = '正文'\nswitch (mode) { case 1: const label = '客户端一'; void label }\nfunction AppContent() { return <Routes>{label}</Routes> }`
   const switchAfter = switchBefore.replace('客户端一', '客户端二')
   assert.equal(
     semanticSourceForDigest('site/src/app/AppContent.tsx', switchBefore),
@@ -1005,10 +1007,15 @@ test('secondary review boundaries preserve SSR precision and fail closed', () =>
     `const state = { value: '正文' }\nconst O = [Object][0]\nO.assign = target => { target.value = '变化' }\nfunction AppContent() { Object.assign(state, {}); return <Routes>{state.value}</Routes> }`,
     `let label = '正文'\nconst proto = Promise.prototype\nproto.then = callback => { callback(); return Promise.resolve() }\nfunction AppContent() { Promise.resolve().then(() => { label = '变化' }); return <Routes>{label}</Routes> }`,
     `const state = { value: '正文' }\nconst G = true ? globalThis : globalThis\nG.Object = { assign(target) { target.value = '变化' } }\nfunction AppContent() { Object.assign(state, {}); return <Routes>{state.value}</Routes> }`,
+    `let label = '正文'\nconst [g] = [globalThis]\ng.setTimeout = callback => callback()\nfunction AppContent() { setTimeout(() => { label = '变化' }, 0); return <Routes>{label}</Routes> }`,
+    `let label = '正文'\nconst { g } = { g: globalThis }\ng.setTimeout = callback => callback()\nfunction AppContent() { setTimeout(() => { label = '变化' }, 0); return <Routes>{label}</Routes> }`,
+    `let label = '正文'\nconst P = (() => Promise)()\nP.prototype.then = callback => { callback(); return Promise.resolve() }\nfunction AppContent() { Promise.resolve().then(() => { label = '变化' }); return <Routes>{label}</Routes> }`,
+    `let label = '正文'\ngetGlobal().setTimeout = callback => callback()\nfunction AppContent() { setTimeout(() => { label = '变化' }, 0); return <Routes>{label}</Routes> }`,
   ]) {
     assert.throws(
       () => semanticSourceForDigest('site/src/app/AppContent.tsx', indirectOwner),
       /Unsupported/,
+      indirectOwner,
     )
   }
 
@@ -1026,12 +1033,32 @@ test('secondary review boundaries preserve SSR precision and fail closed', () =>
     `mutateOne()\nfunction AppContent() { return <Routes>{globalThis.state.value}</Routes> }`,
     `import api from 'pkg'\napi.mutateOne()\nfunction AppContent() { return <Routes>{globalThis.state.value}</Routes> }`,
     `import { patch } from 'pkg'\nfunction AppContent() { let label = '正文'; patch(); Promise.resolve().then(() => { label = '变化' }); return <Routes>{label}</Routes> }`,
+    `import { setLabel } from 'external-package'\nglobalThis.label = '正文'\nif (true) setLabel(globalThis)\nfunction AppContent() { return <Routes><p>{globalThis.label}</p></Routes> }`,
+    `import { read } from 'external-package'\nconst label = read()\nfunction AppContent() { return <Routes><p>{label}</p></Routes> }`,
+    `import { read } from 'external-package'\nfunction AppContent() { return <Routes><p>{read()}</p></Routes> }`,
   ]) {
     assert.throws(
       () => semanticSourceForDigest('site/src/app/AppContent.tsx', externalStandalone),
       /Unsupported external synchronous call/,
     )
   }
+
+  const globalPropertyWrite = `globalThis.label = '变化一'\nfunction AppContent() { return <Routes><p>{globalThis.label}</p></Routes> }`
+  assert.notEqual(
+    semanticSourceForDigest('site/src/app/AppContent.tsx', globalPropertyWrite),
+    semanticSourceForDigest(
+      'site/src/app/AppContent.tsx',
+      globalPropertyWrite.replace('变化一', '变化二'),
+    ),
+  )
+
+  assert.throws(
+    () => semanticSourceForDigest(
+      'site/src/app/AppContent.tsx',
+      `import { unused } from 'opaque-patcher'\nfunction AppContent() { let label = '正文'; setTimeout(() => { label = '变化' }, 0); return <Routes>{label}</Routes> }`,
+    ),
+    /Unsupported callback execution timing/,
+  )
 
   const exportedDeferred = `let label = '正文'\nexport function callback() { label = '客户端一' }\nfunction AppContent() { setTimeout(callback, 0); return <Routes>{label}</Routes> }`
   assert.throws(
@@ -1117,10 +1144,19 @@ test('public config rejects alias mutation, pattern writes, and patched freeze',
       `const O = [Object][0]\nO.freeze = value => { value.name = '运行时'; return value }`,
       `name: '初始'`,
     ),
+    publicConfigSource(
+      `const { g } = { g: globalThis }\ng.Object = { freeze(value) { value.name = '运行时'; return value } }`,
+      `name: '初始'`,
+    ),
+    publicConfigSource(
+      `const O = (() => Object)()\nO.freeze = value => { value.name = '运行时'; return value }`,
+      `name: '初始'`,
+    ),
   ]) {
     assert.throws(
       () => semanticSourceForDigest('site/src/config/site.ts', mutableConfig),
       /Unsupported public site configuration/,
+      mutableConfig,
     )
   }
 })
@@ -1133,6 +1169,18 @@ test('static dependency discovery excludes specifier-level type-only edges', () 
     ),
     ['./runtime', './values'],
   )
+})
+
+test('static dependency discovery strips Vite query and hash suffixes', () => {
+  const importer = fileURLToPath(
+    new URL('./fixtures/semantic-query-importer.ts', import.meta.url),
+  )
+  const expected = fileURLToPath(
+    new URL('./fixtures/semantic-copy.txt', import.meta.url),
+  )
+
+  assert.equal(resolveStaticImport(importer, './semantic-copy.txt?raw'), expected)
+  assert.equal(resolveStaticImport(importer, './semantic-copy.txt?url#copy'), expected)
 })
 
 test('switch discriminants resolve outside the switch lexical scope', () => {

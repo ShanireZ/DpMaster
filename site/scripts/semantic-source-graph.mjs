@@ -9,6 +9,21 @@ const projectRoot = fileURLToPath(new URL('../../', import.meta.url))
 const PARSED_EXTENSIONS = new Set(['.js', '.jsx', '.mjs', '.ts', '.tsx'])
 const RESOLVED_EXTENSIONS = ['.ts', '.tsx', '.js', '.jsx', '.mjs', '.json']
 const SELF_GENERATED_FILES = new Set(['site/src/data/routeLastModified.ts'])
+const TRUSTED_RUNTIME_PACKAGES = new Set([
+  'gsap',
+  'gsap/ScrollTrigger',
+  'katex',
+  'lucide-react',
+  'motion/react',
+  'react',
+  'react-dom/static',
+  'react-router-dom',
+  'shiki/core',
+  'shiki/engine/javascript',
+  'shiki/langs/cpp.mjs',
+  'shiki/themes/github-dark.mjs',
+  'shiki/themes/github-light.mjs',
+])
 const NON_SEMANTIC_FILES = new Set([
   'site/src/components/feedback/FeedbackWidget.tsx',
   'site/src/components/layout/ErrorBoundary.tsx',
@@ -94,6 +109,13 @@ const CALLBACK_SEMANTIC_OWNERS = new Set([
 const TRACKED_GLOBAL_OWNERS = new Set([
   ...STATIC_TARGET_MUTATORS.keys(),
   ...CALLBACK_SEMANTIC_OWNERS,
+])
+const TRACKED_OWNER_MUTATION_KEYS = new Set([
+  ...TRACKED_GLOBAL_OWNERS,
+  ...KNOWN_ASYNC_MEMBER_CALLEES,
+  ...KNOWN_SYNC_CALLBACK_MEMBER_CALLEES,
+  ...[...STATIC_TARGET_MUTATORS.values()].flatMap((methods) => [...methods]),
+  'prototype',
 ])
 const EXPRESSION_WRAPPERS = new Set([
   'ParenthesizedExpression',
@@ -370,20 +392,28 @@ function publicSiteConfigProjection(program) {
     if (value?.type === 'SequenceExpression') {
       return isGlobalContainer(value.expressions.at(-1), seen)
     }
+    if (value?.type === 'MemberExpression') {
+      const name = localMemberName(value)
+      if (name === null) return false
+      const members = staticMemberExpressions(value.object, name, seen)
+      return members.length > 0
+        && members.every((member) => isGlobalContainer(member, seen))
+    }
     if (value?.type !== 'Identifier') return false
+    if (globalContainerAliases.has(value.name)) return true
     if (!bindings.has(value.name)) {
       return ['global', 'globalThis', 'self', 'window'].includes(value.name)
     }
-    if (globalContainerAliases.has(value.name)) return true
     const initializer = constBindingExpression(value.name, seen)
     return initializer
       ? isGlobalContainer(initializer, new Set([...seen, value.name]))
       : false
   }
-  let containerAliasesChanged = true
-  while (containerAliasesChanged) {
-    containerAliasesChanged = false
-    const indexGlobalContainerAlias = (node) => {
+  const indexGlobalContainerAliases = () => {
+    let containerAliasesChanged = true
+    while (containerAliasesChanged) {
+      containerAliasesChanged = false
+      const indexGlobalContainerAlias = (node) => {
       const target = node.type === 'VariableDeclarator'
         && node.id.type === 'Identifier'
         && node.init
@@ -412,21 +442,50 @@ function publicSiteConfigProjection(program) {
         : node.type === 'AssignmentExpression' && node.operator === '='
           ? node.left
           : null
-      if (pattern?.type === 'ObjectPattern' && source && isGlobalContainer(source)) {
-        for (const property of pattern.properties) {
-          if (!['global', 'globalThis', 'self', 'window'].includes(
-            staticPatternPropertyName(property),
-          )) continue
-          for (const name of patternTargetNames(property)) {
-            if (globalContainerAliases.has(name)) continue
-            globalContainerAliases.add(name)
-            containerAliasesChanged = true
+        if (pattern?.type === 'ObjectPattern' && source && isGlobalContainer(source)) {
+          for (const property of pattern.properties) {
+            if (!['global', 'globalThis', 'self', 'window'].includes(
+              staticPatternPropertyName(property),
+            )) continue
+            for (const name of patternTargetNames(property)) {
+              if (globalContainerAliases.has(name)) continue
+              globalContainerAliases.add(name)
+              containerAliasesChanged = true
+            }
+          }
+        } else if (pattern?.type === 'ObjectPattern' && source) {
+          for (const property of pattern.properties) {
+            const key = staticPatternPropertyName(property)
+            const members = key === null ? [] : staticMemberExpressions(source, key)
+            if (
+              members.length === 0
+              || !members.every((member) => isGlobalContainer(member))
+            ) continue
+            for (const name of patternTargetNames(property)) {
+              if (globalContainerAliases.has(name)) continue
+              globalContainerAliases.add(name)
+              containerAliasesChanged = true
+            }
+          }
+        } else if (pattern?.type === 'ArrayPattern' && source) {
+          for (const [index, element] of pattern.elements.entries()) {
+            if (!element) continue
+            const members = staticMemberExpressions(source, index)
+            if (
+              members.length === 0
+              || !members.every((member) => isGlobalContainer(member))
+            ) continue
+            for (const identifier of bindingIdentifiers(element)) {
+              if (globalContainerAliases.has(identifier.name)) continue
+              globalContainerAliases.add(identifier.name)
+              containerAliasesChanged = true
+            }
           }
         }
+        for (const [child] of childNodes(node)) indexGlobalContainerAlias(child)
       }
-      for (const [child] of childNodes(node)) indexGlobalContainerAlias(child)
+      indexGlobalContainerAlias(program)
     }
-    indexGlobalContainerAlias(program)
   }
   const staticMemberExpressions = (node, key, seen = new Set()) => {
     const value = unwrap(node)
@@ -461,6 +520,7 @@ function publicSiteConfigProjection(program) {
     }
     return matches
   }
+  indexGlobalContainerAliases()
   const isGlobalObject = (node, seen = new Set()) => {
     const value = unwrap(node)
     if (value?.type === 'ConditionalExpression') {
@@ -607,6 +667,30 @@ function publicSiteConfigProjection(program) {
     indexGlobalObjectAlias(program)
   }
   let trustedObjectFreeze = !bindings.has('Object') && !dynamicGlobalObjectAlias
+  const containsDynamicObjectIdentity = (node, seen = new Set()) => {
+    const value = unwrap(node)
+    if (!value || typeof value !== 'object') return false
+    if (value.type === 'CallExpression' || value.type === 'NewExpression') return true
+    if (value.type === 'Identifier' && bindings.has(value.name)) {
+      const initializer = constBindingExpression(value.name, seen)
+      return initializer
+        ? containsDynamicObjectIdentity(initializer, new Set([...seen, value.name]))
+        : false
+    }
+    if (value.type === 'MemberExpression') return containsDynamicObjectIdentity(value.object, seen)
+    if (value.type === 'ConditionalExpression') {
+      return containsDynamicObjectIdentity(value.consequent, seen)
+        || containsDynamicObjectIdentity(value.alternate, seen)
+    }
+    if (value.type === 'LogicalExpression') {
+      return containsDynamicObjectIdentity(value.left, seen)
+        || containsDynamicObjectIdentity(value.right, seen)
+    }
+    if (value.type === 'SequenceExpression') {
+      return value.expressions.some((expression) => containsDynamicObjectIdentity(expression, seen))
+    }
+    return false
+  }
   const inspectObjectPatches = (node) => {
     const target = node.type === 'AssignmentExpression'
       ? node.left
@@ -625,6 +709,10 @@ function publicSiteConfigProjection(program) {
       if (
         isGlobalContainer(value.object)
         && (localMemberName(value) === 'Object' || localMemberName(value) === null)
+      ) trustedObjectFreeze = false
+      if (
+        containsDynamicObjectIdentity(value.object)
+        && ['Object', 'freeze', null].includes(localMemberName(value))
       ) trustedObjectFreeze = false
     }
     if (node.type === 'CallExpression') {
@@ -1938,6 +2026,13 @@ function semanticBindingGraph(program, path, analysisContext = {}) {
     if (node.type === 'SequenceExpression') {
       return unboundGlobalContainer(node.expressions.at(-1), seen)
     }
+    if (node.type === 'MemberExpression') {
+      const name = memberName(node)
+      if (name === null) return false
+      const members = staticMemberExpressions(node.object, name, seen)
+      return members.length > 0
+        && members.every((member) => unboundGlobalContainer(member, seen))
+    }
     if (node.type !== 'Identifier') return false
     const binding = lookup(node)
     if (!binding) return ['global', 'globalThis', 'self', 'window'].includes(node.name)
@@ -1995,13 +2090,40 @@ function semanticBindingGraph(program, path, analysisContext = {}) {
               changed = true
             }
           }
+        } else if (pattern?.type === 'ObjectPattern' && source) {
+          for (const property of pattern.properties) {
+            const key = staticPatternOwner(property)
+            const members = key === null ? [] : staticMemberExpressions(source, key)
+            if (
+              members.length === 0
+              || !members.every((member) => unboundGlobalContainer(member))
+            ) continue
+            for (const targetBinding of patternBindings(property)) {
+              if (globalContainerAliases.has(targetBinding)) continue
+              globalContainerAliases.add(targetBinding)
+              changed = true
+            }
+          }
+        } else if (pattern?.type === 'ArrayPattern' && source) {
+          for (const [index, element] of pattern.elements.entries()) {
+            if (!element) continue
+            const members = staticMemberExpressions(source, index)
+            if (
+              members.length === 0
+              || !members.every((member) => unboundGlobalContainer(member))
+            ) continue
+            for (const targetBinding of reassignedBindings(element)) {
+              if (globalContainerAliases.has(targetBinding)) continue
+              globalContainerAliases.add(targetBinding)
+              changed = true
+            }
+          }
         }
         for (const [child] of childNodes(node)) visit(child)
       }
       visit(program)
     }
   }
-  indexGlobalContainerAliases()
 
   function staticMemberExpressions(node, key, seen = new Set()) {
     if (!node || typeof node !== 'object') return []
@@ -2038,6 +2160,7 @@ function semanticBindingGraph(program, path, analysisContext = {}) {
     }
     return matches
   }
+  indexGlobalContainerAliases()
 
   function combinedStaticOwner(nodes) {
     const resolvedOwners = nodes.map((node) => globalStaticOwner(node))
@@ -2191,11 +2314,29 @@ function semanticBindingGraph(program, path, analysisContext = {}) {
     else patchedStaticOwners.add(owner)
   }
 
+  function dynamicMutationMayPatchTrackedOwner(node) {
+    let value = unwrapExpression(node)
+    while (value?.type === 'MemberExpression') {
+      const name = memberName(value)
+      if (name === null || TRACKED_OWNER_MUTATION_KEYS.has(name)) return true
+      value = unwrapExpression(value.object)
+    }
+    return false
+  }
+
   function indexPatchedStaticOwners(node) {
     if (node.type === 'AssignmentExpression' || node.type === 'UpdateExpression') {
       const target = node.type === 'AssignmentExpression' ? node.left : node.argument
       const owner = mutationMemberOwner(target) ?? globalStaticOwner(target)
       markStaticOwnerPatched(owner)
+      if (
+        !owner
+        && (
+          containsDynamicIdentity(target)
+          || identityBindings(target).some((binding) => binding.dynamicIdentity)
+        )
+        && dynamicMutationMayPatchTrackedOwner(target)
+      ) markAllStaticOwnersPatched()
       if (
         target.type === 'MemberExpression'
         && unboundGlobalContainer(target.object)
@@ -2272,12 +2413,9 @@ function semanticBindingGraph(program, path, analysisContext = {}) {
       const specifier = edge?.value
       if (typeof specifier !== 'string' || specifier.endsWith('.css')) continue
       if (!specifier.startsWith('.')) {
-        if (edge === nodeParents.get(edge)?.parent?.source) {
-          const declaration = nodeParents.get(edge)?.parent
-          if (declaration?.type === 'ImportDeclaration' && declaration.specifiers.length === 0) {
-            for (const owner of TRACKED_GLOBAL_OWNERS) summary.patchedStaticOwners.add(owner)
-          }
-        }
+        if (TRUSTED_RUNTIME_PACKAGES.has(specifier)) continue
+        for (const owner of TRACKED_GLOBAL_OWNERS) summary.patchedStaticOwners.add(owner)
+        summary.patchesReact = true
         continue
       }
       const resolvedImport = resolveStaticImport(currentPath, specifier)
@@ -2581,6 +2719,19 @@ function semanticBindingGraph(program, path, analysisContext = {}) {
           semanticNode,
         })
       }
+      const memberTarget = unwrapExpression(target)
+      if (
+        directBindings.size === 0
+        && memberTarget?.type === 'MemberExpression'
+        && unboundGlobalContainer(memberTarget.object)
+      ) {
+        unresolvedMutations.push({
+          executionScope,
+          message: 'Unbound global property mutation',
+          mutationNode: node,
+          semanticNode,
+        })
+      }
       const aliasedBindings = propagateAliases
         ? new Set([...directBindings].flatMap((binding) => [...binding.aliases]))
         : directBindings
@@ -2661,6 +2812,13 @@ function semanticBindingGraph(program, path, analysisContext = {}) {
       const invocationAliases = new Set(
         [...invocationBindings].flatMap((binding) => [...binding.aliases]),
       )
+      const externalImportSources = new Set(
+        [...invocationAliases]
+          .map((binding) => binding.importSource)
+          .filter((source) => typeof source === 'string' && !source.startsWith('.')),
+      )
+      const trustedExternalCall = externalImportSources.size > 0
+        && [...externalImportSources].every((source) => TRUSTED_RUNTIME_PACKAGES.has(source))
       const callableIsInspectable = [...invocationAliases].some((binding) => (
         !binding.importSource || binding.importSource.startsWith('.')
       ))
@@ -2671,7 +2829,7 @@ function semanticBindingGraph(program, path, analysisContext = {}) {
       const unknownExternalStandaloneCall = !hasPotentialCallback
         && !callableIsInspectable
         && !inlineCallable
-        && semanticNode.type === 'ExpressionStatement'
+        && !trustedExternalCall
         && !isKnownAsyncCallbackCall(node)
         && !isKnownSynchronousCallbackCall(node)
         && !(callee.type === 'MemberExpression' && globalOwnerRoot(callee.object))
@@ -3280,9 +3438,10 @@ function projectPath(path) {
   return relative(projectRoot, path).replaceAll('\\', '/')
 }
 
-function resolveStaticImport(importer, specifier) {
-  if (!specifier.startsWith('.')) return null
-  const unresolved = resolve(dirname(importer), specifier)
+export function resolveStaticImport(importer, specifier) {
+  const pathSpecifier = specifier.match(/^[^?#]*/u)?.[0] ?? specifier
+  if (!pathSpecifier.startsWith('.')) return null
+  const unresolved = resolve(dirname(importer), pathSpecifier)
   const candidates = extname(unresolved)
     ? [unresolved]
     : [
