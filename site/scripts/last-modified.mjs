@@ -9,7 +9,7 @@ import {
 } from './semantic-source-graph.mjs'
 
 const projectRoot = fileURLToPath(new URL('../../', import.meta.url))
-export const ROUTE_CONTENT_DIGEST_VERSION = 5
+export const ROUTE_CONTENT_DIGEST_VERSION = 6
 
 function gitNames(args) {
   const result = spawnSync('git', args, {
@@ -81,12 +81,16 @@ export function resolveContentLastModified({
   previousLastModified,
   candidateLastModified,
   evidenceSchemaChanged = false,
+  hasWorkingTreeEvidence = false,
   pathname = '<unknown>',
 }) {
   if (previousDigest && previousDigest === currentDigest && previousLastModified) {
     return previousLastModified
   }
   if (previousDigest && previousDigest !== currentDigest && previousLastModified) {
+    if (evidenceSchemaChanged && !hasWorkingTreeEvidence) {
+      return previousLastModified
+    }
     const previousTime = Date.parse(previousLastModified)
     const candidateTime = Date.parse(candidateLastModified)
     if (
@@ -94,9 +98,6 @@ export function resolveContentLastModified({
       || Number.isNaN(candidateTime)
     ) {
       throw new Error(`Semantic content changed without lastmod advancing for ${pathname}`)
-    }
-    if (evidenceSchemaChanged && candidateTime <= previousTime) {
-      return previousLastModified
     }
     if (candidateTime <= previousTime) {
       throw new Error(`Semantic content changed without lastmod advancing for ${pathname}`)
@@ -125,19 +126,20 @@ export function collectRouteContentEvidence({
   )
 
   const lastModified = Object.fromEntries(
-    [...filesByRoute].map(([pathname, files]) => [
-      pathname,
-      resolveContentLastModified({
+    [...filesByRoute].map(([pathname, files]) => {
+      const hasWorkingTreeEvidence = files.some((file) => dirtyFiles.has(file))
+      return [pathname, resolveContentLastModified({
         previousDigest: previousContentDigests[pathname],
         currentDigest: contentDigests[pathname],
         previousLastModified: previousLastModified[pathname],
-        candidateLastModified: files.some((file) => dirtyFiles.has(file))
+        candidateLastModified: hasWorkingTreeEvidence
           ? workingTreeDate(files.filter((file) => dirtyFiles.has(file)))
           : gitDate(files),
         evidenceSchemaChanged,
+        hasWorkingTreeEvidence,
         pathname,
-      }),
-    ]),
+      })]
+    }),
   )
   return {
     lastModified,
