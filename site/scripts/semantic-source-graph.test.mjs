@@ -921,6 +921,19 @@ test('secondary review boundaries preserve SSR precision and fail closed', () =>
       ),
     )
   }
+  for (const aliasedAsyncCallback of [
+    `const callback = () => { label = '客户端一' }\nconst alias = callback\nlet label = '正文'\nfunction AppContent() { setTimeout(alias, 0); return <Routes>{label}</Routes> }`,
+    `import { useEffect } from 'react'\nconst callback = () => { label = '客户端一' }\nconst alias = callback\nlet label = '正文'\nfunction AppContent() { useEffect(alias, []); return <Routes>{label}</Routes> }`,
+    `const callback = () => track('客户端一')\nconst alias = callback\nconst props = { onClick: alias }\nfunction AppContent() { return <Routes><button {...props}>正文</button></Routes> }`,
+  ]) {
+    assert.equal(
+      semanticSourceForDigest('site/src/app/AppContent.tsx', aliasedAsyncCallback),
+      semanticSourceForDigest(
+        'site/src/app/AppContent.tsx',
+        aliasedAsyncCallback.replace('客户端一', '客户端二'),
+      ),
+    )
+  }
 
   for (const callbackFactory of [
     `function AppContent() { let label = '正文'; setTimeout((label = '变化一', () => {}), 0); return <Routes>{label}</Routes> }`,
@@ -931,6 +944,27 @@ test('secondary review boundaries preserve SSR precision and fail closed', () =>
       semanticSourceForDigest(
         'site/src/app/AppContent.tsx',
         callbackFactory.replace('变化一', '变化二'),
+      ),
+    )
+  }
+  for (const deferredFactory of [
+    `function make() { track('同步获取'); return () => track('客户端一') }\nfunction AppContent() { setTimeout(make(), 0); return <Routes>正文</Routes> }`,
+    `import { useEffect } from 'react'\nfunction make() { track('同步获取'); return () => track('客户端一') }\nfunction AppContent() { useEffect(make(), []); return <Routes>正文</Routes> }`,
+    `function make() { track('同步获取'); return () => track('客户端一') }\nfunction AppContent() { return <Routes><button onClick={make()}>正文</button></Routes> }`,
+    `function make() { track('同步获取'); return () => track('客户端一') }\nconst props = { onClick: make() }\nfunction AppContent() { return <Routes><button {...props}>正文</button></Routes> }`,
+  ]) {
+    assert.equal(
+      semanticSourceForDigest('site/src/app/AppContent.tsx', deferredFactory),
+      semanticSourceForDigest(
+        'site/src/app/AppContent.tsx',
+        deferredFactory.replace('客户端一', '客户端二'),
+      ),
+    )
+    assert.notEqual(
+      semanticSourceForDigest('site/src/app/AppContent.tsx', deferredFactory),
+      semanticSourceForDigest(
+        'site/src/app/AppContent.tsx',
+        deferredFactory.replace('同步获取', '同步变化'),
       ),
     )
   }
@@ -945,6 +979,15 @@ test('secondary review boundaries preserve SSR precision and fail closed', () =>
       /Unsupported callback execution timing/,
     )
   }
+  for (const importedPatch of [
+    `import '../../scripts/fixtures/semantic-patch-timer.mjs'\nfunction AppContent() { setTimeout(() => track('同步一'), 0); return <Routes>正文</Routes> }`,
+    `import { unused } from '../../scripts/fixtures/semantic-patch-react.mjs'\nimport { useEffect } from 'react'\nfunction AppContent() { useEffect(() => track('同步一'), []); return <Routes>正文</Routes> }`,
+  ]) {
+    assert.throws(
+      () => semanticSourceForDigest('site/src/app/AppContent.tsx', importedPatch),
+      /Unsupported/,
+    )
+  }
 
   for (const destructuredOwner of [
     `const state = { value: '正文' }\nconst { Object: O } = globalThis\nO.assign = target => { target.value = '变化' }\nfunction AppContent() { Object.assign(state, {}); return <Routes>{state.value}</Routes> }`,
@@ -955,24 +998,45 @@ test('secondary review boundaries preserve SSR precision and fail closed', () =>
       /Unsupported ambiguous mutation of state/,
     )
   }
+  for (const indirectOwner of [
+    `const state = { value: '正文' }\nconst [O] = [Object]\nO.assign = target => { target.value = '变化' }\nfunction AppContent() { Object.assign(state, {}); return <Routes>{state.value}</Routes> }`,
+    `const state = { value: '正文' }\nconst holder = { O: Object }\nconst { O } = holder\nO.assign = target => { target.value = '变化' }\nfunction AppContent() { Object.assign(state, {}); return <Routes>{state.value}</Routes> }`,
+    `const state = { value: '正文' }\nconst O = true ? Object : Object\nO.assign = target => { target.value = '变化' }\nfunction AppContent() { Object.assign(state, {}); return <Routes>{state.value}</Routes> }`,
+    `const state = { value: '正文' }\nconst O = [Object][0]\nO.assign = target => { target.value = '变化' }\nfunction AppContent() { Object.assign(state, {}); return <Routes>{state.value}</Routes> }`,
+    `let label = '正文'\nconst proto = Promise.prototype\nproto.then = callback => { callback(); return Promise.resolve() }\nfunction AppContent() { Promise.resolve().then(() => { label = '变化' }); return <Routes>{label}</Routes> }`,
+    `const state = { value: '正文' }\nconst G = true ? globalThis : globalThis\nG.Object = { assign(target) { target.value = '变化' } }\nfunction AppContent() { Object.assign(state, {}); return <Routes>{state.value}</Routes> }`,
+  ]) {
+    assert.throws(
+      () => semanticSourceForDigest('site/src/app/AppContent.tsx', indirectOwner),
+      /Unsupported/,
+    )
+  }
 
-  const externalCallBefore = `import { mutateA as mutate, state } from 'pkg'\nfunction AppContent() { mutate(); return <Routes>{state.value}</Routes> }`
-  assert.notEqual(
-    semanticSourceForDigest('site/src/app/AppContent.tsx', externalCallBefore),
-    semanticSourceForDigest(
-      'site/src/app/AppContent.tsx',
-      externalCallBefore.replace('mutateA', 'mutateB'),
-    ),
-  )
-  assert.notEqual(
-    semanticSourceForDigest(
-      'site/src/app/AppContent.tsx',
-      `function AppContent() { mutateA(); return <Routes>{globalThis.state.value}</Routes> }`,
-    ),
-    semanticSourceForDigest(
-      'site/src/app/AppContent.tsx',
-      `function AppContent() { mutateB(); return <Routes>{globalThis.state.value}</Routes> }`,
-    ),
+  for (const externalCall of [
+    `import { mutate as externalMutate, state } from 'pkg'\nfunction AppContent() { externalMutate(); return <Routes>{state.value}</Routes> }`,
+    `function AppContent() { externalMutate(); return <Routes>{globalThis.state.value}</Routes> }`,
+  ]) {
+    assert.throws(
+      () => semanticSourceForDigest('site/src/app/AppContent.tsx', externalCall),
+      /Unsupported external synchronous call/,
+    )
+  }
+  for (const externalStandalone of [
+    `import { mutateOne as mutate, state } from 'pkg'\nmutate()\nfunction AppContent() { return <Routes>{state.value}</Routes> }`,
+    `mutateOne()\nfunction AppContent() { return <Routes>{globalThis.state.value}</Routes> }`,
+    `import api from 'pkg'\napi.mutateOne()\nfunction AppContent() { return <Routes>{globalThis.state.value}</Routes> }`,
+    `import { patch } from 'pkg'\nfunction AppContent() { let label = '正文'; patch(); Promise.resolve().then(() => { label = '变化' }); return <Routes>{label}</Routes> }`,
+  ]) {
+    assert.throws(
+      () => semanticSourceForDigest('site/src/app/AppContent.tsx', externalStandalone),
+      /Unsupported external synchronous call/,
+    )
+  }
+
+  const exportedDeferred = `let label = '正文'\nexport function callback() { label = '客户端一' }\nfunction AppContent() { setTimeout(callback, 0); return <Routes>{label}</Routes> }`
+  assert.throws(
+    () => semanticSourceForDigest('site/src/app/AppContent.tsx', exportedDeferred),
+    /Unsupported nested semantic write/,
   )
 
   for (const unstableAlias of [
@@ -992,6 +1056,19 @@ test('secondary review boundaries preserve SSR precision and fail closed', () =>
       catchAlias.replace('变化一', '变化二'),
     ),
   )
+
+  for (const conditionalClientValue of [
+    `const enabled = true\nfunction AppContent() { return <Routes><button onClick={enabled ? () => track('客户端一') : () => {}}>正文</button></Routes> }`,
+    `const enabled = true\nconst props = { onClick: enabled ? () => track('客户端一') : () => {} }\nfunction AppContent() { return <Routes><button {...props}>正文</button></Routes> }`,
+  ]) {
+    assert.equal(
+      semanticSourceForDigest('site/src/app/AppContent.tsx', conditionalClientValue),
+      semanticSourceForDigest(
+        'site/src/app/AppContent.tsx',
+        conditionalClientValue.replace('客户端一', '客户端二'),
+      ),
+    )
+  }
 })
 
 test('public config rejects alias mutation, pattern writes, and patched freeze', () => {
@@ -1022,6 +1099,22 @@ test('public config rejects alias mutation, pattern writes, and patched freeze',
     ),
     publicConfigSource(
       `const { ['Object']: O } = globalThis\nO.freeze = value => { value.name = '运行时'; return value }`,
+      `name: '初始'`,
+    ),
+    publicConfigSource(
+      `const [O] = [Object]\nO.freeze = value => { value.name = '运行时'; return value }`,
+      `name: '初始'`,
+    ),
+    publicConfigSource(
+      `const holder = { O: Object }\nconst { O } = holder\nO.freeze = value => { value.name = '运行时'; return value }`,
+      `name: '初始'`,
+    ),
+    publicConfigSource(
+      `const O = true ? Object : Object\nO.freeze = value => { value.name = '运行时'; return value }`,
+      `name: '初始'`,
+    ),
+    publicConfigSource(
+      `const O = [Object][0]\nO.freeze = value => { value.name = '运行时'; return value }`,
       `name: '初始'`,
     ),
   ]) {
