@@ -1,5 +1,5 @@
 // 由 scripts/generate-seo.mjs 从源码时间证据生成，请勿手改。
-export const ROUTE_CONTENT_DIGEST_VERSION = 12
+export const ROUTE_CONTENT_DIGEST_VERSION = 13
 export const ROUTE_LAST_MODIFIED: Readonly<Record<string, string>> = Object.freeze({
   "/": "2026-08-22T23:46:11+08:00",
   "/part/a": "2026-08-22T11:47:40+08:00",
@@ -81,10 +81,10 @@ export const ROUTE_CONTENT_DIGESTS: Readonly<Record<string, string>> = Object.fr
   "/part/c/merge": "a249bdb7650b3bd37a78a7ea82af4ca91830bdf250f3fc728e33f5107f205eaf",
   "/part/d/grid": "a717bc0470abb4cff3667773bb07dc88083e2c97c7f43ae4bf1b45ec593b18f1",
   "/part/d/matpow": "746c8911b669e2bb65a6bb56036af226c502f86363d4e54b714603ee820a104e",
-  "/part/e/basic": "5a11da168dc93a62a7462ece534a492e194a64cdf89306c2000190ccaf1593be",
-  "/part/e/distsum": "99b609f8c6c51c969e56665d4fb324bd9fe9b14757cd7402d79185f6a01a4b65",
-  "/part/e/inout": "31b8713c210d4ea94fd1fd16fe34f4adc87bf49047a2c3b5650af4c34a5d1df3",
-  "/part/e/center": "688088cfe1ab07a8ae84ce937ef6337b55c4e89b47b8679cf159a7c5245ccdf7",
+  "/part/e/basic": "44c42ea991a4f1358e964aa457778631e7f89e3e129152b34684ab8ce5081f6e",
+  "/part/e/distsum": "ae87f7f503ba41b64ff21ba7801b64acfc40787efcaf0f76a58cbd9c6059eb1a",
+  "/part/e/inout": "ed9e66baa6920e768ba35fee13a892eb225e945377d1cc259bfac2e9d41fc183",
+  "/part/e/center": "e29c6a3fcf034ece8fe7dd2b7f3b3e544c1337be2f0fb592a6616963e4a25d1d",
   "/part/f/select": "09273dd8af76199acfc797d73083480844bb975beafcf61862d55634b9a576a3",
   "/part/f/knapsack": "6cb59f767cbc7ea1d16739097c539d222feca48317402beb9fb7f8c82c6fc708",
   "/part/f/diameter": "ce51245a2bf7c5812bfe2a17802600432283e0f29e4b0b728b6d5df0e627da7a",
