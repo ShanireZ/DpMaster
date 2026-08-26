@@ -863,6 +863,26 @@ test('secondary review boundaries preserve SSR precision and fail closed', () =>
       intrinsicDeferredWrite.replace('客户端一', '客户端二'),
     ),
   )
+  const intrinsicCallbackFactory = `function AppContent() { let label = '正文'; return <Routes><button onClick={(() => { label = '变化一'; return () => {} })()}>{label}</button></Routes> }`
+  assert.notEqual(
+    semanticSourceForDigest('site/src/app/AppContent.tsx', intrinsicCallbackFactory),
+    semanticSourceForDigest(
+      'site/src/app/AppContent.tsx',
+      intrinsicCallbackFactory.replace('变化一', '变化二'),
+    ),
+  )
+  for (const intrinsicSpread of [
+    `function AppContent() { return <Routes><button {...{ onClick: () => track('客户端一') }}>正文</button></Routes> }`,
+    `const props = { onClick: () => track('客户端一') }\nfunction AppContent() { return <Routes><button {...props}>正文</button></Routes> }`,
+  ]) {
+    assert.equal(
+      semanticSourceForDigest('site/src/app/AppContent.tsx', intrinsicSpread),
+      semanticSourceForDigest(
+        'site/src/app/AppContent.tsx',
+        intrinsicSpread.replace('客户端一', '客户端二'),
+      ),
+    )
+  }
   assert.notEqual(
     semanticSourceForDigest(
       'site/src/app/AppContent.tsx',
@@ -889,6 +909,89 @@ test('secondary review boundaries preserve SSR precision and fail closed', () =>
       ),
     )
   }
+  for (const namedAsyncCallback of [
+    `const callback = () => { label = '客户端一' }\nlet label = '正文'\nfunction AppContent() { setTimeout(callback, 0); return <Routes>{label}</Routes> }`,
+    `import { useEffect } from 'react'\nconst callback = () => { label = '客户端一' }\nlet label = '正文'\nfunction AppContent() { useEffect(callback, []); return <Routes>{label}</Routes> }`,
+  ]) {
+    assert.equal(
+      semanticSourceForDigest('site/src/app/AppContent.tsx', namedAsyncCallback),
+      semanticSourceForDigest(
+        'site/src/app/AppContent.tsx',
+        namedAsyncCallback.replace('客户端一', '客户端二'),
+      ),
+    )
+  }
+
+  for (const callbackFactory of [
+    `function AppContent() { let label = '正文'; setTimeout((label = '变化一', () => {}), 0); return <Routes>{label}</Routes> }`,
+    `import { useEffect } from 'react'\nfunction AppContent() { let label = '正文'; useEffect((() => { label = '变化一'; return () => {} })(), []); return <Routes>{label}</Routes> }`,
+  ]) {
+    assert.notEqual(
+      semanticSourceForDigest('site/src/app/AppContent.tsx', callbackFactory),
+      semanticSourceForDigest(
+        'site/src/app/AppContent.tsx',
+        callbackFactory.replace('变化一', '变化二'),
+      ),
+    )
+  }
+
+  for (const patchedCallbackSemantic of [
+    `globalThis.setTimeout = callback => callback()\nfunction AppContent() { setTimeout(() => track('同步一'), 0); return <Routes>正文</Routes> }`,
+    `Promise.prototype.then = callback => { callback(); return Promise.resolve() }\nfunction AppContent() { Promise.resolve().then(() => track('同步一')); return <Routes>正文</Routes> }`,
+    `Array.prototype.map = callback => { callback('同步一'); return [] }\nfunction AppContent() { [1].map(value => track(value)); return <Routes>正文</Routes> }`,
+  ]) {
+    assert.throws(
+      () => semanticSourceForDigest('site/src/app/AppContent.tsx', patchedCallbackSemantic),
+      /Unsupported callback execution timing/,
+    )
+  }
+
+  for (const destructuredOwner of [
+    `const state = { value: '正文' }\nconst { Object: O } = globalThis\nO.assign = target => { target.value = '变化' }\nfunction AppContent() { Object.assign(state, {}); return <Routes>{state.value}</Routes> }`,
+    `const state = { value: '正文' }\nconst { ['Object']: O } = globalThis\nO.assign = target => { target.value = '变化' }\nfunction AppContent() { Object.assign(state, {}); return <Routes>{state.value}</Routes> }`,
+  ]) {
+    assert.throws(
+      () => semanticSourceForDigest('site/src/app/AppContent.tsx', destructuredOwner),
+      /Unsupported ambiguous mutation of state/,
+    )
+  }
+
+  const externalCallBefore = `import { mutateA as mutate, state } from 'pkg'\nfunction AppContent() { mutate(); return <Routes>{state.value}</Routes> }`
+  assert.notEqual(
+    semanticSourceForDigest('site/src/app/AppContent.tsx', externalCallBefore),
+    semanticSourceForDigest(
+      'site/src/app/AppContent.tsx',
+      externalCallBefore.replace('mutateA', 'mutateB'),
+    ),
+  )
+  assert.notEqual(
+    semanticSourceForDigest(
+      'site/src/app/AppContent.tsx',
+      `function AppContent() { mutateA(); return <Routes>{globalThis.state.value}</Routes> }`,
+    ),
+    semanticSourceForDigest(
+      'site/src/app/AppContent.tsx',
+      `function AppContent() { mutateB(); return <Routes>{globalThis.state.value}</Routes> }`,
+    ),
+  )
+
+  for (const unstableAlias of [
+    `const state = { value: '正文' }\nlet alias = {}\nfunction AppContent() { alias ||= state; alias.value = '变化一'; return <Routes>{state.value}</Routes> }`,
+    `const state = { value: '正文' }\nlet alias = {}\nfunction AppContent() { for (alias of [state]) alias.value = '变化一'; return <Routes>{state.value}</Routes> }`,
+  ]) {
+    assert.throws(
+      () => semanticSourceForDigest('site/src/app/AppContent.tsx', unstableAlias),
+      /Unsupported/,
+    )
+  }
+  const catchAlias = `const state = { value: '正文' }\nfunction AppContent() { try { throw state } catch (alias) { alias.value = '变化一' } return <Routes>{state.value}</Routes> }`
+  assert.notEqual(
+    semanticSourceForDigest('site/src/app/AppContent.tsx', catchAlias),
+    semanticSourceForDigest(
+      'site/src/app/AppContent.tsx',
+      catchAlias.replace('变化一', '变化二'),
+    ),
+  )
 })
 
 test('public config rejects alias mutation, pattern writes, and patched freeze', () => {
@@ -911,6 +1014,14 @@ test('public config rejects alias mutation, pattern writes, and patched freeze',
     ),
     publicConfigSource(
       `Reflect.set(Object, 'freeze', value => { value.name = '运行时'; return value })`,
+      `name: '初始'`,
+    ),
+    publicConfigSource(
+      `const { Object: O } = globalThis\nO.freeze = value => { value.name = '运行时'; return value }`,
+      `name: '初始'`,
+    ),
+    publicConfigSource(
+      `const { ['Object']: O } = globalThis\nO.freeze = value => { value.name = '运行时'; return value }`,
       `name: '初始'`,
     ),
   ]) {
