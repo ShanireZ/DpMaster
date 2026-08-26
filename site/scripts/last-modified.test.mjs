@@ -70,6 +70,17 @@ test('a changed semantic digest requires source-backed lastmod evidence', () => 
       candidateLastModified: '2026-08-26T03:29:00.000Z',
       evidenceSchemaChanged: true,
     }),
+    '2026-08-26T02:29:00.000Z',
+  )
+  assert.equal(
+    resolveContentLastModified({
+      previousDigest: 'old-schema-digest',
+      currentDigest: 'new-schema-and-content-digest',
+      previousLastModified: '2026-08-26T02:29:00.000Z',
+      candidateLastModified: '2026-08-26T03:29:00.000Z',
+      evidenceSchemaChanged: true,
+      hasWorkingTreeEvidence: true,
+    }),
     '2026-08-26T03:29:00.000Z',
   )
 })

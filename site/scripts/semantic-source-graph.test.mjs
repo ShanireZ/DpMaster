@@ -244,6 +244,27 @@ test('mixed-module closure follows lexical symbols instead of bare names', () =>
     semanticSourceForDigest('site/src/app/AppContent.tsx', importBefore),
     semanticSourceForDigest('site/src/app/AppContent.tsx', importAfter),
   )
+
+  const typeSiblingBefore = `import { Suspense, type ComponentType } from 'react'\nfunction AppContent() { return <Routes><Suspense /></Routes> }`
+  const typeSiblingAfter = typeSiblingBefore.replace('ComponentType', 'OtherType')
+  assert.equal(
+    semanticSourceForDigest('site/src/app/AppContent.tsx', typeSiblingBefore),
+    semanticSourceForDigest('site/src/app/AppContent.tsx', typeSiblingAfter),
+  )
+
+  const runtimeSiblingBefore = `import { View, clientHelper } from './views'\nfunction AppContent() { return <Routes><View /></Routes> }`
+  const runtimeSiblingAfter = runtimeSiblingBefore.replace('clientHelper', 'otherHelper')
+  assert.equal(
+    semanticSourceForDigest('site/src/app/AppContent.tsx', runtimeSiblingBefore),
+    semanticSourceForDigest('site/src/app/AppContent.tsx', runtimeSiblingAfter),
+  )
+
+  const staticVarBefore = `const label = '正文'\nclass ClientOnly { static { var label = '客户端一' } }\nfunction AppContent() { return <Routes>{label}</Routes> }`
+  const staticVarAfter = staticVarBefore.replace('客户端一', '客户端二')
+  assert.equal(
+    semanticSourceForDigest('site/src/app/AppContent.tsx', staticVarBefore),
+    semanticSourceForDigest('site/src/app/AppContent.tsx', staticVarAfter),
+  )
 })
 
 test('mixed-module closure tracks every supported mutation of selected bindings', () => {
@@ -289,6 +310,53 @@ test('mixed-module closure tracks every supported mutation of selected bindings'
     semanticSourceForDigest('site/src/app/AppContent.tsx', typedAssignmentAfter),
   )
 
+  const aliasBefore = `const state = { value: '正文' }\nconst alias = state\nfunction AppContent() { alias.value = '正文一'; return <Routes>{state.value}</Routes> }`
+  const aliasAfter = aliasBefore.replace('正文一', '正文二')
+  assert.notEqual(
+    semanticSourceForDigest('site/src/app/AppContent.tsx', aliasBefore),
+    semanticSourceForDigest('site/src/app/AppContent.tsx', aliasAfter),
+  )
+
+  const destructuredAliasBefore = `const state = { nested: { value: '正文' } }\nconst { nested: alias } = state\nfunction AppContent() { alias.value = '正文一'; return <Routes>{state.nested.value}</Routes> }`
+  const destructuredAliasAfter = destructuredAliasBefore.replace('正文一', '正文二')
+  assert.notEqual(
+    semanticSourceForDigest('site/src/app/AppContent.tsx', destructuredAliasBefore),
+    semanticSourceForDigest('site/src/app/AppContent.tsx', destructuredAliasAfter),
+  )
+
+  const aliasRebindBefore = `const state = { value: '正文' }\nlet alias = state\nfunction AppContent() { alias = { value: '客户端一' }; return <Routes>{state.value}</Routes> }`
+  const aliasRebindAfter = aliasRebindBefore.replace('客户端一', '客户端二')
+  assert.equal(
+    semanticSourceForDigest('site/src/app/AppContent.tsx', aliasRebindBefore),
+    semanticSourceForDigest('site/src/app/AppContent.tsx', aliasRebindAfter),
+  )
+
+  const unstableAlias = `const state = { value: '正文' }\nlet alias\nalias = state\nfunction AppContent() { alias.value = '变化'; return <Routes>{state.value}</Routes> }`
+  assert.throws(
+    () => semanticSourceForDigest('site/src/app/AppContent.tsx', unstableAlias),
+    /Unsupported ambiguous mutation of state/,
+  )
+
+  const reboundAliasMutation = `const state = { value: '正文' }\nlet alias = state\nalias = { value: '其他' }\nfunction AppContent() { alias.value = '变化'; return <Routes>{state.value}</Routes> }`
+  assert.throws(
+    () => semanticSourceForDigest('site/src/app/AppContent.tsx', reboundAliasMutation),
+    /Unsupported ambiguous mutation of state/,
+  )
+
+  for (const target of [
+    'true ? state : other',
+    'state || other',
+    'other, state',
+  ]) {
+    const expressionBefore = `const state = { value: '正文' }\nconst other = { value: '其他' }\nfunction AppContent() { (${target}).value = '正文一'; return <Routes>{state.value}</Routes> }`
+    const expressionAfter = expressionBefore.replace('正文一', '正文二')
+    assert.notEqual(
+      semanticSourceForDigest('site/src/app/AppContent.tsx', expressionBefore),
+      semanticSourceForDigest('site/src/app/AppContent.tsx', expressionAfter),
+      target,
+    )
+  }
+
   const ambiguousReceiverCall = `const state = { value: '正文' }\nfunction AppContent() { state.inspect(); return <Routes>{state.value}</Routes> }`
   assert.throws(
     () => semanticSourceForDigest('site/src/app/AppContent.tsx', ambiguousReceiverCall),
@@ -299,6 +367,24 @@ test('mixed-module closure tracks every supported mutation of selected bindings'
   const ambiguousArgumentCall = `const state = { value: '正文' }\nfunction mutate(value) { value.value = '变化' }\nfunction AppContent() { mutate(state); return <Routes>{state.value}</Routes> }`
   assert.throws(
     () => semanticSourceForDigest('site/src/app/AppContent.tsx', ambiguousArgumentCall),
+    /Unsupported ambiguous mutation of state/,
+  )
+
+  const importedClosureCall = `import { state, prepare } from './store'\nfunction AppContent() { prepare(); return <Routes>{state.value}</Routes> }`
+  assert.throws(
+    () => semanticSourceForDigest('site/src/app/AppContent.tsx', importedClosureCall),
+    /Unsupported ambient mutation from prepare/,
+  )
+
+  const customNamedMutator = `const state = { value: '正文' }\nconst mutator = { set(target, value) { target.value = value } }\nfunction AppContent() { mutator.set(state, '正文一'); return <Routes>{state.value}</Routes> }`
+  assert.throws(
+    () => semanticSourceForDigest('site/src/app/AppContent.tsx', customNamedMutator),
+    /Unsupported ambiguous mutation of state/,
+  )
+
+  const shadowedObjectMutator = `const state = { value: '正文' }\nconst Object = { assign(target, source) { target.value = source.value } }\nfunction AppContent() { Object.assign(state, { value: '正文一' }); return <Routes>{state.value}</Routes> }`
+  assert.throws(
+    () => semanticSourceForDigest('site/src/app/AppContent.tsx', shadowedObjectMutator),
     /Unsupported ambiguous mutation of state/,
   )
 })
