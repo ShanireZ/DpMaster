@@ -60,7 +60,6 @@ const STATIC_TARGET_MUTATORS = new Map([
   ])],
 ])
 const EXPRESSION_WRAPPERS = new Set([
-  'ChainExpression',
   'ParenthesizedExpression',
   'TSAsExpression',
   'TSInstantiationExpression',
@@ -75,7 +74,6 @@ const TYPE_ONLY_KEYS = new Set([
   'definite',
   'implements',
   'importKind',
-  'optional',
   'override',
   'readonly',
   'returnType',
@@ -117,6 +115,9 @@ function projectRuntimeObject(value, overrides = {}, options = {}) {
       || key === 'loc'
       || key === 'raw'
       || key === 'start'
+      || (key === 'optional'
+        && value.type !== 'CallExpression'
+        && value.type !== 'MemberExpression')
       || TYPE_ONLY_KEYS.has(key)
     ) continue
     const child = runtimeAstProjection(source[key], options)
@@ -147,7 +148,7 @@ function runtimeAstProjection(value, options = {}) {
     return runtimeAstProjection(value.expression, options)
   }
   if (value.type === 'TSParameterProperty') {
-    return runtimeAstProjection(value.parameter, options)
+    return projectRuntimeObject(value, {}, options)
   }
   if (
     typeof value.type === 'string'
@@ -174,18 +175,6 @@ function runtimeAstProjection(value, options = {}) {
   return projectRuntimeObject(value, {}, options)
 }
 
-function objectExpression(node) {
-  if (node?.type === 'ObjectExpression') return node
-  if (
-    node?.type === 'CallExpression'
-    && node.callee.type === 'MemberExpression'
-    && node.callee.object.type === 'Identifier'
-    && node.callee.object.name === 'Object'
-    && memberNameFromNode(node.callee) === 'freeze'
-  ) return objectExpression(node.arguments?.[0])
-  return null
-}
-
 function memberNameFromNode(member) {
   if (member?.type !== 'MemberExpression') return null
   if (!member.computed && member.property.type === 'Identifier') return member.property.name
@@ -201,36 +190,182 @@ function publicSiteConfigProjection(program) {
     ['BRAND', new Set(['name', 'owner', 'subtitle'])],
     ['SITE', new Set(['language', 'origin'])],
   ])
-  const projection = {}
+  const bindings = new Map()
+  const bindingKinds = new Map()
   for (const statement of program.body) {
     const declaration = statement.type === 'ExportNamedDeclaration'
       ? statement.declaration
       : statement
     if (declaration?.type !== 'VariableDeclaration') continue
     for (const declarator of declaration.declarations) {
-      if (declarator.id.type !== 'Identifier') continue
-      if (declarator.id.name === 'SITE_ORIGIN') {
-        projection.SITE_ORIGIN = runtimeAstProjection(declarator.init)
-        continue
+      if (declarator.id.type === 'Identifier' && declarator.init) {
+        bindings.set(declarator.id.name, declarator.init)
+        bindingKinds.set(declarator.id.name, declaration.kind)
       }
-      const keys = selectedKeys.get(declarator.id.name)
-      if (!keys) continue
-      const object = objectExpression(declarator.init)
-      if (!object) throw new Error(`Expected ${declarator.id.name} to be an object literal`)
-      projection[declarator.id.name] = object.properties.flatMap((property) => {
-        if (property.type !== 'Property') return []
-        const name = property.key.type === 'Identifier'
-          ? property.key.name
-          : property.key.value
-        return keys.has(name)
-          ? [{ name, value: runtimeAstProjection(property.value) }]
-          : []
-      })
     }
   }
+
+  const unsupported = (detail) => {
+    throw new Error(`Unsupported public site configuration: ${detail}`)
+  }
+  const usedBindings = new Set()
+  const bindingValue = (name) => {
+    if (bindingKinds.get(name) !== 'const') return unsupported(`mutable binding ${name}`)
+    usedBindings.add(name)
+    return bindings.get(name)
+  }
+  const unwrap = (node) => (
+    node && EXPRESSION_WRAPPERS.has(node.type) ? unwrap(node.expression) : node
+  )
+  const staticKey = (node, stack = new Set()) => {
+    const value = unwrap(node)
+    if (value?.type === 'Literal' || value?.type === 'StringLiteral') {
+      return typeof value.value === 'string' ? value.value : unsupported('non-string key')
+    }
+    if (value?.type === 'Identifier' && bindings.has(value.name)) {
+      if (stack.has(value.name)) return unsupported(`cyclic binding ${value.name}`)
+      return staticKey(bindingValue(value.name), new Set([...stack, value.name]))
+    }
+    return unsupported('dynamic computed key')
+  }
+  const propertyKey = (property, stack) => (
+    property.computed
+      ? staticKey(property.key, stack)
+      : property.key.type === 'Identifier'
+        ? property.key.name
+        : property.key.value
+  )
+  const resolveObject = (node, stack = new Set()) => {
+    const value = unwrap(node)
+    if (value?.type === 'Identifier' && bindings.has(value.name)) {
+      if (stack.has(value.name)) return unsupported(`cyclic binding ${value.name}`)
+      return resolveObject(bindingValue(value.name), new Set([...stack, value.name]))
+    }
+    if (
+      value?.type === 'CallExpression'
+      && value.callee.type === 'MemberExpression'
+      && value.callee.object.type === 'Identifier'
+      && value.callee.object.name === 'Object'
+      && !bindings.has('Object')
+      && memberNameFromNode(value.callee) === 'freeze'
+      && value.arguments?.length === 1
+    ) return resolveObject(value.arguments[0], stack)
+    if (value?.type !== 'ObjectExpression') return unsupported('expected a static object')
+    const properties = new Map()
+    for (const property of value.properties) {
+      if (property.type === 'SpreadElement') {
+        for (const [name, spreadValue] of resolveObject(property.argument, stack)) {
+          properties.set(name, spreadValue)
+        }
+        continue
+      }
+      if (property.type !== 'Property' || property.kind !== 'init' || property.method) {
+        return unsupported('getter, setter, or method property')
+      }
+      properties.set(propertyKey(property, stack), property.value)
+    }
+    return properties
+  }
+  const projectValue = (node, stack = new Set()) => {
+    const value = unwrap(node)
+    if (value?.type === 'Identifier' && bindings.has(value.name)) {
+      if (stack.has(value.name)) return unsupported(`cyclic binding ${value.name}`)
+      return projectValue(bindingValue(value.name), new Set([...stack, value.name]))
+    }
+    if (value?.type === 'MemberExpression') {
+      const name = memberNameFromNode(value)
+      if (name === null) return unsupported('dynamic member lookup')
+      if (
+        value.object.type === 'Identifier'
+        && selectedKeys.get(value.object.name)?.has(name)
+      ) return runtimeAstProjection(value)
+      const memberValue = resolveObject(value.object, stack).get(name)
+      if (!memberValue) return unsupported(`missing member ${name}`)
+      return projectValue(memberValue, stack)
+    }
+    if (
+      value?.type === 'Literal'
+      || value?.type === 'StringLiteral'
+      || (value?.type === 'TemplateLiteral' && value.expressions.length === 0)
+    ) return runtimeAstProjection(value)
+    return unsupported(`dynamic value ${value?.type ?? '<missing>'}`)
+  }
+
+  const projection = {}
+  for (const [bindingName, keys] of selectedKeys) {
+    if (!bindings.has(bindingName)) return unsupported(`missing ${bindingName}`)
+    const object = resolveObject(bindingValue(bindingName), new Set([bindingName]))
+    projection[bindingName] = [...object].flatMap(([name, value]) => (
+      keys.has(name) ? [{ name, value: projectValue(value) }] : []
+    ))
+    for (const name of keys) {
+      if (!object.has(name)) return unsupported(`missing ${bindingName}.${name}`)
+    }
+  }
+  if (!bindings.has('SITE_ORIGIN')) return unsupported('missing SITE_ORIGIN')
+  projection.SITE_ORIGIN = projectValue(bindingValue('SITE_ORIGIN'))
   if (!projection.BRAND || !projection.SITE || !projection.SITE_ORIGIN) {
     throw new Error('Missing public site configuration projection')
   }
+
+  const identityNames = (node, names = new Set()) => {
+    const value = unwrap(node)
+    if (!value || typeof value !== 'object') return names
+    if (value.type === 'Identifier') {
+      names.add(value.name)
+    } else if (value.type === 'MemberExpression') {
+      identityNames(value.object, names)
+    } else if (value.type === 'ArrayExpression') {
+      for (const element of value.elements) identityNames(element, names)
+    } else if (value.type === 'ObjectExpression') {
+      for (const property of value.properties) {
+        identityNames(
+          property.type === 'SpreadElement' ? property.argument : property.value,
+          names,
+        )
+      }
+    } else if (value.type === 'ConditionalExpression') {
+      identityNames(value.consequent, names)
+      identityNames(value.alternate, names)
+    } else if (value.type === 'LogicalExpression') {
+      identityNames(value.left, names)
+      identityNames(value.right, names)
+    } else if (value.type === 'SequenceExpression') {
+      for (const expression of value.expressions) identityNames(expression, names)
+    } else if (value.type === 'AwaitExpression' || value.type === 'YieldExpression') {
+      identityNames(value.argument, names)
+    }
+    return names
+  }
+  const rejectUsedIdentity = (node, detail) => {
+    for (const name of identityNames(node)) {
+      if (usedBindings.has(name)) return unsupported(`${detail} ${name}`)
+    }
+  }
+  const scanMutations = (node) => {
+    if (node.type === 'AssignmentExpression' || node.type === 'UpdateExpression') {
+      rejectUsedIdentity(node.type === 'AssignmentExpression' ? node.left : node.argument, 'mutation of')
+    } else if (node.type === 'UnaryExpression' && node.operator === 'delete') {
+      rejectUsedIdentity(node.argument, 'mutation of')
+    } else if (node.type === 'CallExpression' || node.type === 'NewExpression') {
+      const safeObjectFreeze = node.type === 'CallExpression'
+        && node.callee.type === 'MemberExpression'
+        && node.callee.object.type === 'Identifier'
+        && node.callee.object.name === 'Object'
+        && !bindings.has('Object')
+        && memberNameFromNode(node.callee) === 'freeze'
+      if (!safeObjectFreeze) {
+        if (node.callee.type === 'MemberExpression') {
+          rejectUsedIdentity(node.callee.object, 'call through')
+        }
+        for (const argument of node.arguments ?? []) {
+          rejectUsedIdentity(argument, 'escape of')
+        }
+      }
+    }
+    for (const [child] of childNodes(node)) scanMutations(child)
+  }
+  scanMutations(program)
   return projection
 }
 
@@ -297,6 +432,8 @@ function semanticBindingGraph(program, path) {
   const nodeParents = new WeakMap()
   const declaredIdentifiers = new WeakSet()
   const importedBindingsByIdentity = new Map()
+  const reactNamespaceBindings = new Set()
+  const sideEffectImports = []
   const synchronousCalls = []
   const unresolvedMutations = []
 
@@ -310,6 +447,7 @@ function semanticBindingGraph(program, path) {
       } else {
         const binding = {
           aliasUnstable: false,
+          callable: false,
           dynamicIdentity: false,
           executionScope: nearestFunctionScope(scope),
           identifier,
@@ -338,11 +476,11 @@ function semanticBindingGraph(program, path) {
       || node.type === 'ArrowFunctionExpression'
     ) {
       if (node.type === 'FunctionDeclaration' && node.id) {
-        declare(node.id, scope, node, { valueOrigins: ['other'] })
+        declare(node.id, scope, node, { callable: true, valueOrigins: ['other'] })
       }
       const functionScope = createScope(scope, 'function', node)
       if (node.type === 'FunctionExpression' && node.id) {
-        declare(node.id, functionScope, node, { valueOrigins: ['other'] })
+        declare(node.id, functionScope, node, { callable: true, valueOrigins: ['other'] })
       }
       for (const parameter of node.params ?? []) {
         declare(parameter, functionScope, parameter, { valueOrigins: ['other'] })
@@ -417,6 +555,9 @@ function semanticBindingGraph(program, path) {
       return
     }
     if (node.type === 'ImportDeclaration') {
+      if (node.importKind !== 'type' && (node.specifiers?.length ?? 0) === 0) {
+        sideEffectImports.push(node)
+      }
       for (const specifier of node.specifiers ?? []) {
         if (
           !specifier.local
@@ -442,6 +583,10 @@ function semanticBindingGraph(program, path) {
         })
         const binding = scope.bindings.get(specifier.local.name)
         if (binding && node.source) {
+          if (
+            node.source.value === 'react'
+            && (importedName === '*' || importedName === 'default')
+          ) reactNamespaceBindings.add(binding)
           binding.semanticNodes.add(node.source)
           const identityBindings = importedBindingsByIdentity.get(binding.importIdentity) ?? new Set()
           identityBindings.add(binding)
@@ -509,6 +654,17 @@ function semanticBindingGraph(program, path) {
     if (node.type === 'Identifier') {
       const binding = lookup(node)
       if (binding) bindings.push(binding)
+    } else if (node.type === 'AssignmentPattern') {
+      identityBindings(node.left, bindings)
+      identityBindings(node.right, bindings)
+    } else if (node.type === 'ArrayPattern') {
+      for (const element of node.elements) {
+        if (element?.type !== 'RestElement') identityBindings(element, bindings)
+      }
+    } else if (node.type === 'ObjectPattern') {
+      for (const property of node.properties) {
+        if (property.type === 'Property') identityBindings(property.value, bindings)
+      }
     } else if (node.type === 'MemberExpression') {
       identityBindings(node.object, bindings)
     } else if (node.type === 'ArrayExpression') {
@@ -618,14 +774,64 @@ function semanticBindingGraph(program, path) {
     return bindings
   }
 
+  function aliasTargetBindings(node, bindings = []) {
+    if (!node || typeof node !== 'object') return bindings
+    if (node.type === 'Identifier') {
+      const binding = lookup(node)
+      if (binding) bindings.push(binding)
+    } else if (node.type === 'AssignmentPattern') {
+      aliasTargetBindings(node.left, bindings)
+    } else if (node.type === 'ArrayPattern') {
+      for (const element of node.elements) {
+        if (element?.type !== 'RestElement') aliasTargetBindings(element, bindings)
+      }
+    } else if (node.type === 'ObjectPattern') {
+      for (const property of node.properties) {
+        if (property.type === 'Property') aliasTargetBindings(property.value, bindings)
+      }
+    } else if (EXPRESSION_WRAPPERS.has(node.type)) {
+      aliasTargetBindings(node.expression, bindings)
+    }
+    return bindings
+  }
+
+  function patternDefaultBindings(node, bindings = []) {
+    if (!node || typeof node !== 'object') return bindings
+    if (node.type === 'AssignmentPattern') {
+      identityBindings(node.right, bindings)
+      patternDefaultBindings(node.left, bindings)
+    } else if (node.type === 'ArrayPattern') {
+      for (const element of node.elements) {
+        if (element?.type !== 'RestElement') patternDefaultBindings(element, bindings)
+      }
+    } else if (node.type === 'ObjectPattern') {
+      for (const property of node.properties) {
+        if (property.type === 'Property') patternDefaultBindings(property.value, bindings)
+      }
+    } else if (EXPRESSION_WRAPPERS.has(node.type)) {
+      patternDefaultBindings(node.expression, bindings)
+    }
+    return bindings
+  }
+
   function indexAliases(node) {
     if (node.type === 'VariableDeclarator' && node.init) {
       const targets = reassignedBindings(node.id)
+      const initializer = EXPRESSION_WRAPPERS.has(node.init.type)
+        ? node.init.expression
+        : node.init
+      if (
+        initializer.type === 'ArrowFunctionExpression'
+        || initializer.type === 'FunctionExpression'
+      ) {
+        for (const target of targets) target.callable = true
+      }
       if (hasDynamicInitializer(node.init)) {
         for (const target of targets) target.dynamicIdentity = true
       }
       mergeAliases([
-        ...targets,
+        ...aliasTargetBindings(node.id),
+        ...patternDefaultBindings(node.id),
         ...identityBindings(node.init),
       ])
     }
@@ -639,7 +845,8 @@ function semanticBindingGraph(program, path) {
         for (const target of targets) target.dynamicIdentity = true
       }
       mergeAliases([
-        ...targets,
+        ...aliasTargetBindings(node.left),
+        ...patternDefaultBindings(node.left),
         ...identityBindings(node.right),
       ], true)
     }
@@ -738,6 +945,18 @@ function semanticBindingGraph(program, path) {
   indexValueOrigins()
 
   const patchedReactBindings = new Set()
+  function markReactBindingsPatched(bindings) {
+    const aliases = new Set(
+      [...bindings].flatMap((binding) => [...binding.aliases]),
+    )
+    if (![...aliases].some((binding) => exactOrigin(binding, 'react-namespace'))) return
+    for (const binding of aliases) patchedReactBindings.add(binding)
+  }
+  function markAllReactBindingsPatched() {
+    for (const binding of reactNamespaceBindings) {
+      for (const alias of binding.aliases) patchedReactBindings.add(alias)
+    }
+  }
   function indexPatchedReactBindings(node) {
     const target = node.type === 'AssignmentExpression'
       ? node.left
@@ -747,10 +966,8 @@ function semanticBindingGraph(program, path) {
           ? node.argument
           : null
     if (target?.type === 'MemberExpression') {
-      for (const binding of identityBindings(target.object)) {
-        if (!exactOrigin(binding, 'react-namespace')) continue
-        for (const alias of binding.aliases) patchedReactBindings.add(alias)
-      }
+      markReactBindingsPatched(identityBindings(target.object))
+      if (containsDynamicIdentity(target.object)) markAllReactBindingsPatched()
     }
     const possiblyEscapedValues = [
       ...(node.type === 'CallExpression' ? node.arguments ?? [] : []),
@@ -759,10 +976,8 @@ function semanticBindingGraph(program, path) {
         : []),
     ]
     for (const value of possiblyEscapedValues) {
-      for (const binding of identityBindings(value)) {
-        if (!exactOrigin(binding, 'react-namespace')) continue
-        for (const alias of binding.aliases) patchedReactBindings.add(alias)
-      }
+      markReactBindingsPatched(identityBindings(value))
+      if (containsDynamicIdentity(value)) markAllReactBindingsPatched()
     }
     for (const [child] of childNodes(node)) indexPatchedReactBindings(child)
   }
@@ -857,6 +1072,18 @@ function semanticBindingGraph(program, path) {
             changed = true
           }
         }
+        if (
+          node.type === 'AssignmentExpression'
+          && node.operator === '='
+          && node.left.type === 'Identifier'
+        ) {
+          const owner = globalStaticOwner(node.right)
+          const binding = lookup(node.left)
+          if (owner && binding && staticOwnerAliases.get(binding) !== owner) {
+            staticOwnerAliases.set(binding, owner)
+            changed = true
+          }
+        }
         for (const [child] of childNodes(node)) visit(child)
       }
       visit(program)
@@ -891,19 +1118,46 @@ function semanticBindingGraph(program, path) {
       ) {
         patchedStaticOwners.add(globalStaticOwner(node.arguments[0]))
       }
-      const replacedOwner = (
-        node.arguments?.[1]?.type === 'StringLiteral'
-        || node.arguments?.[1]?.type === 'Literal'
-      )
-        && STATIC_TARGET_MUTATORS.has(node.arguments[1].value)
-        && unboundGlobalContainer(node.arguments?.[0])
-        && (
-          (owner === 'Object' && (method === 'defineProperty' || method === 'defineProperties'))
-          || (owner === 'Reflect' && method === 'set')
-        )
-        ? node.arguments[1].value
-        : null
-      if (replacedOwner) patchedStaticOwners.add(replacedOwner)
+      if (unboundGlobalContainer(node.arguments?.[0])) {
+        const patchAllOwners = () => {
+          for (const name of STATIC_TARGET_MUTATORS.keys()) patchedStaticOwners.add(name)
+        }
+        const patchOwnerKey = (key) => {
+          const name = (
+            key?.type === 'StringLiteral'
+            || key?.type === 'Literal'
+          ) && typeof key.value === 'string'
+            ? key.value
+            : null
+          if (name && STATIC_TARGET_MUTATORS.has(name)) patchedStaticOwners.add(name)
+          else if (!name) patchAllOwners()
+        }
+        const patchObjectKeys = (value) => {
+          if (value?.type !== 'ObjectExpression') {
+            patchAllOwners()
+            return
+          }
+          for (const property of value.properties) {
+            if (property.type !== 'Property' || property.computed) {
+              patchAllOwners()
+              continue
+            }
+            patchOwnerKey(property.key)
+          }
+        }
+        if (owner === 'Object' && method === 'assign') {
+          for (const source of node.arguments?.slice(1) ?? []) patchObjectKeys(source)
+        } else if (owner === 'Object' && method === 'defineProperties') {
+          patchObjectKeys(node.arguments?.[1])
+        } else if (
+          (owner === 'Object' && method === 'defineProperty')
+          || (owner === 'Reflect' && (method === 'defineProperty' || method === 'set'))
+        ) {
+          patchOwnerKey(node.arguments?.[1])
+        } else if (owner && STATIC_TARGET_MUTATORS.get(owner)?.has(method)) {
+          patchAllOwners()
+        }
+      }
     }
     for (const [child] of childNodes(node)) indexPatchedStaticOwners(child)
   }
@@ -1002,6 +1256,21 @@ function semanticBindingGraph(program, path) {
       const callableIsInspectable = [...invocationAliases].some((binding) => (
         !binding.importSource || binding.importSource.startsWith('.')
       ))
+      const hasPotentialCallback = (node.arguments ?? []).some((argument) => {
+        let value = argument
+        while (EXPRESSION_WRAPPERS.has(value.type)) value = value.expression
+        if (
+          value.type === 'ArrowFunctionExpression'
+          || value.type === 'FunctionExpression'
+        ) return true
+        const aliases = new Set(
+          identityBindings(value).flatMap((binding) => [...binding.aliases]),
+        )
+        return [...aliases].some((binding) => (
+          binding.callable
+          || (typeof binding.importSource === 'string' && binding.importSource.startsWith('.'))
+        ))
+      })
       if ([...calleeAliases].some((binding) => binding.dynamicIdentity)) {
         unresolvedMutations.push({
           executionScope,
@@ -1018,7 +1287,7 @@ function semanticBindingGraph(program, path) {
           semanticNode,
         })
       }
-      if (callableIsInspectable) {
+      if ((callableIsInspectable || hasPotentialCallback) && !isReactEffectCall(node)) {
         synchronousCalls.push({
           executionScope,
           mutationNode: node,
@@ -1099,6 +1368,37 @@ function semanticBindingGraph(program, path) {
               })
             }
           }
+        }
+      }
+    }
+    if (node.type === 'NewExpression') {
+      const calleeBindings = new Set(identityBindings(node.callee))
+      const calleeAliases = new Set(
+        [...calleeBindings].flatMap((binding) => [...binding.aliases]),
+      )
+      const callableIsInspectable = [...calleeAliases].some((binding) => (
+        !binding.importSource || binding.importSource.startsWith('.')
+      ))
+      if (
+        calleeBindings.size === 0 && containsDynamicIdentity(node.callee)
+        || [...calleeAliases].some((binding) => binding.dynamicIdentity)
+      ) {
+        unresolvedMutations.push({
+          executionScope,
+          message: 'Unsupported dynamic constructor target',
+          mutationNode: node,
+          semanticNode,
+        })
+      }
+      if (callableIsInspectable) {
+        synchronousCalls.push({
+          executionScope,
+          mutationNode: node,
+          semanticNode,
+        })
+      } else {
+        for (const argument of node.arguments ?? []) {
+          record(argument, 'ambiguous-mutation', { trackDynamic: false })
         }
       }
     }
@@ -1196,6 +1496,7 @@ function semanticBindingGraph(program, path) {
     isClientEffectCall: isReactEffectCall,
     isReference,
     lookup,
+    sideEffectImports,
     synchronousCalls,
     unresolvedMutations,
   }
@@ -1231,6 +1532,10 @@ export function semanticSourceForDigest(path, source) {
   const rootExecutionScope = bindingGraph.executionScopeFor(roots[0])
   const visitedBindings = new Set()
   const pendingNodes = [roots[0]]
+  for (const sideEffectImport of bindingGraph.sideEffectImports) {
+    slices.add(sideEffectImport)
+    pendingNodes.push(sideEffectImport)
+  }
   const executesDuringRootRender = (entry) => (
     entry.executionScope === rootExecutionScope
     || entry.executionScope.ownerNode?.type === 'Program'
