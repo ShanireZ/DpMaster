@@ -119,6 +119,32 @@ test('public route HTTP responses apply the approved Accept selection matrix', a
     )
     assert.equal(head.status, expectedStatus, `${label} HEAD`)
     assert.equal(await head.text(), '', `${label} HEAD body`)
+    if (expectedStatus === 200) {
+      assert.deepEqual(
+        requested[1],
+        { path: expectedPath, method: 'HEAD' },
+        `${label} HEAD representation`,
+      )
+    } else {
+      assert.equal(requested.length, 0, `${label} HEAD asset bypass`)
+    }
+    for (const header of [
+      'Cache-Control',
+      'Content-Language',
+      'Content-Signal',
+      'Content-Type',
+      'ETag',
+      'Link',
+      'Vary',
+      'X-Content-Type-Options',
+      'X-Robots-Tag',
+    ]) {
+      assert.equal(
+        head.headers.get(header),
+        get.headers.get(header),
+        `${label} HEAD ${header}`,
+      )
+    }
 
     const conditionalHeaders = new Headers(headers)
     conditionalHeaders.set(
@@ -137,6 +163,20 @@ test('public route HTTP responses apply the approved Accept selection matrix', a
       `${label} conditional`,
     )
     assert.equal(conditional.headers.get('Vary'), 'Accept', `${label} conditional Vary`)
+    if (expectedStatus === 200) {
+      assert.deepEqual(
+        requested[2],
+        { path: expectedPath, method: 'GET' },
+        `${label} conditional representation`,
+      )
+      assert.equal(
+        conditional.headers.get('ETag'),
+        get.headers.get('ETag'),
+        `${label} conditional ETag`,
+      )
+    } else {
+      assert.equal(requested.length, 0, `${label} conditional asset bypass`)
+    }
   }
 })
 

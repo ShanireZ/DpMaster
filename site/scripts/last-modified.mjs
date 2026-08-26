@@ -1,24 +1,11 @@
 import { spawnSync } from 'node:child_process'
 import { createHash } from 'node:crypto'
-import { readFileSync } from 'node:fs'
+import { readFileSync, statSync } from 'node:fs'
 import { fileURLToPath } from 'node:url'
 import { PUBLIC_PATHS } from '../src/lib/publicRoutes.ts'
-import { routeModuleIds } from './route-assets.mjs'
+import { semanticRouteFiles } from './semantic-source-graph.mjs'
 
 const projectRoot = fileURLToPath(new URL('../../', import.meta.url))
-const COMMON_FILES = [
-  'site/src/data/catalog.ts',
-  'site/src/data/editorial.ts',
-  'site/src/lib/pageMeta.ts',
-  'site/src/lib/seoHead.ts',
-]
-
-function routeFiles(pathname) {
-  return [
-    ...COMMON_FILES,
-    ...routeModuleIds(pathname).map((moduleId) => `site/${moduleId}`),
-  ]
-}
 
 function gitNames(args) {
   const result = spawnSync('git', args, {
@@ -38,11 +25,8 @@ function dirtyRouteFiles(files) {
   ])
 }
 
-function localDate(now = new Date()) {
-  const year = now.getFullYear()
-  const month = String(now.getMonth() + 1).padStart(2, '0')
-  const day = String(now.getDate()).padStart(2, '0')
-  return `${year}-${month}-${day}`
+export function normalizeContentForDigest(content) {
+  return content.replaceAll('\r\n', '\n').replaceAll('\r', '\n')
 }
 
 function routeContentDigest(files) {
@@ -50,23 +34,35 @@ function routeContentDigest(files) {
   for (const file of files) {
     digest.update(file)
     digest.update('\0')
-    digest.update(readFileSync(new URL(`../../${file}`, import.meta.url)))
+    digest.update(normalizeContentForDigest(
+      readFileSync(new URL(`../../${file}`, import.meta.url), 'utf8'),
+    ))
     digest.update('\0')
   }
   return digest.digest('hex')
 }
 
+function workingTreeDate(files) {
+  const latest = Math.max(...files.map((file) => (
+    statSync(new URL(`../../${file}`, import.meta.url)).mtimeMs
+  )))
+  if (!Number.isFinite(latest)) {
+    throw new Error(`Missing working-tree lastmod for ${files.join(', ')}`)
+  }
+  return new Date(latest).toISOString()
+}
+
 function gitDate(files) {
   const result = spawnSync(
     'git',
-    ['log', '-1', '--format=%cs', '--', ...files],
+    ['log', '-1', '--format=%cI', '--', ...files],
     { cwd: projectRoot, encoding: 'utf8' },
   )
   if (result.status !== 0) {
     throw new Error(`Unable to read Git lastmod: ${result.stderr.trim()}`)
   }
   const value = result.stdout.trim()
-  if (!/^\d{4}-\d{2}-\d{2}$/.test(value)) {
+  if (!/^\d{4}-\d{2}-\d{2}T/.test(value) || Number.isNaN(Date.parse(value))) {
     throw new Error(`Missing Git lastmod for ${files.join(', ')}`)
   }
   return value
@@ -81,7 +77,7 @@ export function resolveContentLastModified({
   currentDigest,
   previousLastModified,
   candidateLastModified,
-  now = new Date(),
+  pathname = '<unknown>',
 }) {
   if (previousDigest && previousDigest === currentDigest && previousLastModified) {
     return previousLastModified
@@ -91,7 +87,7 @@ export function resolveContentLastModified({
     && previousDigest !== currentDigest
     && previousLastModified === candidateLastModified
   ) {
-    return now.toISOString()
+    throw new Error(`Semantic content changed without lastmod advancing for ${pathname}`)
   }
   return candidateLastModified
 }
@@ -99,13 +95,11 @@ export function resolveContentLastModified({
 export function collectRouteContentEvidence({
   previousLastModified = {},
   previousContentDigests = {},
-  now = new Date(),
 } = {}) {
   const filesByRoute = new Map(
-    PUBLIC_PATHS.map((pathname) => [pathname, routeFiles(pathname)]),
+    PUBLIC_PATHS.map((pathname) => [pathname, semanticRouteFiles(pathname)]),
   )
   const dirtyFiles = dirtyRouteFiles(new Set([...filesByRoute.values()].flat()))
-  const workingDate = dirtyFiles.size > 0 ? localDate(now) : null
   const contentDigests = Object.fromEntries(
     [...filesByRoute].map(([pathname, files]) => [
       pathname,
@@ -121,9 +115,9 @@ export function collectRouteContentEvidence({
         currentDigest: contentDigests[pathname],
         previousLastModified: previousLastModified[pathname],
         candidateLastModified: files.some((file) => dirtyFiles.has(file))
-        ? workingDate
-        : gitDate(files),
-        now,
+          ? workingTreeDate(files.filter((file) => dirtyFiles.has(file)))
+          : gitDate(files),
+        pathname,
       }),
     ]),
   )
