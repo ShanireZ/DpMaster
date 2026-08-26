@@ -20,10 +20,10 @@ const NON_SEMANTIC_FILES = new Set([
   'site/src/theme/ThemeContext.tsx',
 ])
 const NON_SEMANTIC_PREFIXES = ['site/src/analytics/']
-const SEMANTIC_ELEMENT_SLICES = new Map([
-  ['site/src/app/AppContent.tsx', ['<Routes>', '</Routes>']],
-  ['site/src/components/layout/Shell.tsx', ['<main ', '</main>']],
-  ['site/src/components/layout/RouteStage.tsx', ['<motion.div', '</motion.div>']],
+const SEMANTIC_ELEMENT_ROOTS = new Map([
+  ['site/src/app/AppContent.tsx', 'Routes'],
+  ['site/src/components/layout/Shell.tsx', 'main'],
+  ['site/src/components/layout/RouteStage.tsx', 'motion.div'],
 ])
 
 function isNonSemanticFile(path) {
@@ -33,16 +33,92 @@ function isNonSemanticFile(path) {
   )
 }
 
-export function semanticSourceForDigest(path, source) {
-  const markers = SEMANTIC_ELEMENT_SLICES.get(path)
-  if (!markers) return source
-  const [startMarker, endMarker] = markers
-  const start = source.indexOf(startMarker)
-  const end = source.indexOf(endMarker, start)
-  if (start < 0 || end < 0) {
-    throw new Error(`Missing semantic source slice for ${path}`)
+function visitNodes(value, visitor, parent = null) {
+  if (!value || typeof value !== 'object') return
+  if (Array.isArray(value)) {
+    for (const entry of value) visitNodes(entry, visitor, parent)
+    return
   }
-  return source.slice(start, end + endMarker.length)
+  if (typeof value.type === 'string') visitor(value, parent)
+  for (const child of Object.values(value)) {
+    if (child && typeof child === 'object') visitNodes(child, visitor, value)
+  }
+}
+
+function boundNames(pattern) {
+  if (!pattern || typeof pattern !== 'object') return []
+  if (pattern.type === 'Identifier') return [pattern.name]
+  if (pattern.type === 'AssignmentPattern') return boundNames(pattern.left)
+  if (pattern.type === 'RestElement') return boundNames(pattern.argument)
+  if (pattern.type === 'ArrayPattern') {
+    return pattern.elements.flatMap((element) => boundNames(element))
+  }
+  if (pattern.type === 'ObjectPattern') {
+    return pattern.properties.flatMap((property) => (
+      property.type === 'Property'
+        ? boundNames(property.value)
+        : boundNames(property.argument)
+    ))
+  }
+  return []
+}
+
+function referencedNames(node) {
+  const names = new Set()
+  visitNodes(node, (candidate) => {
+    if (candidate.type === 'Identifier' || candidate.type === 'JSXIdentifier') {
+      names.add(candidate.name)
+    }
+  })
+  return names
+}
+
+export function semanticSourceForDigest(path, source) {
+  const rootName = SEMANTIC_ELEMENT_ROOTS.get(path)
+  if (!rootName) return source
+  const { program, errors } = parseSync(path, source)
+  if (errors.length > 0) {
+    throw new Error(`Unable to parse semantic source ${path}: ${errors[0].message}`)
+  }
+
+  const declarations = new Map()
+  const roots = []
+  visitNodes(program, (node, parent) => {
+    if (node.type === 'FunctionDeclaration' && node.id?.name) {
+      declarations.set(node.id.name, node)
+    }
+    if (node.type === 'VariableDeclarator') {
+      const declaration = parent?.type === 'VariableDeclaration' ? parent : node
+      for (const name of boundNames(node.id)) declarations.set(name, declaration)
+    }
+    if (
+      node.type === 'JSXElement'
+      && source.slice(node.openingElement.name.start, node.openingElement.name.end) === rootName
+    ) {
+      roots.push(node)
+    }
+  })
+  if (roots.length !== 1) {
+    throw new Error(`Expected one semantic JSX root ${rootName} in ${path}, found ${roots.length}`)
+  }
+
+  const slices = new Map()
+  const pendingNames = [...referencedNames(roots[0])]
+  slices.set(`${roots[0].start}:${roots[0].end}`, roots[0])
+  while (pendingNames.length > 0) {
+    const name = pendingNames.pop()
+    const declaration = declarations.get(name)
+    if (!declaration) continue
+    const key = `${declaration.start}:${declaration.end}`
+    if (slices.has(key)) continue
+    slices.set(key, declaration)
+    pendingNames.push(...referencedNames(declaration))
+  }
+
+  return [...slices.values()]
+    .sort((left, right) => left.start - right.start)
+    .map((node) => source.slice(node.start, node.end))
+    .join('\n')
 }
 
 function projectPath(path) {
