@@ -1,20 +1,18 @@
 // Cloudflare Worker 入口（wrangler.jsonc 的 "main"）—— 站点唯一的发布目标。
-// 作用：先接住反馈、统计与诊断端点，其余请求交回静态资源绑定
-//（含预渲染 HTML 与真实 404）。业务逻辑放在 worker/ 下，单一事实来源。
+// 作用：先接住反馈、统计与诊断端点，在公开 GET/HEAD 上协商 HTML/Markdown，
+// 其余请求交回静态资源绑定（含预渲染 HTML 与真实 404）。
 import { handleFeedback } from './worker/feedback-core.js'
 import { handleAnalytics } from './worker/analytics-core.js'
 import { corsDecision, preflightResponse } from './worker/webhook-core.js'
 import { handleEgressProbe } from './worker/egress-probe.js'
 import { negotiateRepresentation } from './worker/content-negotiation.js'
+import {
+  CONTENT_SIGNAL_HEADER,
+  markdownAssetPath,
+} from './src/lib/publicWebContract.ts'
 import routeSummaries from './public/route-summaries.json' with { type: 'json' }
 
 const PUBLIC_PATHS = new Set(routeSummaries.routes.map((route) => route.path))
-
-function markdownAssetPath(pathname) {
-  return pathname === '/'
-    ? '/_representations/markdown/index.md'
-    : `/_representations/markdown${pathname}.md`
-}
 
 function mergeVary(headers, value) {
   const values = (headers.get('Vary') ?? '')
@@ -27,12 +25,12 @@ function mergeVary(headers, value) {
   headers.set('Vary', values.join(', '))
 }
 
-function representationResponse(asset, url, representation) {
+function representationResponse(asset, url, representation, includeBody) {
   const headers = new Headers(asset.headers)
   const canonical = `${routeSummaries.origin}${url.pathname}`
   mergeVary(headers, 'Accept')
   headers.set('X-Content-Type-Options', 'nosniff')
-  headers.set('Content-Signal', 'ai-train=yes, search=yes, ai-input=yes')
+  headers.set('Content-Signal', CONTENT_SIGNAL_HEADER)
   // 页面表示都必须重验证；Markdown 不得因内部 `.md` 扩展名获得比 HTML 更宽的浏览器缓存。
   headers.set('Cache-Control', 'public, max-age=0, must-revalidate')
   if (representation === 'markdown') {
@@ -45,7 +43,7 @@ function representationResponse(asset, url, representation) {
   } else {
     headers.set('Link', `<${canonical}>; rel="alternate"; type="text/markdown"`)
   }
-  return new Response(asset.body, { status: asset.status, headers })
+  return new Response(includeBody ? asset.body : null, { status: asset.status, headers })
 }
 
 async function negotiatedResponse(request, env, url, representation) {
@@ -59,7 +57,7 @@ async function negotiatedResponse(request, env, url, representation) {
     ? new Request(new URL(markdownAssetPath(url.pathname), url), request)
     : request
   const asset = await env.ASSETS.fetch(assetRequest)
-  return representationResponse(asset, url, representation)
+  return representationResponse(asset, url, representation, request.method !== 'HEAD')
 }
 
 // cloudflare:sockets 只在 Workers 运行时存在；用惰性动态 import，

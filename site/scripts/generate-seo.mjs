@@ -4,13 +4,18 @@ import { SITE } from '../src/config/site.ts'
 import { generateDiscoveryFiles } from '../src/lib/discovery.ts'
 import { getPageMeta } from '../src/lib/pageMeta.ts'
 import { PUBLIC_PATHS } from '../src/lib/publicRoutes.ts'
+import * as previousRouteEvidence from '../src/data/routeLastModified.ts'
 import { renderRouteHead, replaceRouteHead } from '../src/lib/seoHead.ts'
 import {
-  collectRouteLastModified,
+  collectRouteContentEvidence,
   renderRouteLastModifiedModule,
 } from './last-modified.mjs'
 
-const lastModified = collectRouteLastModified()
+const routeEvidence = collectRouteContentEvidence({
+  previousLastModified: previousRouteEvidence.ROUTE_LAST_MODIFIED,
+  previousContentDigests: previousRouteEvidence.ROUTE_CONTENT_DIGESTS ?? {},
+})
+const { lastModified } = routeEvidence
 const files = generateDiscoveryFiles(SITE, lastModified)
 const outputs = Object.entries(files).map(([name, content]) => [
   new URL(`../public/${name}`, import.meta.url),
@@ -18,7 +23,7 @@ const outputs = Object.entries(files).map(([name, content]) => [
 ])
 outputs.push([
   new URL('../src/data/routeLastModified.ts', import.meta.url),
-  renderRouteLastModifiedModule(lastModified),
+  renderRouteLastModifiedModule(lastModified, routeEvidence.contentDigests),
 ])
 
 // index.html 的首页 head 由渲染 47 条路由的同一个渲染器生成。手工维护过一次
