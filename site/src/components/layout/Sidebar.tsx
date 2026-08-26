@@ -4,6 +4,7 @@ import { NavLink, useMatch } from 'react-router-dom'
 import { BookOpen, Library } from 'lucide-react'
 import { PARTS } from '../../data/catalog'
 import { BRAND } from '../../config/site.ts'
+import { SIDEBAR_COPY } from '../../config/sidebar-copy.ts'
 
 export default function Sidebar({ onNavigate }: { onNavigate?: () => void }) {
   const match = useMatch('/part/:pid/*')
@@ -117,9 +118,9 @@ export default function Sidebar({ onNavigate }: { onNavigate?: () => void }) {
       </nav>
 
       <footer className="sidebar-footer" aria-label="站点信息">
-        <p className="sidebar-footer__motto">{BRAND.slogan}</p>
+        <p className="sidebar-footer__motto">{SIDEBAR_COPY.slogan}</p>
         <p className="sidebar-footer__copyright">
-          © 2026 {BRAND.copyrightHolder} All rights reserved.
+          © 2026 {SIDEBAR_COPY.copyrightHolder} All rights reserved.
         </p>
       </footer>
     </div>

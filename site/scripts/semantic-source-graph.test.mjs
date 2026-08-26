@@ -1,4 +1,5 @@
 import assert from 'node:assert/strict'
+import { readFileSync } from 'node:fs'
 import test from 'node:test'
 
 import { PUBLIC_PATHS } from '../src/lib/publicRoutes.ts'
@@ -72,6 +73,27 @@ test('all public route evidence excludes non-semantic client branches', () => {
   }
 })
 
+test('semantic site config contains only public representation inputs', () => {
+  const source = readFileSync(
+    new URL('../src/config/site.ts', import.meta.url),
+    'utf8',
+  )
+  for (const clientOnlyField of [
+    'analyticsEndpoint',
+    'feedbackEndpoint',
+    'copyrightHolder',
+    'slogan',
+  ]) {
+    assert.doesNotMatch(source, new RegExp(`\\b${clientOnlyField}\\b`))
+  }
+
+  for (const pathname of PUBLIC_PATHS) {
+    const files = new Set(semanticRouteFiles(pathname))
+    assert.equal(files.has('site/src/config/client-runtime.ts'), false, pathname)
+    assert.equal(files.has('site/src/config/sidebar-copy.ts'), false, pathname)
+  }
+})
+
 test('mixed shell modules hash their AST-backed render dependencies', () => {
   const shellBefore = `export default function Shell() {\n  useEffect(() => first())\n  const mainRef = useRef(null)\n  return <main id="main-content" ref={mainRef}><RouteStage /></main>\n}`
   const shellAfterClientChange = `export default function Shell() {\n  useEffect(() => second())\n  const mainRef = useRef(null)\n  return <main id="main-content" ref={mainRef}><RouteStage /></main>\n}`
@@ -123,5 +145,40 @@ test('mixed shell modules hash their AST-backed render dependencies', () => {
       'export default function Shell() { return <div /> }',
     ),
     /Expected one semantic JSX root/,
+  )
+})
+
+test('mixed-module closure follows lexical symbols instead of bare names', () => {
+  const shadowBefore = `const label = '正文一'\nfunction AppContent() { return <Routes>{label}</Routes> }\nfunction clientOnly() { const label = '客户端一'; return label }`
+  const shadowAfterSemanticChange = shadowBefore.replace('正文一', '正文二')
+  const shadowAfterClientChange = shadowBefore.replace('客户端一', '客户端二')
+  assert.notEqual(
+    semanticSourceForDigest('site/src/app/AppContent.tsx', shadowBefore),
+    semanticSourceForDigest('site/src/app/AppContent.tsx', shadowAfterSemanticChange),
+  )
+  assert.equal(
+    semanticSourceForDigest('site/src/app/AppContent.tsx', shadowBefore),
+    semanticSourceForDigest('site/src/app/AppContent.tsx', shadowAfterClientChange),
+  )
+
+  const classBefore = `class RouteLabel { static value = '正文一' }\nfunction AppContent() { return <Routes>{RouteLabel.value}</Routes> }`
+  const classAfter = classBefore.replace('正文一', '正文二')
+  assert.notEqual(
+    semanticSourceForDigest('site/src/app/AppContent.tsx', classBefore),
+    semanticSourceForDigest('site/src/app/AppContent.tsx', classAfter),
+  )
+
+  const assignmentBefore = `let label\nlabel = '正文一'\nfunction AppContent() { return <Routes>{label}</Routes> }`
+  const assignmentAfter = assignmentBefore.replace('正文一', '正文二')
+  assert.notEqual(
+    semanticSourceForDigest('site/src/app/AppContent.tsx', assignmentBefore),
+    semanticSourceForDigest('site/src/app/AppContent.tsx', assignmentAfter),
+  )
+
+  const attributeBefore = `const path = '客户端一'\nfunction AppContent() { return <Routes path="/fixed" /> }`
+  const attributeAfter = attributeBefore.replace('客户端一', '客户端二')
+  assert.equal(
+    semanticSourceForDigest('site/src/app/AppContent.tsx', attributeBefore),
+    semanticSourceForDigest('site/src/app/AppContent.tsx', attributeAfter),
   )
 })
