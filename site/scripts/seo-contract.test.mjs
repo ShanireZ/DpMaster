@@ -1,6 +1,7 @@
 import assert from 'node:assert/strict'
 import { readFile } from 'node:fs/promises'
 import test from 'node:test'
+import { CLIENT_RUNTIME } from '../src/config/client-runtime.ts'
 import { SITE, SITE_ORIGIN } from '../src/config/site.ts'
 import { PARTS } from '../src/data/catalog.ts'
 import {
@@ -51,11 +52,11 @@ test('the internal specimen is prerendered but excluded from public discovery', 
 test('the single origin owns every canonical and emits no hreflang alternates', () => {
   assert.equal(SITE_ORIGIN, SITE.origin)
   assert.equal(SITE.origin, 'https://dp.round1.cc')
-  assert.equal(SITE.hostname, 'dp.round1.cc')
+  assert.equal(CLIENT_RUNTIME.productionHostname, 'dp.round1.cc')
   assert.equal(SITE.language, 'zh-Hans')
   // API 一律同源：没有跨域端点，也就没有跨站 CORS 面。
-  assert.equal(SITE.analyticsEndpoint, '/api/analytics')
-  assert.equal(SITE.feedbackEndpoint, '/api/feedback')
+  assert.equal(CLIENT_RUNTIME.analyticsEndpoint, '/api/analytics')
+  assert.equal(CLIENT_RUNTIME.feedbackEndpoint, '/api/feedback')
 
   for (const path of PUBLIC_PATHS) {
     const meta = getPageMeta(path, SITE)
@@ -229,7 +230,7 @@ test('discovery files expose the 47 approved URLs and real summaries', async () 
   assert.match(lastModified, /--format=%cI/)
   assert.match(lastModified, /normalizeContentForDigest/)
   assert.match(lastModified, /semanticRouteFiles/)
-  assert.equal(ROUTE_CONTENT_DIGEST_VERSION, 2)
+  assert.equal(ROUTE_CONTENT_DIGEST_VERSION, 3)
   assert.equal(Object.keys(ROUTE_CONTENT_DIGESTS).length, PUBLIC_PATHS.length)
   assert.ok(Object.values(ROUTE_CONTENT_DIGESTS).every((digest) => /^[0-9a-f]{64}$/.test(digest)))
   assert.match(publicRoutes, /\.\.\/data\/catalog\.ts/)

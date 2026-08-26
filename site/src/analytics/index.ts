@@ -1,4 +1,4 @@
-import { SITE } from '../config/site.ts'
+import { CLIENT_RUNTIME } from '../config/client-runtime.ts'
 
 /** 唯一的统计 Provider。站点只发布到 Cloudflare Worker。 */
 export const ANALYTICS_PROVIDER = 'cloudflare'
@@ -29,7 +29,7 @@ export interface AnalyticsEvent {
  */
 function sendFirstPartyEvent(event: AnalyticsEvent): void {
   // 只在生产域名上报：localhost、预览域和任何镜像都不写入数据集。
-  if (window.location.hostname !== SITE.hostname) return
+  if (window.location.hostname !== CLIENT_RUNTIME.productionHostname) return
 
   const body = JSON.stringify({
     provider: ANALYTICS_PROVIDER,
@@ -47,7 +47,7 @@ function sendFirstPartyEvent(event: AnalyticsEvent): void {
     if (
       typeof navigator.sendBeacon === 'function' &&
       navigator.sendBeacon(
-        SITE.analyticsEndpoint,
+        CLIENT_RUNTIME.analyticsEndpoint,
         new Blob([body], { type: 'application/json' }),
       )
     ) {
@@ -57,7 +57,7 @@ function sendFirstPartyEvent(event: AnalyticsEvent): void {
     // sendBeacon 不可用时降级为 keepalive fetch。
   }
 
-  void fetch(SITE.analyticsEndpoint, {
+  void fetch(CLIENT_RUNTIME.analyticsEndpoint, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body,
