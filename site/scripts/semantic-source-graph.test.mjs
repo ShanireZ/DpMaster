@@ -72,10 +72,10 @@ test('all public route evidence excludes non-semantic client branches', () => {
   }
 })
 
-test('mixed shell modules hash only their semantic rendering slice', () => {
-  const shellBefore = `useEffect(() => first())\n<main id="main-content"><RouteStage /></main>`
-  const shellAfterClientChange = `useEffect(() => second())\n<main id="main-content"><RouteStage /></main>`
-  const shellAfterSemanticChange = `useEffect(() => second())\n<main id="main-content"><RouteStage /><p>正文</p></main>`
+test('mixed shell modules hash their AST-backed render dependencies', () => {
+  const shellBefore = `export default function Shell() {\n  useEffect(() => first())\n  const mainRef = useRef(null)\n  return <main id="main-content" ref={mainRef}><RouteStage /></main>\n}`
+  const shellAfterClientChange = `export default function Shell() {\n  useEffect(() => second())\n  const mainRef = useRef(null)\n  return <main id="main-content" ref={mainRef}><RouteStage /></main>\n}`
+  const shellAfterSemanticChange = `export default function Shell() {\n  useEffect(() => second())\n  const mainRef = useRef(null)\n  return <main id="main-content" ref={mainRef}><RouteStage /><p>正文</p></main>\n}`
 
   assert.equal(
     semanticSourceForDigest('site/src/components/layout/Shell.tsx', shellBefore),
@@ -86,22 +86,42 @@ test('mixed shell modules hash only their semantic rendering slice', () => {
     semanticSourceForDigest('site/src/components/layout/Shell.tsx', shellAfterSemanticChange),
   )
 
-  assert.equal(
-    semanticSourceForDigest(
-      'site/src/app/AppContent.tsx',
-      '<AnalyticsRuntime /><Routes><Route /></Routes>',
-    ),
-    '<Routes><Route /></Routes>',
+  const appBefore = `function RouteView({ View }) { return <View /> }\nexport function AppContent({ views }) {\n  const { Home: HomeView } = views\n  return <><AnalyticsRuntime /><Routes><Route element={<RouteView View={HomeView} />} /></Routes></>\n}`
+  const appAfterAnalyticsChange = appBefore.replace('AnalyticsRuntime', 'AnalyticsTracker')
+  const appAfterContentInjection = appBefore.replace(
+    'return <View />',
+    'return <><View /><p>正文注入</p></>',
   )
+  const appAfterRouteBinding = appBefore.replace('View={HomeView}', 'View={MethodView}')
   assert.equal(
-    semanticSourceForDigest(
-      'site/src/components/layout/RouteStage.tsx',
-      'useEffect(() => clientOnly())\n<motion.div>{outlet}</motion.div>',
-    ),
-    '<motion.div>{outlet}</motion.div>',
+    semanticSourceForDigest('site/src/app/AppContent.tsx', appBefore),
+    semanticSourceForDigest('site/src/app/AppContent.tsx', appAfterAnalyticsChange),
+  )
+  assert.notEqual(
+    semanticSourceForDigest('site/src/app/AppContent.tsx', appBefore),
+    semanticSourceForDigest('site/src/app/AppContent.tsx', appAfterContentInjection),
+  )
+  assert.notEqual(
+    semanticSourceForDigest('site/src/app/AppContent.tsx', appBefore),
+    semanticSourceForDigest('site/src/app/AppContent.tsx', appAfterRouteBinding),
+  )
+
+  const stageBefore = `const routeEase = [0, 1]\nexport default function RouteStage() {\n  const outlet = useOutlet()\n  const hasMounted = useState(false)[0]\n  useEffect(() => first())\n  return <motion.div initial={hasMounted} transition={routeEase}>{outlet}</motion.div>\n}`
+  const stageAfterClientChange = stageBefore.replace('first()', 'second()')
+  const stageAfterOutletChange = stageBefore.replace('useOutlet()', '<p>替换正文</p>')
+  assert.equal(
+    semanticSourceForDigest('site/src/components/layout/RouteStage.tsx', stageBefore),
+    semanticSourceForDigest('site/src/components/layout/RouteStage.tsx', stageAfterClientChange),
+  )
+  assert.notEqual(
+    semanticSourceForDigest('site/src/components/layout/RouteStage.tsx', stageBefore),
+    semanticSourceForDigest('site/src/components/layout/RouteStage.tsx', stageAfterOutletChange),
   )
   assert.throws(
-    () => semanticSourceForDigest('site/src/components/layout/Shell.tsx', '<div />'),
-    /Missing semantic source slice/,
+    () => semanticSourceForDigest(
+      'site/src/components/layout/Shell.tsx',
+      'export default function Shell() { return <div /> }',
+    ),
+    /Expected one semantic JSX root/,
   )
 })
