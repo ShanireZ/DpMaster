@@ -25,6 +25,11 @@ const SEMANTIC_ELEMENT_ROOTS = new Map([
   ['site/src/components/layout/Shell.tsx', 'main'],
   ['site/src/components/layout/RouteStage.tsx', 'motion.div'],
 ])
+const CLIENT_EFFECT_CALLEES = new Set([
+  'useEffect',
+  'useInsertionEffect',
+  'useLayoutEffect',
+])
 
 function isNonSemanticFile(path) {
   return (
@@ -71,8 +76,8 @@ function bindingIdentifiers(pattern, identifiers = []) {
   return identifiers
 }
 
-function createScope(parent, kind) {
-  return { parent, kind, bindings: new Map() }
+function createScope(parent, kind, ownerNode = null) {
+  return { parent, kind, ownerNode, bindings: new Map() }
 }
 
 function nearestFunctionScope(scope) {
@@ -84,7 +89,7 @@ function nearestFunctionScope(scope) {
 }
 
 function semanticBindingGraph(program) {
-  const rootScope = createScope(null, 'program')
+  const rootScope = createScope(null, 'program', program)
   const nodeScopes = new WeakMap()
   const nodeParents = new WeakMap()
   const declaredIdentifiers = new WeakSet()
@@ -97,6 +102,7 @@ function semanticBindingGraph(program) {
         if (semanticNode) existing.semanticNodes.add(semanticNode)
       } else {
         scope.bindings.set(identifier.name, {
+          executionScope: nearestFunctionScope(scope),
           identifier,
           semanticNodes: new Set(semanticNode ? [semanticNode] : []),
           writes: [],
@@ -119,7 +125,7 @@ function semanticBindingGraph(program) {
       || node.type === 'ArrowFunctionExpression'
     ) {
       if (node.type === 'FunctionDeclaration' && node.id) declare(node.id, scope, node)
-      const functionScope = createScope(scope, 'function')
+      const functionScope = createScope(scope, 'function', node)
       if (node.type === 'FunctionExpression' && node.id) {
         declare(node.id, functionScope, node)
       }
@@ -132,6 +138,16 @@ function semanticBindingGraph(program) {
     if (node.type === 'BlockStatement') {
       const blockScope = functionBody ? scope : createScope(scope, 'block')
       for (const [child, childKey] of childNodes(node)) build(child, blockScope, node, childKey)
+      return
+    }
+    if (
+      node.type === 'ForStatement'
+      || node.type === 'ForInStatement'
+      || node.type === 'ForOfStatement'
+      || node.type === 'SwitchStatement'
+    ) {
+      const lexicalScope = createScope(scope, 'block')
+      for (const [child, childKey] of childNodes(node)) build(child, lexicalScope, node, childKey)
       return
     }
     if (node.type === 'VariableDeclaration') {
@@ -207,12 +223,32 @@ function semanticBindingGraph(program) {
     return bindings
   }
 
+  function enclosingExecutionStatement(node, executionScope) {
+    const owner = executionScope.ownerNode
+    const boundary = owner.type === 'Program' ? owner : owner.body
+    let current = node
+    while (nodeParents.has(current)) {
+      const { parent } = nodeParents.get(current)
+      if (parent === boundary || parent === owner) return current
+      current = parent
+    }
+    return node
+  }
+
   function indexWrites(node) {
     if (node.type === 'AssignmentExpression') {
-      for (const binding of writtenBindings(node.left)) binding.writes.push(node)
+      const executionScope = nearestFunctionScope(nodeScopes.get(node))
+      const semanticNode = enclosingExecutionStatement(node, executionScope)
+      for (const binding of writtenBindings(node.left)) {
+        binding.writes.push({ executionScope, semanticNode })
+      }
     }
     if (node.type === 'UpdateExpression') {
-      for (const binding of writtenBindings(node.argument)) binding.writes.push(node)
+      const executionScope = nearestFunctionScope(nodeScopes.get(node))
+      const semanticNode = enclosingExecutionStatement(node, executionScope)
+      for (const binding of writtenBindings(node.argument)) {
+        binding.writes.push({ executionScope, semanticNode })
+      }
     }
     for (const [child] of childNodes(node)) indexWrites(child)
   }
@@ -255,6 +291,8 @@ function semanticBindingGraph(program) {
       (parent.type === 'MemberExpression' && key === 'property' && !parent.computed)
       || (parent.type === 'Property' && key === 'key' && !parent.computed && !parent.shorthand)
       || (parent.type === 'MethodDefinition' && key === 'key' && !parent.computed)
+      || (parent.type === 'PropertyDefinition' && key === 'key' && !parent.computed)
+      || (parent.type === 'AccessorProperty' && key === 'key' && !parent.computed)
       || parent.type === 'ImportSpecifier'
       || parent.type === 'ImportDefaultSpecifier'
       || parent.type === 'ImportNamespaceSpecifier'
@@ -266,7 +304,26 @@ function semanticBindingGraph(program) {
     return true
   }
 
-  return { childNodes, isReference, lookup }
+  function isClientOnlyEffectScope(scope) {
+    const functionNode = scope.ownerNode
+    const relation = nodeParents.get(functionNode)
+    if (!relation || relation.parent.type !== 'CallExpression') return false
+    const callee = relation.parent.callee
+    const calleeName = callee.type === 'Identifier'
+      ? callee.name
+      : callee.type === 'MemberExpression' && !callee.computed
+        ? callee.property.name
+        : null
+    return CLIENT_EFFECT_CALLEES.has(calleeName)
+  }
+
+  return {
+    childNodes,
+    executionScopeFor: (node) => nearestFunctionScope(nodeScopes.get(node)),
+    isClientOnlyEffectScope,
+    isReference,
+    lookup,
+  }
 }
 
 export function semanticSourceForDigest(path, source) {
@@ -291,6 +348,7 @@ export function semanticSourceForDigest(path, source) {
   }
 
   const slices = new Set([roots[0]])
+  const rootExecutionScope = bindingGraph.executionScopeFor(roots[0])
   const visitedBindings = new Set()
   const pendingNodes = [roots[0]]
   while (pendingNodes.length > 0) {
@@ -309,9 +367,18 @@ export function semanticSourceForDigest(path, source) {
             pendingNodes.push(semanticNode)
           }
           for (const write of binding.writes) {
-            if (!slices.has(write)) {
-              slices.add(write)
-              pendingNodes.push(write)
+            if (
+              write.executionScope !== binding.executionScope
+              && write.executionScope !== rootExecutionScope
+            ) {
+              if (bindingGraph.isClientOnlyEffectScope(write.executionScope)) continue
+              throw new Error(
+                `Unsupported nested semantic write to ${binding.identifier.name} in ${path}`,
+              )
+            }
+            if (!slices.has(write.semanticNode)) {
+              slices.add(write.semanticNode)
+              pendingNodes.push(write.semanticNode)
             }
           }
         }

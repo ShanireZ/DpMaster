@@ -175,10 +175,59 @@ test('mixed-module closure follows lexical symbols instead of bare names', () =>
     semanticSourceForDigest('site/src/app/AppContent.tsx', assignmentAfter),
   )
 
+  const conditionalBefore = `function AppContent() { let label = '正文'; const enabled = true; if (enabled) label = '条件正文'; return <Routes>{label}</Routes> }`
+  const conditionalAfter = conditionalBefore.replace('enabled = true', 'enabled = false')
+  assert.notEqual(
+    semanticSourceForDigest('site/src/app/AppContent.tsx', conditionalBefore),
+    semanticSourceForDigest('site/src/app/AppContent.tsx', conditionalAfter),
+  )
+
+  const effectBefore = `function AppContent() { let label = '正文'; useEffect(() => { label = '客户端一' }, []); return <Routes>{label}</Routes> }`
+  const effectAfter = effectBefore.replace('客户端一', '客户端二')
+  assert.equal(
+    semanticSourceForDigest('site/src/app/AppContent.tsx', effectBefore),
+    semanticSourceForDigest('site/src/app/AppContent.tsx', effectAfter),
+  )
+
+  const ambiguousHelperWrite = `let label = '正文'\nfunction prepare() { label = '变化' }\nfunction AppContent() { prepare(); return <Routes>{label}</Routes> }`
+  assert.throws(
+    () => semanticSourceForDigest(
+      'site/src/app/AppContent.tsx',
+      ambiguousHelperWrite,
+    ),
+    /Unsupported nested semantic write to label/,
+  )
+
   const attributeBefore = `const path = '客户端一'\nfunction AppContent() { return <Routes path="/fixed" /> }`
   const attributeAfter = attributeBefore.replace('客户端一', '客户端二')
   assert.equal(
     semanticSourceForDigest('site/src/app/AppContent.tsx', attributeBefore),
     semanticSourceForDigest('site/src/app/AppContent.tsx', attributeAfter),
+  )
+
+  const loopBefore = `const label = '正文'\nfor (const label of ['客户端一']) consume(label)\nfunction AppContent() { return <Routes>{label}</Routes> }`
+  const loopAfter = loopBefore.replace('客户端一', '客户端二')
+  assert.equal(
+    semanticSourceForDigest('site/src/app/AppContent.tsx', loopBefore),
+    semanticSourceForDigest('site/src/app/AppContent.tsx', loopAfter),
+  )
+
+  const switchBefore = `const label = '正文'\nswitch (mode) { case 1: const label = '客户端一'; consume(label) }\nfunction AppContent() { return <Routes>{label}</Routes> }`
+  const switchAfter = switchBefore.replace('客户端一', '客户端二')
+  assert.equal(
+    semanticSourceForDigest('site/src/app/AppContent.tsx', switchBefore),
+    semanticSourceForDigest('site/src/app/AppContent.tsx', switchAfter),
+  )
+
+  const fieldBefore = `const value = '客户端一'\nclass RouteLabel { static value = '正文' }\nfunction AppContent() { return <Routes>{RouteLabel.value}</Routes> }`
+  const fieldAfterClientChange = fieldBefore.replace('客户端一', '客户端二')
+  const fieldAfterSemanticChange = fieldBefore.replace("static value = '正文'", "static value = '正文二'")
+  assert.equal(
+    semanticSourceForDigest('site/src/app/AppContent.tsx', fieldBefore),
+    semanticSourceForDigest('site/src/app/AppContent.tsx', fieldAfterClientChange),
+  )
+  assert.notEqual(
+    semanticSourceForDigest('site/src/app/AppContent.tsx', fieldBefore),
+    semanticSourceForDigest('site/src/app/AppContent.tsx', fieldAfterSemanticChange),
   )
 })
