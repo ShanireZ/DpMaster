@@ -5,10 +5,11 @@
 // 2. 任何 HTML 都不得包含手工注入的 Cloudflare Web Analytics beacon：
 //    Cloudflare 代理会自动注入，手工再来一份就是重复统计。
 
-import { readFileSync, readdirSync } from 'node:fs'
-import { extname, join, resolve } from 'node:path'
+import { existsSync, readFileSync, readdirSync } from 'node:fs'
+import { extname, join, relative, resolve } from 'node:path'
 import { fileURLToPath } from 'node:url'
-import { PRERENDER_PATHS } from '../src/lib/publicRoutes.ts'
+import { PRERENDER_PATHS, PUBLIC_PATHS } from '../src/lib/publicRoutes.ts'
+import { markdownAssetRelativePath } from './markdown-representation.mjs'
 
 const MANUAL_BEACON_MARKERS = Object.freeze([
   '<!-- Cloudflare Web Analytics -->',
@@ -26,15 +27,82 @@ function htmlFilesUnder(root) {
   return files
 }
 
+function filesUnder(root, extension) {
+  if (!existsSync(root)) return []
+  const files = []
+  for (const entry of readdirSync(root, { withFileTypes: true })) {
+    const path = join(root, entry.name)
+    if (entry.isDirectory()) files.push(...filesUnder(path, extension))
+    else if (entry.isFile() && extname(entry.name) === extension) files.push(path)
+  }
+  return files
+}
+
+function htmlAssetRelativePath(pathname) {
+  return pathname === '/' ? 'index.html' : `${pathname.slice(1)}/index.html`
+}
+
 export function expectedHtmlCount(paths = PRERENDER_PATHS) {
   // 首页只有 index.html，其余每条路由两份，再加一个 404.html。
   return 1 + (paths.length - 1) * 2 + 1
 }
 
+export function checkMarkdownRepresentations({
+  dir = resolve('dist'),
+  paths = PUBLIC_PATHS,
+  origin = 'https://dp.round1.cc',
+} = {}) {
+  const representationRoot = join(dir, '_representations', 'markdown')
+  const actual = filesUnder(representationRoot, '.md')
+    .map((path) => relative(dir, path).replaceAll('\\', '/'))
+    .sort()
+  const expected = paths.map(markdownAssetRelativePath).sort()
+  const actualSet = new Set(actual)
+  const expectedSet = new Set(expected)
+  const errors = []
+
+  for (const path of expected.filter((path) => !actualSet.has(path))) {
+    errors.push(`Markdown representation is missing: ${path}`)
+  }
+  for (const path of actual.filter((path) => !expectedSet.has(path))) {
+    errors.push(`Markdown representation is unexpected: ${path}`)
+  }
+
+  for (const pathname of paths) {
+    const relativeMarkdown = markdownAssetRelativePath(pathname)
+    if (!actualSet.has(relativeMarkdown)) continue
+    const markdownPath = join(dir, relativeMarkdown)
+    const markdown = readFileSync(markdownPath, 'utf8')
+    const canonical = `${origin}${pathname}`
+    const htmlPath = join(dir, htmlAssetRelativePath(pathname))
+
+    if (!/^#\s+\S/m.test(markdown)) {
+      errors.push(`Markdown representation has no heading: ${relativeMarkdown}`)
+    }
+    if (/<(?:script|style|button|input|textarea|select|form)\b/i.test(markdown)) {
+      errors.push(`Markdown representation contains browser-only markup: ${relativeMarkdown}`)
+    }
+    if (/\/_representations\/markdown\//i.test(markdown)) {
+      errors.push(`Markdown representation leaks an internal representation path: ${relativeMarkdown}`)
+    }
+    if (!markdown.includes(`[在原页面查看完整互动内容](${canonical})`)) {
+      errors.push(`Markdown representation lacks its canonical interactive-content link: ${relativeMarkdown}`)
+    }
+    if (!existsSync(htmlPath)) {
+      errors.push(`Markdown representation has no matching HTML asset: ${relativeMarkdown}`)
+    } else if (Buffer.byteLength(markdown) >= Buffer.byteLength(readFileSync(htmlPath, 'utf8')) / 2) {
+      errors.push(`Markdown representation is not compact enough: ${relativeMarkdown}`)
+    }
+  }
+
+  return { ok: errors.length === 0, markdownFiles: actual.length, errors }
+}
+
 export function checkBuildHtml({ dir = resolve('dist') } = {}) {
   const htmlFiles = htmlFilesUnder(dir)
   const expected = expectedHtmlCount()
-  const errors = []
+  const markdown = checkMarkdownRepresentations({ dir })
+  const errors = [...markdown.errors]
 
   if (htmlFiles.length !== expected) {
     errors.push(`HTML count ${htmlFiles.length} does not match ${expected}`)
@@ -48,7 +116,12 @@ export function checkBuildHtml({ dir = resolve('dist') } = {}) {
     }
   }
 
-  return { ok: errors.length === 0, htmlFiles: htmlFiles.length, errors }
+  return {
+    ok: errors.length === 0,
+    htmlFiles: htmlFiles.length,
+    markdownFiles: markdown.markdownFiles,
+    errors,
+  }
 }
 
 function main() {
@@ -59,7 +132,7 @@ function main() {
     return
   }
   console.log(
-    `[html] ${result.htmlFiles} pages rendered, none carries a manual Web Analytics beacon`,
+    `[html] ${result.htmlFiles} pages and ${result.markdownFiles} compact Markdown representations passed`,
   )
 }
 

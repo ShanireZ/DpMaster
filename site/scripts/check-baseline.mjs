@@ -8,6 +8,7 @@ import browserslist from 'browserslist'
 import { loadConfigFromFile } from 'vite'
 
 import { VITE_BASELINE_TARGETS } from '../baseline-targets.ts'
+import { validateWebGovernancePolicy } from './baseline-governance.mjs'
 
 const root = process.cwd()
 const policy = JSON.parse(await readFile(resolve(root, 'baseline.config.json'), 'utf8'))
@@ -76,6 +77,11 @@ function policyErrors(query) {
 }
 
 assert.equal(policy.runtime, 'public-web')
+assert.deepEqual(
+  validateWebGovernancePolicy(policy),
+  [],
+  'Modern Web Guidance、sitemap 或 Markdown 内容协商声明无效',
+)
 assert.equal(policy.featureTarget, 'newly')
 assert.equal(policy.buildTarget.strategy, 'explicit-browsers')
 assert.equal(policy.buildTarget.consumer, 'vite.config.ts build.target')

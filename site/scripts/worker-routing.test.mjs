@@ -24,6 +24,185 @@ test('the worker keeps the feedback route method-safe and leaves assets alone', 
   assert.equal(await asset.text(), 'asset')
 })
 
+test('a public route can negotiate its internal Markdown representation', async () => {
+  let requestedPath = null
+  const env = {
+    ASSETS: {
+      fetch: async (request) => {
+        requestedPath = new URL(request.url).pathname
+        return new Response('# 背包 DP\n', {
+          headers: { ETag: '"markdown-part-a"' },
+        })
+      },
+    },
+  }
+
+  const response = await worker.fetch(
+    new Request(`${ORIGIN}/part/a`, {
+      headers: { Accept: 'text/markdown' },
+    }),
+    env,
+  )
+
+  assert.equal(requestedPath, '/_representations/markdown/part/a.md')
+  assert.equal(response.status, 200)
+  assert.equal(response.headers.get('Content-Type'), 'text/markdown; charset=utf-8')
+  assert.equal(response.headers.get('Content-Language'), 'zh-CN')
+  assert.equal(
+    response.headers.get('Content-Signal'),
+    'ai-train=yes, search=yes, ai-input=yes',
+  )
+  assert.equal(response.headers.get('Vary'), 'Accept')
+  assert.equal(response.headers.get('Cache-Control'), 'public, max-age=0, must-revalidate')
+  assert.equal(response.headers.get('X-Content-Type-Options'), 'nosniff')
+  assert.match(response.headers.get('Link'), /rel="canonical"/)
+  assert.equal(await response.text(), '# 背包 DP\n')
+})
+
+test('public route HTTP responses apply the approved Accept selection matrix', async () => {
+  const vectors = [
+    ['text/markdown, */*;q=0.5', '/_representations/markdown/part/a.md', 200],
+    ['text/html;q=1, text/markdown;q=0.8', '/part/a', 200],
+    ['text/html;q=0, text/markdown;q=1', '/_representations/markdown/part/a.md', 200],
+    ['text/*', '/part/a', 200],
+    ['*/*', '/part/a', 200],
+    ['text/html;q=0, text/markdown;q=0', null, 406],
+    ['application/json', null, 406],
+    ['text/markdown;q=0, */*;q=1', '/part/a', 200],
+  ]
+
+  for (const [accept, expectedPath, expectedStatus] of vectors) {
+    let requestedPath = null
+    const response = await worker.fetch(
+      new Request(`${ORIGIN}/part/a`, { headers: { Accept: accept } }),
+      {
+        ASSETS: {
+          fetch: async (request) => {
+            requestedPath = new URL(request.url).pathname
+            return new Response('asset')
+          },
+        },
+      },
+    )
+
+    assert.equal(response.status, expectedStatus, accept)
+    assert.equal(requestedPath, expectedPath, accept)
+    assert.equal(response.headers.get('Vary'), 'Accept', accept)
+    if (expectedStatus === 200) {
+      assert.equal(
+        response.headers.get('Cache-Control'),
+        'public, max-age=0, must-revalidate',
+        accept,
+      )
+      assert.equal(
+        response.headers.get('Content-Signal'),
+        'ai-train=yes, search=yes, ai-input=yes',
+        accept,
+      )
+    }
+  }
+})
+
+test('HEAD and conditional requests stay isolated to the selected representation', async () => {
+  const seen = []
+  const env = {
+    ASSETS: {
+      fetch: async (request) => {
+        const path = new URL(request.url).pathname
+        const etag = path.startsWith('/_representations/markdown/')
+          ? '"markdown-etag"'
+          : '"html-etag"'
+        seen.push({ path, method: request.method, ifNoneMatch: request.headers.get('If-None-Match') })
+        if (request.headers.get('If-None-Match') === etag) {
+          return new Response(null, { status: 304, headers: { ETag: etag } })
+        }
+        return new Response(request.method === 'HEAD' ? null : path, {
+          headers: { ETag: etag, Vary: 'Accept-Encoding' },
+        })
+      },
+    },
+  }
+
+  const head = await worker.fetch(
+    new Request(`${ORIGIN}/part/a`, {
+      method: 'HEAD',
+      headers: { Accept: 'text/markdown' },
+    }),
+    env,
+  )
+  assert.deepEqual(seen[0], {
+    path: '/_representations/markdown/part/a.md',
+    method: 'HEAD',
+    ifNoneMatch: null,
+  })
+  assert.equal(head.status, 200)
+  assert.equal(head.headers.get('ETag'), '"markdown-etag"')
+  assert.equal(head.headers.get('Vary'), 'Accept-Encoding, Accept')
+  assert.equal(await head.text(), '')
+
+  const wrongValidator = await worker.fetch(
+    new Request(`${ORIGIN}/part/a`, {
+      headers: {
+        Accept: 'text/markdown',
+        'If-None-Match': '"html-etag"',
+      },
+    }),
+    env,
+  )
+  assert.equal(wrongValidator.status, 200)
+  assert.equal(await wrongValidator.text(), '/_representations/markdown/part/a.md')
+
+  const matchingValidator = await worker.fetch(
+    new Request(`${ORIGIN}/part/a`, {
+      headers: {
+        Accept: 'text/markdown',
+        'If-None-Match': '"markdown-etag"',
+      },
+    }),
+    env,
+  )
+  assert.equal(matchingValidator.status, 304)
+  assert.equal(matchingValidator.headers.get('ETag'), '"markdown-etag"')
+  assert.equal(await matchingValidator.text(), '')
+})
+
+test('internal representations are hidden and non-public paths keep their existing behavior', async () => {
+  const seen = []
+  const env = {
+    ASSETS: {
+      fetch: async (request) => {
+        seen.push(new URL(request.url).pathname)
+        return new Response('asset')
+      },
+    },
+  }
+
+  const hidden = await worker.fetch(
+    new Request(`${ORIGIN}/_representations/markdown/part/a.md`),
+    env,
+  )
+  assert.equal(hidden.status, 404)
+  assert.equal(hidden.headers.get('X-Robots-Tag'), 'noindex, nofollow')
+  assert.deepEqual(seen, [])
+
+  for (const path of ['/lab/body-demo-standard', '/assets/app.js', '/not-a-route']) {
+    const response = await worker.fetch(
+      new Request(`${ORIGIN}${path}`, { headers: { Accept: 'text/markdown' } }),
+      env,
+    )
+    assert.equal(response.status, 200, path)
+    assert.equal(response.headers.get('Vary'), null, path)
+  }
+  assert.deepEqual(seen, ['/lab/body-demo-standard', '/assets/app.js', '/not-a-route'])
+
+  const api = await worker.fetch(
+    new Request(`${ORIGIN}/api/feedback`, { headers: { Accept: 'text/markdown' } }),
+    env,
+  )
+  assert.equal(api.status, 405)
+  assert.deepEqual(seen, ['/lab/body-demo-standard', '/assets/app.js', '/not-a-route'])
+})
+
 test('the worker is the only deployment adapter: no Pages or EdgeOne entry points remain', async () => {
   const { readdir } = await import('node:fs/promises')
   const entries = await readdir(new URL('../', import.meta.url))

@@ -5,8 +5,9 @@ import { JSDOM } from 'jsdom'
 import { SITE } from '../src/config/site.ts'
 import { generateDiscoveryFiles } from '../src/lib/discovery.ts'
 import { getPageMeta } from '../src/lib/pageMeta.ts'
-import { PRERENDER_PATHS } from '../src/lib/publicRoutes.ts'
+import { isPublicPath, PRERENDER_PATHS } from '../src/lib/publicRoutes.ts'
 import { renderRouteHead, replaceRouteHead } from '../src/lib/seoHead.ts'
+import { writeMarkdownRepresentation } from './markdown-representation.mjs'
 import { renderRouteAssetLinks } from './route-assets.mjs'
 
 export function settleSuspenseMarkup(markup) {
@@ -94,20 +95,32 @@ export async function prerenderSite(outDir, serverEntry) {
   const { renderRoute } = await import(
     `${pathToFileURL(serverEntry).href}?time=${Date.now()}`
   )
+  let markdownCount = 0
 
   for (const path of PRERENDER_PATHS) {
     const page = getPageMeta(path, site)
     const markup = settleSuspenseMarkup(await renderRoute(path))
+    const document = documentForRoute(
+      template,
+      markup,
+      renderRouteHead(page, site),
+      renderRouteAssetLinks(manifest, path),
+    )
     writeRouteVariants(
       outDir,
       path,
-      documentForRoute(
-        template,
-        markup,
-        renderRouteHead(page, site),
-        renderRouteAssetLinks(manifest, path),
-      ),
+      document,
     )
+    if (isPublicPath(path) && page.canonical) {
+      writeMarkdownRepresentation({
+        outDir,
+        pathname: path,
+        html: document,
+        canonical: page.canonical,
+        summary: page.summary,
+      })
+      markdownCount += 1
+    }
   }
 
   const notFoundPath = '/__dp-not-found__'
@@ -128,7 +141,7 @@ export async function prerenderSite(outDir, serverEntry) {
   }
   rmSync(join(outDir, '.vite'), { recursive: true, force: true })
   console.log(
-    `[prerender] ${PRERENDER_PATHS.length} routes hydrated + real 404 + discovery files`,
+    `[prerender] ${PRERENDER_PATHS.length} routes hydrated + ${markdownCount} Markdown representations + real 404 + discovery files`,
   )
 }
 

@@ -14,26 +14,25 @@ function xml(value: string): string {
 }
 
 /**
- * 只列出**检索 / 引用类**抓取器，不列训练类。
- *
- * ★ 这份 robots.txt 到了边缘还会被 Cloudflare 的 AI Crawl Control 在前面拼上
- * 一段托管内容，那段声明 `Content-Signal: search=yes,ai-train=no,use=reference`
- * 并 Disallow 全部训练类抓取器（GPTBot / ClaudeBot / CCBot / Google-Extended /
- * Applebot-Extended / Bytespider / Amazonbot / meta-externalagent）。站点立场就是
- * 托管段那一条：**可以被检索并引用，不提供训练**。
- *
- * 所以这里只放行不被托管段拦的那几个。曾经把训练类也列进来，结果同一个文件里
- * 同一个 user-agent 既 Disallow 又 Allow —— 各家抓取器的分组合并与优先级实现
- * 并不一致，那种写法的实际效果是未定义的。要改立场，先改 Cloudflare Dashboard，
- * 再改这里，两边必须同向。
+ * 已批准公开内容允许检索、引用、模型输入与训练。这里列出已知的检索类、用户触发类
+ * 与训练类抓取器，让源代码立场保持单向明确。Cloudflare AI Crawl Control 仍可能在
+ * 边缘注入相反规则；发布移交必须关闭那段托管 no-train 策略并做线上冒烟。
  */
 const AI_CRAWLERS = Object.freeze([
+  'GPTBot',
   'OAI-SearchBot',
   'ChatGPT-User',
+  'ClaudeBot',
   'PerplexityBot',
   'Perplexity-User',
   'Claude-User',
   'Claude-SearchBot',
+  'Google-Extended',
+  'Applebot-Extended',
+  'CCBot',
+  'Bytespider',
+  'Amazonbot',
+  'meta-externalagent',
 ])
 
 interface RouteSummary {
@@ -103,8 +102,7 @@ export function generateDiscoveryFiles(
     'User-agent: *',
     'Allow: /',
     '',
-    '# AI 检索与引用抓取器：欢迎引用本站课程，请保留原文链接与页面标题。',
-    '# 训练类抓取器不在此列 —— 站点立场是「可检索引用、不提供训练」。',
+    '# 已批准公开内容允许检索、引用、模型输入与训练；引用时请保留原文链接与页面标题。',
     ...AI_CRAWLERS.map((agent) => `User-agent: ${agent}`),
     'Allow: /',
     '',
@@ -123,6 +121,8 @@ export function generateDiscoveryFiles(
     `- 发布者：${BRAND.owner}`,
     '- 访问门槛：无账号、无登录、无付费墙，打开网页即可阅读全部内容',
     `- 站内检索：${site.origin}/problems?q=关键词`,
+    '- 公开内容信号：ai-train=yes, search=yes, ai-input=yes',
+    '- 内容协商：在同一 URL 请求 `text/markdown` 可读取无浏览器交互噪音的 Markdown 表示',
     '',
     ...llmsSection(
       '入口',

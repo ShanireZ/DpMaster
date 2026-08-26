@@ -18,6 +18,7 @@ DP大师是面向 C++ 算法学习者的动态规划交互式学习网站，将�
 - 家族小游戏将抽象模型转化为可操作的训练。
 - 题目索引支持搜索、筛选和可分享的 URL 状态。
 - 无需账号，打开网页即可学习。
+- 每个公开页面可在同一 URL 按 `Accept: text/markdown` 获取去除交互噪音的 Markdown 表示，便于检索、引用与代理读取。
 - Web Platform Baseline 以 Newly 作为开发能力上限，生产构建显式面向 Widely，并由 Chromium、Firefox、WebKit 与发布前实机抽检验证。
 
 ## 本地运行

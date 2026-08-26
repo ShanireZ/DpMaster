@@ -4,7 +4,7 @@
 
 DP大师是一个 React + Vite 预渲染静态站。**生产只有一个发布目标**：把 `site/dist/` 发布到 Cloudflare Workers Static Assets，入口是 `site/worker.js`，域名是 `https://dp.round1.cc`。
 
-产物包含 47 个预渲染公开路由、React 水合、自指 canonical、sitemap/robots/llms.txt 与 JSON-LD。单域站点不发布任何 hreflang 备选。站内反馈走同源 `POST /api/feedback`；有限的页面与反馈统计事件走同源 `POST /api/analytics`。
+产物包含 47 个预渲染公开路由及其同 URL Markdown 表示、React 水合、自指 canonical、sitemap/robots/llms.txt 与 JSON-LD。单域站点不发布任何 hreflang 备选。站内反馈走同源 `POST /api/feedback`；有限的页面与反馈统计事件走同源 `POST /api/analytics`。
 
 > **2026-08 迁移**：此前的国内 EdgeOne 站 `dp.betaoi.cn` 与国际站 `dp.betaoi.cc` 已一并退役，仓库里不再保留任何相关配置、脚本或产物目录。旧域名不做 301 跳转（owner 决定），已收录页面会自然掉索引。★ 退役同时带走了「浏览器跨域直连国内站 → 国内站转发进钉钉」这条反馈/告警链路，替代方案尚未确定，见下文「反馈与告警送达」。
 
@@ -106,9 +106,10 @@ pnpm build
 1. `tsc -b`
 2. Vite 客户端构建。
 3. 在隔离的 production Node 进程中用 React 19 `prerender()` 渲染 47 个公开路由与 1 个内部标本页。
-4. 写入 canonical、sitemap、robots、`llms.txt`、`route-summaries.json` 与 `404.html`。
+4. 从每个公开页面同一次本地语义渲染生成 47 份内部 Markdown 资产。
+5. 写入 canonical、sitemap、robots、`llms.txt`、`route-summaries.json` 与 `404.html`。
 
-`pnpm check:html` 在 `verify` 链里校验产物：HTML 数量正确（96 份 = 首页 1 + 其余 47 条路由各 2 份 + 404），且**任何一份都不含手工注入的 Cloudflare Web Analytics beacon**（beacon 由 Cloudflare 代理自动注入，手工再来一份就是重复统计）。
+`pnpm check:html` 在 `verify` 链里校验产物：HTML 数量正确（96 份 = 首页 1 + 其余 47 条预渲染路由各 2 份 + 404），47 份 Markdown 与公开路线集合完全一致、足够精简且无浏览器控件/内部路径泄漏，并且**任何一份 HTML 都不含手工注入的 Cloudflare Web Analytics beacon**（beacon 由 Cloudflare 代理自动注入，手工再来一份就是重复统计）。
 
 本地预览：
 
@@ -123,7 +124,8 @@ pnpm preview
 | 文件                               | 作用                                                             |
 | ---------------------------------- | ---------------------------------------------------------------- |
 | `site/wrangler.jsonc`             | Worker 名称、入口、自定义域名路由、静态资源目录与 404 配置。 |
-| `site/worker.js`                  | 接住反馈、统计与诊断 API，其余请求交给 `env.ASSETS.fetch(request)`。 |
+| `site/worker.js`                  | 在公开页面上协商 HTML/Markdown，并接住反馈、统计与诊断 API。 |
+| `site/worker/content-negotiation.js` | 解析 `Accept` 并在 HTML、Markdown、406 之间作确定性选择。 |
 | `site/worker/feedback-core.js`    | 反馈处理核心，同时是外部 relay 主机的参考实现。 |
 | `site/worker/analytics-core.js`   | 第一方统计事件核心。 |
 | `site/worker/webhook-core.js`     | Webhook 报文格式、钉钉加签、CORS 判定与 relay 协议。 |
@@ -148,7 +150,19 @@ pnpm preview
 }
 ```
 
-已知路由直接命中预渲染 HTML。未知静态路径由 `404-page` 返回 `404.html` 与 HTTP 404；`/api/feedback`、`/api/analytics` 与 `/api/_diag/egress` 进入 `worker.js`。
+已登记公开路由默认命中预渲染 HTML；当 `Accept` 明确更偏好 `text/markdown` 时，Worker 从隔离的内部资产路径读取同页 Markdown。直接请求 `/_representations/` 固定返回 404，内部标本、未知路由、API 与普通静态资产不参与协商。未知静态路径由 `404-page` 返回 `404.html` 与 HTTP 404；`/api/feedback`、`/api/analytics` 与 `/api/_diag/egress` 进入 `worker.js`。
+
+内容协商发布冒烟：
+
+```bash
+curl.exe -i https://dp.round1.cc/part/a/01 -H "Accept: text/markdown"
+curl.exe -i https://dp.round1.cc/part/a/01 -H "Accept: text/html"
+curl.exe -I https://dp.round1.cc/part/a/01 -H "Accept: text/markdown"
+curl.exe -i https://dp.round1.cc/part/a/01 -H "Accept: application/json"
+curl.exe -i https://dp.round1.cc/_representations/markdown/part/a/01.md
+```
+
+依次应看到 Markdown 200、HTML 200、无正文的 Markdown HEAD 200、406，以及内部路径 404。两种 200 都必须带 `Vary: Accept`、表示专属 ETag、alternate `Link` 和 `Content-Signal: ai-train=yes, search=yes, ai-input=yes`；Markdown 另带 `Content-Type: text/markdown; charset=utf-8`、`Content-Language: zh-CN` 与 canonical `Link`。
 
 目录名 `DpMaster`、GitHub 仓库 `ShanireZ/DpMaster` 与 Worker 名 `dpmaster` 都是历史标识符，域名迁移不改动它们。
 
@@ -246,7 +260,7 @@ wrangler tail dpmaster
 2. Bing Webmaster Tools：验证新站点并提交 sitemap；可从 Search Console 导入。
 3. 百度搜索资源平台：站点已迁到境外托管，收录预期本就有限；如仍要提交，验证 `dp.round1.cc` 并提交同一份 sitemap。
 
-`robots.txt` 除 `User-agent: *` 外，还显式声明了一组生成式引擎抓取器（`GPTBot`、`OAI-SearchBot`、`ChatGPT-User`、`ClaudeBot`、`Claude-User`、`Claude-SearchBot`、`PerplexityBot`、`Perplexity-User`、`Google-Extended`、`Applebot-Extended`、`CCBot`、`Bytespider`）并放行。其中 `Google-Extended` 与 `Applebot-Extended` 是「不列即视为拒绝」的选择性令牌，删掉它们等于收回授权。
+`robots.txt` 除 `User-agent: *` 外，还显式声明并放行检索、用户触发与训练类生成式引擎抓取器（包括 `GPTBot`、`OAI-SearchBot`、`ChatGPT-User`、`ClaudeBot`、`Claude-User`、`Claude-SearchBot`、`PerplexityBot`、`Perplexity-User`、`Google-Extended`、`Applebot-Extended`、`CCBot`、`Bytespider`、`Amazonbot` 与 `meta-externalagent`）。当前已批准的公开内容策略固定为 `ai-train=yes, search=yes, ai-input=yes`。
 
 ★ **上线实测发现：Cloudflare 在边缘往 robots.txt 里注入了一段托管内容，与仓库这份直接冲突，尚未解决。**
 
@@ -265,12 +279,9 @@ Disallow: /
 
 也就是说 **Cloudflare 的 AI Crawl Control 正在 `Disallow` 仓库这份明确 `Allow` 的同一批抓取器**，并且用 `Content-Signal` 声明了 `ai-train=no`。同一个 user-agent 出现在两个组里，各家抓取器的合并与优先级实现并不一致，靠「后面的 Allow 覆盖前面的 Disallow」是不可靠的。
 
-这不是代码问题，改不了——托管段由 Cloudflare Dashboard 的 AI Crawl Control 注入。需要 owner 在两种立场里选一个：
+产品立场已经选定，不再保留二选一：发布维护者必须在 Cloudflare Dashboard 关闭该域会注入 no-train/Disallow 的 AI Crawl Control 托管 robots 段，使边缘行为与仓库的允许策略同向。这个控制面变更不由构建或部署代码完成；在它被修改并完成线上冒烟之前，本次代码可以构建，但不能宣称生产策略已完成切换。
 
-1. **欢迎生成式引擎**（当前仓库这份的立场）：到 Cloudflare Dashboard 关掉该域的 AI Crawl Control / 托管 robots.txt，让仓库这份单独生效。
-2. **拒绝 AI 训练**（当前边缘这份的立场）：保留 Dashboard 设置，并把仓库 `src/lib/discovery.ts` 里的 `AI_CRAWLERS` 放行组删掉，避免两边互相打脸。
-
-在选定之前，本站对生成式引擎的实际策略是**未定义的**。
+线上验收必须同时检查：最终 `robots.txt` 不含 `ai-train=no` 或同一抓取器的冲突 `Disallow`；HTML 与 Markdown 响应都保留 `Content-Signal: ai-train=yes, search=yes, ai-input=yes`。若任一项被 Cloudflare 重写，停止搜索平台提交并先修正控制面。
 
 同时确认以下文件可匿名访问且返回 200：
 
