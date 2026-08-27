@@ -23,11 +23,11 @@ function Stepper({
     <div>
       <div className="stepper__lab">{label}</div>
       <div className="stepper__row">
-        <button onClick={() => onChange(value - 1)} disabled={value <= min} aria-label={`${label} 减`}>
+        <button type="button" onClick={() => onChange(value - 1)} disabled={value <= min} aria-label={`${label} 减`}>
           <Minus size={13} />
         </button>
         <span className="stepper__val">{value}</span>
-        <button onClick={() => onChange(value + 1)} disabled={value >= max} aria-label={`${label} 加`}>
+        <button type="button" onClick={() => onChange(value + 1)} disabled={value >= max} aria-label={`${label} 加`}>
           <Plus size={13} />
         </button>
       </div>
@@ -82,7 +82,7 @@ export default function MaxSquareDemo() {
             {shown.map((row, i) => (
               <div key={i} style={{ display: 'flex', gap: 6 }}>
                 {row.map((val, j) => (
-                  <button
+                  <button type="button"
                     key={j}
                     onClick={() => toggle(i, j)}
                     aria-label={`格 (${i},${j}) = ${val}，点击翻转`}

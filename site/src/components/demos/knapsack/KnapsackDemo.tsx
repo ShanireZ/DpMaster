@@ -126,7 +126,7 @@ export default function KnapsackDemo({ variant = '01' }: { variant?: '01' | 'com
                   <div className="demo-control__item" key={i}>
                     <span className="demo-control__item-i">{i + 1}</span>
                     {items.length > 1 && (
-                      <button className="demo-control__remove" onClick={() => setItems((a) => a.filter((_, k) => k !== i))} aria-label="删除物品">
+                      <button type="button" className="demo-control__remove" onClick={() => setItems((a) => a.filter((_, k) => k !== i))} aria-label="删除物品">
                         <X size={12} />
                       </button>
                     )}
@@ -135,7 +135,7 @@ export default function KnapsackDemo({ variant = '01' }: { variant?: '01' | 'com
                   </div>
                 ))}
                 {items.length < 8 && (
-                  <button className="demo-control__add" onClick={() => setItems((a) => [...a, { w: 2, v: 3 }])}>
+                  <button type="button" className="demo-control__add" onClick={() => setItems((a) => [...a, { w: 2, v: 3 }])}>
                     <Plus size={15} /> 加物品
                   </button>
                 )}
@@ -150,7 +150,7 @@ export default function KnapsackDemo({ variant = '01' }: { variant?: '01' | 'com
           {variant === '01' && (
             <div className="demo-control__modes">
               {MODES_01.map((m) => (
-                <button
+                <button type="button"
                   key={m.id}
                   className={`demo-control__mode${m.danger ? ' danger' : ''}${mode === m.id ? ' on' : ''}`}
                   onClick={() => setMode(m.id)}

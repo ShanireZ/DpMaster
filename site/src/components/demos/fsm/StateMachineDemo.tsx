@@ -33,18 +33,18 @@ function NumStepper({
   return (
     <div className="demo-control__item">
       {removable && (
-        <button className="demo-control__remove" onClick={onRemove} aria-label="删除元素">
+        <button type="button" className="demo-control__remove" onClick={onRemove} aria-label="删除元素">
           <X size={12} />
         </button>
       )}
       <div>
         <div className="stepper__lab">a 值</div>
         <div className="stepper__row">
-          <button onClick={() => onChange(value - 1)} disabled={value <= min} aria-label="减">
+          <button type="button" onClick={() => onChange(value - 1)} disabled={value <= min} aria-label="减">
             <Minus size={13} />
           </button>
           <span className="stepper__val">{value}</span>
-          <button onClick={() => onChange(value + 1)} disabled={value >= max} aria-label="加">
+          <button type="button" onClick={() => onChange(value + 1)} disabled={value >= max} aria-label="加">
             <Plus size={13} />
           </button>
         </div>
@@ -75,7 +75,7 @@ export default function StateMachineDemo() {
       <DemoSculptureHero family="b" lesson="fsm" src={fsmHeroArt} />
       <div className="demo-control__modes">
         {PRESETS.map((p) => (
-          <button
+          <button type="button"
             key={p.label}
             className={`demo-control__mode${a.join(',') === p.a.join(',') ? ' on' : ''}`}
             onClick={() => setA(p.a)}
@@ -83,7 +83,7 @@ export default function StateMachineDemo() {
             {p.label}
           </button>
         ))}
-        <button className="demo-control__mode" onClick={() => setA(shuffle(a))} title="打乱当前数组">
+        <button type="button" className="demo-control__mode" onClick={() => setA(shuffle(a))} title="打乱当前数组">
           <Shuffle size={13} style={{ verticalAlign: '-2px', marginRight: 4 }} />
           打乱
         </button>
@@ -105,7 +105,7 @@ export default function StateMachineDemo() {
               />
             ))}
             {a.length < 9 && (
-              <button className="demo-control__add" onClick={addOne}>
+              <button type="button" className="demo-control__add" onClick={addOne}>
                 <Plus size={15} /> 加元素
               </button>
             )}

@@ -60,7 +60,7 @@ export default function EditDistanceDemo() {
           <div className="demo-control__group-label">试几组</div>
           <div className="ed__presets">
             {PRESETS.map(([pa, pb]) => (
-              <button
+              <button type="button"
                 key={`${pa}-${pb}`}
                 className={`demo-control__mode${a === pa && b === pb ? ' on' : ''}`}
                 onClick={() => {
@@ -71,7 +71,7 @@ export default function EditDistanceDemo() {
                 {pa || '∅'} → {pb || '∅'}
               </button>
             ))}
-            <button
+            <button type="button"
               className="demo-control__mode"
               onClick={() => {
                 setA('horse')

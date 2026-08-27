@@ -17,11 +17,11 @@ function NumStepper({
 }) {
   return (
     <div className="stepper__row">
-      <button onClick={() => onChange(value - 1)} disabled={value <= min} aria-label="减">
+      <button type="button" onClick={() => onChange(value - 1)} disabled={value <= min} aria-label="减">
         <Minus size={13} />
       </button>
       <span className="stepper__val">{value}</span>
-      <button onClick={() => onChange(value + 1)} disabled={value >= max} aria-label="加">
+      <button type="button" onClick={() => onChange(value + 1)} disabled={value >= max} aria-label="加">
         <Plus size={13} />
       </button>
     </div>
@@ -67,7 +67,7 @@ export default function MaxSegRingDemo() {
               <div className="demo-control__item" key={i}>
                 <span className="demo-control__item-i">{i}</span>
                 {a.length > 3 && (
-                  <button className="demo-control__remove" onClick={() => removeAt(i)} aria-label="删除元素">
+                  <button type="button" className="demo-control__remove" onClick={() => removeAt(i)} aria-label="删除元素">
                     <X size={12} />
                   </button>
                 )}
@@ -75,7 +75,7 @@ export default function MaxSegRingDemo() {
               </div>
             ))}
             {a.length < 7 && (
-              <button className="demo-control__add" onClick={() => setA((arr) => [...arr, 1])}>
+              <button type="button" className="demo-control__add" onClick={() => setA((arr) => [...arr, 1])}>
                 <Plus size={15} /> 加一位
               </button>
             )}
@@ -85,7 +85,7 @@ export default function MaxSegRingDemo() {
 
       <div className="demo-control__modes">
         {PRESETS.map((p) => (
-          <button
+          <button type="button"
             key={p.label}
             className={`demo-control__mode ${a.join(',') === p.a.join(',') ? 'on' : ''}`}
             onClick={() => setA(p.a)}

@@ -89,28 +89,28 @@ export default function TspDemo() {
               <div className="bm__mover" key={i}>
                 <span className="bm__mover-id">{i}</span>
                 <div className="bm__pad">
-                  <button onClick={() => move(i, 0, 1)} aria-label={`点${i}上移`}>↑</button>
+                  <button type="button" onClick={() => move(i, 0, 1)} aria-label={`点${i}上移`}>↑</button>
                   <div className="bm__pad-mid">
-                    <button onClick={() => move(i, -1, 0)} aria-label={`点${i}左移`}>←</button>
+                    <button type="button" onClick={() => move(i, -1, 0)} aria-label={`点${i}左移`}>←</button>
                     <span className="bm__coord">
                       {p.x},{p.y}
                     </span>
-                    <button onClick={() => move(i, 1, 0)} aria-label={`点${i}右移`}>→</button>
+                    <button type="button" onClick={() => move(i, 1, 0)} aria-label={`点${i}右移`}>→</button>
                   </div>
-                  <button onClick={() => move(i, 0, -1)} aria-label={`点${i}下移`}>↓</button>
+                  <button type="button" onClick={() => move(i, 0, -1)} aria-label={`点${i}下移`}>↓</button>
                 </div>
               </div>
             ))}
           </div>
           <div className="bm__count">
             <span className="demo-control__group-label" style={{ margin: 0 }}>点数 {n}</span>
-            <button onClick={removePt} disabled={n <= 3} aria-label="减少点">
+            <button type="button" onClick={removePt} disabled={n <= 3} aria-label="减少点">
               <Minus size={13} />
             </button>
-            <button onClick={addPt} disabled={n >= 5} aria-label="增加点">
+            <button type="button" onClick={addPt} disabled={n >= 5} aria-label="增加点">
               <Plus size={13} />
             </button>
-            <button className="bm__reset" onClick={() => setPts(INIT)} aria-label="重置点位">
+            <button type="button" className="bm__reset" onClick={() => setPts(INIT)} aria-label="重置点位">
               <RotateCcw size={13} /> 复位
             </button>
           </div>

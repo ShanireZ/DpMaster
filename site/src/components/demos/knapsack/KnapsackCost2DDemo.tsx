@@ -29,11 +29,11 @@ function Stepper({
     <div>
       <div className="stepper__lab">{label}</div>
       <div className="stepper__row">
-        <button onClick={() => onChange(value - 1)} disabled={value <= min} aria-label={`${label} 减`}>
+        <button type="button" onClick={() => onChange(value - 1)} disabled={value <= min} aria-label={`${label} 减`}>
           <Minus size={13} />
         </button>
         <span className="stepper__val">{value}</span>
-        <button onClick={() => onChange(value + 1)} disabled={value >= max} aria-label={`${label} 加`}>
+        <button type="button" onClick={() => onChange(value + 1)} disabled={value >= max} aria-label={`${label} 加`}>
           <Plus size={13} />
         </button>
       </div>
@@ -75,7 +75,7 @@ export default function KnapsackCost2DDemo() {
               <div className="demo-control__item" key={idx}>
                 <span className="demo-control__item-i">{idx + 1}</span>
                 {items.length > 1 && (
-                  <button className="demo-control__remove" onClick={() => removeItem(idx)} aria-label="删除物品">
+                  <button type="button" className="demo-control__remove" onClick={() => removeItem(idx)} aria-label="删除物品">
                     <X size={12} />
                   </button>
                 )}
@@ -94,7 +94,7 @@ export default function KnapsackCost2DDemo() {
               </div>
             ))}
             {items.length < 3 && (
-              <button className="demo-control__add" onClick={addItem}>
+              <button type="button" className="demo-control__add" onClick={addItem}>
                 <Plus size={15} /> 加件
               </button>
             )}
@@ -112,7 +112,7 @@ export default function KnapsackCost2DDemo() {
 
       <div className="demo-control__modes">
         {MODES.map((m) => (
-          <button
+          <button type="button"
             key={m.id}
             className={`demo-control__mode${mode === m.id ? ' on' : ''}`}
             onClick={() => setMode(m.id)}

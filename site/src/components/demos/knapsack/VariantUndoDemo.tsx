@@ -22,11 +22,11 @@ function Stepper({
     <div>
       <div className="stepper__lab">{label}</div>
       <div className="stepper__row">
-        <button onClick={() => onChange(value - 1)} disabled={value <= min} aria-label={`${label} 减`}>
+        <button type="button" onClick={() => onChange(value - 1)} disabled={value <= min} aria-label={`${label} 减`}>
           <Minus size={13} />
         </button>
         <span className="stepper__val">{value}</span>
-        <button onClick={() => onChange(value + 1)} disabled={value >= max} aria-label={`${label} 加`}>
+        <button type="button" onClick={() => onChange(value + 1)} disabled={value >= max} aria-label={`${label} 加`}>
           <Plus size={13} />
         </button>
       </div>
@@ -78,7 +78,7 @@ export default function VariantUndoDemo() {
               <div className="demo-control__item" key={i}>
                 <span className="demo-control__item-i">{i + 1}</span>
                 {items.length > 1 && (
-                  <button className="demo-control__remove" onClick={() => removeItem(i)} aria-label="删除物品">
+                  <button type="button" className="demo-control__remove" onClick={() => removeItem(i)} aria-label="删除物品">
                     <X size={12} />
                   </button>
                 )}
@@ -86,7 +86,7 @@ export default function VariantUndoDemo() {
               </div>
             ))}
             {items.length < 5 && (
-              <button className="demo-control__add" onClick={() => setItems((a) => [...a, { w: 2 }])}>
+              <button type="button" className="demo-control__add" onClick={() => setItems((a) => [...a, { w: 2 }])}>
                 <Plus size={15} /> 加物品
               </button>
             )}
@@ -102,7 +102,7 @@ export default function VariantUndoDemo() {
         <div className="demo-control__group-label">让第几件「消失」（对它做逆操作退掉）</div>
         <div className="demo-control__modes">
           {items.map((it, i) => (
-            <button
+            <button type="button"
               key={i}
               className={`demo-control__mode danger${i === k ? ' on' : ''}`}
               onClick={() => setVictim(i)}

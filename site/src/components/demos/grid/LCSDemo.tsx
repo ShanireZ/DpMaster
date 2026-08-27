@@ -34,12 +34,12 @@ function CharCell({
     <div className="demo-control__item lcs-char">
       <span className="demo-control__item-i">{idx + 1}</span>
       {removable && (
-        <button className="demo-control__remove" onClick={onRemove} aria-label="删除字符">
+        <button type="button" className="demo-control__remove" onClick={onRemove} aria-label="删除字符">
           <X size={12} />
         </button>
       )}
       <div className="lcs-char__picker">
-        <button
+        <button type="button"
           className="lcs-char__cycle"
           onClick={() => onCycle(-1)}
           aria-label="上一个字符"
@@ -49,7 +49,7 @@ function CharCell({
         <span className="mono lcs-char__value">
           {ch}
         </span>
-        <button
+        <button type="button"
           className="lcs-char__cycle"
           onClick={() => onCycle(1)}
           aria-label="下一个字符"
@@ -96,7 +96,7 @@ function StringRow({
           />
         ))}
         {s.length < MAXLEN && (
-          <button className="demo-control__add" onClick={addOne}>
+          <button type="button" className="demo-control__add" onClick={addOne}>
             <Plus size={15} /> 加字符
           </button>
         )}
@@ -122,7 +122,7 @@ export default function LCSDemo() {
 
       <div className="demo-control__modes">
         {PRESETS.map((p) => (
-          <button
+          <button type="button"
             key={p.label}
             className={`demo-control__mode${a === p.a && b === p.b ? ' on' : ''}`}
             onClick={() => {
