@@ -5,6 +5,7 @@ import { fileURLToPath } from 'node:url'
 
 import { PUBLIC_PATHS } from '../src/lib/publicRoutes.ts'
 import {
+  semanticRuntimePackageNamesForRoute,
   semanticRouteFiles,
   semanticSourceForDigest,
   resolveStaticImport,
@@ -568,7 +569,7 @@ test('mixed-module closure tracks every supported mutation of selected bindings'
   const dynamicImportedGetter = `import { state, prepare } from './store'\nconst controller = { get run() { return prepare } }\nfunction AppContent() { controller.run(); return <Routes>{state.value}</Routes> }`
   assert.throws(
     () => semanticSourceForDigest('site/src/app/AppContent.tsx', dynamicImportedGetter),
-    /Unsupported ambiguous mutation of controller/,
+    /Unsupported (?:dynamic call target|ambiguous mutation of controller)/,
   )
 
   const customNamedMutator = `const state = { value: '正文' }\nconst mutator = { set(target, value) { target.value = value } }\nfunction AppContent() { mutator.set(state, '正文一'); return <Routes>{state.value}</Routes> }`
@@ -987,6 +988,7 @@ test('secondary review boundaries preserve SSR precision and fail closed', () =>
     `import '../../scripts/fixtures/semantic-patch-timer.mjs'\nfunction AppContent() { setTimeout(() => track('同步一'), 0); return <Routes>正文</Routes> }`,
     `import { unused } from '../../scripts/fixtures/semantic-patch-react.mjs'\nimport { useEffect } from 'react'\nfunction AppContent() { useEffect(() => track('同步一'), []); return <Routes>正文</Routes> }`,
     `await import('opaque-patcher')\nfunction AppContent() { setTimeout(() => track('同步一'), 0); return <Routes>正文</Routes> }`,
+    `await Promise.resolve().then(() => import('../../scripts/fixtures/semantic-patch-timer.mjs'))\nfunction AppContent() { setTimeout(() => track('同步一'), 0); return <Routes>正文</Routes> }`,
   ]) {
     assert.throws(
       () => semanticSourceForDigest('site/src/app/AppContent.tsx', importedPatch),
@@ -1013,6 +1015,7 @@ test('secondary review boundaries preserve SSR precision and fail closed', () =>
     `let label = '正文'\nconst [g] = [globalThis]\ng.setTimeout = callback => callback()\nfunction AppContent() { setTimeout(() => { label = '变化' }, 0); return <Routes>{label}</Routes> }`,
     `let label = '正文'\nconst { g } = { g: globalThis }\ng.setTimeout = callback => callback()\nfunction AppContent() { setTimeout(() => { label = '变化' }, 0); return <Routes>{label}</Routes> }`,
     `let label = '正文'\nconst holder = { nested: { g: globalThis } }\nholder.nested.g.setTimeout = callback => callback()\nfunction AppContent() { setTimeout(() => { label = '变化' }, 0); return <Routes>{label}</Routes> }`,
+    `let label = '正文'\nconst holder = { nested: { g: null } }\nholder.nested.g = globalThis\nholder.nested.g.setTimeout = callback => callback()\nfunction AppContent() { setTimeout(() => { label = '变化' }, 0); return <Routes>{label}</Routes> }`,
     `let label = '正文'\nconst P = (() => Promise)()\nP.prototype.then = callback => { callback(); return Promise.resolve() }\nfunction AppContent() { Promise.resolve().then(() => { label = '变化' }); return <Routes>{label}</Routes> }`,
     `let label = '正文'\ngetGlobal().setTimeout = callback => callback()\nfunction AppContent() { setTimeout(() => { label = '变化' }, 0); return <Routes>{label}</Routes> }`,
   ]) {
@@ -1033,6 +1036,13 @@ test('secondary review boundaries preserve SSR precision and fail closed', () =>
       /Unsupported external synchronous call/,
     )
   }
+  assert.throws(
+    () => semanticSourceForDigest(
+      'site/src/app/AppContent.tsx',
+      `import { opaque } from 'opaque-patcher'\nconst choices = { get selected() { return opaque } }\nconst selected = choices.selected\nfunction AppContent() { return <Routes>{selected()}</Routes> }`,
+    ),
+    /Unsupported dynamic call target/,
+  )
   for (const externalStandalone of [
     `import { mutateOne as mutate, state } from 'pkg'\nmutate()\nfunction AppContent() { return <Routes>{state.value}</Routes> }`,
     `mutateOne()\nfunction AppContent() { return <Routes>{globalThis.state.value}</Routes> }`,
@@ -1167,6 +1177,10 @@ test('public config rejects alias mutation, pattern writes, and patched freeze',
       `name: '初始'`,
     ),
     publicConfigSource(
+      `const holder = { nested: { g: null } }\nholder.nested.g = globalThis\nholder.nested.g.Object = { freeze(value) { value.name = '运行时'; return value } }`,
+      `name: '初始'`,
+    ),
+    publicConfigSource(
       `const O = (() => Object)()\nO.freeze = value => { value.name = '运行时'; return value }`,
       `name: '初始'`,
     ),
@@ -1186,6 +1200,47 @@ test('static dependency discovery excludes specifier-level type-only edges', () 
       `import { type ClientOnly } from './client'\nimport { Runtime, type RuntimeType } from './runtime'\nexport { type ExportedType } from './types'\nexport { RuntimeValue } from './values'`,
     ),
     ['./runtime', './values'],
+  )
+})
+
+test('static dependency discovery follows literal top-level dynamic imports and rejects dynamic targets', () => {
+  assert.deepEqual(
+    staticImportSpecifiersForSource(
+      'site/src/app/AppContent.tsx',
+      `await import('./runtime')\nfunction later() { return import('./client-only') }`,
+    ),
+    ['./runtime'],
+  )
+  assert.throws(
+    () => staticImportSpecifiersForSource(
+      'site/src/app/AppContent.tsx',
+      `const target = './runtime'\nawait import(target)`,
+    ),
+    /Unsupported dynamic module-evaluation import/,
+  )
+  assert.throws(
+    () => semanticSourceForDigest(
+      'site/src/app/AppContent.tsx',
+      `const target = './runtime'\nawait import(target)\nfunction AppContent() { return <Routes>正文</Routes> }`,
+    ),
+    /Unsupported dynamic module-evaluation import/,
+  )
+  assert.deepEqual(
+    staticImportSpecifiersForSource(
+      'site/src/app/AppContent.tsx',
+      `await Promise.resolve().then(() => import('./runtime'))\nif (false) import('opaque-one')`,
+    ),
+    ['./runtime'],
+  )
+  assert.equal(
+    semanticSourceForDigest(
+      'site/src/app/AppContent.tsx',
+      `if (false) import('opaque-one')\nfunction AppContent() { return <Routes>正文</Routes> }`,
+    ),
+    semanticSourceForDigest(
+      'site/src/app/AppContent.tsx',
+      `if (false) import('opaque-two')\nfunction AppContent() { return <Routes>正文</Routes> }`,
+    ),
   )
 })
 
@@ -1210,7 +1265,7 @@ test('static dependency discovery strips Vite query and hash suffixes', () => {
 
 test('trusted runtime packages are bound to their declared and locked resolutions', () => {
   const packageSource = JSON.stringify({
-    dependencies: { react: '^19.2.8' },
+    dependencies: { gsap: '^3.15.0', react: '^19.2.8' },
     devDependencies: { vitest: '^4.1.11' },
   })
   assert.notEqual(
@@ -1226,6 +1281,26 @@ test('trusted runtime packages are bound to their declared and locked resolution
       'site/package.json',
       packageSource.replace('^4.1.11', '^5.0.0'),
     ),
+  )
+  assert.equal(
+    semanticSourceForDigest(
+      'site/package.json',
+      packageSource,
+      { runtimePackages: new Set(['react']) },
+    ),
+    semanticSourceForDigest(
+      'site/package.json',
+      packageSource.replace('^3.15.0', '^4.0.0'),
+      { runtimePackages: new Set(['react']) },
+    ),
+  )
+  assert.throws(
+    () => semanticSourceForDigest(
+      'site/package.json',
+      packageSource,
+      { runtimePackages: new Set(['lucide-react']) },
+    ),
+    /Missing runtime dependency/,
   )
 
   const lockSource = `lockfileVersion: '9.0'
@@ -1267,6 +1342,44 @@ snapshots:
       lockSource.replace('sha512-test-one', 'sha512-test-two'),
     ),
   )
+  assert.throws(
+    () => semanticSourceForDigest(
+      'site/pnpm-lock.yaml',
+      lockSource.replace(/snapshots:[\s\S]*/u, 'snapshots:'),
+    ),
+    /Missing locked snapshot/,
+  )
+  assert.throws(
+    () => semanticSourceForDigest(
+      'site/pnpm-lock.yaml',
+      lockSource.replace(
+        '  loose-envify@1.4.0:\n    resolution: {integrity: sha512-runtime-one}\n',
+        '',
+      ),
+    ),
+    /Missing locked package/,
+  )
+  assert.throws(
+    () => semanticSourceForDigest(
+      'site/pnpm-lock.yaml',
+      lockSource.replace('resolution: {integrity: sha512-react-one}', 'resolution: {}'),
+    ),
+    /Missing registry integrity/,
+  )
+  assert.throws(
+    () => semanticSourceForDigest(
+      'site/pnpm-lock.yaml',
+      lockSource,
+      { runtimePackages: new Set(['gsap']) },
+    ),
+    /Missing locked root/,
+  )
+
+  const homePackages = new Set(semanticRuntimePackageNamesForRoute('/'))
+  assert.ok(homePackages.has('react'))
+  assert.equal(homePackages.has('gsap'), false)
+  assert.equal(homePackages.has('katex'), false)
+  assert.equal(homePackages.has('shiki'), false)
 })
 
 test('switch discriminants resolve outside the switch lexical scope', () => {

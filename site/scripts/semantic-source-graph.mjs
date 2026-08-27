@@ -973,6 +973,11 @@ function publicSiteConfigProjection(program) {
   }
   const scanMutations = (node) => {
     if (node.type === 'AssignmentExpression' || node.type === 'UpdateExpression') {
+      if (
+        node.type === 'AssignmentExpression'
+        && unwrap(node.left)?.type === 'MemberExpression'
+        && isGlobalContainer(node.right)
+      ) unsupported('member-stored global container')
       rejectUsedIdentity(node.type === 'AssignmentExpression' ? node.left : node.argument, 'mutation of')
     } else if (node.type === 'UnaryExpression' && node.operator === 'delete') {
       rejectUsedIdentity(node.argument, 'mutation of')
@@ -1053,6 +1058,91 @@ function canonicalImportIdentity(importerPath, specifier) {
   const unresolved = projectPath(resolve(dirname(importer), specifier))
     .replace(/\.(?:m?[jt]sx?|json)$/u, '')
   return unresolved.endsWith('/index') ? unresolved.slice(0, -'/index'.length) : unresolved
+}
+
+function staticBooleanValue(node) {
+  const value = node && EXPRESSION_WRAPPERS.has(node.type)
+    ? staticBooleanValue(node.expression)
+    : node
+  if (
+    (value?.type === 'Literal' || value?.type === 'BooleanLiteral')
+    && typeof value.value === 'boolean'
+  ) return value.value
+  if (value?.type === 'UnaryExpression' && value.operator === '!') {
+    const argument = staticBooleanValue(value.argument)
+    return argument === null ? null : !argument
+  }
+  return null
+}
+
+function moduleEvaluationDynamicImportSources(program, path) {
+  const sources = []
+  const functionTypes = new Set([
+    'ArrowFunctionExpression',
+    'FunctionDeclaration',
+    'FunctionExpression',
+  ])
+
+  function visit(node, { executeFunction = false, awaitedCall = false } = {}) {
+    if (!node || typeof node !== 'object') return
+    if (node.type === 'ImportExpression') {
+      if (typeof node.source?.value !== 'string') {
+        throw new Error(`Unsupported dynamic module-evaluation import in ${path}`)
+      }
+      sources.push(node.source)
+      return
+    }
+    if (functionTypes.has(node.type)) {
+      if (!executeFunction) return
+      for (const parameter of node.params ?? []) visit(parameter)
+      visit(node.body)
+      return
+    }
+    if (node.type === 'IfStatement') {
+      visit(node.test)
+      const condition = staticBooleanValue(node.test)
+      if (condition !== false) visit(node.consequent)
+      if (condition !== true) visit(node.alternate)
+      return
+    }
+    if (node.type === 'ConditionalExpression') {
+      visit(node.test)
+      const condition = staticBooleanValue(node.test)
+      if (condition !== false) visit(node.consequent)
+      if (condition !== true) visit(node.alternate)
+      return
+    }
+    if (node.type === 'LogicalExpression') {
+      visit(node.left)
+      const condition = staticBooleanValue(node.left)
+      if (
+        (node.operator === '&&' && condition !== false)
+        || (node.operator === '||' && condition !== true)
+        || (node.operator === '??' && condition === null)
+      ) visit(node.right)
+      return
+    }
+    if (node.type === 'AwaitExpression') {
+      visit(node.argument, { awaitedCall: true })
+      return
+    }
+    if (node.type === 'CallExpression' || node.type === 'NewExpression') {
+      const immediateFunction = functionTypes.has(node.callee?.type)
+      visit(node.callee, { executeFunction: immediateFunction, awaitedCall })
+      for (const argument of node.arguments ?? []) {
+        if (functionTypes.has(argument?.type)) {
+          if (awaitedCall) visit(argument, { executeFunction: true, awaitedCall: true })
+        } else {
+          visit(argument)
+        }
+      }
+      return
+    }
+    for (const [child] of childNodes(node)) visit(child)
+  }
+
+  visit(program)
+  return sources
 }
 
 function semanticBindingGraph(program, path, analysisContext = {}) {
@@ -1250,13 +1340,6 @@ function semanticBindingGraph(program, path, analysisContext = {}) {
       return
     }
     if (
-      node.type === 'ImportExpression'
-      && node.source
-      && nearestFunctionScope(scope).kind === 'program'
-    ) {
-      moduleEvaluationEdges.push(node.source)
-    }
-    if (
       node.type === 'ExportAllDeclaration'
       && node.exportKind !== 'type'
       && node.source
@@ -1278,6 +1361,7 @@ function semanticBindingGraph(program, path, analysisContext = {}) {
     for (const [child, childKey] of childNodes(node)) build(child, scope, node, childKey)
   }
   build(program, rootScope)
+  moduleEvaluationEdges.push(...moduleEvaluationDynamicImportSources(program, path))
 
   function lookup(node) {
     let scope = nodeScopes.get(node)
@@ -1433,9 +1517,55 @@ function semanticBindingGraph(program, path, analysisContext = {}) {
     return false
   }
 
+  function staticMemberMayInvokeGetter(node, key, seen = new Set()) {
+    const value = unwrapExpression(node)
+    if (!value || typeof value !== 'object') return false
+    if (value.type === 'Identifier') {
+      const binding = lookup(value)
+      if (!binding || seen.has(binding)) return false
+      const initializer = directConstInitializer(binding)
+      return initializer
+        ? staticMemberMayInvokeGetter(initializer, key, new Set([...seen, binding]))
+        : false
+    }
+    if (value.type === 'ConditionalExpression') {
+      return staticMemberMayInvokeGetter(value.consequent, key, seen)
+        || staticMemberMayInvokeGetter(value.alternate, key, seen)
+    }
+    if (value.type === 'LogicalExpression') {
+      return staticMemberMayInvokeGetter(value.left, key, seen)
+        || staticMemberMayInvokeGetter(value.right, key, seen)
+    }
+    if (value.type === 'SequenceExpression') {
+      return staticMemberMayInvokeGetter(value.expressions.at(-1), key, seen)
+    }
+    if (value.type === 'MemberExpression') {
+      const nestedName = memberName(value)
+      if (nestedName === null) return true
+      return staticMemberExpressions(value.object, nestedName, seen).some((member) => (
+        staticMemberMayInvokeGetter(member, key, seen)
+      ))
+    }
+    if (value.type !== 'ObjectExpression') return false
+    return value.properties.some((property) => {
+      if (property.type === 'SpreadElement') {
+        return staticMemberMayInvokeGetter(property.argument, key, seen)
+      }
+      if (
+        property.type !== 'Property'
+        || staticPropertyNameFromNode(property) !== String(key)
+      ) return false
+      return property.kind === 'get'
+    })
+  }
+
   function hasDynamicInitializer(node) {
     if (!node || typeof node !== 'object') return false
     if (node.type === 'CallExpression' || node.type === 'NewExpression') return true
+    if (node.type === 'MemberExpression') {
+      const name = memberName(node)
+      return name === null || staticMemberMayInvokeGetter(node.object, name)
+    }
     if (node.type === 'ObjectExpression') {
       return node.properties.some((property) => (
         property.type === 'Property'
@@ -2801,6 +2931,17 @@ function semanticBindingGraph(program, path, analysisContext = {}) {
       }
     }
     if (node.type === 'AssignmentExpression') {
+      if (
+        isMemberMutationTarget(node.left)
+        && unboundGlobalContainer(node.right)
+      ) {
+        unsupportedRootCalls.push({
+          executionScope,
+          message: 'Unsupported member-stored global container',
+          mutationNode: node,
+          semanticNode,
+        })
+      }
       record(node.left, 'write', {
         propagateAliases: isMemberMutationTarget(node.left),
       })
@@ -2881,7 +3022,7 @@ function semanticBindingGraph(program, path, analysisContext = {}) {
         && !isKnownSynchronousCallbackCall(node)
         && !(callee.type === 'MemberExpression' && globalOwnerRoot(callee.object))
       if ([...calleeAliases].some((binding) => binding.dynamicIdentity)) {
-        unresolvedMutations.push({
+        unsupportedRootCalls.push({
           executionScope,
           message: 'Unsupported dynamic call target',
           mutationNode: node,
@@ -3413,28 +3554,58 @@ function nestedYamlValue(entry, name, sectionIndent) {
   return null
 }
 
-function runtimePackageJsonProjection(source) {
-  const parsed = JSON.parse(source)
-  return JSON.stringify(Object.fromEntries(
-    [...TRUSTED_RUNTIME_PACKAGE_NAMES]
-      .sort()
-      .filter((name) => Object.hasOwn(parsed.dependencies ?? {}, name))
-      .map((name) => [name, parsed.dependencies[name]]),
-  ))
+function selectedRuntimePackageNames(runtimePackages, availableNames) {
+  const selected = runtimePackages === undefined
+    ? [...availableNames].filter((name) => TRUSTED_RUNTIME_PACKAGE_NAMES.has(name))
+    : [...runtimePackages]
+  for (const name of selected) {
+    if (!TRUSTED_RUNTIME_PACKAGE_NAMES.has(name)) {
+      throw new Error(`Unsupported trusted runtime package ${name}`)
+    }
+  }
+  return [...new Set(selected)].sort()
 }
 
-function runtimeLockProjection(source) {
+function runtimePackageJsonProjection(source, runtimePackages) {
+  const parsed = JSON.parse(source)
+  const dependencies = parsed.dependencies ?? {}
+  const selected = selectedRuntimePackageNames(runtimePackages, Object.keys(dependencies))
+  for (const name of selected) {
+    if (!Object.hasOwn(dependencies, name)) {
+      throw new Error(`Missing runtime dependency ${name}`)
+    }
+  }
+  return JSON.stringify(Object.fromEntries(selected.map((name) => [name, dependencies[name]])))
+}
+
+function runtimeLockProjection(source, runtimePackages) {
   const lines = source.replaceAll('\r\n', '\n').replaceAll('\r', '\n').split('\n')
   const importerEntries = yamlSectionEntries(lines, 'importers', 0, 2)
   const rootImporter = importerEntries.filter((entry) => entry.key === '.').at(-1)
+  const rootDependencies = rootImporter
+    ? yamlSectionEntries(rootImporter.lines, 'dependencies', 4, 6)
+    : []
+  const selectedNames = selectedRuntimePackageNames(
+    runtimePackages,
+    rootDependencies.map((dependency) => dependency.key),
+  )
+  if (selectedNames.length > 0 && !rootImporter) {
+    throw new Error('Missing root lock importer')
+  }
   const roots = new Map()
   if (rootImporter) {
-    for (const dependency of yamlSectionEntries(rootImporter.lines, 'dependencies', 4, 6)) {
-      if (!TRUSTED_RUNTIME_PACKAGE_NAMES.has(dependency.key)) continue
+    for (const dependency of rootDependencies) {
+      if (!selectedNames.includes(dependency.key)) continue
       const specifier = nestedYamlValue(dependency, 'specifier', 6)
       const version = nestedYamlValue(dependency, 'version', 6)
-      if (version) roots.set(dependency.key, { specifier, version })
+      if (!specifier || !version) {
+        throw new Error(`Missing locked root ${dependency.key}`)
+      }
+      roots.set(dependency.key, { specifier, version })
     }
+  }
+  for (const name of selectedNames) {
+    if (!roots.has(name)) throw new Error(`Missing locked root ${name}`)
   }
 
   const packageEntries = new Map(
@@ -3452,21 +3623,25 @@ function runtimeLockProjection(source) {
     if (!key || visited.has(key) || /^(?:link|workspace):/u.test(key)) continue
     visited.add(key)
     const snapshot = snapshotEntries.get(key)
-    if (snapshot) {
-      selectedSnapshots.set(key, snapshot.lines.join('\n'))
-      for (const section of ['dependencies', 'optionalDependencies']) {
-        for (const dependency of yamlSectionEntries(snapshot.lines, section, 4, 6)) {
-          const version = dependency.value
-            || nestedYamlValue(dependency, 'version', 6)
-          if (version && !/^(?:link|workspace):/u.test(version)) {
-            pending.push(`${dependency.key}@${version}`)
-          }
+    if (!snapshot) throw new Error(`Missing locked snapshot ${key}`)
+    selectedSnapshots.set(key, snapshot.lines.join('\n'))
+    for (const section of ['dependencies', 'optionalDependencies']) {
+      for (const dependency of yamlSectionEntries(snapshot.lines, section, 4, 6)) {
+        const version = dependency.value
+          || nestedYamlValue(dependency, 'version', 6)
+        if (version && !/^(?:link|workspace):/u.test(version)) {
+          pending.push(`${dependency.key}@${version}`)
         }
       }
     }
     const packageKey = key.replace(/\(.+$/u, '')
     const packageEntry = packageEntries.get(key) ?? packageEntries.get(packageKey)
-    if (packageEntry) selectedPackages.set(packageEntry.key, packageEntry.lines.join('\n'))
+    if (!packageEntry) throw new Error(`Missing locked package ${packageKey}`)
+    const packageSource = packageEntry.lines.join('\n')
+    if (!/\bintegrity:\s*[^\s}]+/u.test(packageSource)) {
+      throw new Error(`Missing registry integrity ${packageEntry.key}`)
+    }
+    selectedPackages.set(packageEntry.key, packageSource)
   }
 
   const sortedObject = (entries) => Object.fromEntries([...entries].sort(([left], [right]) => (
@@ -3479,9 +3654,13 @@ function runtimeLockProjection(source) {
   })
 }
 
-export function semanticSourceForDigest(path, source) {
-  if (path === 'site/package.json') return runtimePackageJsonProjection(source)
-  if (path === 'site/pnpm-lock.yaml') return runtimeLockProjection(source)
+export function semanticSourceForDigest(path, source, options = {}) {
+  if (path === 'site/package.json') {
+    return runtimePackageJsonProjection(source, options.runtimePackages)
+  }
+  if (path === 'site/pnpm-lock.yaml') {
+    return runtimeLockProjection(source, options.runtimePackages)
+  }
   const rootName = SEMANTIC_ELEMENT_ROOTS.get(path)
   if (!PARSED_EXTENSIONS.has(extname(path))) return source
   const { program, errors } = parseSync(path, source)
@@ -3645,7 +3824,7 @@ export function staticImportSpecifiersForSource(path, source) {
   if (errors.length > 0) {
     throw new Error(`Unable to parse semantic dependency ${path}: ${errors[0].message}`)
   }
-  return program.body.flatMap((statement) => {
+  const staticSpecifiers = program.body.flatMap((statement) => {
     if (typeof statement.source?.value !== 'string') return []
     if (statement.type === 'ImportDeclaration') {
       if (statement.importKind === 'type') return []
@@ -3668,6 +3847,10 @@ export function staticImportSpecifiersForSource(path, source) {
     }
     return []
   })
+  return [
+    ...staticSpecifiers,
+    ...moduleEvaluationDynamicImportSources(program, path).map((sourceNode) => sourceNode.value),
+  ]
 }
 
 function staticImportSpecifiers(path) {
@@ -3675,7 +3858,17 @@ function staticImportSpecifiers(path) {
   return staticImportSpecifiersForSource(path, readFileSync(path, 'utf8'))
 }
 
-export function semanticRouteFiles(pathname) {
+function trustedRuntimePackageName(specifier) {
+  if (!TRUSTED_RUNTIME_PACKAGES.has(specifier)) return null
+  return specifier.startsWith('@')
+    ? specifier.split('/').slice(0, 2).join('/')
+    : specifier.split('/')[0]
+}
+
+const semanticRouteEvidenceCache = new Map()
+
+function semanticRouteEvidence(pathname) {
+  if (semanticRouteEvidenceCache.has(pathname)) return semanticRouteEvidenceCache.get(pathname)
   const routeModules = routeModuleIds(pathname)
   const routePages = new Set(ROUTE_PAGE_MODULES.map((moduleId) => `site/${moduleId}`))
   const allowedPages = new Set(
@@ -3684,14 +3877,13 @@ export function semanticRouteFiles(pathname) {
       .map((moduleId) => `site/${moduleId}`),
   )
   const pending = [
-    resolve(projectRoot, 'site/package.json'),
-    resolve(projectRoot, 'site/pnpm-lock.yaml'),
     resolve(projectRoot, 'site/src/entry-server.tsx'),
     resolve(projectRoot, 'site/src/lib/pageMeta.ts'),
     resolve(projectRoot, 'site/src/lib/seoHead.ts'),
     ...routeModules.map((moduleId) => resolve(projectRoot, 'site', moduleId)),
   ]
   const visited = new Set()
+  const runtimePackages = new Set()
 
   while (pending.length > 0) {
     const path = pending.pop()
@@ -3707,10 +3899,32 @@ export function semanticRouteFiles(pathname) {
     visited.add(relativePath)
 
     for (const specifier of staticImportSpecifiers(path)) {
+      const runtimePackage = trustedRuntimePackageName(specifier)
+      if (runtimePackage) {
+        runtimePackages.add(runtimePackage)
+        continue
+      }
       const dependency = resolveStaticImport(path, specifier)
       if (dependency) pending.push(dependency)
     }
   }
 
-  return [...visited].sort()
+  if (runtimePackages.size > 0) {
+    visited.add('site/package.json')
+    visited.add('site/pnpm-lock.yaml')
+  }
+  const evidence = {
+    files: [...visited].sort(),
+    runtimePackages: [...runtimePackages].sort(),
+  }
+  semanticRouteEvidenceCache.set(pathname, evidence)
+  return evidence
+}
+
+export function semanticRouteFiles(pathname) {
+  return [...semanticRouteEvidence(pathname).files]
+}
+
+export function semanticRuntimePackageNamesForRoute(pathname) {
+  return [...semanticRouteEvidence(pathname).runtimePackages]
 }
