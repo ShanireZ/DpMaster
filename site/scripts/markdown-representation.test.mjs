@@ -59,3 +59,18 @@ test('a route writes its Markdown representation only under the internal asset p
     rmSync(outDir, { recursive: true, force: true })
   }
 })
+
+test('the Markdown projection normalizes skipped HTML heading levels', () => {
+  const markdown = renderMarkdownRepresentation({
+    html: '<main><h1>方法论</h1><h2>前提</h2><h4>最优子结构</h4><h2>步骤</h2><h5>状态</h5></main>',
+    canonical: 'https://dp.round1.cc/method',
+    summary: '',
+  })
+
+  assert.match(markdown, /^# 方法论$/m)
+  assert.match(markdown, /^## 前提$/m)
+  assert.match(markdown, /^### 最优子结构$/m)
+  assert.match(markdown, /^## 步骤$/m)
+  assert.match(markdown, /^### 状态$/m)
+  assert.doesNotMatch(markdown, /^####/m)
+})

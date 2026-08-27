@@ -8,8 +8,10 @@
 import { existsSync, readFileSync, readdirSync } from 'node:fs'
 import { extname, join, relative, resolve } from 'node:path'
 import { fileURLToPath } from 'node:url'
+import { JSDOM } from 'jsdom'
+import { markdownAssetRelativePath } from '../src/lib/publicWebContract.ts'
 import { PRERENDER_PATHS, PUBLIC_PATHS } from '../src/lib/publicRoutes.ts'
-import { markdownAssetRelativePath } from './markdown-representation.mjs'
+import { renderMarkdownRepresentation } from './markdown-representation.mjs'
 
 const MANUAL_BEACON_MARKERS = Object.freeze([
   '<!-- Cloudflare Web Analytics -->',
@@ -42,6 +44,30 @@ function htmlAssetRelativePath(pathname) {
   return pathname === '/' ? 'index.html' : `${pathname.slice(1)}/index.html`
 }
 
+function hasLegalHeadingHierarchy(markdown) {
+  const levels = []
+  let fence = null
+  for (const line of markdown.split('\n')) {
+    const marker = /^\s*(`{3,}|~{3,})/.exec(line)?.[1]
+    if (marker) {
+      if (fence === null) fence = marker
+      else if (marker[0] === fence[0] && marker.length >= fence.length) fence = null
+      continue
+    }
+    if (fence !== null) continue
+    const level = /^(#{1,6})\s+\S/.exec(line)?.[1].length
+    if (level !== undefined) levels.push(level)
+  }
+  if (levels.length === 0 || levels[0] !== 1) return false
+  if (levels.filter((level) => level === 1).length !== 1) return false
+  return levels.slice(1).every((level, index) => level <= levels[index] + 1)
+}
+
+function markdownLinkTargets(markdown) {
+  return [...markdown.matchAll(/!?\[[^\]]*\]\(([^)\s]+)\)/g)]
+    .map((match) => match[1])
+}
+
 export function expectedHtmlCount(paths = PRERENDER_PATHS) {
   // 首页只有 index.html，其余每条路由两份，再加一个 404.html。
   return 1 + (paths.length - 1) * 2 + 1
@@ -59,6 +85,7 @@ export function checkMarkdownRepresentations({
   const expected = paths.map(markdownAssetRelativePath).sort()
   const actualSet = new Set(actual)
   const expectedSet = new Set(expected)
+  const publicPathSet = new Set(paths)
   const errors = []
 
   for (const path of expected.filter((path) => !actualSet.has(path))) {
@@ -78,6 +105,8 @@ export function checkMarkdownRepresentations({
 
     if (!/^#\s+\S/m.test(markdown)) {
       errors.push(`Markdown representation has no heading: ${relativeMarkdown}`)
+    } else if (!hasLegalHeadingHierarchy(markdown)) {
+      errors.push(`Markdown representation has an illegal heading hierarchy: ${relativeMarkdown}`)
     }
     if (/<(?:script|style|button|input|textarea|select|form)\b/i.test(markdown)) {
       errors.push(`Markdown representation contains browser-only markup: ${relativeMarkdown}`)
@@ -88,10 +117,46 @@ export function checkMarkdownRepresentations({
     if (!markdown.includes(`[在原页面查看完整互动内容](${canonical})`)) {
       errors.push(`Markdown representation lacks its canonical interactive-content link: ${relativeMarkdown}`)
     }
+    for (const target of markdownLinkTargets(markdown)) {
+      let url
+      try {
+        url = new URL(target, canonical)
+      } catch {
+        errors.push(`Markdown representation has an invalid public link: ${relativeMarkdown} -> ${target}`)
+        continue
+      }
+      if (url.protocol !== 'http:' && url.protocol !== 'https:') {
+        errors.push(`Markdown representation has an invalid public link: ${relativeMarkdown} -> ${target}`)
+        continue
+      }
+      if (url.origin !== origin || publicPathSet.has(url.pathname)) continue
+      let assetPath = null
+      try {
+        assetPath = join(dir, decodeURIComponent(url.pathname).replace(/^\/+/, ''))
+      } catch {
+        // The URL parsed, but an invalid percent escape still makes the target unusable.
+      }
+      if (!assetPath || !existsSync(assetPath)) {
+        errors.push(`Markdown representation has an unresolved same-origin link: ${relativeMarkdown} -> ${url.href}`)
+      }
+    }
     if (!existsSync(htmlPath)) {
       errors.push(`Markdown representation has no matching HTML asset: ${relativeMarkdown}`)
-    } else if (Buffer.byteLength(markdown) >= Buffer.byteLength(readFileSync(htmlPath, 'utf8')) / 2) {
-      errors.push(`Markdown representation is not compact enough: ${relativeMarkdown}`)
+    } else {
+      const html = readFileSync(htmlPath, 'utf8')
+      const document = new JSDOM(html).window.document
+      const summary = document.querySelector('meta[name="abstract"]')?.getAttribute('content') ?? ''
+      const expected = renderMarkdownRepresentation({ html, canonical, summary })
+      const repeated = renderMarkdownRepresentation({ html, canonical, summary })
+      if (expected !== repeated) {
+        errors.push(`Markdown representation is not deterministic: ${relativeMarkdown}`)
+      }
+      if (markdown !== expected) {
+        errors.push(`Markdown representation does not match semantic HTML: ${relativeMarkdown}`)
+      }
+      if (Buffer.byteLength(markdown) >= Buffer.byteLength(html) / 2) {
+        errors.push(`Markdown representation is not compact enough: ${relativeMarkdown}`)
+      }
     }
   }
 

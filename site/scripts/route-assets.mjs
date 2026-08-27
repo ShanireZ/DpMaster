@@ -16,6 +16,8 @@ const PAGE_MODULES = Object.freeze({
   notFound: 'src/pages/NotFound.tsx',
 })
 
+export const ROUTE_PAGE_MODULES = Object.freeze(Object.values(PAGE_MODULES))
+
 function contentModuleMap() {
   const lines = readFileSync(catalogPath, 'utf8').split(/\r?\n/)
   const modules = new Map()
