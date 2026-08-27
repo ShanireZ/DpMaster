@@ -1,5 +1,52 @@
 const TOKEN = "[!#$%&'*+.^_`|~0-9a-z-]+"
 const MEDIA_RANGE = new RegExp(`^(${TOKEN}|\\*)/(${TOKEN}|\\*)$`, 'i')
+const TOKEN_VALUE = new RegExp(`^${TOKEN}$`, 'i')
+
+function splitDelimited(value, delimiter) {
+  const parts = []
+  let start = 0
+  let quoted = false
+  let escaped = false
+  for (let index = 0; index < value.length; index += 1) {
+    const character = value[index]
+    if (escaped) {
+      escaped = false
+      continue
+    }
+    if (quoted && character === '\\') {
+      escaped = true
+      continue
+    }
+    if (character === '"') {
+      quoted = !quoted
+      continue
+    }
+    if (!quoted && character === delimiter) {
+      parts.push(value.slice(start, index))
+      start = index + 1
+    }
+  }
+  if (quoted || escaped) return null
+  parts.push(value.slice(start))
+  return parts
+}
+
+function validParameterValue(value) {
+  if (TOKEN_VALUE.test(value)) return true
+  if (value.length < 2 || value[0] !== '"' || value.at(-1) !== '"') return false
+  for (let index = 1; index < value.length - 1; index += 1) {
+    const code = value.charCodeAt(index)
+    if (value[index] === '\\') {
+      index += 1
+      if (index >= value.length - 1) return false
+      const escapedCode = value.charCodeAt(index)
+      if (escapedCode !== 9 && (escapedCode < 32 || escapedCode === 127)) return false
+      continue
+    }
+    if (value[index] === '"' || (code !== 9 && (code < 32 || code === 127))) return false
+  }
+  return true
+}
 
 function parseQuality(value) {
   if (value === undefined) return 1
@@ -9,7 +56,9 @@ function parseQuality(value) {
 }
 
 function parseRange(member) {
-  const [mediaType, ...parameters] = member.split(';').map((part) => part.trim())
+  const split = splitDelimited(member, ';')
+  if (!split) return null
+  const [mediaType, ...parameters] = split.map((part) => part.trim())
   const match = MEDIA_RANGE.exec(mediaType)
   if (!match) return null
   const type = match[1].toLowerCase()
@@ -22,9 +71,11 @@ function parseRange(member) {
     const separator = parameter.indexOf('=')
     if (separator < 1) return null
     const name = parameter.slice(0, separator).trim().toLowerCase()
+    const value = parameter.slice(separator + 1).trim()
+    if (!TOKEN_VALUE.test(name) || !validParameterValue(value)) return null
     if (name !== 'q') continue
     if (quality !== undefined) return null
-    quality = parseQuality(parameter.slice(separator + 1))
+    quality = parseQuality(value)
     if (quality === null) return null
   }
 
@@ -53,8 +104,8 @@ function effectiveMatch(ranges, subtype) {
 
 export function negotiateRepresentation(accept) {
   if (accept === null || accept === undefined) return 'html'
-  const ranges = accept
-    .split(',')
+  const members = splitDelimited(accept, ',')
+  const ranges = (members ?? [])
     .map(parseRange)
     .filter((range) => range !== null)
 

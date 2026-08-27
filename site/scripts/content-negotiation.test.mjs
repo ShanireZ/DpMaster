@@ -17,6 +17,8 @@ test('content negotiation follows the approved HTML and Markdown Accept matrix',
     ['text/markdown;q=0, */*;q=1', 'html'],
     ['not a media range, text/html', 'html'],
     ['not a media range', null],
+    ['text/markdown;foo=', null],
+    ['text/markdown;foo="unterminated', null],
   ]
 
   for (const [accept, expected] of vectors) {

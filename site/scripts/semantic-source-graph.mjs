@@ -24,6 +24,13 @@ const TRUSTED_RUNTIME_PACKAGES = new Set([
   'shiki/themes/github-dark.mjs',
   'shiki/themes/github-light.mjs',
 ])
+const TRUSTED_RUNTIME_PACKAGE_NAMES = new Set(
+  [...TRUSTED_RUNTIME_PACKAGES].map((specifier) => (
+    specifier.startsWith('@')
+      ? specifier.split('/').slice(0, 2).join('/')
+      : specifier.split('/')[0]
+  )),
+)
 const NON_SEMANTIC_FILES = new Set([
   'site/src/components/feedback/FeedbackWidget.tsx',
   'site/src/components/layout/ErrorBoundary.tsx',
@@ -325,6 +332,95 @@ function memberNameFromNode(member) {
   return null
 }
 
+function staticPropertyNameFromNode(property) {
+  if (property?.type !== 'Property') return null
+  if (!property.computed && property.key.type === 'Identifier') return property.key.name
+  if (
+    (property.key.type === 'StringLiteral' || property.key.type === 'Literal')
+    && typeof property.key.value === 'string'
+  ) return property.key.value
+  return null
+}
+
+function resolveStaticMemberExpressions(
+  node,
+  key,
+  { bindingForIdentifier, initializerForBinding, unwrap },
+  seen = new Set(),
+) {
+  const value = unwrap(node)
+  if (!value || typeof value !== 'object') return []
+  if (value.type === 'Identifier') {
+    const binding = bindingForIdentifier(value)
+    if (!binding || seen.has(binding)) return []
+    const initializer = initializerForBinding(binding)
+    return initializer
+      ? resolveStaticMemberExpressions(
+          initializer,
+          key,
+          { bindingForIdentifier, initializerForBinding, unwrap },
+          new Set([...seen, binding]),
+        )
+      : []
+  }
+  if (value.type === 'ConditionalExpression' || value.type === 'LogicalExpression') {
+    const branches = value.type === 'ConditionalExpression'
+      ? [value.consequent, value.alternate]
+      : [value.left, value.right]
+    return branches.flatMap((branch) => resolveStaticMemberExpressions(
+      branch,
+      key,
+      { bindingForIdentifier, initializerForBinding, unwrap },
+      seen,
+    ))
+  }
+  if (value.type === 'SequenceExpression') {
+    return resolveStaticMemberExpressions(
+      value.expressions.at(-1),
+      key,
+      { bindingForIdentifier, initializerForBinding, unwrap },
+      seen,
+    )
+  }
+  if (value.type === 'MemberExpression') {
+    const nestedKey = memberNameFromNode(value)
+    if (nestedKey === null) return []
+    return resolveStaticMemberExpressions(
+      value.object,
+      nestedKey,
+      { bindingForIdentifier, initializerForBinding, unwrap },
+      seen,
+    ).flatMap((member) => resolveStaticMemberExpressions(
+      member,
+      key,
+      { bindingForIdentifier, initializerForBinding, unwrap },
+      seen,
+    ))
+  }
+  if (value.type === 'ArrayExpression' && /^\d+$/u.test(String(key))) {
+    const element = value.elements[Number(key)]
+    return element && element.type !== 'SpreadElement' ? [element] : []
+  }
+  if (value.type !== 'ObjectExpression') return []
+  const matches = []
+  for (const property of value.properties) {
+    if (property.type === 'SpreadElement') {
+      matches.push(...resolveStaticMemberExpressions(
+        property.argument,
+        key,
+        { bindingForIdentifier, initializerForBinding, unwrap },
+        seen,
+      ))
+    } else if (
+      property.type === 'Property'
+      && staticPropertyNameFromNode(property) === String(key)
+    ) {
+      matches.push(property.value)
+    }
+  }
+  return matches
+}
+
 function publicSiteConfigProjection(program) {
   const selectedKeys = new Map([
     ['BRAND', new Set(['name', 'owner', 'subtitle'])],
@@ -361,15 +457,7 @@ function publicSiteConfigProjection(program) {
   const globalContainerAliases = new Set()
   const globalObjectAliases = new Set()
   let dynamicGlobalObjectAlias = false
-  const staticPatternPropertyName = (property) => {
-    if (property?.type !== 'Property') return null
-    if (!property.computed && property.key.type === 'Identifier') return property.key.name
-    if (
-      (property.key.type === 'StringLiteral' || property.key.type === 'Literal')
-      && typeof property.key.value === 'string'
-    ) return property.key.value
-    return null
-  }
+  const staticPatternPropertyName = staticPropertyNameFromNode
   const patternTargetNames = (property) => (
     property?.type === 'Property'
       ? bindingIdentifiers(property.value).map((identifier) => identifier.name)
@@ -487,39 +575,15 @@ function publicSiteConfigProjection(program) {
       indexGlobalContainerAlias(program)
     }
   }
-  const staticMemberExpressions = (node, key, seen = new Set()) => {
-    const value = unwrap(node)
-    if (!value || typeof value !== 'object') return []
-    if (value.type === 'Identifier' && bindings.has(value.name)) {
-      const initializer = constBindingExpression(value.name, seen)
-      return initializer
-        ? staticMemberExpressions(initializer, key, new Set([...seen, value.name]))
-        : []
-    }
-    if (value.type === 'ConditionalExpression' || value.type === 'LogicalExpression') {
-      const branches = value.type === 'ConditionalExpression'
-        ? [value.consequent, value.alternate]
-        : [value.left, value.right]
-      return branches.flatMap((branch) => staticMemberExpressions(branch, key, seen))
-    }
-    if (value.type === 'SequenceExpression') {
-      return staticMemberExpressions(value.expressions.at(-1), key, seen)
-    }
-    if (value.type === 'ArrayExpression' && /^\d+$/u.test(String(key))) {
-      const element = value.elements[Number(key)]
-      return element && element.type !== 'SpreadElement' ? [element] : []
-    }
-    if (value.type !== 'ObjectExpression') return []
-    const matches = []
-    for (const property of value.properties) {
-      if (property.type === 'SpreadElement') {
-        matches.push(...staticMemberExpressions(property.argument, key, seen))
-      } else if (property.type === 'Property' && staticPatternPropertyName(property) === String(key)) {
-        matches.push(property.value)
-      }
-    }
-    return matches
-  }
+  const staticMemberExpressions = (node, key, seen = new Set()) => (
+    resolveStaticMemberExpressions(node, key, {
+      bindingForIdentifier: (identifier) => (
+        bindings.has(identifier.name) ? identifier.name : null
+      ),
+      initializerForBinding: (name) => bindings.get(name),
+      unwrap,
+    }, seen)
+  )
   indexGlobalContainerAliases()
   const isGlobalObject = (node, seen = new Set()) => {
     const value = unwrap(node)
@@ -1184,6 +1248,13 @@ function semanticBindingGraph(program, path, analysisContext = {}) {
       }
       for (const [child, childKey] of childNodes(node)) build(child, scope, node, childKey)
       return
+    }
+    if (
+      node.type === 'ImportExpression'
+      && node.source
+      && nearestFunctionScope(scope).kind === 'program'
+    ) {
+      moduleEvaluationEdges.push(node.source)
     }
     if (
       node.type === 'ExportAllDeclaration'
@@ -1990,13 +2061,7 @@ function semanticBindingGraph(program, path, analysisContext = {}) {
   const globalContainerAliases = new Set()
 
   function staticPatternOwner(property) {
-    if (property?.type !== 'Property') return null
-    if (!property.computed && property.key.type === 'Identifier') return property.key.name
-    if (
-      (property.key.type === 'StringLiteral' || property.key.type === 'Literal')
-      && typeof property.key.value === 'string'
-    ) return property.key.value
-    return null
+    return staticPropertyNameFromNode(property)
   }
 
   function patternBindings(property) {
@@ -2043,6 +2108,12 @@ function semanticBindingGraph(program, path, analysisContext = {}) {
     return initializer
       ? unboundGlobalContainer(initializer, new Set([...seen, binding]))
       : false
+  }
+
+  function unboundGlobalMemberRoot(node) {
+    let value = unwrapExpression(node)
+    while (value?.type === 'MemberExpression') value = unwrapExpression(value.object)
+    return unboundGlobalContainer(value)
   }
 
   function indexGlobalContainerAliases() {
@@ -2126,39 +2197,11 @@ function semanticBindingGraph(program, path, analysisContext = {}) {
   }
 
   function staticMemberExpressions(node, key, seen = new Set()) {
-    if (!node || typeof node !== 'object') return []
-    if (EXPRESSION_WRAPPERS.has(node.type)) return staticMemberExpressions(node.expression, key, seen)
-    if (node.type === 'Identifier') {
-      const binding = lookup(node)
-      if (!binding || seen.has(binding)) return []
-      const initializer = directConstInitializer(binding)
-      return initializer
-        ? staticMemberExpressions(initializer, key, new Set([...seen, binding]))
-        : []
-    }
-    if (node.type === 'ConditionalExpression' || node.type === 'LogicalExpression') {
-      const branches = node.type === 'ConditionalExpression'
-        ? [node.consequent, node.alternate]
-        : [node.left, node.right]
-      return branches.flatMap((branch) => staticMemberExpressions(branch, key, seen))
-    }
-    if (node.type === 'SequenceExpression') {
-      return staticMemberExpressions(node.expressions.at(-1), key, seen)
-    }
-    if (node.type === 'ArrayExpression' && /^\d+$/u.test(String(key))) {
-      const element = node.elements[Number(key)]
-      return element && element.type !== 'SpreadElement' ? [element] : []
-    }
-    if (node.type !== 'ObjectExpression') return []
-    const matches = []
-    for (const property of node.properties) {
-      if (property.type === 'SpreadElement') {
-        matches.push(...staticMemberExpressions(property.argument, key, seen))
-      } else if (property.type === 'Property' && staticPatternOwner(property) === String(key)) {
-        matches.push(property.value)
-      }
-    }
-    return matches
+    return resolveStaticMemberExpressions(node, key, {
+      bindingForIdentifier: lookup,
+      initializerForBinding: directConstInitializer,
+      unwrap: unwrapExpression,
+    }, seen)
   }
   indexGlobalContainerAliases()
 
@@ -2723,7 +2766,7 @@ function semanticBindingGraph(program, path, analysisContext = {}) {
       if (
         directBindings.size === 0
         && memberTarget?.type === 'MemberExpression'
-        && unboundGlobalContainer(memberTarget.object)
+        && unboundGlobalMemberRoot(memberTarget.object)
       ) {
         unresolvedMutations.push({
           executionScope,
@@ -2821,7 +2864,11 @@ function semanticBindingGraph(program, path, analysisContext = {}) {
         && [...externalImportSources].every((source) => TRUSTED_RUNTIME_PACKAGES.has(source))
       const callableIsInspectable = [...invocationAliases].some((binding) => (
         !binding.importSource || binding.importSource.startsWith('.')
-      ))
+      )) && [...invocationAliases].every((binding) => (
+          !binding.importSource
+          || binding.importSource.startsWith('.')
+          || TRUSTED_RUNTIME_PACKAGES.has(binding.importSource)
+        ))
       const hasPotentialCallback = (node.arguments ?? []).some(containsPotentialCallback)
       const inlineCallee = unwrapExpression(callee)
       const inlineCallable = inlineCallee?.type === 'ArrowFunctionExpression'
@@ -2973,7 +3020,11 @@ function semanticBindingGraph(program, path, analysisContext = {}) {
       )
       const callableIsInspectable = [...calleeAliases].some((binding) => (
         !binding.importSource || binding.importSource.startsWith('.')
-      ))
+      )) && [...calleeAliases].every((binding) => (
+          !binding.importSource
+          || binding.importSource.startsWith('.')
+          || TRUSTED_RUNTIME_PACKAGES.has(binding.importSource)
+        ))
       if (
         calleeBindings.size === 0 && containsDynamicIdentity(node.callee)
         || [...calleeAliases].some((binding) => binding.dynamicIdentity)
@@ -3003,7 +3054,11 @@ function semanticBindingGraph(program, path, analysisContext = {}) {
       )
       const tagIsInspectable = [...tagAliases].some((binding) => (
         !binding.importSource || binding.importSource.startsWith('.')
-      ))
+      )) && [...tagAliases].every((binding) => (
+          !binding.importSource
+          || binding.importSource.startsWith('.')
+          || TRUSTED_RUNTIME_PACKAGES.has(binding.importSource)
+        ))
       if (
         tagBindings.size === 0 && containsDynamicIdentity(node.tag)
         || [...tagAliases].some((binding) => binding.dynamicIdentity)
@@ -3301,7 +3356,132 @@ function semanticBindingGraph(program, path, analysisContext = {}) {
   }
 }
 
+function yamlIndent(line) {
+  return line.length - line.trimStart().length
+}
+
+function yamlScalar(value) {
+  const trimmed = value.trim()
+  if (
+    trimmed.length >= 2
+    && ((trimmed[0] === "'" && trimmed.at(-1) === "'")
+      || (trimmed[0] === '"' && trimmed.at(-1) === '"'))
+  ) return trimmed.slice(1, -1)
+  return trimmed
+}
+
+function yamlMapEntry(line, indent) {
+  if (yamlIndent(line) !== indent) return null
+  const content = line.slice(indent)
+  const separator = content.indexOf(':')
+  if (separator < 1) return null
+  return {
+    key: yamlScalar(content.slice(0, separator)),
+    value: yamlScalar(content.slice(separator + 1)),
+  }
+}
+
+function yamlSectionEntries(lines, section, sectionIndent, entryIndent) {
+  const sectionLine = `${' '.repeat(sectionIndent)}${section}:`
+  const start = lines.findLastIndex((line) => line === sectionLine)
+  if (start < 0) return []
+  const entries = []
+  for (let index = start + 1; index < lines.length;) {
+    const line = lines[index]
+    if (line.trim() && yamlIndent(line) <= sectionIndent) break
+    const parsed = yamlMapEntry(line, entryIndent)
+    if (!parsed) {
+      index += 1
+      continue
+    }
+    let end = index + 1
+    while (
+      end < lines.length
+      && (!lines[end].trim() || yamlIndent(lines[end]) > entryIndent)
+    ) end += 1
+    entries.push({ ...parsed, lines: lines.slice(index, end) })
+    index = end
+  }
+  return entries
+}
+
+function nestedYamlValue(entry, name, sectionIndent) {
+  for (const line of entry.lines) {
+    const field = yamlMapEntry(line, sectionIndent + 2)
+    if (field?.key === name) return field.value || null
+  }
+  return null
+}
+
+function runtimePackageJsonProjection(source) {
+  const parsed = JSON.parse(source)
+  return JSON.stringify(Object.fromEntries(
+    [...TRUSTED_RUNTIME_PACKAGE_NAMES]
+      .sort()
+      .filter((name) => Object.hasOwn(parsed.dependencies ?? {}, name))
+      .map((name) => [name, parsed.dependencies[name]]),
+  ))
+}
+
+function runtimeLockProjection(source) {
+  const lines = source.replaceAll('\r\n', '\n').replaceAll('\r', '\n').split('\n')
+  const importerEntries = yamlSectionEntries(lines, 'importers', 0, 2)
+  const rootImporter = importerEntries.filter((entry) => entry.key === '.').at(-1)
+  const roots = new Map()
+  if (rootImporter) {
+    for (const dependency of yamlSectionEntries(rootImporter.lines, 'dependencies', 4, 6)) {
+      if (!TRUSTED_RUNTIME_PACKAGE_NAMES.has(dependency.key)) continue
+      const specifier = nestedYamlValue(dependency, 'specifier', 6)
+      const version = nestedYamlValue(dependency, 'version', 6)
+      if (version) roots.set(dependency.key, { specifier, version })
+    }
+  }
+
+  const packageEntries = new Map(
+    yamlSectionEntries(lines, 'packages', 0, 2).map((entry) => [entry.key, entry]),
+  )
+  const snapshotEntries = new Map(
+    yamlSectionEntries(lines, 'snapshots', 0, 2).map((entry) => [entry.key, entry]),
+  )
+  const selectedPackages = new Map()
+  const selectedSnapshots = new Map()
+  const pending = [...roots].map(([name, { version }]) => `${name}@${version}`)
+  const visited = new Set()
+  while (pending.length > 0) {
+    const key = pending.pop()
+    if (!key || visited.has(key) || /^(?:link|workspace):/u.test(key)) continue
+    visited.add(key)
+    const snapshot = snapshotEntries.get(key)
+    if (snapshot) {
+      selectedSnapshots.set(key, snapshot.lines.join('\n'))
+      for (const section of ['dependencies', 'optionalDependencies']) {
+        for (const dependency of yamlSectionEntries(snapshot.lines, section, 4, 6)) {
+          const version = dependency.value
+            || nestedYamlValue(dependency, 'version', 6)
+          if (version && !/^(?:link|workspace):/u.test(version)) {
+            pending.push(`${dependency.key}@${version}`)
+          }
+        }
+      }
+    }
+    const packageKey = key.replace(/\(.+$/u, '')
+    const packageEntry = packageEntries.get(key) ?? packageEntries.get(packageKey)
+    if (packageEntry) selectedPackages.set(packageEntry.key, packageEntry.lines.join('\n'))
+  }
+
+  const sortedObject = (entries) => Object.fromEntries([...entries].sort(([left], [right]) => (
+    left.localeCompare(right)
+  )))
+  return JSON.stringify({
+    roots: sortedObject(roots),
+    packages: sortedObject(selectedPackages),
+    snapshots: sortedObject(selectedSnapshots),
+  })
+}
+
 export function semanticSourceForDigest(path, source) {
+  if (path === 'site/package.json') return runtimePackageJsonProjection(source)
+  if (path === 'site/pnpm-lock.yaml') return runtimeLockProjection(source)
   const rootName = SEMANTIC_ELEMENT_ROOTS.get(path)
   if (!PARSED_EXTENSIONS.has(extname(path))) return source
   const { program, errors } = parseSync(path, source)
@@ -3440,6 +3620,11 @@ function projectPath(path) {
 
 export function resolveStaticImport(importer, specifier) {
   const pathSpecifier = specifier.match(/^[^?#]*/u)?.[0] ?? specifier
+  const query = specifier.slice(pathSpecifier.length).match(/^\?([^#]*)/u)?.[1] ?? ''
+  const queryParameters = new URLSearchParams(query)
+  const importsCssAsValue = ['inline', 'raw', 'url'].some((name) => (
+    queryParameters.has(name)
+  ))
   if (!pathSpecifier.startsWith('.')) return null
   const unresolved = resolve(dirname(importer), pathSpecifier)
   const candidates = extname(unresolved)
@@ -3451,7 +3636,7 @@ export function resolveStaticImport(importer, specifier) {
   const resolved = candidates.find((candidate) => (
     existsSync(candidate) && statSync(candidate).isFile()
   ))
-  if (!resolved || extname(resolved) === '.css') return null
+  if (!resolved || (extname(resolved) === '.css' && !importsCssAsValue)) return null
   return resolved
 }
 
@@ -3499,6 +3684,8 @@ export function semanticRouteFiles(pathname) {
       .map((moduleId) => `site/${moduleId}`),
   )
   const pending = [
+    resolve(projectRoot, 'site/package.json'),
+    resolve(projectRoot, 'site/pnpm-lock.yaml'),
     resolve(projectRoot, 'site/src/entry-server.tsx'),
     resolve(projectRoot, 'site/src/lib/pageMeta.ts'),
     resolve(projectRoot, 'site/src/lib/seoHead.ts'),
