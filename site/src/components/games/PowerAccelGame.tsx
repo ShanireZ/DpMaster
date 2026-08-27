@@ -212,6 +212,7 @@ export default function PowerAccelGame() {
         <div className="game__diff" role="group" aria-label="难度">
           {DIFF_ORDER.map((d) => (
             <button
+              type="button"
               key={d}
               className={`game__diff-pill${d === difficulty ? ' on' : ''}`}
               onClick={() => pickDiff(d)}
@@ -222,6 +223,7 @@ export default function PowerAccelGame() {
           ))}
         </div>
         <button
+          type="button"
           className="icon-btn"
           style={{ width: 34, height: 34 }}
           onClick={() => setMuted((m) => !m)}
@@ -248,6 +250,7 @@ export default function PowerAccelGame() {
               const isTarget = e === target
               return (
                 <button
+                  type="button"
                   key={e}
                   className={`gpw__chip${on ? ' on' : ''}${isTarget ? ' target' : ''}`}
                   onClick={() => pick(e)}
@@ -297,6 +300,7 @@ export default function PowerAccelGame() {
 
           <div className="gpw__ops">
             <button
+              type="button"
               className="gbtn"
               onClick={doDouble}
               disabled={done || picks.length !== 1}
@@ -305,6 +309,7 @@ export default function PowerAccelGame() {
               翻倍 (平方)
             </button>
             <button
+              type="button"
               className="gbtn"
               onClick={doAdd}
               disabled={done || picks.length !== 2}
@@ -348,19 +353,19 @@ export default function PowerAccelGame() {
           )}
 
           <div className="gpw__manage">
-            <button className="gbtn" onClick={undo} disabled={steps.length === 0}>
+            <button type="button" className="gbtn" onClick={undo} disabled={steps.length === 0}>
               <Undo2 size={16} /> 撤销
             </button>
-            <button className="gbtn" onClick={resetChain} disabled={steps.length === 0}>
+            <button type="button" className="gbtn" onClick={resetChain} disabled={steps.length === 0}>
               <RotateCcw size={16} /> 重来
             </button>
           </div>
 
           <div className="game__actions">
-            <button className="gbtn" onClick={shuffle}>
+            <button type="button" className="gbtn" onClick={shuffle}>
               <Shuffle size={16} /> 换一批
             </button>
-            <button className="gbtn gbtn--primary" onClick={reveal}>
+            <button type="button" className="gbtn gbtn--primary" onClick={reveal}>
               <Trophy size={16} /> 核对效率基线
             </button>
           </div>

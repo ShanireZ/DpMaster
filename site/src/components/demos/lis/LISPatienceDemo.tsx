@@ -72,7 +72,7 @@ export default function LISPatienceDemo() {
       <div className="lp__toolbar">
         <div className="lp__modes">
           {PRESETS.map((p) => (
-            <button
+            <button type="button"
               key={p.label}
               className={`lp__mode${a.join(',') === p.a.join(',') ? ' on' : ''}`}
               onClick={() => setPreset(p.a)}
@@ -80,7 +80,7 @@ export default function LISPatienceDemo() {
               {p.label}
             </button>
           ))}
-          <button
+          <button type="button"
             className="lp__mode"
             onClick={() => {
               player.reset()

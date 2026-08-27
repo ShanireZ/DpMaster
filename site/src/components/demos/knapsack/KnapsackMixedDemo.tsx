@@ -24,11 +24,11 @@ function Stepper({
     <div>
       <div className="stepper__lab">{label}</div>
       <div className="stepper__row">
-        <button onClick={() => onChange(value - 1)} disabled={value <= min} aria-label={`${label} 减`}>
+        <button type="button" onClick={() => onChange(value - 1)} disabled={value <= min} aria-label={`${label} 减`}>
           <Minus size={13} />
         </button>
         <span className="stepper__val">{value}</span>
-        <button onClick={() => onChange(value + 1)} disabled={value >= max} aria-label={`${label} 加`}>
+        <button type="button" onClick={() => onChange(value + 1)} disabled={value >= max} aria-label={`${label} 加`}>
           <Plus size={13} />
         </button>
       </div>
@@ -72,13 +72,13 @@ export default function KnapsackMixedDemo() {
               <div className="demo-control__item" key={i} style={{ flexDirection: 'column', gap: 10 }}>
                 <span className="demo-control__item-i">{i + 1}</span>
                 {items.length > 1 && (
-                  <button className="demo-control__remove" onClick={() => setItems((a) => a.filter((_, k) => k !== i))} aria-label="删除物品">
+                  <button type="button" className="demo-control__remove" onClick={() => setItems((a) => a.filter((_, k) => k !== i))} aria-label="删除物品">
                     <X size={12} />
                   </button>
                 )}
                 <div className="demo-control__modes" style={{ margin: 0 }}>
                   {KINDS.map(({ k, label }) => (
-                    <button key={k} className={`demo-control__mode${it.kind === k ? ' on' : ''}`} onClick={() => setKind(i, k)}>
+                    <button type="button" key={k} className={`demo-control__mode${it.kind === k ? ' on' : ''}`} onClick={() => setKind(i, k)}>
                       {label}
                     </button>
                   ))}
@@ -93,7 +93,7 @@ export default function KnapsackMixedDemo() {
               </div>
             ))}
             {items.length < 4 && (
-              <button className="demo-control__add" onClick={() => setItems((a) => [...a, { kind: '01', w: 2, v: 3 }])}>
+              <button type="button" className="demo-control__add" onClick={() => setItems((a) => [...a, { kind: '01', w: 2, v: 3 }])}>
                 <Plus size={15} /> 加物品
               </button>
             )}

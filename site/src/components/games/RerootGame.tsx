@@ -138,6 +138,7 @@ export default function RerootGame() {
         <div className="game__diff" role="group" aria-label="难度">
           {DIFF_ORDER.map((d) => (
             <button
+              type="button"
               key={d}
               className={`game__diff-pill${d === difficulty ? ' on' : ''}`}
               onClick={() => pickDiff(d)}
@@ -148,6 +149,7 @@ export default function RerootGame() {
           ))}
         </div>
         <button
+          type="button"
           className="icon-btn"
           style={{ width: 34, height: 34 }}
           onClick={() => setMuted((m) => !m)}
@@ -233,10 +235,10 @@ export default function RerootGame() {
             </div>
           )}
           <div className="game__actions">
-            <button className="gbtn" onClick={shuffle}>
+            <button type="button" className="gbtn" onClick={shuffle}>
               <Shuffle size={16} /> 换一棵树
             </button>
-            <button className="gbtn gbtn--primary" onClick={reveal}>
+            <button type="button" className="gbtn gbtn--primary" onClick={reveal}>
               <Trophy size={16} /> 核对最小值
             </button>
           </div>

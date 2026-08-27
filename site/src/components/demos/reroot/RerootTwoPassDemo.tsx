@@ -150,7 +150,7 @@ export default function RerootTwoPassDemo() {
         <span className="rr__toolbar-label">选一棵树</span>
         <div className="rr__tree-picker" role="group" aria-label="选择树形">
           {TREES.map((t) => (
-            <button
+            <button type="button"
               key={t.key}
               className={`rr__tree-pill${t.key === treeKey ? ' on' : ''}`}
               onClick={() => setTreeKey(t.key)}

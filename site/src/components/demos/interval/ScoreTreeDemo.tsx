@@ -23,11 +23,11 @@ function Stepper({
     <div>
       <div className="stepper__lab">{label}</div>
       <div className="stepper__row">
-        <button onClick={() => onChange(value - 1)} disabled={value <= min} aria-label={`${label} 减`}>
+        <button type="button" onClick={() => onChange(value - 1)} disabled={value <= min} aria-label={`${label} 减`}>
           <Minus size={13} />
         </button>
         <span className="stepper__val">{value}</span>
-        <button onClick={() => onChange(value + 1)} disabled={value >= max} aria-label={`${label} 加`}>
+        <button type="button" onClick={() => onChange(value + 1)} disabled={value >= max} aria-label={`${label} 加`}>
           <Plus size={13} />
         </button>
       </div>
@@ -63,7 +63,7 @@ export default function ScoreTreeDemo() {
               <div className="demo-control__item" key={i}>
                 <span className="demo-control__item-i">{i + 1}</span>
                 {scores.length > 3 && (
-                  <button className="demo-control__remove" onClick={() => removeNode(i)} aria-label="删除该节点">
+                  <button type="button" className="demo-control__remove" onClick={() => removeNode(i)} aria-label="删除该节点">
                     <X size={12} />
                   </button>
                 )}
@@ -71,7 +71,7 @@ export default function ScoreTreeDemo() {
               </div>
             ))}
             {scores.length < 5 && (
-              <button className="demo-control__add" onClick={addNode}>
+              <button type="button" className="demo-control__add" onClick={addNode}>
                 <Plus size={14} /> 加一个节点
               </button>
             )}

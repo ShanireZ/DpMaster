@@ -81,7 +81,7 @@ export default function CoverDemo() {
                 {Array.from({ length: N }, (_, el) => {
                   const on = ((c.cover >> el) & 1) === 1
                   return (
-                    <button
+                    <button type="button"
                       key={el}
                       className={`bm__cover-cell${on ? ' on' : ''}`}
                       onClick={() => toggleCover(ci, el)}
@@ -94,18 +94,18 @@ export default function CoverDemo() {
               </div>
               <div className="bm__choice-cost">
                 <span>代价</span>
-                <button onClick={() => bumpCost(ci, -1)} disabled={c.cost <= 1} aria-label="代价减">
+                <button type="button" onClick={() => bumpCost(ci, -1)} disabled={c.cost <= 1} aria-label="代价减">
                   <Minus size={11} />
                 </button>
                 <b>{c.cost}</b>
-                <button onClick={() => bumpCost(ci, 1)} disabled={c.cost >= 15} aria-label="代价加">
+                <button type="button" onClick={() => bumpCost(ci, 1)} disabled={c.cost >= 15} aria-label="代价加">
                   <Plus size={11} />
                 </button>
               </div>
             </div>
           ))}
         </div>
-        <button className="bm__reset" onClick={reset} aria-label="重置">
+        <button type="button" className="bm__reset" onClick={reset} aria-label="重置">
           <RotateCcw size={13} /> 复位
         </button>
       </div>

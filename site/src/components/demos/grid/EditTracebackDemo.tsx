@@ -88,7 +88,7 @@ export default function EditTracebackDemo() {
               ['flaw', 'lawn'],
               ['abcde', 'ace'],
             ] as Array<[string, string]>).map(([pa, pb]) => (
-              <button
+              <button type="button"
                 key={`${pa}-${pb}`}
                 className={`demo-control__mode${a === pa && b === pb ? ' on' : ''}`}
                 onClick={() => {

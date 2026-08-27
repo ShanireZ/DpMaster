@@ -108,11 +108,12 @@ export default function ProblemsPage() {
           />
         </label>
         <div className="problems-chips">
-          <button className={`chip${part === 'all' ? ' on' : ''}`} onClick={() => updateParams({ part: 'all' })}>
+          <button type="button" className={`chip${part === 'all' ? ' on' : ''}`} onClick={() => updateParams({ part: 'all' })}>
             全部家族
           </button>
           {readyParts.map((p) => (
             <button
+              type="button"
               key={p.id}
               className={`chip${part === p.id ? ' on' : ''}`}
               onClick={() => updateParams({ part: p.id })}
@@ -124,6 +125,7 @@ export default function ProblemsPage() {
         <div className="problems-chips">
           {KINDS.map((k) => (
             <button
+              type="button"
               key={k.k}
               className={`chip${kind === k.k ? ' on' : ''}`}
               onClick={() => updateParams({ kind: k.k })}

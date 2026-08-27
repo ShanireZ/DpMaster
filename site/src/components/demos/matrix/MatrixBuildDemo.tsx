@@ -79,7 +79,7 @@ export default function MatrixBuildDemo() {
           <div className="mpw__group-label">选一个线性递推</div>
           <div className="mbd__preset-row">
             {PRESETS.map((p) => (
-              <button
+              <button type="button"
                 key={p.key}
                 className={`mbd__preset${p.key === key ? ' on' : ''}`}
                 onClick={() => {
@@ -119,7 +119,7 @@ export default function MatrixBuildDemo() {
                 const active = ri === row
                 const contributing = active && v !== 0
                 return (
-                  <button
+                  <button type="button"
                     key={`${ri}-${ci}`}
                     className={`mbd__mcell${active ? ' row' : ''}${contributing ? ' src' : ''}${
                       v === 0 ? ' zero' : ''
