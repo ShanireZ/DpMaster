@@ -3,20 +3,12 @@ export const BRAND = Object.freeze({
   subtitle: 'DP Master',
   /** 结构化数据里的发布者 Organization，单一主体。 */
   owner: 'AzureL蔚澜算法',
-  /** 页脚版权行署名，与 `owner` 分开。 */
-  copyrightHolder: 'Round1',
-  slogan: '在算法的海洋中，我就是你的信标',
 })
 
 export interface SiteConfig {
   origin: string
-  hostname: string
   /** `<html lang>` 与结构化数据的 inLanguage。单语言站点用不带地区的脚本标签。 */
   language: 'zh-Hans'
-  /** 第一方统计端点，同源。 */
-  analyticsEndpoint: string
-  /** 反馈提交端点，同源。 */
-  feedbackEndpoint: string
 }
 
 /**
@@ -26,10 +18,7 @@ export interface SiteConfig {
  */
 export const SITE: SiteConfig = Object.freeze({
   origin: 'https://dp.round1.cc',
-  hostname: 'dp.round1.cc',
   language: 'zh-Hans',
-  analyticsEndpoint: '/api/analytics',
-  feedbackEndpoint: '/api/feedback',
 })
 
 export const SITE_ORIGIN = SITE.origin

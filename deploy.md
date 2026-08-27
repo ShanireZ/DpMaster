@@ -144,13 +144,14 @@ pnpm preview
   "assets": {
     "directory": "./dist/",
     "binding": "ASSETS",
+    "run_worker_first": true,
     "html_handling": "drop-trailing-slash",
     "not_found_handling": "404-page"
   }
 }
 ```
 
-已登记公开路由默认命中预渲染 HTML；当 `Accept` 明确更偏好 `text/markdown` 时，Worker 从隔离的内部资产路径读取同页 Markdown。直接请求 `/_representations/` 固定返回 404，内部标本、未知路由、API 与普通静态资产不参与协商。未知静态路径由 `404-page` 返回 `404.html` 与 HTTP 404；`/api/feedback`、`/api/analytics` 与 `/api/_diag/egress` 进入 `worker.js`。
+`run_worker_first: true` 保证匹配到静态文件的请求也先经过 `worker.js`，否则平台的默认静态资产优先路由会绕过同 URL 内容协商。已登记公开路由默认读取预渲染 HTML；当 `Accept` 明确更偏好 `text/markdown` 时，Worker 从隔离的内部资产路径读取同页 Markdown。直接请求 `/_representations/` 固定返回 404，内部标本、未知路由、API 与普通静态资产不参与协商，但仍先经过 Worker 路由层再按各自规则处理。未知静态路径由 `404-page` 返回 `404.html` 与 HTTP 404；`/api/feedback`、`/api/analytics` 与 `/api/_diag/egress` 进入 `worker.js`。
 
 内容协商发布冒烟：
 
@@ -252,7 +253,7 @@ wrangler tail dpmaster
 
 ## Sitemap 与搜索平台提交
 
-构建把 sitemap 写进发布目录，线上地址固定为 `https://dp.round1.cc/sitemap.xml`，列出 47 个页面，每条带 Git 派生的 `lastmod`。单域站点不输出 hreflang 互指，`xmlns:xhtml` 命名空间也不再出现。
+构建把 sitemap 写进发布目录，线上地址固定为 `https://dp.round1.cc/sitemap.xml`，列出 47 个页面，每条带源码证据派生的 `lastmod`：已提交源码取 Git 提交时间，工作树编辑取文件修改时间，绝不使用模板或构建日期。单域站点不输出 hreflang 互指，`xmlns:xhtml` 命名空间也不再出现。
 
 ★ 域名迁移后必须重新提交，旧域名的验证与 sitemap 记录不会自动继承：
 

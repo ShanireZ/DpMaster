@@ -61,6 +61,9 @@ test('a public route can negotiate its internal Markdown representation', async 
 
 test('public route HTTP responses apply the approved Accept selection matrix', async () => {
   const vectors = [
+    [null, '/part/a', 200],
+    ['text/html', '/part/a', 200],
+    ['text/markdown', '/_representations/markdown/part/a.md', 200],
     ['text/markdown, */*;q=0.5', '/_representations/markdown/part/a.md', 200],
     ['text/html;q=1, text/markdown;q=0.8', '/part/a', 200],
     ['text/html;q=0, text/markdown;q=1', '/_representations/markdown/part/a.md', 200],
@@ -69,36 +72,115 @@ test('public route HTTP responses apply the approved Accept selection matrix', a
     ['text/html;q=0, text/markdown;q=0', null, 406],
     ['application/json', null, 406],
     ['text/markdown;q=0, */*;q=1', '/part/a', 200],
+    ['not-a-media-range, text/html', '/part/a', 200],
+    ['not-a-media-range', null, 406],
+    ['text/markdown;q=1;charset=iso-8859-1, text/html;q=0.5', '/part/a', 200],
+    ['text/markdown;q=1;charset=utf-8, text/html;q=0.5', '/_representations/markdown/part/a.md', 200],
+    ['text/markdown;charset =utf-8, text/html;q=0.5', '/part/a', 200],
+    ['text/markdown;;q=1, text/html;q=0.5', '/_representations/markdown/part/a.md', 200],
+    ['text/markdown;q=1;foo, text/html;q=0.5', '/part/a', 200],
   ]
 
   for (const [accept, expectedPath, expectedStatus] of vectors) {
-    let requestedPath = null
-    const response = await worker.fetch(
-      new Request(`${ORIGIN}/part/a`, { headers: { Accept: accept } }),
-      {
-        ASSETS: {
-          fetch: async (request) => {
-            requestedPath = new URL(request.url).pathname
-            return new Response('asset')
-          },
+    const label = accept ?? '<missing>'
+    const requested = []
+    const env = {
+      ASSETS: {
+        fetch: async (request) => {
+          const path = new URL(request.url).pathname
+          const etag = path.startsWith('/_representations/markdown/')
+            ? '"markdown-etag"'
+            : '"html-etag"'
+          requested.push({ path, method: request.method })
+          if (request.headers.get('If-None-Match') === etag) {
+            return new Response(null, { status: 304, headers: { ETag: etag } })
+          }
+          return new Response(`asset:${path}`, { headers: { ETag: etag } })
         },
       },
-    )
+    }
+    const headers = accept === null ? {} : { Accept: accept }
+    const get = await worker.fetch(new Request(`${ORIGIN}/part/a`, { headers }), env)
 
-    assert.equal(response.status, expectedStatus, accept)
-    assert.equal(requestedPath, expectedPath, accept)
-    assert.equal(response.headers.get('Vary'), 'Accept', accept)
+    assert.equal(get.status, expectedStatus, label)
+    assert.equal(requested[0]?.path ?? null, expectedPath, label)
+    assert.equal(get.headers.get('Vary'), 'Accept', label)
     if (expectedStatus === 200) {
       assert.equal(
-        response.headers.get('Cache-Control'),
+        get.headers.get('Cache-Control'),
         'public, max-age=0, must-revalidate',
-        accept,
+        label,
       )
       assert.equal(
-        response.headers.get('Content-Signal'),
+        get.headers.get('Content-Signal'),
         'ai-train=yes, search=yes, ai-input=yes',
-        accept,
+        label,
       )
+    }
+
+    const head = await worker.fetch(
+      new Request(`${ORIGIN}/part/a`, { method: 'HEAD', headers }),
+      env,
+    )
+    assert.equal(head.status, expectedStatus, `${label} HEAD`)
+    assert.equal(await head.text(), '', `${label} HEAD body`)
+    if (expectedStatus === 200) {
+      assert.deepEqual(
+        requested[1],
+        { path: expectedPath, method: 'HEAD' },
+        `${label} HEAD representation`,
+      )
+    } else {
+      assert.equal(requested.length, 0, `${label} HEAD asset bypass`)
+    }
+    for (const header of [
+      'Cache-Control',
+      'Content-Language',
+      'Content-Signal',
+      'Content-Type',
+      'ETag',
+      'Link',
+      'Vary',
+      'X-Content-Type-Options',
+      'X-Robots-Tag',
+    ]) {
+      assert.equal(
+        head.headers.get(header),
+        get.headers.get(header),
+        `${label} HEAD ${header}`,
+      )
+    }
+
+    const conditionalHeaders = new Headers(headers)
+    conditionalHeaders.set(
+      'If-None-Match',
+      expectedPath?.startsWith('/_representations/markdown/')
+        ? '"markdown-etag"'
+        : '"html-etag"',
+    )
+    const conditional = await worker.fetch(
+      new Request(`${ORIGIN}/part/a`, { headers: conditionalHeaders }),
+      env,
+    )
+    assert.equal(
+      conditional.status,
+      expectedStatus === 200 ? 304 : 406,
+      `${label} conditional`,
+    )
+    assert.equal(conditional.headers.get('Vary'), 'Accept', `${label} conditional Vary`)
+    if (expectedStatus === 200) {
+      assert.deepEqual(
+        requested[2],
+        { path: expectedPath, method: 'GET' },
+        `${label} conditional representation`,
+      )
+      assert.equal(
+        conditional.headers.get('ETag'),
+        get.headers.get('ETag'),
+        `${label} conditional ETag`,
+      )
+    } else {
+      assert.equal(requested.length, 0, `${label} conditional asset bypass`)
     }
   }
 })

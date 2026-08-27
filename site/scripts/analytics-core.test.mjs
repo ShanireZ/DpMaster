@@ -130,7 +130,11 @@ test('the single analytics provider stays on the production host and never injec
   const source = await import('node:fs/promises').then(({ readFile }) =>
     readFile(new URL('../src/analytics/index.ts', import.meta.url), 'utf8'),
   )
-  assert.match(source, /window\.location\.hostname !== SITE\.hostname/)
+  assert.match(
+    source,
+    /window\.location\.hostname !== CLIENT_RUNTIME\.productionHostname/,
+  )
+  assert.match(source, /CLIENT_RUNTIME\.analyticsEndpoint/)
   assert.doesNotMatch(source, /static\.cloudflareinsights\.com/)
   assert.doesNotMatch(source, /script\.dataset\.cfBeacon/)
   assert.match(source, /ANALYTICS_PROVIDER = 'cloudflare'/)

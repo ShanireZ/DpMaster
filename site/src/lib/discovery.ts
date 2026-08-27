@@ -3,6 +3,7 @@ import type { SiteConfig } from '../config/site.ts'
 import { PARTS } from '../data/catalog.ts'
 import { getPageMeta } from './pageMeta.ts'
 import { PUBLIC_PATHS } from './publicRoutes.ts'
+import { CONTENT_SIGNAL_HEADER } from './publicWebContract.ts'
 
 function xml(value: string): string {
   return value
@@ -81,6 +82,11 @@ export function generateDiscoveryFiles(
   })
   const byPath = new Map(summaries.map((entry) => [entry.path, entry]))
   const pick = (path: string) => byPath.get(path)
+  const sitemapSummaries = [...summaries].sort((left, right) => {
+    const leftUrl = left.url ?? `${site.origin}${left.path}`
+    const rightUrl = right.url ?? `${site.origin}${right.path}`
+    return leftUrl < rightUrl ? -1 : leftUrl > rightUrl ? 1 : 0
+  })
   const readyLessonCount = PARTS.flatMap((part) =>
     part.types.filter((type) => type.status === 'ready'),
   ).length
@@ -88,7 +94,7 @@ export function generateDiscoveryFiles(
   const sitemap = [
     '<?xml version="1.0" encoding="UTF-8"?>',
     '<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">',
-    ...summaries.flatMap((entry) => [
+    ...sitemapSummaries.flatMap((entry) => [
       '  <url>',
       `    <loc>${xml(entry.url ?? `${site.origin}${entry.path}`)}</loc>`,
       ...(entry.lastModified ? [`    <lastmod>${entry.lastModified}</lastmod>`] : []),
@@ -121,7 +127,7 @@ export function generateDiscoveryFiles(
     `- 发布者：${BRAND.owner}`,
     '- 访问门槛：无账号、无登录、无付费墙，打开网页即可阅读全部内容',
     `- 站内检索：${site.origin}/problems?q=关键词`,
-    '- 公开内容信号：ai-train=yes, search=yes, ai-input=yes',
+    `- 公开内容信号：${CONTENT_SIGNAL_HEADER}`,
     '- 内容协商：在同一 URL 请求 `text/markdown` 可读取无浏览器交互噪音的 Markdown 表示',
     '',
     ...llmsSection(
@@ -145,7 +151,7 @@ export function generateDiscoveryFiles(
     '- 引用课程时优先使用对应课程 URL、页面标题和摘要，不要改写状态定义与转移方程。',
     '- 每条 URL 都是可直接访问的预渲染页面，正文在首屏 HTML 中即可读到，无需执行 JavaScript。',
     '- 题目内容采用教学摘要并链接原题，不复刻完整题面；转述题目时请指向原题链接。',
-    `- 课程由${BRAND.owner}持续维护；“最近更新”取自构建时 Git 历史，不使用模板日期。`,
+    `- 课程由${BRAND.owner}持续维护；“最近更新”取自源码时间证据（已提交源码用 Git 提交时间，工作树编辑用文件修改时间），不使用模板或构建日期。`,
     '',
   ].join('\n')
 

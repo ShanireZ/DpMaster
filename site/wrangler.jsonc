@@ -1,8 +1,8 @@
 {
 	// Cloudflare Workers 静态资源托管（Workers Static Assets）+ 一个极薄 Worker。
-	// 这是站点唯一的发布目标：静态文件由资源绑定直出；/api/feedback、/api/analytics
-	// 与诊断端点由 worker.js 接住，其余已知路由直出预渲染 HTML，未知路径返回
-	// 404.html + HTTP 404。文档：
+	// 这是站点唯一的发布目标：所有请求先经过 worker.js，API 由 Worker 处理，
+	// 公开路由再从资源绑定读取预渲染 HTML 或协商后的 Markdown；未知路径返回
+	// 404.html + HTTP 404，内部表示路径固定隐藏。文档：
 	//   https://developers.cloudflare.com/workers/static-assets/binding/
 	"$schema": "node_modules/wrangler/config-schema.json",
 	"name": "dpmaster",
@@ -54,7 +54,9 @@
 		"directory": "./dist/",
 		// 让 Worker 能通过 env.ASSETS.fetch() 取静态资源和 404 页面。
 		"binding": "ASSETS",
-		// 已知路由由预渲染的 .html 文件直出；未知路径返回 404.html + HTTP 404。
+		// Cloudflare 默认资产优先会绕过内容协商与内部路径保护；必须先执行 Worker。
+		"run_worker_first": true,
+		// Worker 读取已知预渲染路线；未知路径返回 404.html + HTTP 404。
 		"html_handling": "drop-trailing-slash",
 		"not_found_handling": "404-page"
 	}
