@@ -97,7 +97,12 @@ export default function StockStateDemo() {
           </div>
         </div>
         <label className="stk__cd">
-          <input type="checkbox" checked={cooldown} onChange={(e) => setCooldown(e.target.checked)} />
+          <input
+            type="checkbox"
+            checked={cooldown}
+            onChange={(e) => setCooldown(e.target.checked)}
+            aria-label="冷却期（卖出次日不能买入）"
+          />
           冷却期（卖出次日不能买入）
         </label>
       </div>
