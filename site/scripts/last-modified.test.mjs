@@ -89,6 +89,25 @@ test('a changed semantic digest requires source-backed lastmod evidence', () => 
   )
 })
 
+test('binary route dependencies compare their exact bytes', () => {
+  assert.equal(
+    semanticProjectionChanged(
+      'site/src/assets/example.avif',
+      Buffer.from([0x80]),
+      Buffer.from([0x81]),
+    ),
+    true,
+  )
+  assert.equal(
+    semanticProjectionChanged(
+      'site/src/assets/example.avif',
+      Buffer.from([0x80]),
+      Buffer.from([0x80]),
+    ),
+    false,
+  )
+})
+
 test('schema migrations distinguish pruned client edits from semantic edits', () => {
   const before = `import { useEffect } from 'react'\nfunction AppContent() { useEffect(() => first()); return <Routes><p>正文一</p></Routes> }`
   assert.equal(

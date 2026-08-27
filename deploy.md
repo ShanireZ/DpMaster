@@ -144,13 +144,14 @@ pnpm preview
   "assets": {
     "directory": "./dist/",
     "binding": "ASSETS",
+    "run_worker_first": true,
     "html_handling": "drop-trailing-slash",
     "not_found_handling": "404-page"
   }
 }
 ```
 
-已登记公开路由默认命中预渲染 HTML；当 `Accept` 明确更偏好 `text/markdown` 时，Worker 从隔离的内部资产路径读取同页 Markdown。直接请求 `/_representations/` 固定返回 404，内部标本、未知路由、API 与普通静态资产不参与协商。未知静态路径由 `404-page` 返回 `404.html` 与 HTTP 404；`/api/feedback`、`/api/analytics` 与 `/api/_diag/egress` 进入 `worker.js`。
+`run_worker_first: true` 保证匹配到静态文件的请求也先经过 `worker.js`，否则平台的默认静态资产优先路由会绕过同 URL 内容协商。已登记公开路由默认读取预渲染 HTML；当 `Accept` 明确更偏好 `text/markdown` 时，Worker 从隔离的内部资产路径读取同页 Markdown。直接请求 `/_representations/` 固定返回 404，内部标本、未知路由、API 与普通静态资产不参与协商，但仍先经过 Worker 路由层再按各自规则处理。未知静态路径由 `404-page` 返回 `404.html` 与 HTTP 404；`/api/feedback`、`/api/analytics` 与 `/api/_diag/egress` 进入 `worker.js`。
 
 内容协商发布冒烟：
 

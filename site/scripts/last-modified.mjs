@@ -1,6 +1,7 @@
 import { spawnSync } from 'node:child_process'
 import { createHash } from 'node:crypto'
 import { readFileSync, statSync } from 'node:fs'
+import { extname } from 'node:path'
 import { fileURLToPath } from 'node:url'
 import { PUBLIC_PATHS } from '../src/lib/publicRoutes.ts'
 import {
@@ -9,10 +10,28 @@ import {
 } from './semantic-source-graph.mjs'
 
 const projectRoot = fileURLToPath(new URL('../../', import.meta.url))
-export const ROUTE_CONTENT_DIGEST_VERSION = 14
+export const ROUTE_CONTENT_DIGEST_VERSION = 15
 
 const historicalSourceCache = new Map()
 const headSourceCache = new Map()
+const routeProjectionCache = new Map()
+const semanticFileEvidenceCache = new Map()
+const TEXT_SOURCE_EXTENSIONS = new Set([
+  '.css',
+  '.html',
+  '.js',
+  '.jsx',
+  '.json',
+  '.md',
+  '.mjs',
+  '.svg',
+  '.ts',
+  '.tsx',
+  '.txt',
+  '.xml',
+  '.yaml',
+  '.yml',
+])
 
 function gitNames(args) {
   const result = spawnSync('git', args, {
@@ -41,8 +60,11 @@ function routeContentDigest(files) {
   for (const file of files) {
     digest.update(file)
     digest.update('\0')
-    const source = readFileSync(new URL(`../../${file}`, import.meta.url), 'utf8')
-    digest.update(normalizeContentForDigest(semanticSourceForDigest(file, source)))
+    if (!routeProjectionCache.has(file)) {
+      const source = readFileSync(new URL(`../../${file}`, import.meta.url))
+      routeProjectionCache.set(file, semanticProjection(file, source))
+    }
+    digest.update(routeProjectionCache.get(file))
     digest.update('\0')
   }
   return digest.digest('hex')
@@ -51,7 +73,6 @@ function routeContentDigest(files) {
 function gitSource(file, revision) {
   const result = spawnSync('git', ['show', `${revision}:${file}`], {
     cwd: projectRoot,
-    encoding: 'utf8',
   })
   return result.status === 0 ? result.stdout : null
 }
@@ -79,13 +100,19 @@ function headSource(file) {
 }
 
 function semanticProjection(path, source) {
-  return source === null
-    ? null
-    : normalizeContentForDigest(semanticSourceForDigest(path, source))
+  if (source === null) return null
+  if (Buffer.isBuffer(source) && !TEXT_SOURCE_EXTENSIONS.has(extname(path))) return source
+  const decodedSource = Buffer.isBuffer(source) ? source.toString('utf8') : source
+  return normalizeContentForDigest(semanticSourceForDigest(path, decodedSource))
 }
 
 export function semanticProjectionChanged(path, currentSource, previousSource) {
-  return semanticProjection(path, currentSource) !== semanticProjection(path, previousSource)
+  const currentProjection = semanticProjection(path, currentSource)
+  const previousProjection = semanticProjection(path, previousSource)
+  if (Buffer.isBuffer(currentProjection) && Buffer.isBuffer(previousProjection)) {
+    return !currentProjection.equals(previousProjection)
+  }
+  return currentProjection !== previousProjection
 }
 
 function latestDate(dates) {
@@ -117,21 +144,28 @@ function latestSemanticGitDate(file, previousLastModified) {
 function semanticChangeEvidence(files, previousLastModified) {
   const dates = []
   for (const file of files) {
-    const currentSource = readFileSync(new URL(`../../${file}`, import.meta.url), 'utf8')
-    if (!semanticProjectionChanged(
-      file,
-      currentSource,
-      historicalSource(file, previousLastModified),
-    )) continue
-
-    const currentDiffersFromHead = semanticProjectionChanged(
-      file,
-      currentSource,
-      headSource(file),
-    )
-    dates.push(currentDiffersFromHead
-      ? new Date(statSync(new URL(`../../${file}`, import.meta.url)).mtimeMs).toISOString()
-      : latestSemanticGitDate(file, previousLastModified))
+    const cacheKey = `${file}\0${previousLastModified}`
+    if (!semanticFileEvidenceCache.has(cacheKey)) {
+      const currentSource = readFileSync(new URL(`../../${file}`, import.meta.url))
+      let date = null
+      if (semanticProjectionChanged(
+        file,
+        currentSource,
+        historicalSource(file, previousLastModified),
+      )) {
+        const currentDiffersFromHead = semanticProjectionChanged(
+          file,
+          currentSource,
+          headSource(file),
+        )
+        date = currentDiffersFromHead
+          ? new Date(statSync(new URL(`../../${file}`, import.meta.url)).mtimeMs).toISOString()
+          : latestSemanticGitDate(file, previousLastModified)
+      }
+      semanticFileEvidenceCache.set(cacheKey, date)
+    }
+    const date = semanticFileEvidenceCache.get(cacheKey)
+    if (date) dates.push(date)
   }
   return {
     candidateLastModified: latestDate(dates),
