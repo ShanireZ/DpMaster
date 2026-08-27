@@ -612,6 +612,11 @@ test('mixed-module closure tracks every supported mutation of selected bindings'
     `let label = '正文'\nconst holder = { nested: {} }\nObject.defineProperty(holder.nested, 'g', { value: globalThis })\nholder.nested.g.setTimeout = callback => callback()\nfunction AppContent() { setTimeout(() => { label = '变化' }, 0); return <Routes>{label}</Routes> }`,
     `let label = '正文'\nconst holder = { nested: {} }\nReflect.set(holder.nested, 'g', globalThis)\nholder.nested.g.setTimeout = callback => callback()\nfunction AppContent() { setTimeout(() => { label = '变化' }, 0); return <Routes>{label}</Routes> }`,
     `let label = '正文'\nconst holder = []\nholder.push(globalThis)\nholder[0].setTimeout = callback => callback()\nfunction AppContent() { setTimeout(() => { label = '变化' }, 0); return <Routes>{label}</Routes> }`,
+    `let label = '正文'\nconst holder = { nested: {} }\nObject.assign(holder.nested, ...[{ g: globalThis }])\nholder.nested.g.setTimeout = callback => callback()\nfunction AppContent() { setTimeout(() => { label = '变化' }, 0); return <Routes>{label}</Routes> }`,
+    `let label = '正文'\nconst holder = []\nholder.push(...[globalThis])\nholder[0].setTimeout = callback => callback()\nfunction AppContent() { setTimeout(() => { label = '变化' }, 0); return <Routes>{label}</Routes> }`,
+    `let label = '正文'\nconst holder = []\nArray.prototype.push.call(holder, globalThis)\nholder[0].setTimeout = callback => callback()\nfunction AppContent() { setTimeout(() => { label = '变化' }, 0); return <Routes>{label}</Routes> }`,
+    `let label = '正文'\nconst holder = {}\nconst { assign } = Object\nassign(holder, { g: globalThis })\nholder.g.setTimeout = callback => callback()\nfunction AppContent() { setTimeout(() => { label = '变化' }, 0); return <Routes>{label}</Routes> }`,
+    `let label = '正文'\nconst holder = []\nconst push = Array.prototype.push\npush.call(holder, globalThis)\nholder[0].setTimeout = callback => callback()\nfunction AppContent() { setTimeout(() => { label = '变化' }, 0); return <Routes>{label}</Routes> }`,
   ]) {
     assert.throws(
       () => semanticSourceForDigest('site/src/app/AppContent.tsx', indirectMemberStoredGlobal),
@@ -1230,6 +1235,26 @@ test('public config rejects alias mutation, pattern writes, and patched freeze',
       `const holder = { nested: {} }\nReflect.set(holder.nested, 'g', globalThis)\nholder.nested.g.Object = { freeze(value) { value.name = '运行时'; return value } }`,
       `name: '初始'`,
     ),
+    publicConfigSource(
+      `const holder = []\nholder.push(globalThis)\nholder[0].Object = { freeze(value) { value.name = '运行时'; return value } }`,
+      `name: '初始'`,
+    ),
+    publicConfigSource(
+      `const holder = { nested: {} }\nObject.assign(holder.nested, ...[{ g: globalThis }])\nholder.nested.g.Object = { freeze(value) { value.name = '运行时'; return value } }`,
+      `name: '初始'`,
+    ),
+    publicConfigSource(
+      `const holder = []\nArray.prototype.push.call(holder, globalThis)\nholder[0].Object = { freeze(value) { value.name = '运行时'; return value } }`,
+      `name: '初始'`,
+    ),
+    publicConfigSource(
+      `const holder = {}\nconst { assign } = Object\nassign(holder, { g: globalThis })\nholder.g.Object = { freeze(value) { value.name = '运行时'; return value } }`,
+      `name: '初始'`,
+    ),
+    publicConfigSource(
+      `const holder = []\nconst push = Array.prototype.push\npush.call(holder, globalThis)\nholder[0].Object = { freeze(value) { value.name = '运行时'; return value } }`,
+      `name: '初始'`,
+    ),
   ]) {
     assert.throws(
       () => semanticSourceForDigest('site/src/config/site.ts', mutableConfig),
@@ -1291,6 +1316,69 @@ test('static dependency discovery follows literal top-level dynamic imports and 
       `let load = () => import('./Home')\nload = () => import('./Method')\nawait load()`,
     ),
     ['./Method'],
+  )
+  assert.deepEqual(
+    staticImportSpecifiersForSource(
+      'site/src/app/AppContent.tsx',
+      `let load = () => import('./Child')\nif (false) load = () => Promise.resolve()\nawait load()`,
+    ),
+    ['./Child'],
+  )
+  assert.deepEqual(
+    staticImportSpecifiersForSource(
+      'site/src/app/AppContent.tsx',
+      `let load = () => import('./Child')\nfunction never() { load = () => Promise.resolve() }\nawait load()`,
+    ),
+    ['./Child'],
+  )
+  assert.deepEqual(
+    staticImportSpecifiersForSource(
+      'site/src/app/AppContent.tsx',
+      `const loaders = { run: () => Promise.resolve() }\nloaders.run = () => import('./Child')\nawait loaders.run()`,
+    ),
+    ['./Child'],
+  )
+  assert.deepEqual(
+    staticImportSpecifiersForSource(
+      'site/src/app/AppContent.tsx',
+      `const loaders = { run: () => import('./Child') }\nconst { run } = loaders\nawait run()`,
+    ),
+    ['./Child'],
+  )
+  assert.deepEqual(
+    staticImportSpecifiersForSource(
+      'site/src/app/AppContent.tsx',
+      `const load = () => import('./Child')\nawait Promise.resolve(load).then(callback => callback())`,
+    ),
+    ['./Child'],
+  )
+  assert.deepEqual(
+    staticImportSpecifiersForSource(
+      'site/src/app/AppContent.tsx',
+      `const load = () => import('./Child')\nawait Promise.resolve().catch(load)`,
+    ),
+    [],
+  )
+  assert.deepEqual(
+    staticImportSpecifiersForSource(
+      'site/src/app/AppContent.tsx',
+      `const first = () => import('./First')\nconst second = () => import('./Second')\nawait Promise.resolve().then(first).then(second)`,
+    ),
+    ['./First', './Second'],
+  )
+  assert.deepEqual(
+    staticImportSpecifiersForSource(
+      'site/src/app/AppContent.tsx',
+      `const load = () => import('./Child')\nawait Promise.all([Promise.resolve().then(load)])`,
+    ),
+    ['./Child'],
+  )
+  assert.deepEqual(
+    staticImportSpecifiersForSource(
+      'site/src/app/AppContent.tsx',
+      `const load = () => import('./Child')\nfunction boot() { return Promise.resolve().then(load) }\nawait boot()`,
+    ),
+    ['./Child'],
   )
   assert.deepEqual(
     staticImportSpecifiersForSource(
@@ -1364,6 +1452,20 @@ test('static dependency discovery follows literal top-level dynamic imports and 
     ),
     [],
   )
+  assert.deepEqual(
+    staticImportSpecifiersForSource(
+      'site/src/app/AppContent.tsx',
+      `switch (1) { case (import('./Child'), 1): break }`,
+    ),
+    ['./Child'],
+  )
+  assert.deepEqual(
+    staticImportSpecifiersForSource(
+      'site/src/app/AppContent.tsx',
+      `function boot() { switch ('a') { case 'a': return; case 'b': return import('./Child') } }\nawait boot()`,
+    ),
+    [],
+  )
 })
 
 test('semantic package evidence rejects unknown packages and follows selected lazy imports', () => {
@@ -1397,6 +1499,22 @@ test('semantic package evidence rejects unknown packages and follows selected la
     { semanticImportSpecifiers: relativeSemanticImports },
   )
   assert.deepEqual([...relativeSemanticImports], ['./Child'])
+
+  const conditionalSemanticImports = new Set()
+  semanticSourceForDigest(
+    'site/src/app/AppContent.tsx',
+    `import { lazy } from 'react'\nconst View = true ? lazy(() => import('./Child')) : null\nfunction AppContent() { return <Routes><View /></Routes> }`,
+    { semanticImportSpecifiers: conditionalSemanticImports },
+  )
+  assert.deepEqual([...conditionalSemanticImports], ['./Child'])
+
+  const memberSemanticImports = new Set()
+  semanticSourceForDigest(
+    'site/src/app/AppContent.tsx',
+    `import { lazy } from 'react'\nconst views = { Child: lazy(() => import('./Child')) }\nconst View = views.Child\nfunction AppContent() { return <Routes><View /></Routes> }`,
+    { semanticImportSpecifiers: memberSemanticImports },
+  )
+  assert.deepEqual([...memberSemanticImports], ['./Child'])
 })
 
 test('static dependency discovery strips Vite query and hash suffixes', () => {

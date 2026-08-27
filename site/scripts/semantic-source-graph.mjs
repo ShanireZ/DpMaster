@@ -534,6 +534,9 @@ function publicSiteConfigProjection(program) {
   const mayContainGlobalContainer = (node, seen = new Set()) => {
     const value = unwrap(node)
     if (!value || typeof value !== 'object') return false
+    if (value.type === 'SpreadElement') {
+      return mayContainGlobalContainer(value.argument, seen)
+    }
     if (isGlobalContainer(value, seen)) return true
     if (value.type === 'CallExpression' || value.type === 'NewExpression') return true
     if (value.type === 'Identifier' && bindings.has(value.name)) {
@@ -1062,23 +1065,45 @@ function publicSiteConfigProjection(program) {
       rejectUsedIdentity(node.argument, 'mutation of')
     } else if (node.type === 'CallExpression' || node.type === 'NewExpression') {
       if (node.type === 'CallExpression' && node.callee.type === 'MemberExpression') {
-        const owner = unwrap(node.callee.object)
-        const method = memberNameFromNode(node.callee)
+        const wrapperMethod = memberNameFromNode(node.callee)
+        const borrowed = ['apply', 'call'].includes(wrapperMethod)
+        const target = borrowed ? unwrap(node.callee.object) : node.callee
+        const owner = target?.type === 'MemberExpression' ? unwrap(target.object) : null
+        const method = target?.type === 'MemberExpression'
+          ? memberNameFromNode(target)
+          : null
         const builtinOwner = owner?.type === 'Identifier'
           && !bindings.has(owner.name)
           ? owner.name
           : null
-        const storedValues = builtinOwner === 'Object' && method === 'assign'
+        const invocationArguments = wrapperMethod === 'call'
           ? node.arguments?.slice(1) ?? []
+          : wrapperMethod === 'apply'
+            ? null
+            : node.arguments ?? []
+        const storedValues = wrapperMethod === 'apply'
+          ? node.arguments?.slice(1, 2) ?? []
+          : builtinOwner === 'Object' && method === 'assign'
+          ? invocationArguments?.slice(1) ?? []
           : builtinOwner === 'Object' && method === 'defineProperties'
-            ? node.arguments?.slice(1, 2) ?? []
+            ? invocationArguments?.slice(1, 2) ?? []
             : builtinOwner === 'Object' && method === 'defineProperty'
-              ? node.arguments?.slice(2, 3) ?? []
+              ? invocationArguments?.slice(2, 3) ?? []
               : builtinOwner === 'Reflect' && method === 'set'
-                ? node.arguments?.slice(2, 3) ?? []
+                ? invocationArguments?.slice(2, 3) ?? []
                 : builtinOwner === 'Reflect' && method === 'defineProperty'
-                  ? node.arguments?.slice(2, 3) ?? []
-                  : []
+                  ? invocationArguments?.slice(2, 3) ?? []
+                  : ['push', 'unshift'].includes(method)
+                    ? invocationArguments ?? []
+                    : method === 'splice'
+                      ? invocationArguments?.slice(2) ?? []
+                      : method === 'fill'
+                        ? invocationArguments?.slice(0, 1) ?? []
+                        : method === 'set'
+                          ? invocationArguments?.slice(1, 2) ?? []
+                          : method === 'add'
+                            ? invocationArguments?.slice(0, 1) ?? []
+                            : []
         if (storedValues.some((argument) => mayContainGlobalContainer(argument))) {
           unsupported('member-stored global container')
         }
@@ -1252,15 +1277,73 @@ function moduleEvaluationDynamicImportSources(program, path) {
   function evaluationBinding(scope, name) {
     const existing = scope.bindings.get(name)
     if (existing) return existing
-    const binding = { name, writes: [] }
+    const binding = { name, writes: [], memberWrites: new Map() }
     scope.bindings.set(name, binding)
     return binding
   }
 
-  function declareEvaluationPattern(pattern, scope, initializer = null, start = null) {
-    for (const identifier of bindingIdentifiers(pattern)) {
-      const binding = evaluationBinding(scope, identifier.name)
-      if (initializer) binding.writes.push({ expression: initializer, start: start ?? initializer.start })
+  function declareEvaluationPattern(
+    pattern,
+    scope,
+    initializer = null,
+    start = null,
+    memberSource = null,
+  ) {
+    if (!pattern || typeof pattern !== 'object') return
+    if (pattern.type === 'Identifier') {
+      const binding = evaluationBinding(scope, pattern.name)
+      if (initializer) {
+        binding.writes.push({
+          expression: memberSource ? null : initializer,
+          memberSource,
+          start: start ?? initializer.start,
+          conditional: false,
+        })
+      }
+      return
+    }
+    if (pattern.type === 'AssignmentPattern') {
+      declareEvaluationPattern(
+        pattern.left,
+        scope,
+        initializer ?? pattern.right,
+        start,
+        memberSource,
+      )
+      return
+    }
+    if (pattern.type === 'RestElement') {
+      declareEvaluationPattern(pattern.argument, scope, initializer, start, memberSource)
+      return
+    }
+    if (pattern.type === 'ObjectPattern') {
+      for (const property of pattern.properties ?? []) {
+        if (property.type === 'RestElement') {
+          declareEvaluationPattern(property.argument, scope, initializer, start)
+          continue
+        }
+        const key = staticPropertyNameFromNode(property)
+        declareEvaluationPattern(
+          property.value,
+          scope,
+          initializer,
+          start,
+          key === null ? null : { container: initializer, key },
+        )
+      }
+      return
+    }
+    if (pattern.type === 'ArrayPattern') {
+      for (const [index, element] of (pattern.elements ?? []).entries()) {
+        if (!element) continue
+        declareEvaluationPattern(
+          element,
+          scope,
+          initializer,
+          start,
+          { container: initializer, key: String(index) },
+        )
+      }
     }
   }
 
@@ -1340,28 +1423,34 @@ function moduleEvaluationDynamicImportSources(program, path) {
     return null
   }
 
-  function indexEvaluationWrites(node) {
-    if (
-      node.type === 'AssignmentExpression'
-      && node.operator === '='
-      && node.left.type === 'Identifier'
-    ) {
-      const binding = lookupEvaluationBinding(node.left)
-      if (binding) binding.writes.push({ expression: node.right, start: node.start })
+  function effectiveEvaluationWrites(writes, referenceStart = Number.POSITIVE_INFINITY) {
+    const eligible = writes
+      .filter((write) => write.start <= referenceStart)
+      .sort((left, right) => left.start - right.start)
+    let candidates = []
+    for (const write of eligible) {
+      if (write.conditional) candidates.push(write)
+      else candidates = [write]
     }
-    for (const [child] of childNodes(node)) indexEvaluationWrites(child)
+    return candidates
   }
-  indexEvaluationWrites(program)
+
+  function expressionsForEvaluationWrite(write, seen) {
+    if (write.expression) return [write.expression]
+    if (!write.memberSource?.container) return []
+    return staticEvaluationMemberValues(
+      write.memberSource.container,
+      write.memberSource.key,
+      seen,
+    )
+  }
 
   function latestBindingExpressions(identifier, seen = new Set()) {
     const binding = lookupEvaluationBinding(identifier)
     if (!binding || seen.has(binding)) return []
-    const eligible = binding.writes.filter((write) => write.start <= identifier.start)
-    if (eligible.length === 0) return []
-    const latestStart = Math.max(...eligible.map((write) => write.start))
-    return eligible
-      .filter((write) => write.start === latestStart)
-      .map((write) => write.expression)
+    return effectiveEvaluationWrites(binding.writes, identifier.start).flatMap((write) => (
+      expressionsForEvaluationWrite(write, seen)
+    ))
   }
 
   function staticEvaluationMemberValues(node, key, seen = new Set()) {
@@ -1371,9 +1460,17 @@ function moduleEvaluationDynamicImportSources(program, path) {
       const binding = lookupEvaluationBinding(value)
       if (!binding || seen.has(binding)) return []
       const nextSeen = new Set([...seen, binding])
-      return latestBindingExpressions(value, seen).flatMap((expression) => (
+      const baseValues = latestBindingExpressions(value, seen).flatMap((expression) => (
         staticEvaluationMemberValues(expression, key, nextSeen)
       ))
+      const writes = binding.memberWrites.get(String(key)) ?? []
+      if (writes.length === 0) return baseValues
+      let values = baseValues
+      for (const write of writes.sort((left, right) => left.start - right.start)) {
+        const writtenValues = expressionsForEvaluationWrite(write, nextSeen)
+        values = write.conditional ? [...values, ...writtenValues] : writtenValues
+      }
+      return values
     }
     if (value.type === 'ConditionalExpression') {
       return [value.consequent, value.alternate].flatMap((branch) => (
@@ -1443,138 +1540,422 @@ function moduleEvaluationDynamicImportSources(program, path) {
     return []
   }
 
+  function recordEvaluationPatternWrite(
+    pattern,
+    expression,
+    { conditional = false, start = pattern?.start ?? expression?.start ?? -1 } = {},
+    memberSource = null,
+  ) {
+    if (!pattern || typeof pattern !== 'object') return []
+    if (pattern.type === 'Identifier') {
+      const binding = lookupEvaluationBinding(pattern)
+      if (!binding) return []
+      binding.writes.push({
+        expression: memberSource ? null : expression,
+        memberSource,
+        start,
+        conditional,
+      })
+      return [binding]
+    }
+    if (pattern.type === 'AssignmentPattern') {
+      return recordEvaluationPatternWrite(
+        pattern.left,
+        expression ?? pattern.right,
+        { conditional, start },
+        memberSource,
+      )
+    }
+    if (pattern.type === 'RestElement') {
+      return recordEvaluationPatternWrite(
+        pattern.argument,
+        expression,
+        { conditional, start },
+        memberSource,
+      )
+    }
+    if (pattern.type === 'ObjectPattern') {
+      return pattern.properties.flatMap((property) => {
+        if (property.type === 'RestElement') {
+          return recordEvaluationPatternWrite(
+            property.argument,
+            expression,
+            { conditional, start },
+          )
+        }
+        const key = staticPropertyNameFromNode(property)
+        return recordEvaluationPatternWrite(
+          property.value,
+          expression,
+          { conditional, start },
+          key === null ? null : { container: expression, key },
+        )
+      })
+    }
+    if (pattern.type === 'ArrayPattern') {
+      return pattern.elements.flatMap((element, index) => (
+        element
+          ? recordEvaluationPatternWrite(
+              element,
+              expression,
+              { conditional, start },
+              { container: expression, key: String(index) },
+            )
+          : []
+      ))
+    }
+    return []
+  }
+
+  function recordEvaluationMemberWrite(target, expression, { conditional = false } = {}) {
+    const value = target && EXPRESSION_WRAPPERS.has(target.type)
+      ? target.expression
+      : target
+    if (value?.type !== 'MemberExpression') return false
+    const key = memberNameFromNode(value)
+    if (key === null) return false
+    const object = value.object && EXPRESSION_WRAPPERS.has(value.object.type)
+      ? value.object.expression
+      : value.object
+    if (object?.type !== 'Identifier') return false
+    const binding = lookupEvaluationBinding(object)
+    if (!binding) return false
+    const writes = binding.memberWrites.get(String(key)) ?? []
+    writes.push({
+      conditional,
+      expression,
+      memberSource: null,
+      start: value.start,
+    })
+    binding.memberWrites.set(String(key), writes)
+    return true
+  }
+
   function executeCallable(callable, options = {}) {
     if (activeFunctions.has(callable)) return
     activeFunctions.add(callable)
+    const restoredWrites = new Map()
     try {
-      visit(callable, { ...options, executeFunction: true })
+      for (const [index, parameter] of (callable.params ?? []).entries()) {
+        const argument = options.argumentValues?.[index]
+        if (!argument) continue
+        for (const binding of bindingIdentifiers(parameter)
+          .map((identifier) => lookupEvaluationBinding(identifier))
+          .filter(Boolean)) {
+          if (!restoredWrites.has(binding)) restoredWrites.set(binding, binding.writes.length)
+        }
+        recordEvaluationPatternWrite(parameter, argument, {
+          start: callable.start,
+        })
+      }
+      const completion = visit(callable, { ...options, executeFunction: true })
+      return { completion, promiseReturns: options.promiseReturns ?? [] }
     } finally {
+      for (const [binding, length] of restoredWrites) binding.writes.length = length
       activeFunctions.delete(callable)
     }
   }
 
-  function visit(node, { executeFunction = false, awaitedCall = false } = {}) {
-    if (!node || typeof node !== 'object') return
+  const fulfilledPromise = (values = []) => ({ status: 'fulfilled', values })
+  const rejectedPromise = (values = []) => ({ status: 'rejected', values })
+  const unknownPromise = (values = []) => ({ status: 'unknown', values })
+
+  function mergePromiseStates(states) {
+    const available = states.filter(Boolean)
+    if (available.length === 0) return fulfilledPromise()
+    const status = available.every((state) => state.status === available[0].status)
+      ? available[0].status
+      : 'unknown'
+    return { status, values: available.flatMap((state) => state.values ?? []) }
+  }
+
+  function executeAwaitedCallback(callbackNode, argumentValues = []) {
+    const callables = resolvedCallables(callbackNode)
+    if (callables.length === 0) return unknownPromise()
+    return mergePromiseStates(callables.flatMap((callable) => {
+      const promiseReturns = []
+      executeCallable(callable, { argumentValues, promiseReturns })
+      return promiseReturns.length > 0 ? promiseReturns : [fulfilledPromise()]
+    }))
+  }
+
+  function evaluateAwaitedPromise(node, options = {}) {
+    const value = node && EXPRESSION_WRAPPERS.has(node.type) ? node.expression : node
+    if (!value || typeof value !== 'object') return fulfilledPromise()
+    if (value.type === 'AwaitExpression') return evaluateAwaitedPromise(value.argument, options)
+    if (value.type === 'ImportExpression') {
+      visit(value, options)
+      return fulfilledPromise([value])
+    }
+    if (value.type === 'SequenceExpression') {
+      for (const expression of value.expressions.slice(0, -1)) visit(expression, options)
+      return evaluateAwaitedPromise(value.expressions.at(-1), options)
+    }
+    if (value.type === 'ConditionalExpression') {
+      visit(value.test, options)
+      const condition = staticBooleanValue(value.test)
+      if (condition === true) return evaluateAwaitedPromise(value.consequent, options)
+      if (condition === false) return evaluateAwaitedPromise(value.alternate, options)
+      return mergePromiseStates([
+        evaluateAwaitedPromise(value.consequent, { ...options, conditional: true }),
+        evaluateAwaitedPromise(value.alternate, { ...options, conditional: true }),
+      ])
+    }
+    if (value.type !== 'CallExpression' && value.type !== 'NewExpression') {
+      visit(value, options)
+      return fulfilledPromise([value])
+    }
+
+    const callee = value.callee
+    const method = callee?.type === 'MemberExpression' ? memberNameFromNode(callee) : null
+    const isUnboundPromise = callee?.type === 'MemberExpression'
+      && callee.object.type === 'Identifier'
+      && callee.object.name === 'Promise'
+      && !lookupEvaluationBinding(callee.object)
+    if (isUnboundPromise && method === 'resolve') {
+      for (const argument of value.arguments ?? []) visit(argument, options)
+      return fulfilledPromise(value.arguments?.slice(0, 1) ?? [])
+    }
+    if (isUnboundPromise && method === 'reject') {
+      for (const argument of value.arguments ?? []) visit(argument, options)
+      return rejectedPromise(value.arguments?.slice(0, 1) ?? [])
+    }
+    if (
+      isUnboundPromise
+      && ['all', 'allSettled', 'any', 'race'].includes(method)
+    ) {
+      const aggregate = value.arguments?.[0]
+      const elements = aggregate?.type === 'ArrayExpression'
+        ? aggregate.elements.filter((element) => element && element.type !== 'SpreadElement')
+        : []
+      const states = elements.map((element) => evaluateAwaitedPromise(element, options))
+      if (aggregate?.type !== 'ArrayExpression') visit(aggregate, options)
+      if (method === 'allSettled') return fulfilledPromise()
+      if (method === 'all' && states.every((state) => state.status === 'fulfilled')) {
+        return fulfilledPromise()
+      }
+      return mergePromiseStates(states)
+    }
+    if (callee?.type === 'MemberExpression' && ['catch', 'finally', 'then'].includes(method)) {
+      const previous = evaluateAwaitedPromise(callee.object, options)
+      if (method === 'finally') {
+        if (value.arguments?.[0]) executeAwaitedCallback(value.arguments[0])
+        return previous
+      }
+      if (method === 'catch') {
+        if (previous.status === 'fulfilled') return previous
+        if (!value.arguments?.[0]) return previous
+        if (previous.status === 'rejected') {
+          return executeAwaitedCallback(value.arguments[0], previous.values)
+        }
+        return mergePromiseStates([
+          previous,
+          executeAwaitedCallback(value.arguments[0], previous.values),
+        ])
+      }
+      const onFulfilled = value.arguments?.[0]
+      const onRejected = value.arguments?.[1]
+      if (previous.status === 'fulfilled') {
+        return onFulfilled
+          ? executeAwaitedCallback(onFulfilled, previous.values)
+          : previous
+      }
+      if (previous.status === 'rejected') {
+        return onRejected
+          ? executeAwaitedCallback(onRejected, previous.values)
+          : previous
+      }
+      return mergePromiseStates([
+        onFulfilled ? executeAwaitedCallback(onFulfilled, previous.values) : previous,
+        onRejected ? executeAwaitedCallback(onRejected, previous.values) : previous,
+      ])
+    }
+
+    const directCallables = resolvedCallables(callee)
+    if (directCallables.length > 0) {
+      return mergePromiseStates(directCallables.flatMap((callable) => {
+        const promiseReturns = []
+        executeCallable(callable, {
+          argumentValues: value.arguments ?? [],
+          promiseReturns,
+        })
+        return promiseReturns.length > 0 ? promiseReturns : [fulfilledPromise()]
+      }))
+    }
+    visit(value, options)
+    return unknownPromise()
+  }
+
+  function visit(node, options = {}) {
+    const {
+      conditional = false,
+      executeFunction = false,
+      promiseReturns = null,
+    } = options
+    if (!node || typeof node !== 'object') return 'normal'
+    if (node.type === 'Program' || node.type === 'BlockStatement') {
+      for (const [child] of childNodes(node)) {
+        const completion = visit(child, options)
+        if (completion !== 'normal') return completion
+      }
+      return 'normal'
+    }
     if (node.type === 'ImportExpression') {
       if (typeof node.source?.value !== 'string') {
         throw new Error(`Unsupported dynamic module-evaluation import in ${path}`)
       }
       sources.push(node.source)
-      return
+      return 'normal'
     }
     if (functionTypes.has(node.type)) {
-      if (!executeFunction) return
-      for (const parameter of node.params ?? []) visit(parameter)
-      visit(node.body)
-      return
+      if (!executeFunction) return 'normal'
+      if (node.type === 'ArrowFunctionExpression' && node.expression && promiseReturns) {
+        promiseReturns.push(evaluateAwaitedPromise(node.body, options))
+        return 'return'
+      }
+      return visit(node.body, { ...options, executeFunction: false })
+    }
+    if (node.type === 'ReturnStatement') {
+      if (node.argument) {
+        if (promiseReturns) promiseReturns.push(evaluateAwaitedPromise(node.argument, options))
+        else visit(node.argument, options)
+      } else if (promiseReturns) {
+        promiseReturns.push(fulfilledPromise())
+      }
+      return 'return'
+    }
+    if (node.type === 'ThrowStatement') {
+      visit(node.argument, options)
+      if (promiseReturns) promiseReturns.push(rejectedPromise([node.argument]))
+      return 'throw'
+    }
+    if (node.type === 'BreakStatement') return 'break'
+    if (node.type === 'AssignmentExpression') {
+      visit(node.right, options)
+      if (node.operator === '=') {
+        if (node.left.type === 'Identifier' || node.left.type.endsWith('Pattern')) {
+          recordEvaluationPatternWrite(node.left, node.right, { conditional, start: node.start })
+        } else {
+          recordEvaluationMemberWrite(node.left, node.right, { conditional })
+        }
+      }
+      return 'normal'
     }
     if (node.type === 'IfStatement') {
-      visit(node.test)
+      visit(node.test, options)
       const condition = staticBooleanValue(node.test)
-      if (condition !== false) visit(node.consequent)
-      if (condition !== true) visit(node.alternate)
-      return
+      if (condition === true) return visit(node.consequent, options)
+      if (condition === false) return visit(node.alternate, options)
+      const consequent = visit(node.consequent, { ...options, conditional: true })
+      const alternate = visit(node.alternate, { ...options, conditional: true })
+      return consequent === alternate ? consequent : 'normal'
     }
     if (node.type === 'ConditionalExpression') {
-      visit(node.test)
+      visit(node.test, options)
       const condition = staticBooleanValue(node.test)
-      if (condition !== false) visit(node.consequent)
-      if (condition !== true) visit(node.alternate)
-      return
+      if (condition === true) return visit(node.consequent, options)
+      if (condition === false) return visit(node.alternate, options)
+      visit(node.consequent, { ...options, conditional: true })
+      visit(node.alternate, { ...options, conditional: true })
+      return 'normal'
     }
     if (node.type === 'LogicalExpression') {
-      visit(node.left)
+      visit(node.left, options)
       const condition = staticBooleanValue(node.left)
       const nullish = staticNullishValue(node.left)
-      if (
-        (node.operator === '&&' && condition !== false)
+      const definitelyRuns = (node.operator === '&&' && condition === true)
+        || (node.operator === '||' && condition === false)
+        || (node.operator === '??' && nullish === true)
+      const mayRun = definitelyRuns
+        || (node.operator === '&&' && condition !== false)
         || (node.operator === '||' && condition !== true)
         || (node.operator === '??' && nullish !== false)
-      ) visit(node.right)
-      return
+      if (mayRun) visit(node.right, { ...options, conditional: conditional || !definitelyRuns })
+      return 'normal'
     }
     if (node.type === 'SwitchStatement') {
-      visit(node.discriminant)
+      visit(node.discriminant, options)
       const discriminant = staticLiteralValue(node.discriminant)
       if (!discriminant.known) {
-        for (const switchCase of node.cases ?? []) visit(switchCase)
-        return
+        for (const switchCase of node.cases ?? []) {
+          visit(switchCase.test, { ...options, conditional: true })
+          for (const consequent of switchCase.consequent ?? []) {
+            visit(consequent, { ...options, conditional: true })
+          }
+        }
+        return 'normal'
       }
       let selectedIndex = -1
       let defaultIndex = -1
-      let hasUnknownCase = false
       for (const [index, switchCase] of (node.cases ?? []).entries()) {
         if (!switchCase.test) {
           defaultIndex = index
           continue
         }
+        visit(switchCase.test, options)
         const caseValue = staticLiteralValue(switchCase.test)
         if (!caseValue.known) {
-          hasUnknownCase = true
-          break
+          for (const candidate of node.cases ?? []) {
+            for (const consequent of candidate.consequent ?? []) {
+              visit(consequent, { ...options, conditional: true })
+            }
+          }
+          return 'normal'
         }
-        if (caseValue.known && Object.is(caseValue.value, discriminant.value)) {
+        if (Object.is(caseValue.value, discriminant.value)) {
           selectedIndex = index
           break
         }
       }
-      if (hasUnknownCase) {
-        for (const switchCase of node.cases ?? []) visit(switchCase)
-        return
-      }
       const startIndex = selectedIndex >= 0 ? selectedIndex : defaultIndex
-      if (startIndex < 0) return
+      if (startIndex < 0) return 'normal'
       for (const switchCase of node.cases.slice(startIndex)) {
         for (const consequent of switchCase.consequent ?? []) {
-          if (consequent.type === 'BreakStatement') return
-          visit(consequent)
+          const completion = visit(consequent, options)
+          if (completion === 'break') return 'normal'
+          if (completion !== 'normal') return completion
         }
       }
-      return
+      return 'normal'
     }
     if (node.type === 'WhileStatement') {
-      visit(node.test)
-      if (staticBooleanValue(node.test) !== false) visit(node.body)
-      return
+      visit(node.test, options)
+      const condition = staticBooleanValue(node.test)
+      if (condition !== false) {
+        const completion = visit(node.body, {
+          ...options,
+          conditional: conditional || condition !== true,
+        })
+        if (completion === 'return' || completion === 'throw') return completion
+      }
+      return 'normal'
     }
     if (node.type === 'ForStatement') {
-      visit(node.init)
-      visit(node.test)
-      if (!node.test || staticBooleanValue(node.test) !== false) {
-        visit(node.body)
-        visit(node.update)
+      visit(node.init, options)
+      visit(node.test, options)
+      const condition = node.test ? staticBooleanValue(node.test) : true
+      if (condition !== false) {
+        const loopOptions = { ...options, conditional: conditional || condition !== true }
+        const completion = visit(node.body, loopOptions)
+        if (completion === 'return' || completion === 'throw') return completion
+        visit(node.update, loopOptions)
       }
-      return
+      return 'normal'
     }
     if (node.type === 'AwaitExpression') {
-      visit(node.argument, { awaitedCall: true })
-      return
+      evaluateAwaitedPromise(node.argument, options)
+      return 'normal'
     }
     if (node.type === 'CallExpression' || node.type === 'NewExpression') {
-      visit(node.callee)
-      const directCallables = resolvedCallables(node.callee)
-      for (const callable of directCallables) {
-        executeCallable(callable, { awaitedCall })
+      visit(node.callee, options)
+      for (const callable of resolvedCallables(node.callee)) {
+        executeCallable(callable, { argumentValues: node.arguments ?? [] })
       }
-      const awaitedCallbackMethod = awaitedCall
-        && node.callee?.type === 'MemberExpression'
-        && ['catch', 'finally', 'then'].includes(memberNameFromNode(node.callee))
-      for (const argument of node.arguments ?? []) {
-        if (functionTypes.has(argument?.type)) {
-          if (awaitedCallbackMethod) visit(argument, { executeFunction: true, awaitedCall: true })
-        } else if (awaitedCallbackMethod) {
-          const callbacks = resolvedCallables(argument)
-          for (const callable of callbacks) {
-            executeCallable(callable, { awaitedCall: true })
-          }
-          visit(argument)
-        } else {
-          visit(argument)
-        }
-      }
-      return
+      for (const argument of node.arguments ?? []) visit(argument, options)
+      return 'normal'
     }
-    for (const [child] of childNodes(node)) visit(child)
+    for (const [child] of childNodes(node)) visit(child, options)
+    return 'normal'
   }
 
   visit(program)
@@ -2738,6 +3119,9 @@ function semanticBindingGraph(program, path, analysisContext = {}) {
   function mayContainUnboundGlobalContainer(node, seen = new Set()) {
     const value = unwrapExpression(node)
     if (!value || typeof value !== 'object') return false
+    if (value.type === 'SpreadElement') {
+      return mayContainUnboundGlobalContainer(value.argument, seen)
+    }
     if (unboundGlobalContainer(value, seen)) return true
     if (value.type === 'CallExpression' || value.type === 'NewExpression') return true
     if (value.type === 'Identifier') {
@@ -3508,31 +3892,42 @@ function semanticBindingGraph(program, path, analysisContext = {}) {
     if (node.type === 'CallExpression' && !isReactEffectCall(node)) {
       const callee = node.callee
       if (callee.type === 'MemberExpression') {
-        const method = memberName(callee)
-        const staticOwner = callee.object.type === 'Identifier'
-          && !lookup(callee.object)
-          ? callee.object.name
+        const wrapperMethod = memberName(callee)
+        const borrowed = ['apply', 'call'].includes(wrapperMethod)
+        const target = borrowed ? unwrapExpression(callee.object) : callee
+        const method = target?.type === 'MemberExpression' ? memberName(target) : null
+        const staticOwner = target?.type === 'MemberExpression'
+          && target.object.type === 'Identifier'
+          && !lookup(target.object)
+          ? target.object.name
           : null
-        const storedValues = staticOwner === 'Object' && method === 'assign'
+        const invocationArguments = wrapperMethod === 'call'
           ? node.arguments?.slice(1) ?? []
+          : wrapperMethod === 'apply'
+            ? null
+            : node.arguments ?? []
+        const storedValues = wrapperMethod === 'apply'
+          ? node.arguments?.slice(1, 2) ?? []
+          : staticOwner === 'Object' && method === 'assign'
+          ? invocationArguments?.slice(1) ?? []
           : staticOwner === 'Object' && method === 'defineProperties'
-            ? node.arguments?.slice(1, 2) ?? []
+            ? invocationArguments?.slice(1, 2) ?? []
             : staticOwner === 'Object' && method === 'defineProperty'
-              ? node.arguments?.slice(2, 3) ?? []
+              ? invocationArguments?.slice(2, 3) ?? []
               : staticOwner === 'Reflect' && method === 'set'
-                ? node.arguments?.slice(2, 3) ?? []
+                ? invocationArguments?.slice(2, 3) ?? []
                 : staticOwner === 'Reflect' && method === 'defineProperty'
-                  ? node.arguments?.slice(2, 3) ?? []
+                  ? invocationArguments?.slice(2, 3) ?? []
                   : ['push', 'unshift'].includes(method)
-                    ? node.arguments ?? []
+                    ? invocationArguments ?? []
                     : method === 'splice'
-                      ? node.arguments?.slice(2) ?? []
+                      ? invocationArguments?.slice(2) ?? []
                       : method === 'fill'
-                        ? node.arguments?.slice(0, 1) ?? []
+                        ? invocationArguments?.slice(0, 1) ?? []
                         : method === 'set'
-                          ? node.arguments?.slice(1, 2) ?? []
+                          ? invocationArguments?.slice(1, 2) ?? []
                           : method === 'add'
-                            ? node.arguments?.slice(0, 1) ?? []
+                            ? invocationArguments?.slice(0, 1) ?? []
                             : []
         if (storedValues.some((argument) => mayContainUnboundGlobalContainer(argument))) {
           unsupportedRootCalls.push({
@@ -4311,21 +4706,10 @@ export function semanticSourceForDigest(path, source, options = {}) {
     if (!runtimePackageSpecifiers || !node || typeof node !== 'object') return
     if (bindingGraph.isClientOnlyDeferredValue(node)) return
     if (bindingGraph.isClientOnlyIntrinsicAttribute(node)) return
-    if (
-      node.type === 'VariableDeclarator'
-      && node.init?.type === 'CallExpression'
-      && bindingGraph.isReactLazyCall(node.init)
-    ) {
-      collectRuntimePackageSpecifiers(node.init, { selectedLazy: true })
-      return
-    }
-    if (
-      node.type === 'AssignmentExpression'
-      && node.operator === '='
-      && node.right?.type === 'CallExpression'
-      && bindingGraph.isReactLazyCall(node.right)
-    ) {
-      collectRuntimePackageSpecifiers(node.right, { selectedLazy: true })
+    if (node.type === 'CallExpression' && bindingGraph.isReactLazyCall(node)) {
+      for (const argument of node.arguments ?? []) {
+        collectRuntimePackageSpecifiers(argument, { selectedLazy: true })
+      }
       return
     }
     if (node.type === 'ImportExpression') {
