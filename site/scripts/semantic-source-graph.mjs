@@ -1061,6 +1061,28 @@ function publicSiteConfigProjection(program) {
     } else if (node.type === 'UnaryExpression' && node.operator === 'delete') {
       rejectUsedIdentity(node.argument, 'mutation of')
     } else if (node.type === 'CallExpression' || node.type === 'NewExpression') {
+      if (node.type === 'CallExpression' && node.callee.type === 'MemberExpression') {
+        const owner = unwrap(node.callee.object)
+        const method = memberNameFromNode(node.callee)
+        const builtinOwner = owner?.type === 'Identifier'
+          && !bindings.has(owner.name)
+          ? owner.name
+          : null
+        const storedValues = builtinOwner === 'Object' && method === 'assign'
+          ? node.arguments?.slice(1) ?? []
+          : builtinOwner === 'Object' && method === 'defineProperties'
+            ? node.arguments?.slice(1, 2) ?? []
+            : builtinOwner === 'Object' && method === 'defineProperty'
+              ? node.arguments?.slice(2, 3) ?? []
+              : builtinOwner === 'Reflect' && method === 'set'
+                ? node.arguments?.slice(2, 3) ?? []
+                : builtinOwner === 'Reflect' && method === 'defineProperty'
+                  ? node.arguments?.slice(2, 3) ?? []
+                  : []
+        if (storedValues.some((argument) => mayContainGlobalContainer(argument))) {
+          unsupported('member-stored global container')
+        }
+      }
       const safeObjectFreeze = node.type === 'CallExpression'
         && node.callee.type === 'MemberExpression'
         && node.callee.object.type === 'Identifier'
@@ -1177,50 +1199,248 @@ function staticNullishValue(node) {
   return null
 }
 
+function staticLiteralValue(node) {
+  if (node && EXPRESSION_WRAPPERS.has(node.type)) return staticLiteralValue(node.expression)
+  if (node?.type === 'Literal' || node?.type === 'BooleanLiteral') {
+    return { known: true, value: node.value }
+  }
+  if (node?.type === 'TemplateLiteral' && node.expressions.length === 0) {
+    return {
+      known: true,
+      value: node.quasis[0]?.value?.cooked ?? node.quasis[0]?.value?.raw ?? '',
+    }
+  }
+  if (node?.type === 'UnaryExpression' && node.operator === 'void') {
+    return { known: true, value: undefined }
+  }
+  if (node?.type === 'SequenceExpression') return staticLiteralValue(node.expressions.at(-1))
+  return { known: false, value: undefined }
+}
+
 function moduleEvaluationDynamicImportSources(program, path) {
+  const pendingNodes = [program]
+  let hasDynamicImport = false
+  while (pendingNodes.length > 0 && !hasDynamicImport) {
+    const candidate = pendingNodes.pop()
+    if (candidate?.type === 'ImportExpression') {
+      hasDynamicImport = true
+      break
+    }
+    for (const [child] of childNodes(candidate)) pendingNodes.push(child)
+  }
+  if (!hasDynamicImport) return []
+
   const sources = []
   const functionTypes = new Set([
     'ArrowFunctionExpression',
     'FunctionDeclaration',
     'FunctionExpression',
   ])
-  const callableDefinitions = new Map()
-  const callableAliases = new Map()
+  const nodeScopes = new WeakMap()
   const activeFunctions = new Set()
+  const createEvaluationScope = (parent, kind) => ({ parent, kind, bindings: new Map() })
+  const rootScope = createEvaluationScope(null, 'program')
 
-  const register = (map, name, value) => {
-    if (!name) return
-    const values = map.get(name) ?? new Set()
-    values.add(value)
-    map.set(name, values)
-  }
-  for (const statement of program.body ?? []) {
-    const declaration = statement.type === 'ExportNamedDeclaration'
-      ? statement.declaration
-      : statement
-    if (declaration?.type === 'FunctionDeclaration') {
-      register(callableDefinitions, declaration.id?.name, declaration)
+  function nearestEvaluationVarScope(scope) {
+    let current = scope
+    while (current.parent && current.kind !== 'function' && current.kind !== 'program') {
+      current = current.parent
     }
-    if (declaration?.type !== 'VariableDeclaration') continue
-    for (const declarator of declaration.declarations ?? []) {
-      if (declarator.id?.type !== 'Identifier' || !declarator.init) continue
-      if (functionTypes.has(declarator.init.type)) {
-        register(callableDefinitions, declarator.id.name, declarator.init)
-      } else if (declarator.init.type === 'Identifier') {
-        register(callableAliases, declarator.id.name, declarator.init.name)
+    return current
+  }
+
+  function evaluationBinding(scope, name) {
+    const existing = scope.bindings.get(name)
+    if (existing) return existing
+    const binding = { name, writes: [] }
+    scope.bindings.set(name, binding)
+    return binding
+  }
+
+  function declareEvaluationPattern(pattern, scope, initializer = null, start = null) {
+    for (const identifier of bindingIdentifiers(pattern)) {
+      const binding = evaluationBinding(scope, identifier.name)
+      if (initializer) binding.writes.push({ expression: initializer, start: start ?? initializer.start })
+    }
+  }
+
+  function buildEvaluationScopes(node, scope, { functionBody = false } = {}) {
+    if (!node || typeof node !== 'object') return
+    nodeScopes.set(node, scope)
+    if (node.type === 'Program') {
+      for (const [child] of childNodes(node)) buildEvaluationScopes(child, scope)
+      return
+    }
+    if (functionTypes.has(node.type)) {
+      if (node.type === 'FunctionDeclaration' && node.id) {
+        const binding = evaluationBinding(scope, node.id.name)
+        binding.writes.push({ expression: node, start: -1 })
+      }
+      const functionScope = createEvaluationScope(scope, 'function')
+      if (node.type === 'FunctionExpression' && node.id) {
+        const binding = evaluationBinding(functionScope, node.id.name)
+        binding.writes.push({ expression: node, start: -1 })
+      }
+      for (const parameter of node.params ?? []) {
+        declareEvaluationPattern(parameter, functionScope)
+        buildEvaluationScopes(parameter, functionScope)
+      }
+      if (node.body) buildEvaluationScopes(node.body, functionScope, { functionBody: true })
+      return
+    }
+    if (node.type === 'BlockStatement') {
+      const blockScope = functionBody ? scope : createEvaluationScope(scope, 'block')
+      for (const [child] of childNodes(node)) buildEvaluationScopes(child, blockScope)
+      return
+    }
+    if (node.type === 'VariableDeclaration') {
+      const declarationScope = node.kind === 'var' ? nearestEvaluationVarScope(scope) : scope
+      for (const declarator of node.declarations ?? []) {
+        declareEvaluationPattern(declarator.id, declarationScope, declarator.init, declarator.start)
+      }
+      for (const [child] of childNodes(node)) buildEvaluationScopes(child, scope)
+      return
+    }
+    if (node.type === 'ImportDeclaration') {
+      for (const specifier of node.specifiers ?? []) {
+        if (specifier.local) declareEvaluationPattern(specifier.local, scope)
       }
     }
+    if (node.type === 'ClassDeclaration' && node.id) {
+      declareEvaluationPattern(node.id, scope)
+    }
+    if (node.type === 'CatchClause') {
+      const catchScope = createEvaluationScope(scope, 'block')
+      if (node.param) declareEvaluationPattern(node.param, catchScope)
+      for (const [child] of childNodes(node)) buildEvaluationScopes(child, catchScope)
+      return
+    }
+    if (
+      node.type === 'ForStatement'
+      || node.type === 'ForInStatement'
+      || node.type === 'ForOfStatement'
+      || node.type === 'SwitchStatement'
+    ) {
+      const lexicalScope = createEvaluationScope(scope, 'block')
+      for (const [child] of childNodes(node)) buildEvaluationScopes(child, lexicalScope)
+      return
+    }
+    for (const [child] of childNodes(node)) buildEvaluationScopes(child, scope)
   }
 
-  function resolvedCallables(name, seen = new Set()) {
-    if (!name || seen.has(name)) return []
-    const nextSeen = new Set([...seen, name])
-    return [
-      ...(callableDefinitions.get(name) ?? []),
-      ...[...(callableAliases.get(name) ?? [])].flatMap((alias) => (
-        resolvedCallables(alias, nextSeen)
-      )),
-    ]
+  buildEvaluationScopes(program, rootScope)
+
+  function lookupEvaluationBinding(identifier) {
+    let scope = nodeScopes.get(identifier)
+    while (scope) {
+      const binding = scope.bindings.get(identifier.name)
+      if (binding) return binding
+      scope = scope.parent
+    }
+    return null
+  }
+
+  function indexEvaluationWrites(node) {
+    if (
+      node.type === 'AssignmentExpression'
+      && node.operator === '='
+      && node.left.type === 'Identifier'
+    ) {
+      const binding = lookupEvaluationBinding(node.left)
+      if (binding) binding.writes.push({ expression: node.right, start: node.start })
+    }
+    for (const [child] of childNodes(node)) indexEvaluationWrites(child)
+  }
+  indexEvaluationWrites(program)
+
+  function latestBindingExpressions(identifier, seen = new Set()) {
+    const binding = lookupEvaluationBinding(identifier)
+    if (!binding || seen.has(binding)) return []
+    const eligible = binding.writes.filter((write) => write.start <= identifier.start)
+    if (eligible.length === 0) return []
+    const latestStart = Math.max(...eligible.map((write) => write.start))
+    return eligible
+      .filter((write) => write.start === latestStart)
+      .map((write) => write.expression)
+  }
+
+  function staticEvaluationMemberValues(node, key, seen = new Set()) {
+    const value = node && EXPRESSION_WRAPPERS.has(node.type) ? node.expression : node
+    if (!value || typeof value !== 'object') return []
+    if (value.type === 'Identifier') {
+      const binding = lookupEvaluationBinding(value)
+      if (!binding || seen.has(binding)) return []
+      const nextSeen = new Set([...seen, binding])
+      return latestBindingExpressions(value, seen).flatMap((expression) => (
+        staticEvaluationMemberValues(expression, key, nextSeen)
+      ))
+    }
+    if (value.type === 'ConditionalExpression') {
+      return [value.consequent, value.alternate].flatMap((branch) => (
+        staticEvaluationMemberValues(branch, key, seen)
+      ))
+    }
+    if (value.type === 'LogicalExpression') {
+      return [value.left, value.right].flatMap((branch) => (
+        staticEvaluationMemberValues(branch, key, seen)
+      ))
+    }
+    if (value.type === 'SequenceExpression') {
+      return staticEvaluationMemberValues(value.expressions.at(-1), key, seen)
+    }
+    if (value.type === 'MemberExpression') {
+      const nestedKey = memberNameFromNode(value)
+      if (nestedKey === null) return []
+      return staticEvaluationMemberValues(value.object, nestedKey, seen).flatMap((member) => (
+        staticEvaluationMemberValues(member, key, seen)
+      ))
+    }
+    if (value.type === 'ArrayExpression' && /^\d+$/u.test(String(key))) {
+      const element = value.elements[Number(key)]
+      return element && element.type !== 'SpreadElement' ? [element] : []
+    }
+    if (value.type !== 'ObjectExpression') return []
+    return value.properties.flatMap((property) => {
+      if (property.type === 'SpreadElement') {
+        return staticEvaluationMemberValues(property.argument, key, seen)
+      }
+      if (property.type !== 'Property' || staticPropertyNameFromNode(property) !== String(key)) {
+        return []
+      }
+      if (property.kind === 'get') {
+        throw new Error(`Unsupported dynamic module-evaluation callback in ${path}`)
+      }
+      return [property.value]
+    })
+  }
+
+  function resolvedCallables(node, seen = new Set()) {
+    const value = node && EXPRESSION_WRAPPERS.has(node.type) ? node.expression : node
+    if (!value || typeof value !== 'object') return []
+    if (functionTypes.has(value.type)) return [value]
+    if (value.type === 'Identifier') {
+      const binding = lookupEvaluationBinding(value)
+      if (!binding || seen.has(binding)) return []
+      const nextSeen = new Set([...seen, binding])
+      return latestBindingExpressions(value, seen).flatMap((expression) => (
+        resolvedCallables(expression, nextSeen)
+      ))
+    }
+    if (value.type === 'MemberExpression') {
+      const key = memberNameFromNode(value)
+      if (key === null) return []
+      return staticEvaluationMemberValues(value.object, key, seen).flatMap((member) => (
+        resolvedCallables(member, seen)
+      ))
+    }
+    if (value.type === 'ConditionalExpression') {
+      return [value.consequent, value.alternate].flatMap((branch) => resolvedCallables(branch, seen))
+    }
+    if (value.type === 'LogicalExpression') {
+      return [value.left, value.right].flatMap((branch) => resolvedCallables(branch, seen))
+    }
+    if (value.type === 'SequenceExpression') return resolvedCallables(value.expressions.at(-1), seen)
+    return []
   }
 
   function executeCallable(callable, options = {}) {
@@ -1273,6 +1493,45 @@ function moduleEvaluationDynamicImportSources(program, path) {
       ) visit(node.right)
       return
     }
+    if (node.type === 'SwitchStatement') {
+      visit(node.discriminant)
+      const discriminant = staticLiteralValue(node.discriminant)
+      if (!discriminant.known) {
+        for (const switchCase of node.cases ?? []) visit(switchCase)
+        return
+      }
+      let selectedIndex = -1
+      let defaultIndex = -1
+      let hasUnknownCase = false
+      for (const [index, switchCase] of (node.cases ?? []).entries()) {
+        if (!switchCase.test) {
+          defaultIndex = index
+          continue
+        }
+        const caseValue = staticLiteralValue(switchCase.test)
+        if (!caseValue.known) {
+          hasUnknownCase = true
+          break
+        }
+        if (caseValue.known && Object.is(caseValue.value, discriminant.value)) {
+          selectedIndex = index
+          break
+        }
+      }
+      if (hasUnknownCase) {
+        for (const switchCase of node.cases ?? []) visit(switchCase)
+        return
+      }
+      const startIndex = selectedIndex >= 0 ? selectedIndex : defaultIndex
+      if (startIndex < 0) return
+      for (const switchCase of node.cases.slice(startIndex)) {
+        for (const consequent of switchCase.consequent ?? []) {
+          if (consequent.type === 'BreakStatement') return
+          visit(consequent)
+        }
+      }
+      return
+    }
     if (node.type === 'WhileStatement') {
       visit(node.test)
       if (staticBooleanValue(node.test) !== false) visit(node.body)
@@ -1292,20 +1551,23 @@ function moduleEvaluationDynamicImportSources(program, path) {
       return
     }
     if (node.type === 'CallExpression' || node.type === 'NewExpression') {
-      const immediateFunction = functionTypes.has(node.callee?.type)
-      visit(node.callee, { executeFunction: immediateFunction, awaitedCall })
-      if (node.callee?.type === 'Identifier') {
-        for (const callable of resolvedCallables(node.callee.name)) {
-          executeCallable(callable, { awaitedCall })
-        }
+      visit(node.callee)
+      const directCallables = resolvedCallables(node.callee)
+      for (const callable of directCallables) {
+        executeCallable(callable, { awaitedCall })
       }
+      const awaitedCallbackMethod = awaitedCall
+        && node.callee?.type === 'MemberExpression'
+        && ['catch', 'finally', 'then'].includes(memberNameFromNode(node.callee))
       for (const argument of node.arguments ?? []) {
         if (functionTypes.has(argument?.type)) {
-          if (awaitedCall) visit(argument, { executeFunction: true, awaitedCall: true })
-        } else if (awaitedCall && argument?.type === 'Identifier') {
-          for (const callable of resolvedCallables(argument.name)) {
+          if (awaitedCallbackMethod) visit(argument, { executeFunction: true, awaitedCall: true })
+        } else if (awaitedCallbackMethod) {
+          const callbacks = resolvedCallables(argument)
+          for (const callable of callbacks) {
             executeCallable(callable, { awaitedCall: true })
           }
+          visit(argument)
         } else {
           visit(argument)
         }
@@ -2191,7 +2453,7 @@ function semanticBindingGraph(program, path, analysisContext = {}) {
     ))
   }
 
-  function isKnownSynchronousCallbackCall(call) {
+  function isReactLazyCall(call) {
     const callee = unwrapExpression(call.callee)
     if (callee?.type === 'Identifier') {
       const binding = lookup(callee)
@@ -2215,6 +2477,12 @@ function semanticBindingGraph(program, path, analysisContext = {}) {
         && ![...binding.aliases].some((alias) => patchedReactBindings.has(alias))
       ) return true
     }
+    return false
+  }
+
+  function isKnownSynchronousCallbackCall(call) {
+    const callee = unwrapExpression(call.callee)
+    if (isReactLazyCall(call)) return true
     if (callee?.type !== 'MemberExpression') return false
     if (
       isUnboundGlobalIdentifier(callee.object, new Set(['Array']))
@@ -3239,6 +3507,42 @@ function semanticBindingGraph(program, path, analysisContext = {}) {
     }
     if (node.type === 'CallExpression' && !isReactEffectCall(node)) {
       const callee = node.callee
+      if (callee.type === 'MemberExpression') {
+        const method = memberName(callee)
+        const staticOwner = callee.object.type === 'Identifier'
+          && !lookup(callee.object)
+          ? callee.object.name
+          : null
+        const storedValues = staticOwner === 'Object' && method === 'assign'
+          ? node.arguments?.slice(1) ?? []
+          : staticOwner === 'Object' && method === 'defineProperties'
+            ? node.arguments?.slice(1, 2) ?? []
+            : staticOwner === 'Object' && method === 'defineProperty'
+              ? node.arguments?.slice(2, 3) ?? []
+              : staticOwner === 'Reflect' && method === 'set'
+                ? node.arguments?.slice(2, 3) ?? []
+                : staticOwner === 'Reflect' && method === 'defineProperty'
+                  ? node.arguments?.slice(2, 3) ?? []
+                  : ['push', 'unshift'].includes(method)
+                    ? node.arguments ?? []
+                    : method === 'splice'
+                      ? node.arguments?.slice(2) ?? []
+                      : method === 'fill'
+                        ? node.arguments?.slice(0, 1) ?? []
+                        : method === 'set'
+                          ? node.arguments?.slice(1, 2) ?? []
+                          : method === 'add'
+                            ? node.arguments?.slice(0, 1) ?? []
+                            : []
+        if (storedValues.some((argument) => mayContainUnboundGlobalContainer(argument))) {
+          unsupportedRootCalls.push({
+            executionScope,
+            message: 'Unsupported member-stored global container',
+            mutationNode: node,
+            semanticNode,
+          })
+        }
+      }
       const provenAsyncCallbackIndexes = new Set(
         isKnownAsyncCallbackCall(node) ? clientAsyncCallbackIndexes(node) : [],
       )
@@ -3755,6 +4059,7 @@ function semanticBindingGraph(program, path, analysisContext = {}) {
     isClientEffectCall: isReactEffectCall,
     isClientOnlyIntrinsicAttribute,
     isPureDeferredValue,
+    isReactLazyCall,
     isReference,
     lookup,
     moduleEvaluationEdges,
@@ -3829,7 +4134,8 @@ function nestedYamlValue(entry, name, sectionIndent) {
 }
 
 function registryResolutionIntegrity(entry) {
-  const supportedIntegrity = /^(?:sha256|sha384|sha512)-([A-Za-z0-9+/]+={0,2})$/u
+  const supportedIntegrity = /^(sha256|sha384|sha512)-([A-Za-z0-9+/]+={0,2})$/u
+  const digestLengths = { sha256: 32, sha384: 48, sha512: 64 }
   for (let index = 1; index < entry.lines.length; index += 1) {
     const resolution = yamlMapEntry(entry.lines[index], 4)
     if (resolution?.key !== 'resolution') continue
@@ -3853,7 +4159,9 @@ function registryResolutionIntegrity(entry) {
     const match = integrity?.match(supportedIntegrity)
     if (!match) return null
     try {
-      return Buffer.from(match[1], 'base64').toString('base64') === match[1]
+      const digest = Buffer.from(match[2], 'base64')
+      return digest.length === digestLengths[match[1]]
+        && digest.toString('base64') === match[2]
         ? integrity
         : null
     } catch {
@@ -3981,6 +4289,7 @@ export function semanticSourceForDigest(path, source, options = {}) {
   }
   const bindingGraph = semanticBindingGraph(program, path)
   const runtimePackageSpecifiers = options.runtimePackageSpecifiers ?? new Set()
+  const semanticImportSpecifiers = options.semanticImportSpecifiers
   const recordRuntimePackageSpecifier = (specifier) => {
     if (typeof specifier !== 'string' || specifier.startsWith('.')) {
       return
@@ -3998,19 +4307,39 @@ export function semanticSourceForDigest(path, source, options = {}) {
     }
     return projection
   }
-  const collectRuntimePackageSpecifiers = (node) => {
+  const collectRuntimePackageSpecifiers = (node, { selectedLazy = false } = {}) => {
     if (!runtimePackageSpecifiers || !node || typeof node !== 'object') return
     if (bindingGraph.isClientOnlyDeferredValue(node)) return
     if (bindingGraph.isClientOnlyIntrinsicAttribute(node)) return
+    if (
+      node.type === 'VariableDeclarator'
+      && node.init?.type === 'CallExpression'
+      && bindingGraph.isReactLazyCall(node.init)
+    ) {
+      collectRuntimePackageSpecifiers(node.init, { selectedLazy: true })
+      return
+    }
+    if (
+      node.type === 'AssignmentExpression'
+      && node.operator === '='
+      && node.right?.type === 'CallExpression'
+      && bindingGraph.isReactLazyCall(node.right)
+    ) {
+      collectRuntimePackageSpecifiers(node.right, { selectedLazy: true })
+      return
+    }
     if (node.type === 'ImportExpression') {
       if (typeof node.source?.value !== 'string') {
         throw new Error(`Unsupported dynamic semantic runtime import in ${path}`)
       }
-      recordRuntimePackageSpecifier(node.source.value)
+      if (selectedLazy) {
+        semanticImportSpecifiers?.add(node.source.value)
+        recordRuntimePackageSpecifier(node.source.value)
+      }
       return
     }
     for (const [child] of bindingGraph.childNodes(node)) {
-      collectRuntimePackageSpecifiers(child)
+      collectRuntimePackageSpecifiers(child, { selectedLazy })
     }
   }
   const projectionOptions = {
@@ -4242,13 +4571,22 @@ function semanticRouteEvidence(pathname) {
     if (PARSED_EXTENSIONS.has(extname(relativePath))) {
       const source = readFileSync(path, 'utf8')
       const runtimePackageSpecifiers = new Set()
-      semanticSourceForDigest(relativePath, source, { runtimePackageSpecifiers })
+      const semanticImportSpecifiers = new Set()
+      semanticSourceForDigest(relativePath, source, {
+        runtimePackageSpecifiers,
+        semanticImportSpecifiers,
+      })
       for (const specifier of runtimePackageSpecifiers) {
         const runtimePackage = trustedRuntimePackageName(specifier)
         if (!runtimePackage) {
           throw new Error(`Unsupported semantic runtime package ${specifier}`)
         }
         runtimePackages.add(runtimePackage)
+      }
+      for (const specifier of semanticImportSpecifiers) {
+        if (!specifier.startsWith('.')) continue
+        const dependency = resolveStaticImport(path, specifier)
+        if (dependency) pending.push(dependency)
       }
 
       for (const specifier of staticImportSpecifiersForSource(relativePath, source)) {
