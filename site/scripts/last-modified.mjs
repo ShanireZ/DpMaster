@@ -11,7 +11,7 @@ import {
 } from './semantic-source-graph.mjs'
 
 const projectRoot = fileURLToPath(new URL('../../', import.meta.url))
-export const ROUTE_CONTENT_DIGEST_VERSION = 18
+export const ROUTE_CONTENT_DIGEST_VERSION = 19
 
 const historicalSourceCache = new Map()
 const headSourceCache = new Map()
