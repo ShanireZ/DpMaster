@@ -11,18 +11,19 @@ interface PreloadRecoveryOptions {
 }
 
 /**
- * 「动态 import 没取到」在各浏览器里的措辞互不相同，而我们只能拿到 message。
+ * 「动态 import 没取到」在各浏览器里的措辞互不相同，且在部分懒加载场景下模块未导出
+ * 或返回异常时，React.lazy 会抛出 `reading 'default'` 的 TypeError，而我们只能拿到 message。
  *
- * Chrome/Edge：Failed to fetch dynamically imported module: <url>
+ * Chrome/Edge：Failed to fetch dynamically imported module: <url> / Cannot read properties of undefined (reading 'default')
  * Firefox：    error loading dynamically imported module: <url>
- * Safari：     Importing a module script failed. / Failed to load module script...
+ * Safari：     Importing a module script failed. / Failed to load module script... / undefined is not an object (evaluating '...default')
  *
- * 判据刻意只认这几种「取不到模块」的措辞，不认泛化的网络错误 —— 自动刷新只对
+ * 判据刻意只认这几种「取不到模块/懒加载模块异常」的措辞，不认泛化的网络错误 —— 自动刷新只对
  * 「资源当时拿不到」有意义；组件自己抛的运行时异常刷多少次都一样，那种情况必须
  * 留给错误边界的人工路径，否则就是拿刷新去掩盖真 bug。
  */
 const MODULE_LOAD_FAILURE =
-  /failed to fetch dynamically imported module|error loading dynamically imported module|importing a module script failed|failed to load module script/iu
+  /failed to fetch dynamically imported module|error loading dynamically imported module|importing a module script failed|failed to load module script|Cannot read properties of undefined \(reading ['"]default['"]\)|Cannot read property ['"]default['"] of undefined|undefined is not an object \(evaluating ['"].*default['"]\)/iu
 
 export function isModuleLoadError(error: unknown): boolean {
   return error instanceof Error && MODULE_LOAD_FAILURE.test(error.message)

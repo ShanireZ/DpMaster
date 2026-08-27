@@ -91,6 +91,10 @@ describe('isModuleLoadError', () => {
     'error loading dynamically imported module: https://dp.round1.cc/assets/KnapsackGroup-CS9oy4kI.js',
     'Importing a module script failed.',
     'Failed to load module script: expected a JavaScript module',
+    "Cannot read properties of undefined (reading 'default')",
+    'Cannot read properties of undefined (reading "default")',
+    "Cannot read property 'default' of undefined",
+    "undefined is not an object (evaluating 'e.default')",
   ])('recognises %s', (message) => {
     expect(isModuleLoadError(new Error(message))).toBe(true)
   })
