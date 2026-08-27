@@ -106,7 +106,8 @@ function parseQuality(value) {
 function parseRange(member) {
   const split = splitDelimited(member, ';')
   if (!split) return null
-  const [mediaType, ...parameters] = split.map((part) => part.trim())
+  const [rawMediaType, ...parameters] = split
+  const mediaType = rawMediaType.trim()
   const match = MEDIA_RANGE.exec(mediaType)
   if (!match) return null
   const type = match[1].toLowerCase()
@@ -116,12 +117,16 @@ function parseRange(member) {
   let quality
   let qualitySeen = false
   const mediaParameters = new Map()
-  for (const parameter of parameters) {
-    if (!parameter) return null
+  for (const rawParameter of parameters) {
+    const parameter = rawParameter.trim()
+    if (!parameter) continue
     const separator = parameter.indexOf('=')
     if (separator < 1) return null
-    const name = parameter.slice(0, separator).trim().toLowerCase()
-    const value = parameter.slice(separator + 1).trim()
+    const rawName = parameter.slice(0, separator)
+    const rawValue = parameter.slice(separator + 1)
+    if (rawName !== rawName.trim() || rawValue !== rawValue.trim()) return null
+    const name = rawName.toLowerCase()
+    const value = rawValue
     if (!TOKEN_VALUE.test(name) || !validParameterValue(value)) return null
     if (name === 'q') {
       if (qualitySeen) return null
@@ -130,7 +135,6 @@ function parseRange(member) {
       if (quality === null) return null
       continue
     }
-    if (qualitySeen) continue
     if (mediaParameters.has(name)) return null
     mediaParameters.set(name, parameterValue(value))
   }

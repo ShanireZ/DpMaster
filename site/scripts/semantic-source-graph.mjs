@@ -497,6 +497,85 @@ function publicSiteConfigProjection(program) {
       ? isGlobalContainer(initializer, new Set([...seen, value.name]))
       : false
   }
+  const publicStaticMemberMayInvokeGetter = (node, key, seen = new Set()) => {
+    const value = unwrap(node)
+    if (!value || typeof value !== 'object') return false
+    if (value.type === 'Identifier' && bindings.has(value.name)) {
+      const initializer = constBindingExpression(value.name, seen)
+      return initializer
+        ? publicStaticMemberMayInvokeGetter(
+            initializer,
+            key,
+            new Set([...seen, value.name]),
+          )
+        : false
+    }
+    if (value.type === 'ConditionalExpression') {
+      return publicStaticMemberMayInvokeGetter(value.consequent, key, seen)
+        || publicStaticMemberMayInvokeGetter(value.alternate, key, seen)
+    }
+    if (value.type === 'LogicalExpression') {
+      return publicStaticMemberMayInvokeGetter(value.left, key, seen)
+        || publicStaticMemberMayInvokeGetter(value.right, key, seen)
+    }
+    if (value.type === 'SequenceExpression') {
+      return publicStaticMemberMayInvokeGetter(value.expressions.at(-1), key, seen)
+    }
+    if (value.type !== 'ObjectExpression') return false
+    return value.properties.some((property) => {
+      if (property.type === 'SpreadElement') {
+        return publicStaticMemberMayInvokeGetter(property.argument, key, seen)
+      }
+      return property.type === 'Property'
+        && staticPropertyNameFromNode(property) === String(key)
+        && property.kind === 'get'
+    })
+  }
+  const mayContainGlobalContainer = (node, seen = new Set()) => {
+    const value = unwrap(node)
+    if (!value || typeof value !== 'object') return false
+    if (isGlobalContainer(value, seen)) return true
+    if (value.type === 'CallExpression' || value.type === 'NewExpression') return true
+    if (value.type === 'Identifier' && bindings.has(value.name)) {
+      const initializer = constBindingExpression(value.name, seen)
+      return initializer
+        ? mayContainGlobalContainer(initializer, new Set([...seen, value.name]))
+        : false
+    }
+    if (value.type === 'ConditionalExpression') {
+      return mayContainGlobalContainer(value.consequent, seen)
+        || mayContainGlobalContainer(value.alternate, seen)
+    }
+    if (value.type === 'LogicalExpression') {
+      return mayContainGlobalContainer(value.left, seen)
+        || mayContainGlobalContainer(value.right, seen)
+    }
+    if (value.type === 'SequenceExpression') {
+      return mayContainGlobalContainer(value.expressions.at(-1), seen)
+    }
+    if (value.type === 'ArrayExpression') {
+      return value.elements.some((element) => mayContainGlobalContainer(
+        element?.type === 'SpreadElement' ? element.argument : element,
+        seen,
+      ))
+    }
+    if (value.type === 'ObjectExpression') {
+      return value.properties.some((property) => mayContainGlobalContainer(
+        property.type === 'SpreadElement' ? property.argument : property.value,
+        seen,
+      ))
+    }
+    if (value.type === 'MemberExpression') {
+      const name = localMemberName(value)
+      if (name === null || publicStaticMemberMayInvokeGetter(value.object, name, seen)) {
+        return true
+      }
+      const members = staticMemberExpressions(value.object, name, seen)
+      return members.length === 0
+        || members.some((member) => mayContainGlobalContainer(member, seen))
+    }
+    return false
+  }
   const indexGlobalContainerAliases = () => {
     let containerAliasesChanged = true
     while (containerAliasesChanged) {
@@ -976,7 +1055,7 @@ function publicSiteConfigProjection(program) {
       if (
         node.type === 'AssignmentExpression'
         && unwrap(node.left)?.type === 'MemberExpression'
-        && isGlobalContainer(node.right)
+        && mayContainGlobalContainer(node.right)
       ) unsupported('member-stored global container')
       rejectUsedIdentity(node.type === 'AssignmentExpression' ? node.left : node.argument, 'mutation of')
     } else if (node.type === 'UnaryExpression' && node.operator === 'delete') {
@@ -1061,16 +1140,39 @@ function canonicalImportIdentity(importerPath, specifier) {
 }
 
 function staticBooleanValue(node) {
-  const value = node && EXPRESSION_WRAPPERS.has(node.type)
-    ? staticBooleanValue(node.expression)
-    : node
-  if (
-    (value?.type === 'Literal' || value?.type === 'BooleanLiteral')
-    && typeof value.value === 'boolean'
-  ) return value.value
+  if (node && EXPRESSION_WRAPPERS.has(node.type)) {
+    return staticBooleanValue(node.expression)
+  }
+  const value = node
+  if (value?.type === 'Literal' || value?.type === 'BooleanLiteral') {
+    return Boolean(value.value)
+  }
+  if (value?.type === 'TemplateLiteral' && value.expressions.length === 0) {
+    return Boolean(value.quasis[0]?.value?.cooked ?? value.quasis[0]?.value?.raw ?? '')
+  }
   if (value?.type === 'UnaryExpression' && value.operator === '!') {
     const argument = staticBooleanValue(value.argument)
     return argument === null ? null : !argument
+  }
+  if (value?.type === 'UnaryExpression' && value.operator === 'void') return false
+  if (value?.type === 'SequenceExpression') {
+    return staticBooleanValue(value.expressions.at(-1))
+  }
+  return null
+}
+
+function staticNullishValue(node) {
+  if (node && EXPRESSION_WRAPPERS.has(node.type)) {
+    return staticNullishValue(node.expression)
+  }
+  const value = node
+  if (value?.type === 'Literal' || value?.type === 'BooleanLiteral') {
+    return value.value === null
+  }
+  if (value?.type === 'UnaryExpression' && value.operator === 'void') return true
+  if (value?.type === 'TemplateLiteral' && value.expressions.length === 0) return false
+  if (value?.type === 'SequenceExpression') {
+    return staticNullishValue(value.expressions.at(-1))
   }
   return null
 }
@@ -1082,6 +1184,54 @@ function moduleEvaluationDynamicImportSources(program, path) {
     'FunctionDeclaration',
     'FunctionExpression',
   ])
+  const callableDefinitions = new Map()
+  const callableAliases = new Map()
+  const activeFunctions = new Set()
+
+  const register = (map, name, value) => {
+    if (!name) return
+    const values = map.get(name) ?? new Set()
+    values.add(value)
+    map.set(name, values)
+  }
+  for (const statement of program.body ?? []) {
+    const declaration = statement.type === 'ExportNamedDeclaration'
+      ? statement.declaration
+      : statement
+    if (declaration?.type === 'FunctionDeclaration') {
+      register(callableDefinitions, declaration.id?.name, declaration)
+    }
+    if (declaration?.type !== 'VariableDeclaration') continue
+    for (const declarator of declaration.declarations ?? []) {
+      if (declarator.id?.type !== 'Identifier' || !declarator.init) continue
+      if (functionTypes.has(declarator.init.type)) {
+        register(callableDefinitions, declarator.id.name, declarator.init)
+      } else if (declarator.init.type === 'Identifier') {
+        register(callableAliases, declarator.id.name, declarator.init.name)
+      }
+    }
+  }
+
+  function resolvedCallables(name, seen = new Set()) {
+    if (!name || seen.has(name)) return []
+    const nextSeen = new Set([...seen, name])
+    return [
+      ...(callableDefinitions.get(name) ?? []),
+      ...[...(callableAliases.get(name) ?? [])].flatMap((alias) => (
+        resolvedCallables(alias, nextSeen)
+      )),
+    ]
+  }
+
+  function executeCallable(callable, options = {}) {
+    if (activeFunctions.has(callable)) return
+    activeFunctions.add(callable)
+    try {
+      visit(callable, { ...options, executeFunction: true })
+    } finally {
+      activeFunctions.delete(callable)
+    }
+  }
 
   function visit(node, { executeFunction = false, awaitedCall = false } = {}) {
     if (!node || typeof node !== 'object') return
@@ -1115,11 +1265,26 @@ function moduleEvaluationDynamicImportSources(program, path) {
     if (node.type === 'LogicalExpression') {
       visit(node.left)
       const condition = staticBooleanValue(node.left)
+      const nullish = staticNullishValue(node.left)
       if (
         (node.operator === '&&' && condition !== false)
         || (node.operator === '||' && condition !== true)
-        || (node.operator === '??' && condition === null)
+        || (node.operator === '??' && nullish !== false)
       ) visit(node.right)
+      return
+    }
+    if (node.type === 'WhileStatement') {
+      visit(node.test)
+      if (staticBooleanValue(node.test) !== false) visit(node.body)
+      return
+    }
+    if (node.type === 'ForStatement') {
+      visit(node.init)
+      visit(node.test)
+      if (!node.test || staticBooleanValue(node.test) !== false) {
+        visit(node.body)
+        visit(node.update)
+      }
       return
     }
     if (node.type === 'AwaitExpression') {
@@ -1129,9 +1294,18 @@ function moduleEvaluationDynamicImportSources(program, path) {
     if (node.type === 'CallExpression' || node.type === 'NewExpression') {
       const immediateFunction = functionTypes.has(node.callee?.type)
       visit(node.callee, { executeFunction: immediateFunction, awaitedCall })
+      if (node.callee?.type === 'Identifier') {
+        for (const callable of resolvedCallables(node.callee.name)) {
+          executeCallable(callable, { awaitedCall })
+        }
+      }
       for (const argument of node.arguments ?? []) {
         if (functionTypes.has(argument?.type)) {
           if (awaitedCall) visit(argument, { executeFunction: true, awaitedCall: true })
+        } else if (awaitedCall && argument?.type === 'Identifier') {
+          for (const callable of resolvedCallables(argument.name)) {
+            executeCallable(callable, { awaitedCall: true })
+          }
         } else {
           visit(argument)
         }
@@ -1319,10 +1493,12 @@ function semanticBindingGraph(program, path, analysisContext = {}) {
           valueOrigins: node.source?.value === 'react'
             && CLIENT_EFFECT_CALLEES.has(importedName)
             ? ['react-effect']
-            : node.source?.value === 'react'
-              && (importedName === '*' || importedName === 'default')
-              ? ['react-namespace']
-              : ['other'],
+            : node.source?.value === 'react' && importedName === 'lazy'
+              ? ['react-lazy']
+              : node.source?.value === 'react'
+                && (importedName === '*' || importedName === 'default')
+                ? ['react-namespace']
+                : ['other'],
         })
         const binding = scope.bindings.get(specifier.local.name)
         if (binding && node.source) {
@@ -1524,9 +1700,17 @@ function semanticBindingGraph(program, path, analysisContext = {}) {
       const binding = lookup(value)
       if (!binding || seen.has(binding)) return false
       const initializer = directConstInitializer(binding)
-      return initializer
-        ? staticMemberMayInvokeGetter(initializer, key, new Set([...seen, binding]))
-        : false
+      if (initializer) {
+        return staticMemberMayInvokeGetter(initializer, key, new Set([...seen, binding]))
+      }
+      const relation = nodeParents.get(binding.identifier)
+      if (
+        relation?.key === 'id'
+        && (relation.parent.type === 'ClassDeclaration' || relation.parent.type === 'ClassExpression')
+      ) {
+        return staticMemberMayInvokeGetter(relation.parent, key, new Set([...seen, binding]))
+      }
+      return false
     }
     if (value.type === 'ConditionalExpression') {
       return staticMemberMayInvokeGetter(value.consequent, key, seen)
@@ -1545,6 +1729,19 @@ function semanticBindingGraph(program, path, analysisContext = {}) {
       return staticMemberExpressions(value.object, nestedName, seen).some((member) => (
         staticMemberMayInvokeGetter(member, key, seen)
       ))
+    }
+    if (value.type === 'ClassDeclaration' || value.type === 'ClassExpression') {
+      return (value.body?.body ?? []).some((member) => {
+        if (member.type !== 'MethodDefinition' || !member.static || member.kind !== 'get') {
+          return false
+        }
+        const name = !member.computed && member.key.type === 'Identifier'
+          ? member.key.name
+          : (member.key.type === 'Literal' || member.key.type === 'StringLiteral')
+            ? member.key.value
+            : null
+        return String(name) === String(key)
+      })
     }
     if (value.type !== 'ObjectExpression') return false
     return value.properties.some((property) => {
@@ -1791,11 +1988,13 @@ function semanticBindingGraph(program, path, analysisContext = {}) {
     }
     if (node.type === 'MemberExpression') {
       const objectOrigins = expressionValueOrigins(node.object)
-      return objectOrigins.size === 1
-        && objectOrigins.has('react-namespace')
-        && CLIENT_EFFECT_CALLEES.has(memberNameFromNode(node))
-        ? new Set(['react-effect'])
-        : new Set(['other'])
+      if (objectOrigins.size === 1 && objectOrigins.has('react-namespace')) {
+        if (CLIENT_EFFECT_CALLEES.has(memberNameFromNode(node))) {
+          return new Set(['react-effect'])
+        }
+        if (memberNameFromNode(node) === 'lazy') return new Set(['react-lazy'])
+      }
+      return new Set(['other'])
     }
     if (node.type === 'ConditionalExpression') {
       return new Set([
@@ -1849,7 +2048,13 @@ function semanticBindingGraph(program, path, analysisContext = {}) {
                 : property.key.value
               changed = addValueOrigins(
                 reassignedBindings(property.value),
-                new Set(CLIENT_EFFECT_CALLEES.has(name) ? ['react-effect'] : ['other']),
+                new Set(
+                  CLIENT_EFFECT_CALLEES.has(name)
+                    ? ['react-effect']
+                    : name === 'lazy'
+                      ? ['react-lazy']
+                      : ['other'],
+                ),
               ) || changed
             }
           } else {
@@ -1988,6 +2193,28 @@ function semanticBindingGraph(program, path, analysisContext = {}) {
 
   function isKnownSynchronousCallbackCall(call) {
     const callee = unwrapExpression(call.callee)
+    if (callee?.type === 'Identifier') {
+      const binding = lookup(callee)
+      if (
+        binding
+        && !binding.aliasUnstable
+        && exactOrigin(binding, 'react-lazy')
+        && ![...binding.aliases].some((alias) => patchedReactBindings.has(alias))
+      ) return true
+    }
+    if (
+      callee?.type === 'MemberExpression'
+      && memberName(callee) === 'lazy'
+      && callee.object.type === 'Identifier'
+    ) {
+      const binding = lookup(callee.object)
+      if (
+        binding
+        && !binding.aliasUnstable
+        && exactOrigin(binding, 'react-namespace')
+        && ![...binding.aliases].some((alias) => patchedReactBindings.has(alias))
+      ) return true
+    }
     if (callee?.type !== 'MemberExpression') return false
     if (
       isUnboundGlobalIdentifier(callee.object, new Set(['Array']))
@@ -2238,6 +2465,53 @@ function semanticBindingGraph(program, path, analysisContext = {}) {
     return initializer
       ? unboundGlobalContainer(initializer, new Set([...seen, binding]))
       : false
+  }
+
+  function mayContainUnboundGlobalContainer(node, seen = new Set()) {
+    const value = unwrapExpression(node)
+    if (!value || typeof value !== 'object') return false
+    if (unboundGlobalContainer(value, seen)) return true
+    if (value.type === 'CallExpression' || value.type === 'NewExpression') return true
+    if (value.type === 'Identifier') {
+      const binding = lookup(value)
+      if (!binding || seen.has(binding)) return false
+      const initializer = directConstInitializer(binding)
+      return initializer
+        ? mayContainUnboundGlobalContainer(initializer, new Set([...seen, binding]))
+        : false
+    }
+    if (value.type === 'ConditionalExpression') {
+      return mayContainUnboundGlobalContainer(value.consequent, seen)
+        || mayContainUnboundGlobalContainer(value.alternate, seen)
+    }
+    if (value.type === 'LogicalExpression') {
+      return mayContainUnboundGlobalContainer(value.left, seen)
+        || mayContainUnboundGlobalContainer(value.right, seen)
+    }
+    if (value.type === 'SequenceExpression') {
+      return mayContainUnboundGlobalContainer(value.expressions.at(-1), seen)
+    }
+    if (value.type === 'ArrayExpression') {
+      return value.elements.some((element) => (
+        element?.type === 'SpreadElement'
+          ? mayContainUnboundGlobalContainer(element.argument, seen)
+          : mayContainUnboundGlobalContainer(element, seen)
+      ))
+    }
+    if (value.type === 'ObjectExpression') {
+      return value.properties.some((property) => mayContainUnboundGlobalContainer(
+        property.type === 'SpreadElement' ? property.argument : property.value,
+        seen,
+      ))
+    }
+    if (value.type === 'MemberExpression') {
+      const name = memberName(value)
+      if (name === null || staticMemberMayInvokeGetter(value.object, name)) return true
+      const members = staticMemberExpressions(value.object, name, seen)
+      return members.length === 0
+        || members.some((member) => mayContainUnboundGlobalContainer(member, seen))
+    }
+    return false
   }
 
   function unboundGlobalMemberRoot(node) {
@@ -2933,7 +3207,7 @@ function semanticBindingGraph(program, path, analysisContext = {}) {
     if (node.type === 'AssignmentExpression') {
       if (
         isMemberMutationTarget(node.left)
-        && unboundGlobalContainer(node.right)
+        && mayContainUnboundGlobalContainer(node.right)
       ) {
         unsupportedRootCalls.push({
           executionScope,
@@ -3554,6 +3828,41 @@ function nestedYamlValue(entry, name, sectionIndent) {
   return null
 }
 
+function registryResolutionIntegrity(entry) {
+  const supportedIntegrity = /^(?:sha256|sha384|sha512)-([A-Za-z0-9+/]+={0,2})$/u
+  for (let index = 1; index < entry.lines.length; index += 1) {
+    const resolution = yamlMapEntry(entry.lines[index], 4)
+    if (resolution?.key !== 'resolution') continue
+    let integrity = null
+    if (resolution.value.startsWith('{') && resolution.value.endsWith('}')) {
+      const inline = resolution.value.slice(1, -1)
+      const match = inline.match(
+        /(?:^|,)\s*integrity\s*:\s*(?:"([^"]*)"|'([^']*)'|([^,\s}]+))/u,
+      )
+      integrity = match ? (match[1] ?? match[2] ?? match[3] ?? '') : null
+    } else if (!resolution.value) {
+      for (let nestedIndex = index + 1; nestedIndex < entry.lines.length; nestedIndex += 1) {
+        if (entry.lines[nestedIndex].trim() && yamlIndent(entry.lines[nestedIndex]) <= 4) break
+        const field = yamlMapEntry(entry.lines[nestedIndex], 6)
+        if (field?.key === 'integrity') {
+          integrity = field.value
+          break
+        }
+      }
+    }
+    const match = integrity?.match(supportedIntegrity)
+    if (!match) return null
+    try {
+      return Buffer.from(match[1], 'base64').toString('base64') === match[1]
+        ? integrity
+        : null
+    } catch {
+      return null
+    }
+  }
+  return null
+}
+
 function selectedRuntimePackageNames(runtimePackages, availableNames) {
   const selected = runtimePackages === undefined
     ? [...availableNames].filter((name) => TRUSTED_RUNTIME_PACKAGE_NAMES.has(name))
@@ -3638,7 +3947,7 @@ function runtimeLockProjection(source, runtimePackages) {
     const packageEntry = packageEntries.get(key) ?? packageEntries.get(packageKey)
     if (!packageEntry) throw new Error(`Missing locked package ${packageKey}`)
     const packageSource = packageEntry.lines.join('\n')
-    if (!/\bintegrity:\s*[^\s}]+/u.test(packageSource)) {
+    if (!registryResolutionIntegrity(packageEntry)) {
       throw new Error(`Missing registry integrity ${packageEntry.key}`)
     }
     selectedPackages.set(packageEntry.key, packageSource)
@@ -3671,6 +3980,39 @@ export function semanticSourceForDigest(path, source, options = {}) {
     return JSON.stringify(publicSiteConfigProjection(program))
   }
   const bindingGraph = semanticBindingGraph(program, path)
+  const runtimePackageSpecifiers = options.runtimePackageSpecifiers ?? new Set()
+  const recordRuntimePackageSpecifier = (specifier) => {
+    if (typeof specifier !== 'string' || specifier.startsWith('.')) {
+      return
+    }
+    runtimePackageSpecifiers.add(specifier)
+  }
+  for (const sourceNode of bindingGraph.moduleEvaluationEdges) {
+    recordRuntimePackageSpecifier(sourceNode.value)
+  }
+  const finishProjection = (projection) => {
+    for (const specifier of runtimePackageSpecifiers) {
+      if (!trustedRuntimePackageName(specifier)) {
+        throw new Error(`Unsupported semantic runtime package ${specifier}`)
+      }
+    }
+    return projection
+  }
+  const collectRuntimePackageSpecifiers = (node) => {
+    if (!runtimePackageSpecifiers || !node || typeof node !== 'object') return
+    if (bindingGraph.isClientOnlyDeferredValue(node)) return
+    if (bindingGraph.isClientOnlyIntrinsicAttribute(node)) return
+    if (node.type === 'ImportExpression') {
+      if (typeof node.source?.value !== 'string') {
+        throw new Error(`Unsupported dynamic semantic runtime import in ${path}`)
+      }
+      recordRuntimePackageSpecifier(node.source.value)
+      return
+    }
+    for (const [child] of bindingGraph.childNodes(node)) {
+      collectRuntimePackageSpecifiers(child)
+    }
+  }
   const projectionOptions = {
     clientAsyncCallbackIndexes: bindingGraph.clientAsyncCallbackIndexes,
     isClientEffectCall: bindingGraph.isClientEffectCall,
@@ -3683,7 +4025,10 @@ export function semanticSourceForDigest(path, source, options = {}) {
     projectIntrinsicSpreadPropertyValue: bindingGraph.projectIntrinsicSpreadPropertyValue,
     projectIntrinsicSpreadInitializer: bindingGraph.projectIntrinsicSpreadInitializer,
   }
-  if (!rootName) return JSON.stringify(runtimeAstProjection(program, projectionOptions))
+  if (!rootName) {
+    collectRuntimePackageSpecifiers(program)
+    return finishProjection(JSON.stringify(runtimeAstProjection(program, projectionOptions)))
+  }
   const roots = []
   function findRoots(node) {
     if (
@@ -3788,9 +4133,10 @@ export function semanticSourceForDigest(path, source, options = {}) {
       && other.end >= end
     ))
   })
-  return JSON.stringify(outermostSlices.map((node) => (
+  for (const node of outermostSlices) collectRuntimePackageSpecifiers(node)
+  return finishProjection(JSON.stringify(outermostSlices.map((node) => (
     runtimeAstProjection(node, projectionOptions)
-  )))
+  ))))
 }
 
 function projectPath(path) {
@@ -3853,11 +4199,6 @@ export function staticImportSpecifiersForSource(path, source) {
   ]
 }
 
-function staticImportSpecifiers(path) {
-  if (!PARSED_EXTENSIONS.has(extname(path))) return []
-  return staticImportSpecifiersForSource(path, readFileSync(path, 'utf8'))
-}
-
 function trustedRuntimePackageName(specifier) {
   if (!TRUSTED_RUNTIME_PACKAGES.has(specifier)) return null
   return specifier.startsWith('@')
@@ -3898,14 +4239,23 @@ function semanticRouteEvidence(pathname) {
     if (visited.has(relativePath)) continue
     visited.add(relativePath)
 
-    for (const specifier of staticImportSpecifiers(path)) {
-      const runtimePackage = trustedRuntimePackageName(specifier)
-      if (runtimePackage) {
+    if (PARSED_EXTENSIONS.has(extname(relativePath))) {
+      const source = readFileSync(path, 'utf8')
+      const runtimePackageSpecifiers = new Set()
+      semanticSourceForDigest(relativePath, source, { runtimePackageSpecifiers })
+      for (const specifier of runtimePackageSpecifiers) {
+        const runtimePackage = trustedRuntimePackageName(specifier)
+        if (!runtimePackage) {
+          throw new Error(`Unsupported semantic runtime package ${specifier}`)
+        }
         runtimePackages.add(runtimePackage)
-        continue
       }
-      const dependency = resolveStaticImport(path, specifier)
-      if (dependency) pending.push(dependency)
+
+      for (const specifier of staticImportSpecifiersForSource(relativePath, source)) {
+        if (!specifier.startsWith('.')) continue
+        const dependency = resolveStaticImport(path, specifier)
+        if (dependency) pending.push(dependency)
+      }
     }
   }
 

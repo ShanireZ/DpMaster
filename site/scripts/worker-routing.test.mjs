@@ -74,6 +74,11 @@ test('public route HTTP responses apply the approved Accept selection matrix', a
     ['text/markdown;q=0, */*;q=1', '/part/a', 200],
     ['not-a-media-range, text/html', '/part/a', 200],
     ['not-a-media-range', null, 406],
+    ['text/markdown;q=1;charset=iso-8859-1, text/html;q=0.5', '/part/a', 200],
+    ['text/markdown;q=1;charset=utf-8, text/html;q=0.5', '/_representations/markdown/part/a.md', 200],
+    ['text/markdown;charset =utf-8, text/html;q=0.5', '/part/a', 200],
+    ['text/markdown;;q=1, text/html;q=0.5', '/_representations/markdown/part/a.md', 200],
+    ['text/markdown;q=1;foo, text/html;q=0.5', '/part/a', 200],
   ]
 
   for (const [accept, expectedPath, expectedStatus] of vectors) {
