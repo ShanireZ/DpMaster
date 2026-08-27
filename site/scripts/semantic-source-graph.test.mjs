@@ -608,6 +608,10 @@ test('mixed-module closure tracks every supported mutation of selected bindings'
     `let label = '正文'\nconst holder = {}\nholder.nested = { g: globalThis }\nholder.nested.g.setTimeout = callback => callback()\nfunction AppContent() { setTimeout(() => { label = '变化' }, 0); return <Routes>{label}</Routes> }`,
     `let label = '正文'\nconst holder = {}\nfunction getGlobal() { return globalThis }\nholder.g = getGlobal()\nholder.g.setTimeout = callback => callback()\nfunction AppContent() { setTimeout(() => { label = '变化' }, 0); return <Routes>{label}</Routes> }`,
     `let label = '正文'\nconst holder = {}\nconst source = { get value() { return globalThis } }\nholder.g = source.value\nholder.g.setTimeout = callback => callback()\nfunction AppContent() { setTimeout(() => { label = '变化' }, 0); return <Routes>{label}</Routes> }`,
+    `let label = '正文'\nconst holder = { nested: {} }\nObject.assign(holder.nested, { g: globalThis })\nholder.nested.g.setTimeout = callback => callback()\nfunction AppContent() { setTimeout(() => { label = '变化' }, 0); return <Routes>{label}</Routes> }`,
+    `let label = '正文'\nconst holder = { nested: {} }\nObject.defineProperty(holder.nested, 'g', { value: globalThis })\nholder.nested.g.setTimeout = callback => callback()\nfunction AppContent() { setTimeout(() => { label = '变化' }, 0); return <Routes>{label}</Routes> }`,
+    `let label = '正文'\nconst holder = { nested: {} }\nReflect.set(holder.nested, 'g', globalThis)\nholder.nested.g.setTimeout = callback => callback()\nfunction AppContent() { setTimeout(() => { label = '变化' }, 0); return <Routes>{label}</Routes> }`,
+    `let label = '正文'\nconst holder = []\nholder.push(globalThis)\nholder[0].setTimeout = callback => callback()\nfunction AppContent() { setTimeout(() => { label = '变化' }, 0); return <Routes>{label}</Routes> }`,
   ]) {
     assert.throws(
       () => semanticSourceForDigest('site/src/app/AppContent.tsx', indirectMemberStoredGlobal),
@@ -1214,6 +1218,18 @@ test('public config rejects alias mutation, pattern writes, and patched freeze',
       `const holder = {}\nconst source = { get value() { return globalThis } }\nholder.g = source.value\nholder.g.Object = { freeze(value) { value.name = '运行时'; return value } }`,
       `name: '初始'`,
     ),
+    publicConfigSource(
+      `const holder = { nested: {} }\nObject.assign(holder.nested, { g: globalThis })\nholder.nested.g.Object = { freeze(value) { value.name = '运行时'; return value } }`,
+      `name: '初始'`,
+    ),
+    publicConfigSource(
+      `const holder = { nested: {} }\nObject.defineProperty(holder.nested, 'g', { value: globalThis })\nholder.nested.g.Object = { freeze(value) { value.name = '运行时'; return value } }`,
+      `name: '初始'`,
+    ),
+    publicConfigSource(
+      `const holder = { nested: {} }\nReflect.set(holder.nested, 'g', globalThis)\nholder.nested.g.Object = { freeze(value) { value.name = '运行时'; return value } }`,
+      `name: '初始'`,
+    ),
   ]) {
     assert.throws(
       () => semanticSourceForDigest('site/src/config/site.ts', mutableConfig),
@@ -1240,6 +1256,41 @@ test('static dependency discovery follows literal top-level dynamic imports and 
       `await import('./runtime')\nfunction later() { return import('./client-only') }`,
     ),
     ['./runtime'],
+  )
+  assert.deepEqual(
+    staticImportSpecifiersForSource(
+      'site/src/app/AppContent.tsx',
+      `async function outer() { const load = () => import('./Child'); await load() }\nouter()`,
+    ),
+    ['./Child'],
+  )
+  assert.deepEqual(
+    staticImportSpecifiersForSource(
+      'site/src/app/AppContent.tsx',
+      `const load = () => import('katex')\nasync function outer() { function load() {} await load() }\nouter()`,
+    ),
+    [],
+  )
+  assert.deepEqual(
+    staticImportSpecifiersForSource(
+      'site/src/app/AppContent.tsx',
+      `await Promise.resolve(() => import('katex'))`,
+    ),
+    [],
+  )
+  assert.deepEqual(
+    staticImportSpecifiersForSource(
+      'site/src/app/AppContent.tsx',
+      `const loaders = { run: () => import('./Child') }\nawait Promise.resolve().then(loaders.run)`,
+    ),
+    ['./Child'],
+  )
+  assert.deepEqual(
+    staticImportSpecifiersForSource(
+      'site/src/app/AppContent.tsx',
+      `let load = () => import('./Home')\nload = () => import('./Method')\nawait load()`,
+    ),
+    ['./Method'],
   )
   assert.deepEqual(
     staticImportSpecifiersForSource(
@@ -1306,6 +1357,13 @@ test('static dependency discovery follows literal top-level dynamic imports and 
       deadBranch,
     )
   }
+  assert.deepEqual(
+    staticImportSpecifiersForSource(
+      'site/src/app/AppContent.tsx',
+      `switch (1) { case 2: import('katex'); break }`,
+    ),
+    [],
+  )
 })
 
 test('semantic package evidence rejects unknown packages and follows selected lazy imports', () => {
@@ -1323,12 +1381,22 @@ test('semantic package evidence rejects unknown packages and follows selected la
   }
 
   const runtimePackageSpecifiers = new Set()
+  const semanticImportSpecifiers = new Set()
   semanticSourceForDigest(
     'site/src/app/AppContent.tsx',
     `import { lazy } from 'react'\nconst Icon = lazy(() => import('lucide-react'))\nfunction AppContent() { return <Routes><Icon /></Routes> }`,
-    { runtimePackageSpecifiers },
+    { runtimePackageSpecifiers, semanticImportSpecifiers },
   )
   assert.deepEqual([...runtimePackageSpecifiers].sort(), ['lucide-react', 'react'])
+  assert.deepEqual([...semanticImportSpecifiers], ['lucide-react'])
+
+  const relativeSemanticImports = new Set()
+  semanticSourceForDigest(
+    'site/src/app/AppContent.tsx',
+    `import { lazy } from 'react'\nconst View = lazy(() => import('./Child'))\nfunction AppContent() { return <Routes><View /></Routes> }`,
+    { semanticImportSpecifiers: relativeSemanticImports },
+  )
+  assert.deepEqual([...relativeSemanticImports], ['./Child'])
 })
 
 test('static dependency discovery strips Vite query and hash suffixes', () => {
@@ -1403,11 +1471,11 @@ importers:
         version: 4.1.11
 packages:
   loose-envify@1.4.0:
-    resolution: {integrity: sha512-cnVudGltZS1vbmU=}
+    resolution: {integrity: sha512-JRXu9u5IaP6L7ojL5HGIPUTtKOy+3eOYlwW08+edE5tRNFk7BQLjXJ2f4k/W3gCuzl2SXzeW5kR4h3RQ9WYTmw==}
   react@19.2.8:
-    resolution: {integrity: sha512-cmVhY3Qtb25l}
+    resolution: {integrity: sha512-pdBTuBIiIq6ICUAgspm42tMvNa5kaWM9QGO2iizUvhfugjjIdNLJrQI7HRku/RswNK9NkxL4sTiZOQnHzY38Vg==}
   vitest@4.1.11:
-    resolution: {integrity: sha512-dGVzdC1vbmU=}
+    resolution: {integrity: sha512-6wXHBFSd0w9CGUZNY9y8kwsZgmcG2DsY+ku3fIRabFn/AlA9y1dorDEJdHw+HrvpbgTLDb9bAXTAqlk5XhjRug==}
 snapshots:
   loose-envify@1.4.0: {}
   react@19.2.8:
@@ -1419,14 +1487,20 @@ snapshots:
     lockProjection,
     semanticSourceForDigest(
       'site/pnpm-lock.yaml',
-      lockSource.replace('sha512-cnVudGltZS1vbmU=', 'sha512-cnVudGltZS10d28='),
+      lockSource.replace(
+        'sha512-JRXu9u5IaP6L7ojL5HGIPUTtKOy+3eOYlwW08+edE5tRNFk7BQLjXJ2f4k/W3gCuzl2SXzeW5kR4h3RQ9WYTmw==',
+        'sha512-hAKZnwK0TlZOH7R1+W6I7GL+LdvsEcgBASecV4nRlDgLp5g+C8G7sHWLmI4+bO2kzdTJjTmzR+BEjZ72taEplA==',
+      ),
     ),
   )
   assert.equal(
     lockProjection,
     semanticSourceForDigest(
       'site/pnpm-lock.yaml',
-      lockSource.replace('sha512-dGVzdC1vbmU=', 'sha512-dGVzdC10d28='),
+      lockSource.replace(
+        'sha512-6wXHBFSd0w9CGUZNY9y8kwsZgmcG2DsY+ku3fIRabFn/AlA9y1dorDEJdHw+HrvpbgTLDb9bAXTAqlk5XhjRug==',
+        'sha512-G0HZh9nVyIeffTOZmtwLJidbk2FIw9UCsHCwIJFHtdHzjMrsZUJrxlwUHqQqlGY/9KmU0otwCkc3hhDmXfg13A==',
+      ),
     ),
   )
   assert.throws(
@@ -1440,7 +1514,7 @@ snapshots:
     () => semanticSourceForDigest(
       'site/pnpm-lock.yaml',
       lockSource.replace(
-        '  loose-envify@1.4.0:\n    resolution: {integrity: sha512-cnVudGltZS1vbmU=}\n',
+        '  loose-envify@1.4.0:\n    resolution: {integrity: sha512-JRXu9u5IaP6L7ojL5HGIPUTtKOy+3eOYlwW08+edE5tRNFk7BQLjXJ2f4k/W3gCuzl2SXzeW5kR4h3RQ9WYTmw==}\n',
         '',
       ),
     ),
@@ -1449,7 +1523,10 @@ snapshots:
   assert.throws(
     () => semanticSourceForDigest(
       'site/pnpm-lock.yaml',
-      lockSource.replace('resolution: {integrity: sha512-cmVhY3Qtb25l}', 'resolution: {}'),
+      lockSource.replace(
+        'resolution: {integrity: sha512-pdBTuBIiIq6ICUAgspm42tMvNa5kaWM9QGO2iizUvhfugjjIdNLJrQI7HRku/RswNK9NkxL4sTiZOQnHzY38Vg==}',
+        'resolution: {}',
+      ),
     ),
     /Missing registry integrity/,
   )
@@ -1457,14 +1534,17 @@ snapshots:
     'resolution: {integrity: ""}',
     'resolution: {integrity: nope}',
     'resolution: {integrity: sha512-a}',
-    'resolution: {integrity: md5-cmVhY3Qtb25l}',
-    'resolution: {}\n    metadata: {integrity: sha512-cmVhY3Qtb25l}',
+    'resolution: {integrity: sha256-YQ==}',
+    'resolution: {integrity: sha384-YQ==}',
+    'resolution: {integrity: sha512-YQ==}',
+    'resolution: {integrity: md5-pdBTuBIiIq6ICUAgspm42tMvNa5kaWM9QGO2iizUvhfugjjIdNLJrQI7HRku/RswNK9NkxL4sTiZOQnHzY38Vg==}',
+    'resolution: {}\n    metadata: {integrity: sha512-pdBTuBIiIq6ICUAgspm42tMvNa5kaWM9QGO2iizUvhfugjjIdNLJrQI7HRku/RswNK9NkxL4sTiZOQnHzY38Vg==}',
   ]) {
     assert.throws(
       () => semanticSourceForDigest(
         'site/pnpm-lock.yaml',
         lockSource.replace(
-          'resolution: {integrity: sha512-cmVhY3Qtb25l}',
+          'resolution: {integrity: sha512-pdBTuBIiIq6ICUAgspm42tMvNa5kaWM9QGO2iizUvhfugjjIdNLJrQI7HRku/RswNK9NkxL4sTiZOQnHzY38Vg==}',
           invalidResolution,
         ),
       ),
