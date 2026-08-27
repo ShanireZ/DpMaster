@@ -73,11 +73,11 @@ export default function TreeKnapsackDemo() {
                       连 {tree.parent[i] + 1}–{i + 1} 的边
                     </div>
                     <div className="stepper__row">
-                      <button onClick={() => setEdgeW(i, v - 1)} disabled={v <= 1} aria-label="减">
+                      <button type="button" onClick={() => setEdgeW(i, v - 1)} disabled={v <= 1} aria-label="减">
                         <Minus size={13} />
                       </button>
                       <span className="stepper__val">{v}</span>
-                      <button onClick={() => setEdgeW(i, v + 1)} disabled={v >= 20} aria-label="加">
+                      <button type="button" onClick={() => setEdgeW(i, v + 1)} disabled={v >= 20} aria-label="加">
                         <Plus size={13} />
                       </button>
                     </div>
@@ -90,11 +90,11 @@ export default function TreeKnapsackDemo() {
         <div>
           <div className="td__group-label">保留边数 K</div>
           <div className="stepper__row">
-            <button onClick={() => setK(K - 1)} disabled={K <= 1} aria-label="减">
+            <button type="button" onClick={() => setK(K - 1)} disabled={K <= 1} aria-label="减">
               <Minus size={13} />
             </button>
             <span className="stepper__val">{K}</span>
-            <button onClick={() => setK(K + 1)} disabled={K >= 4} aria-label="加">
+            <button type="button" onClick={() => setK(K + 1)} disabled={K >= 4} aria-label="加">
               <Plus size={13} />
             </button>
           </div>

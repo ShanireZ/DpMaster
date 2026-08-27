@@ -329,6 +329,7 @@ export default function FeedbackWidget() {
   return (
     <>
       <button
+        type="button"
         ref={triggerRef}
         className="fbw__fab"
         onClick={() => {
@@ -356,7 +357,7 @@ export default function FeedbackWidget() {
               <h2 id="fbw-title" className="fbw__title">
                 问题反馈
               </h2>
-              <button className="fbw__close" onClick={close} aria-label="关闭">
+              <button type="button" className="fbw__close" onClick={close} aria-label="关闭">
                 <X size={18} />
               </button>
             </div>
@@ -373,7 +374,7 @@ export default function FeedbackWidget() {
                     回执编号 <code>{receiptId}</code>
                   </p>
                 )}
-                <button ref={doneRef} className="fbw__btn fbw__btn--primary" onClick={close}>
+                <button type="button" ref={doneRef} className="fbw__btn fbw__btn--primary" onClick={close}>
                   完成
                 </button>
               </div>

@@ -39,7 +39,7 @@ export default function RingChainDemo() {
           <div className="demo-control__group-label">选一个断点，看环怎样展开成 2n 直链</div>
           <div className="demo-control__modes">
             {Array.from({ length: n }, (_, i) => (
-              <button
+              <button type="button"
                 key={i}
                 className={`demo-control__mode ${cut === i ? 'on' : ''}`}
                 onClick={() => setCut(i)}

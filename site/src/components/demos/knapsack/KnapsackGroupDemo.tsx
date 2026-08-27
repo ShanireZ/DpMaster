@@ -24,11 +24,11 @@ function Stepper({
     <div>
       <div className="stepper__lab">{label}</div>
       <div className="stepper__row">
-        <button onClick={() => onChange(value - 1)} disabled={value <= min} aria-label={`${label} 减`}>
+        <button type="button" onClick={() => onChange(value - 1)} disabled={value <= min} aria-label={`${label} 减`}>
           <Minus size={13} />
         </button>
         <span className="stepper__val">{value}</span>
-        <button onClick={() => onChange(value + 1)} disabled={value >= max} aria-label={`${label} 加`}>
+        <button type="button" onClick={() => onChange(value + 1)} disabled={value >= max} aria-label={`${label} 加`}>
           <Plus size={13} />
         </button>
       </div>
@@ -97,7 +97,7 @@ export default function KnapsackGroupDemo() {
                   组 {gi + 1}
                 </div>
                 {groups.length > 1 && (
-                  <button
+                  <button type="button"
                     className="demo-control__remove"
                     style={{ top: -9, right: -9 }}
                     onClick={() => removeGroup(gi)}
@@ -111,7 +111,7 @@ export default function KnapsackGroupDemo() {
                     <div className="demo-control__item" key={ii}>
                       <span className="demo-control__item-i">{ii + 1}</span>
                       {grp.length > 1 && (
-                        <button className="demo-control__remove" onClick={() => removeItem(gi, ii)} aria-label="删除物品">
+                        <button type="button" className="demo-control__remove" onClick={() => removeItem(gi, ii)} aria-label="删除物品">
                           <X size={12} />
                         </button>
                       )}
@@ -120,7 +120,7 @@ export default function KnapsackGroupDemo() {
                     </div>
                   ))}
                   {grp.length < 3 && (
-                    <button className="demo-control__add" onClick={() => addItem(gi)}>
+                    <button type="button" className="demo-control__add" onClick={() => addItem(gi)}>
                       <Plus size={14} /> 加件
                     </button>
                   )}
@@ -128,7 +128,7 @@ export default function KnapsackGroupDemo() {
               </div>
             ))}
             {groups.length < 3 && (
-              <button className="demo-control__add" style={{ alignSelf: 'center' }} onClick={addGroup}>
+              <button type="button" className="demo-control__add" style={{ alignSelf: 'center' }} onClick={addGroup}>
                 <Plus size={15} /> 加一组
               </button>
             )}

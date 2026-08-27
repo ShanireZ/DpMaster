@@ -55,7 +55,7 @@ export default function StockStateDemo() {
       {/* 预设 + 冷却开关 */}
       <div className="demo-control__modes">
         {PRESETS.map((pr) => (
-          <button
+          <button type="button"
             key={pr.label}
             className={`demo-control__mode${prices.join(',') === pr.p.join(',') ? ' on' : ''}`}
             onClick={() => pickPreset(pr.p)}
@@ -73,24 +73,24 @@ export default function StockStateDemo() {
             {prices.map((v, i) => (
               <div className="stk__price-item" key={i}>
                 {prices.length > 2 && (
-                  <button className="demo-control__remove" onClick={() => removeAt(i)} aria-label="删除这天">
+                  <button type="button" className="demo-control__remove" onClick={() => removeAt(i)} aria-label="删除这天">
                     <X size={12} />
                   </button>
                 )}
                 <div className="stepper__lab">第 {i + 1} 天</div>
                 <div className="stepper__row">
-                  <button onClick={() => setAt(i, Math.max(1, v - 1))} disabled={v <= 1} aria-label="减">
+                  <button type="button" onClick={() => setAt(i, Math.max(1, v - 1))} disabled={v <= 1} aria-label="减">
                     <Minus size={12} />
                   </button>
                   <span className="stepper__val">{v}</span>
-                  <button onClick={() => setAt(i, Math.min(20, v + 1))} disabled={v >= 20} aria-label="加">
+                  <button type="button" onClick={() => setAt(i, Math.min(20, v + 1))} disabled={v >= 20} aria-label="加">
                     <Plus size={12} />
                   </button>
                 </div>
               </div>
             ))}
             {prices.length < 9 && (
-              <button className="demo-control__add" onClick={addOne}>
+              <button type="button" className="demo-control__add" onClick={addOne}>
                 <Plus size={15} /> 加一天
               </button>
             )}
@@ -185,13 +185,13 @@ export default function StockStateDemo() {
       </div>
       <div className="stk__ctl">
         <div className="stk__ctl-btns">
-          <button onClick={() => setDay(1)} aria-label="回到第一天" title="回到第一天">
+          <button type="button" onClick={() => setDay(1)} aria-label="回到第一天" title="回到第一天">
             <RotateCcw size={17} />
           </button>
-          <button onClick={() => setDay((d) => clampDay(d - 1))} disabled={clampDay(day) <= 1} aria-label="前一天">
+          <button type="button" onClick={() => setDay((d) => clampDay(d - 1))} disabled={clampDay(day) <= 1} aria-label="前一天">
             <ChevronLeft size={19} />
           </button>
-          <button
+          <button type="button"
             className="primary"
             onClick={() => setDay((d) => clampDay(d + 1))}
             disabled={clampDay(day) >= prices.length}

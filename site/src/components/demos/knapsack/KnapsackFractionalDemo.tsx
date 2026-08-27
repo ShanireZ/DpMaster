@@ -26,11 +26,11 @@ function Stepper({
     <div>
       <div className="stepper__lab">{label}</div>
       <div className="stepper__row">
-        <button onClick={() => onChange(value - 1)} disabled={value <= min} aria-label={`${label} 减`}>
+        <button type="button" onClick={() => onChange(value - 1)} disabled={value <= min} aria-label={`${label} 减`}>
           <Minus size={13} />
         </button>
         <span className="stepper__val">{value}</span>
-        <button onClick={() => onChange(value + 1)} disabled={value >= max} aria-label={`${label} 加`}>
+        <button type="button" onClick={() => onChange(value + 1)} disabled={value >= max} aria-label={`${label} 加`}>
           <Plus size={13} />
         </button>
       </div>
@@ -125,7 +125,7 @@ export default function KnapsackFractionalDemo() {
               <div className="frd__item" key={i}>
                 <span className="frd__item-i">{i + 1}</span>
                 {items.length > 1 && (
-                  <button className="frd__remove" onClick={() => setItems((a) => a.filter((_, k) => k !== i))} aria-label="删除物品">
+                  <button type="button" className="frd__remove" onClick={() => setItems((a) => a.filter((_, k) => k !== i))} aria-label="删除物品">
                     <X size={12} />
                   </button>
                 )}
@@ -135,7 +135,7 @@ export default function KnapsackFractionalDemo() {
               </div>
             ))}
             {items.length < 5 && (
-              <button className="frd__add" onClick={() => setItems((a) => [...a, { w: 3, v: 4 }])}>
+              <button type="button" className="frd__add" onClick={() => setItems((a) => [...a, { w: 3, v: 4 }])}>
                 <Plus size={15} /> 加物品
               </button>
             )}

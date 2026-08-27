@@ -34,13 +34,13 @@ export default function PalindromeDemo() {
               onChange={(e) => setText(e.target.value)}
               aria-label="输入字符串"
             />
-            <button className="pal__reset" onClick={() => setText('bcabb')} aria-label="复位">
+            <button type="button" className="pal__reset" onClick={() => setText('bcabb')} aria-label="复位">
               <RotateCcw size={14} /> 复位
             </button>
           </div>
           <div className="pal__presets">
             {PRESETS.map((p) => (
-              <button
+              <button type="button"
                 key={p}
                 className={`pal__chip ${chars.join('') === p ? 'on' : ''}`}
                 onClick={() => setText(p)}

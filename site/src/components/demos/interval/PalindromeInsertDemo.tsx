@@ -89,7 +89,7 @@ export default function PalindromeInsertDemo() {
               }}
               aria-label="输入字符串"
             />
-            <button
+            <button type="button"
               className="pal__reset"
               onClick={() => {
                 player.reset()
@@ -102,7 +102,7 @@ export default function PalindromeInsertDemo() {
           </div>
           <div className="pal__presets">
             {PRESETS.map((p) => (
-              <button
+              <button type="button"
                 key={p}
                 className={`pal__chip ${s.join('') === p ? 'on' : ''}`}
                 onClick={() => {

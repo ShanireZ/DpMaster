@@ -166,6 +166,7 @@ export default function TreePartyGame() {
         <div className="tpg__diff" role="group" aria-label="难度">
           {DIFF_ORDER.map((d) => (
             <button
+              type="button"
               key={d}
               className={`tpg__diff-pill${d === difficulty ? ' on' : ''}`}
               onClick={() => pickDiff(d)}
@@ -176,6 +177,7 @@ export default function TreePartyGame() {
           ))}
         </div>
         <button
+          type="button"
           className="tpg__icon-btn"
           onClick={() => setMuted((m) => !m)}
           aria-label="静音"
@@ -286,10 +288,10 @@ export default function TreePartyGame() {
             </div>
           )}
           <div className="tpg__actions">
-            <button className="tpg__btn" onClick={shuffle}>
+            <button type="button" className="tpg__btn" onClick={shuffle}>
               <Shuffle size={16} /> 换公司
             </button>
-            <button className="tpg__btn tpg__btn--primary" onClick={reveal}>
+            <button type="button" className="tpg__btn tpg__btn--primary" onClick={reveal}>
               <Trophy size={16} /> 核对最优值
             </button>
           </div>

@@ -78,7 +78,7 @@ export default function LCSToLISDemo() {
       <div className="ll__toolbar">
         <div className="ll__modes">
           {PRESETS.map((p) => (
-            <button
+            <button type="button"
               key={p.label}
               className={`ll__mode${a.join(',') === p.a.join(',') && b.join(',') === p.b.join(',') ? ' on' : ''}`}
               onClick={() => setPreset(p)}

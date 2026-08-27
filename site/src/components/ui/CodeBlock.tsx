@@ -90,7 +90,7 @@ export default function CodeBlock({
               在洛谷打开 {luogu} <ExternalLink size={13} />
             </a>
           )}
-          <button className="cb-btn" onClick={copy}>
+          <button type="button" className="cb-btn" onClick={copy}>
             {copied ? <Check size={14} /> : <Copy size={14} />} {copied ? '已复制' : '复制'}
           </button>
         </div>
