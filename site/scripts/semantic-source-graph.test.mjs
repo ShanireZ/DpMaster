@@ -603,6 +603,19 @@ test('mixed-module closure tracks every supported mutation of selected bindings'
     )
   }
 
+  for (const indirectMemberStoredGlobal of [
+    `let label = '正文'\nconst holder = {}\nholder.g = true ? globalThis : {}\nholder.g.setTimeout = callback => callback()\nfunction AppContent() { setTimeout(() => { label = '变化' }, 0); return <Routes>{label}</Routes> }`,
+    `let label = '正文'\nconst holder = {}\nholder.nested = { g: globalThis }\nholder.nested.g.setTimeout = callback => callback()\nfunction AppContent() { setTimeout(() => { label = '变化' }, 0); return <Routes>{label}</Routes> }`,
+    `let label = '正文'\nconst holder = {}\nfunction getGlobal() { return globalThis }\nholder.g = getGlobal()\nholder.g.setTimeout = callback => callback()\nfunction AppContent() { setTimeout(() => { label = '变化' }, 0); return <Routes>{label}</Routes> }`,
+    `let label = '正文'\nconst holder = {}\nconst source = { get value() { return globalThis } }\nholder.g = source.value\nholder.g.setTimeout = callback => callback()\nfunction AppContent() { setTimeout(() => { label = '变化' }, 0); return <Routes>{label}</Routes> }`,
+  ]) {
+    assert.throws(
+      () => semanticSourceForDigest('site/src/app/AppContent.tsx', indirectMemberStoredGlobal),
+      /Unsupported member-stored global container/,
+      indirectMemberStoredGlobal,
+    )
+  }
+
   const patchedReflectApply = `import { state, prepare } from './store'\nglobalThis.Reflect = { apply(callable) { return callable() } }\nfunction AppContent() { Reflect.apply(prepare, null, []); return <Routes>{state.value}</Routes> }`
   assert.throws(
     () => semanticSourceForDigest('site/src/app/AppContent.tsx', patchedReflectApply),
@@ -776,12 +789,9 @@ test('reviewed runtime boundaries cannot hide public render changes', () => {
   }
 
   const sideEffectImportBefore = `import 'ssr-patch-a'\nfunction AppContent() { return <Routes><p>正文</p></Routes> }`
-  assert.notEqual(
-    semanticSourceForDigest('site/src/app/AppContent.tsx', sideEffectImportBefore),
-    semanticSourceForDigest(
-      'site/src/app/AppContent.tsx',
-      sideEffectImportBefore.replace('ssr-patch-a', 'ssr-patch-b'),
-    ),
+  assert.throws(
+    () => semanticSourceForDigest('site/src/app/AppContent.tsx', sideEffectImportBefore),
+    /Unsupported semantic runtime package ssr-patch-a/,
   )
 })
 
@@ -823,12 +833,9 @@ test('secondary review boundaries preserve SSR precision and fail closed', () =>
     `import { unused } from 'ssr-patch-a'\nfunction AppContent() { return <Routes>正文</Routes> }`,
     `export * from 'ssr-patch-a'\nfunction AppContent() { return <Routes>正文</Routes> }`,
   ]) {
-    assert.notEqual(
-      semanticSourceForDigest('site/src/app/AppContent.tsx', moduleEvaluation),
-      semanticSourceForDigest(
-        'site/src/app/AppContent.tsx',
-        moduleEvaluation.replace('ssr-patch-a', 'ssr-patch-b'),
-      ),
+    assert.throws(
+      () => semanticSourceForDigest('site/src/app/AppContent.tsx', moduleEvaluation),
+      /Unsupported semantic runtime package ssr-patch-a/,
     )
   }
 
@@ -1043,6 +1050,13 @@ test('secondary review boundaries preserve SSR precision and fail closed', () =>
     ),
     /Unsupported dynamic call target/,
   )
+  assert.throws(
+    () => semanticSourceForDigest(
+      'site/src/app/AppContent.tsx',
+      `import { opaque } from 'opaque-patcher'\nclass Choices { static get selected() { return opaque } }\nconst selected = Choices.selected\nfunction AppContent() { return <Routes>{selected()}</Routes> }`,
+    ),
+    /Unsupported dynamic call target/,
+  )
   for (const externalStandalone of [
     `import { mutateOne as mutate, state } from 'pkg'\nmutate()\nfunction AppContent() { return <Routes>{state.value}</Routes> }`,
     `mutateOne()\nfunction AppContent() { return <Routes>{globalThis.state.value}</Routes> }`,
@@ -1184,6 +1198,22 @@ test('public config rejects alias mutation, pattern writes, and patched freeze',
       `const O = (() => Object)()\nO.freeze = value => { value.name = '运行时'; return value }`,
       `name: '初始'`,
     ),
+    publicConfigSource(
+      `const holder = {}\nholder.g = true ? globalThis : {}\nholder.g.Object = { freeze(value) { value.name = '运行时'; return value } }`,
+      `name: '初始'`,
+    ),
+    publicConfigSource(
+      `const holder = {}\nholder.nested = { g: globalThis }\nholder.nested.g.Object = { freeze(value) { value.name = '运行时'; return value } }`,
+      `name: '初始'`,
+    ),
+    publicConfigSource(
+      `const holder = {}\nfunction getGlobal() { return globalThis }\nholder.g = getGlobal()\nholder.g.Object = { freeze(value) { value.name = '运行时'; return value } }`,
+      `name: '初始'`,
+    ),
+    publicConfigSource(
+      `const holder = {}\nconst source = { get value() { return globalThis } }\nholder.g = source.value\nholder.g.Object = { freeze(value) { value.name = '运行时'; return value } }`,
+      `name: '初始'`,
+    ),
   ]) {
     assert.throws(
       () => semanticSourceForDigest('site/src/config/site.ts', mutableConfig),
@@ -1211,10 +1241,31 @@ test('static dependency discovery follows literal top-level dynamic imports and 
     ),
     ['./runtime'],
   )
+  assert.deepEqual(
+    staticImportSpecifiersForSource(
+      'site/src/app/AppContent.tsx',
+      `const load = () => import('./runtime')\nawait Promise.resolve().then(load)`,
+    ),
+    ['./runtime'],
+  )
+  assert.deepEqual(
+    staticImportSpecifiersForSource(
+      'site/src/app/AppContent.tsx',
+      `function load() { return import('./runtime') }\nconst alias = load\nawait alias()`,
+    ),
+    ['./runtime'],
+  )
   assert.throws(
     () => staticImportSpecifiersForSource(
       'site/src/app/AppContent.tsx',
       `const target = './runtime'\nawait import(target)`,
+    ),
+    /Unsupported dynamic module-evaluation import/,
+  )
+  assert.throws(
+    () => staticImportSpecifiersForSource(
+      'site/src/app/AppContent.tsx',
+      `const target = './runtime'\nasync function load() { return import(target) }\nawait load()`,
     ),
     /Unsupported dynamic module-evaluation import/,
   )
@@ -1242,6 +1293,42 @@ test('static dependency discovery follows literal top-level dynamic imports and 
       `if (false) import('opaque-two')\nfunction AppContent() { return <Routes>正文</Routes> }`,
     ),
   )
+  for (const deadBranch of ['0', 'null', "''"]) {
+    assert.equal(
+      semanticSourceForDigest(
+        'site/src/app/AppContent.tsx',
+        `if (${deadBranch}) import('opaque-one')\nwhile (false) import('opaque-three')\nfunction AppContent() { return <Routes>正文</Routes> }`,
+      ),
+      semanticSourceForDigest(
+        'site/src/app/AppContent.tsx',
+        `if (${deadBranch}) import('opaque-two')\nwhile (false) import('opaque-four')\nfunction AppContent() { return <Routes>正文</Routes> }`,
+      ),
+      deadBranch,
+    )
+  }
+})
+
+test('semantic package evidence rejects unknown packages and follows selected lazy imports', () => {
+  for (const source of [
+    `import { label } from 'opaque-patcher'\nfunction AppContent() { return <Routes>{label}</Routes> }`,
+    `import 'opaque-patcher'\nfunction AppContent() { return <Routes>正文</Routes> }`,
+  ]) {
+    assert.throws(
+      () => semanticSourceForDigest(
+        'site/src/app/AppContent.tsx',
+        source,
+      ),
+      /Unsupported semantic runtime package opaque-patcher/,
+    )
+  }
+
+  const runtimePackageSpecifiers = new Set()
+  semanticSourceForDigest(
+    'site/src/app/AppContent.tsx',
+    `import { lazy } from 'react'\nconst Icon = lazy(() => import('lucide-react'))\nfunction AppContent() { return <Routes><Icon /></Routes> }`,
+    { runtimePackageSpecifiers },
+  )
+  assert.deepEqual([...runtimePackageSpecifiers].sort(), ['lucide-react', 'react'])
 })
 
 test('static dependency discovery strips Vite query and hash suffixes', () => {
@@ -1316,11 +1403,11 @@ importers:
         version: 4.1.11
 packages:
   loose-envify@1.4.0:
-    resolution: {integrity: sha512-runtime-one}
+    resolution: {integrity: sha512-cnVudGltZS1vbmU=}
   react@19.2.8:
-    resolution: {integrity: sha512-react-one}
+    resolution: {integrity: sha512-cmVhY3Qtb25l}
   vitest@4.1.11:
-    resolution: {integrity: sha512-test-one}
+    resolution: {integrity: sha512-dGVzdC1vbmU=}
 snapshots:
   loose-envify@1.4.0: {}
   react@19.2.8:
@@ -1332,14 +1419,14 @@ snapshots:
     lockProjection,
     semanticSourceForDigest(
       'site/pnpm-lock.yaml',
-      lockSource.replace('sha512-runtime-one', 'sha512-runtime-two'),
+      lockSource.replace('sha512-cnVudGltZS1vbmU=', 'sha512-cnVudGltZS10d28='),
     ),
   )
   assert.equal(
     lockProjection,
     semanticSourceForDigest(
       'site/pnpm-lock.yaml',
-      lockSource.replace('sha512-test-one', 'sha512-test-two'),
+      lockSource.replace('sha512-dGVzdC1vbmU=', 'sha512-dGVzdC10d28='),
     ),
   )
   assert.throws(
@@ -1353,7 +1440,7 @@ snapshots:
     () => semanticSourceForDigest(
       'site/pnpm-lock.yaml',
       lockSource.replace(
-        '  loose-envify@1.4.0:\n    resolution: {integrity: sha512-runtime-one}\n',
+        '  loose-envify@1.4.0:\n    resolution: {integrity: sha512-cnVudGltZS1vbmU=}\n',
         '',
       ),
     ),
@@ -1362,10 +1449,29 @@ snapshots:
   assert.throws(
     () => semanticSourceForDigest(
       'site/pnpm-lock.yaml',
-      lockSource.replace('resolution: {integrity: sha512-react-one}', 'resolution: {}'),
+      lockSource.replace('resolution: {integrity: sha512-cmVhY3Qtb25l}', 'resolution: {}'),
     ),
     /Missing registry integrity/,
   )
+  for (const invalidResolution of [
+    'resolution: {integrity: ""}',
+    'resolution: {integrity: nope}',
+    'resolution: {integrity: sha512-a}',
+    'resolution: {integrity: md5-cmVhY3Qtb25l}',
+    'resolution: {}\n    metadata: {integrity: sha512-cmVhY3Qtb25l}',
+  ]) {
+    assert.throws(
+      () => semanticSourceForDigest(
+        'site/pnpm-lock.yaml',
+        lockSource.replace(
+          'resolution: {integrity: sha512-cmVhY3Qtb25l}',
+          invalidResolution,
+        ),
+      ),
+      /Missing registry integrity/,
+      invalidResolution,
+    )
+  }
   assert.throws(
     () => semanticSourceForDigest(
       'site/pnpm-lock.yaml',
