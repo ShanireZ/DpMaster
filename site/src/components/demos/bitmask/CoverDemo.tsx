@@ -24,7 +24,14 @@ function MiniBits({ mask, n, tone }: { mask: number; n: number; tone: 'on' | 'of
   const gap = 3
   const w = n * cell + (n - 1) * gap
   return (
-    <svg viewBox={`0 0 ${w} ${cell}`} width={w} height={cell} className="bm__minibits">
+    <svg
+      viewBox={`0 0 ${w} ${cell}`}
+      width={w}
+      height={cell}
+      className="bm__minibits"
+      role="img"
+      aria-label={`二进制掩码 ${mask.toString(2).padStart(n, '0')}`}
+    >
       {bits.map((b, i) => (
         <rect
           key={i}

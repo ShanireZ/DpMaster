@@ -102,6 +102,7 @@ export default function DPViz({ model }: { model: VizModel }) {
             width={model.cols * cell}
             height={model.rows * cell}
             viewBox={`0 0 ${model.cols * cell} ${model.rows * cell}`}
+            aria-hidden="true"
           >
             <defs>
               <marker id="ah-src" markerWidth="7" markerHeight="7" refX="5.5" refY="3" orient="auto">
