@@ -95,14 +95,14 @@ export default function RerootDistDemo() {
       <div className="rr__toolbar">
         <span className="rr__toolbar-label">模式</span>
         <div className="rr__tree-picker" role="group" aria-label="选择模式">
-          <button
+          <button type="button"
             className={`rr__tree-pill${mode === 'unweighted' ? ' on' : ''}`}
             onClick={() => setMode('unweighted')}
             aria-pressed={mode === 'unweighted'}
           >
             无权（每点算 1）
           </button>
-          <button
+          <button type="button"
             className={`rr__tree-pill${mode === 'nodeWeighted' ? ' on' : ''}`}
             onClick={() => setMode('nodeWeighted')}
             aria-pressed={mode === 'nodeWeighted'}

@@ -23,11 +23,11 @@ function Stepper({
     <div>
       <div className="stepper__lab">{label}</div>
       <div className="stepper__row">
-        <button onClick={() => onChange(value - 1)} disabled={value <= min} aria-label={`${label} 减`}>
+        <button type="button" onClick={() => onChange(value - 1)} disabled={value <= min} aria-label={`${label} 减`}>
           <Minus size={13} />
         </button>
         <span className="stepper__val">{value}</span>
-        <button onClick={() => onChange(value + 1)} disabled={value >= max} aria-label={`${label} 加`}>
+        <button type="button" onClick={() => onChange(value + 1)} disabled={value >= max} aria-label={`${label} 加`}>
           <Plus size={13} />
         </button>
       </div>
@@ -94,7 +94,7 @@ export default function PathTriangleDemo() {
                       border: '1px solid var(--border-strong)',
                     }}
                   >
-                    <button
+                    <button type="button"
                       onClick={() => setCell(i, j, val + 1)}
                       disabled={val >= 20}
                       aria-label="加"
@@ -117,7 +117,7 @@ export default function PathTriangleDemo() {
                     >
                       {val}
                     </span>
-                    <button
+                    <button type="button"
                       onClick={() => setCell(i, j, val - 1)}
                       disabled={val <= 0}
                       aria-label="减"

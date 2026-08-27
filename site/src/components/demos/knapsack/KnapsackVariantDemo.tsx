@@ -24,11 +24,11 @@ function Stepper({
     <div>
       <div className="stepper__lab">{label}</div>
       <div className="stepper__row">
-        <button onClick={() => onChange(value - 1)} disabled={value <= min} aria-label={`${label} 减`}>
+        <button type="button" onClick={() => onChange(value - 1)} disabled={value <= min} aria-label={`${label} 减`}>
           <Minus size={13} />
         </button>
         <span className="stepper__val">{value}</span>
-        <button onClick={() => onChange(value + 1)} disabled={value >= max} aria-label={`${label} 加`}>
+        <button type="button" onClick={() => onChange(value + 1)} disabled={value >= max} aria-label={`${label} 加`}>
           <Plus size={13} />
         </button>
       </div>
@@ -63,7 +63,7 @@ export default function KnapsackVariantDemo() {
               <div className="demo-control__item" key={i}>
                 <span className="demo-control__item-i">{i + 1}</span>
                 {items.length > 1 && (
-                  <button
+                  <button type="button"
                     className="demo-control__remove"
                     onClick={() => setItems((a) => a.filter((_, k) => k !== i))}
                     aria-label="删除物品"
@@ -75,7 +75,7 @@ export default function KnapsackVariantDemo() {
               </div>
             ))}
             {items.length < 5 && (
-              <button className="demo-control__add" onClick={() => setItems((a) => [...a, { w: 2 }])}>
+              <button type="button" className="demo-control__add" onClick={() => setItems((a) => [...a, { w: 2 }])}>
                 <Plus size={15} /> 加物品
               </button>
             )}

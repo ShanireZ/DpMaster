@@ -212,6 +212,7 @@ export default function StoneMergeGame() {
         <div className="game__diff" role="group" aria-label="难度">
           {DIFF_ORDER.map((d) => (
             <button
+              type="button"
               key={d}
               className={`game__diff-pill${d === difficulty ? ' on' : ''}`}
               onClick={() => pickDiff(d)}
@@ -222,6 +223,7 @@ export default function StoneMergeGame() {
           ))}
         </div>
         <button
+          type="button"
           className="icon-btn"
           style={{ width: 34, height: 34 }}
           onClick={() => setMuted((m) => !m)}
@@ -249,6 +251,7 @@ export default function StoneMergeGame() {
                 .join(' ')
               return (
                 <button
+                  type="button"
                   key={i}
                   className={cls}
                   onClick={() => clickHeap(i)}
@@ -304,18 +307,18 @@ export default function StoneMergeGame() {
             </div>
           )}
           <div className="game__actions">
-            <button className="gbtn" onClick={undo} disabled={history.length === 0 || revealed}>
+            <button type="button" className="gbtn" onClick={undo} disabled={history.length === 0 || revealed}>
               <Undo2 size={16} /> 撤销一步
             </button>
-            <button className="gbtn" onClick={restart} disabled={history.length === 0 || revealed}>
+            <button type="button" className="gbtn" onClick={restart} disabled={history.length === 0 || revealed}>
               <RotateCcw size={16} /> 重来
             </button>
           </div>
           <div className="game__actions">
-            <button className="gbtn" onClick={shuffle}>
+            <button type="button" className="gbtn" onClick={shuffle}>
               <Shuffle size={16} /> 换一批
             </button>
-            <button className="gbtn gbtn--primary" onClick={reveal}>
+            <button type="button" className="gbtn gbtn--primary" onClick={reveal}>
               <Trophy size={16} /> 核对最小值
             </button>
           </div>

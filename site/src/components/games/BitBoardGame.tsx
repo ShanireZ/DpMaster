@@ -150,6 +150,7 @@ export default function BitBoardGame() {
         <div className="gbb__diff" role="group" aria-label="难度">
           {DIFF_ORDER.map((d) => (
             <button
+              type="button"
               key={d}
               className={`gbb__diff-pill${d === difficulty ? ' on' : ''}`}
               onClick={() => pickDiff(d)}
@@ -159,7 +160,7 @@ export default function BitBoardGame() {
             </button>
           ))}
         </div>
-        <button className="gbb__icon-btn" onClick={() => setMuted((m) => !m)} aria-label="静音">
+        <button type="button" className="gbb__icon-btn" onClick={() => setMuted((m) => !m)} aria-label="静音">
           {muted ? <VolumeX size={16} /> : <Volume2 size={16} />}
         </button>
       </div>
@@ -229,10 +230,10 @@ export default function BitBoardGame() {
           </div>
 
           <div className="gbb__actions">
-            <button className="gbb__btn" onClick={clear}>
+            <button type="button" className="gbb__btn" onClick={clear}>
               <RotateCcw size={16} /> 清空
             </button>
-            <button className="gbb__btn gbb__btn--primary" onClick={reveal}>
+            <button type="button" className="gbb__btn gbb__btn--primary" onClick={reveal}>
               <Sigma size={16} /> 看方案总数
             </button>
           </div>

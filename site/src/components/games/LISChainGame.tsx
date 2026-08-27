@@ -160,6 +160,7 @@ export default function LISChainGame() {
         <div className="game__diff" role="group" aria-label="难度">
           {DIFF_ORDER.map((d) => (
             <button
+              type="button"
               key={d}
               className={`game__diff-pill${d === difficulty ? ' on' : ''}`}
               onClick={() => pickDiff(d)}
@@ -170,6 +171,7 @@ export default function LISChainGame() {
           ))}
         </div>
         <button
+          type="button"
           className="icon-btn"
           style={{ width: 34, height: 34 }}
           onClick={() => setMuted((m) => !m)}
@@ -195,7 +197,7 @@ export default function LISChainGame() {
                 .filter(Boolean)
                 .join(' ')
               return (
-                <button key={i} className={cls} onClick={() => clickCard(i)} aria-pressed={picked}>
+                <button type="button" key={i} className={cls} onClick={() => clickCard(i)} aria-pressed={picked}>
                   {star && (
                     <span className="glis__star">
                       <Sparkles size={14} />
@@ -247,15 +249,15 @@ export default function LISChainGame() {
             </div>
           )}
           <div className="game__actions">
-            <button className="gbtn" onClick={resetChain} disabled={selOrder.length === 0 || revealed}>
+            <button type="button" className="gbtn" onClick={resetChain} disabled={selOrder.length === 0 || revealed}>
               <RotateCcw size={16} /> 重接
             </button>
-            <button className="gbtn gbtn--primary" onClick={reveal}>
+            <button type="button" className="gbtn gbtn--primary" onClick={reveal}>
               <Trophy size={16} /> 核对最长长度
             </button>
           </div>
           <div className="game__actions">
-            <button className="gbtn" onClick={shuffle}>
+            <button type="button" className="gbtn" onClick={shuffle}>
               <Shuffle size={16} /> 换一批
             </button>
           </div>

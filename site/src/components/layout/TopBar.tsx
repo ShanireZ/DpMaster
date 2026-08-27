@@ -24,6 +24,7 @@ export default function TopBar({
   return (
     <header className={`topbar${isHome ? ' topbar--home' : ''}${mobileOpen ? ' topbar--menu-open' : ''}`}>
       <button
+        type="button"
         className="icon-btn hamburger"
         onClick={onHamburger}
         aria-label={mobileOpen ? '关闭导航' : '打开导航'}
@@ -63,7 +64,7 @@ export default function TopBar({
 
       <div className="topbar__spacer" />
 
-      <button className="icon-btn" onClick={toggle} aria-label="切换深浅色">
+      <button type="button" className="icon-btn" onClick={toggle} aria-label="切换深浅色">
         {theme === 'dark' ? <Sun size={18} /> : <Moon size={18} />}
       </button>
     </header>

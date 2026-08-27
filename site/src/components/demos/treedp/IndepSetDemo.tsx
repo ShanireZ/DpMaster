@@ -24,11 +24,11 @@ function WStepper({ i, value, onChange }: { i: number; value: number; onChange: 
       <div>
         <div className="stepper__lab">{LABELS[i]} · 欢乐值</div>
         <div className="stepper__row">
-          <button onClick={() => onChange(value - 1)} disabled={value <= 1} aria-label="减">
+          <button type="button" onClick={() => onChange(value - 1)} disabled={value <= 1} aria-label="减">
             <Minus size={13} />
           </button>
           <span className="stepper__val">{value}</span>
-          <button onClick={() => onChange(value + 1)} disabled={value >= 20} aria-label="加">
+          <button type="button" onClick={() => onChange(value + 1)} disabled={value >= 20} aria-label="加">
             <Plus size={13} />
           </button>
         </div>

@@ -145,6 +145,7 @@ export default function PackMasterGame() {
         <div className="game__diff" role="group" aria-label="难度">
           {DIFF_ORDER.map((d) => (
             <button
+              type="button"
               key={d}
               className={`game__diff-pill${d === difficulty ? ' on' : ''}`}
               onClick={() => pickDiff(d)}
@@ -155,6 +156,7 @@ export default function PackMasterGame() {
           ))}
         </div>
         <button
+          type="button"
           className="icon-btn"
           style={{ width: 34, height: 34 }}
           onClick={() => setMuted((m) => !m)}
@@ -168,7 +170,7 @@ export default function PackMasterGame() {
           <div className="game__shelf-label">货架（点击放入 / 取出）</div>
           <div className="game__items">
             {game.items.map((it, i) => (
-              <button key={i} className={`gitem${sel[i] ? ' in' : ''}`} onClick={() => toggle(i)}>
+              <button type="button" key={i} className={`gitem${sel[i] ? ' in' : ''}`} onClick={() => toggle(i)}>
                 {revealed && opt.pick[i] && (
                   <span className="gitem__star">
                     <Sparkles size={16} />
@@ -225,10 +227,10 @@ export default function PackMasterGame() {
             </div>
           )}
           <div className="game__actions">
-            <button className="gbtn" onClick={shuffle}>
+            <button type="button" className="gbtn" onClick={shuffle}>
               <Shuffle size={16} /> 换一批
             </button>
-            <button className="gbtn gbtn--primary" onClick={reveal}>
+            <button type="button" className="gbtn gbtn--primary" onClick={reveal}>
               <Trophy size={16} /> 核对最优值
             </button>
           </div>

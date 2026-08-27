@@ -46,7 +46,7 @@ export default function SubsetEnumDemo() {
             {Array.from({ length: N }, (_, i) => {
               const on = ((S >> i) & 1) === 1
               return (
-                <button
+                <button type="button"
                   key={i}
                   className={`bm__toggle${on ? ' on' : ''}`}
                   onClick={() => toggle(i)}

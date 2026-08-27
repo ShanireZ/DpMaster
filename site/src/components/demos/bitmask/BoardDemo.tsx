@@ -55,11 +55,11 @@ export default function BoardDemo() {
           <div>
             <div className="stepper__lab">棋盘边长 N</div>
             <div className="stepper__row">
-              <button onClick={() => changeN(N - 1)} disabled={N <= 3} aria-label="N 减">
+              <button type="button" onClick={() => changeN(N - 1)} disabled={N <= 3} aria-label="N 减">
                 <Minus size={13} />
               </button>
               <span className="stepper__val">{N}</span>
-              <button onClick={() => changeN(N + 1)} disabled={N >= 6} aria-label="N 加">
+              <button type="button" onClick={() => changeN(N + 1)} disabled={N >= 6} aria-label="N 加">
                 <Plus size={13} />
               </button>
             </div>
@@ -67,11 +67,11 @@ export default function BoardDemo() {
           <div>
             <div className="stepper__lab">放置王数 K</div>
             <div className="stepper__row">
-              <button onClick={() => changeK(K - 1)} disabled={K <= 1} aria-label="K 减">
+              <button type="button" onClick={() => changeK(K - 1)} disabled={K <= 1} aria-label="K 减">
                 <Minus size={13} />
               </button>
               <span className="stepper__val">{K}</span>
-              <button onClick={() => changeK(K + 1)} disabled={K >= N * N} aria-label="K 加">
+              <button type="button" onClick={() => changeK(K + 1)} disabled={K >= N * N} aria-label="K 加">
                 <Plus size={13} />
               </button>
             </div>
@@ -148,7 +148,7 @@ export default function BoardDemo() {
           />
 
           <div className="bm__count-row">
-            <button className="bm__count-btn" onClick={() => setShowCount((s) => !s)}>
+            <button type="button" className="bm__count-btn" onClick={() => setShowCount((s) => !s)}>
               <Sigma size={15} /> {showCount ? '收起方案总数' : '看方案总数（状压 DP）'}
             </button>
             {showCount && total != null && (

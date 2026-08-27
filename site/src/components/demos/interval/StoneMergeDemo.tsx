@@ -23,11 +23,11 @@ function Stepper({
     <div>
       <div className="stepper__lab">{label}</div>
       <div className="stepper__row">
-        <button onClick={() => onChange(value - 1)} disabled={value <= min} aria-label={`${label} 减`}>
+        <button type="button" onClick={() => onChange(value - 1)} disabled={value <= min} aria-label={`${label} 减`}>
           <Minus size={13} />
         </button>
         <span className="stepper__val">{value}</span>
-        <button onClick={() => onChange(value + 1)} disabled={value >= max} aria-label={`${label} 加`}>
+        <button type="button" onClick={() => onChange(value + 1)} disabled={value >= max} aria-label={`${label} 加`}>
           <Plus size={13} />
         </button>
       </div>
@@ -59,7 +59,7 @@ export default function StoneMergeDemo() {
               <div className="demo-control__item" key={i}>
                 <span className="demo-control__item-i">{i}</span>
                 {stones.length > 3 && (
-                  <button className="demo-control__remove" onClick={() => removeStone(i)} aria-label="删除该堆">
+                  <button type="button" className="demo-control__remove" onClick={() => removeStone(i)} aria-label="删除该堆">
                     <X size={12} />
                   </button>
                 )}
@@ -67,7 +67,7 @@ export default function StoneMergeDemo() {
               </div>
             ))}
             {stones.length < 5 && (
-              <button className="demo-control__add" onClick={addStone}>
+              <button type="button" className="demo-control__add" onClick={addStone}>
                 <Plus size={14} /> 加一堆
               </button>
             )}

@@ -74,11 +74,11 @@ export default function JointWeightDemo() {
                 <div>
                   <div className="stepper__lab">点 {i + 1} · 权</div>
                   <div className="stepper__row">
-                    <button onClick={() => setWeight(i, v - 1)} disabled={v <= 1} aria-label="减">
+                    <button type="button" onClick={() => setWeight(i, v - 1)} disabled={v <= 1} aria-label="减">
                       <Minus size={13} />
                     </button>
                     <span className="stepper__val">{v}</span>
-                    <button onClick={() => setWeight(i, v + 1)} disabled={v >= 15} aria-label="加">
+                    <button type="button" onClick={() => setWeight(i, v + 1)} disabled={v >= 15} aria-label="加">
                       <Plus size={13} />
                     </button>
                   </div>
