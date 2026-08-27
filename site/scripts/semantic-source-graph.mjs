@@ -433,10 +433,40 @@ function publicSiteConfigProjection(program) {
       ? statement.declaration
       : statement
     if (declaration?.type !== 'VariableDeclaration') continue
+    const registerDeclaratorBindings = (pattern, init) => {
+      if (!pattern || !init) return
+      if (pattern.type === 'Identifier') {
+        bindings.set(pattern.name, init)
+        bindingKinds.set(pattern.name, declaration.kind)
+      } else if (pattern.type === 'ObjectPattern') {
+        for (const property of pattern.properties) {
+          if (property.type === 'Property') {
+            const member = {
+              type: 'MemberExpression',
+              object: init,
+              property: property.key,
+              computed: property.computed,
+            }
+            registerDeclaratorBindings(property.value, member)
+          }
+        }
+      } else if (pattern.type === 'ArrayPattern') {
+        for (const [index, element] of pattern.elements.entries()) {
+          if (element) {
+            const member = {
+              type: 'MemberExpression',
+              object: init,
+              property: { type: 'Literal', value: index },
+              computed: true,
+            }
+            registerDeclaratorBindings(element, member)
+          }
+        }
+      }
+    }
     for (const declarator of declaration.declarations) {
-      if (declarator.id.type === 'Identifier' && declarator.init) {
-        bindings.set(declarator.id.name, declarator.init)
-        bindingKinds.set(declarator.id.name, declaration.kind)
+      if (declarator.init) {
+        registerDeclaratorBindings(declarator.id, declarator.init)
       }
     }
   }
@@ -837,6 +867,159 @@ function publicSiteConfigProjection(program) {
     }
     return false
   }
+  const resolvePublicCallableDetails = (node, seen = new Set()) => {
+    const value = unwrap(node)
+    if (!value || typeof value !== 'object') return null
+    if (value.type === 'MemberExpression') {
+      const method = memberNameFromNode(value)
+      const obj = unwrap(value.object)
+      if (obj?.type === 'Identifier' && !bindings.has(obj.name)) {
+        if (method === 'prototype') {
+          return { owner: obj.name, isPrototype: true, method: null }
+        }
+        if (
+          STATIC_TARGET_MUTATORS.has(obj.name)
+          || ['Array', 'Set', 'Map', 'String', 'Object', 'Reflect'].includes(obj.name)
+        ) {
+          return { owner: obj.name, isPrototype: false, method }
+        }
+      }
+      if (obj?.type === 'ArrayExpression') {
+        return { owner: 'Array', isPrototype: true, method }
+      }
+      if (obj?.type === 'NewExpression' && obj.callee?.type === 'Identifier') {
+        if (['Set', 'Map'].includes(obj.callee.name) && !bindings.has(obj.callee.name)) {
+          return { owner: obj.callee.name, isPrototype: true, method }
+        }
+      }
+      const resolvedObj = resolvePublicCallableDetails(obj, seen)
+      if (resolvedObj) {
+        if (resolvedObj.isPrototype || method === 'prototype') {
+          return {
+            owner: resolvedObj.owner,
+            isPrototype: true,
+            method: method === 'prototype' ? resolvedObj.method : method,
+          }
+        }
+        return {
+          owner: resolvedObj.owner,
+          isPrototype: false,
+          method: method ?? resolvedObj.method,
+        }
+      }
+      return null
+    }
+    if (value.type === 'Identifier') {
+      if (!bindings.has(value.name)) {
+        if (
+          STATIC_TARGET_MUTATORS.has(value.name)
+          || ['Array', 'Set', 'Map', 'String', 'Object', 'Reflect'].includes(value.name)
+        ) {
+          return { owner: value.name, isPrototype: false, method: null }
+        }
+        return null
+      }
+      if (seen.has(value.name)) return null
+      const init = constBindingExpression(value.name, seen)
+      if (init) {
+        return resolvePublicCallableDetails(init, new Set([...seen, value.name]))
+      }
+    }
+    return null
+  }
+
+  const resolvePublicInvocation = (callNode) => {
+    const callee = unwrap(callNode.callee)
+    const wrapper = callee?.type === 'MemberExpression' ? memberNameFromNode(callee) : null
+    const isCall = wrapper === 'call'
+    const isApply = wrapper === 'apply'
+    const isBorrowed = isCall || isApply
+    const underlying = isBorrowed ? unwrap(callee.object) : callee
+    const thisArg = isBorrowed ? (callNode.arguments?.[0] ?? null) : null
+    const rawArgs = isBorrowed
+      ? (callNode.arguments?.slice(1) ?? [])
+      : (callNode.arguments ?? [])
+    const isApplyDynamic = isApply && callNode.arguments?.[1]?.type !== 'ArrayExpression'
+    const invocationArgs = isApply && callNode.arguments?.[1]?.type === 'ArrayExpression'
+      ? callNode.arguments[1].elements.map(unwrap)
+      : rawArgs
+
+    const details = resolvePublicCallableDetails(underlying)
+    if (details) {
+      if (details.owner && STATIC_TARGET_MUTATORS.get(details.owner)?.has(details.method)) {
+        const mutatedTarget = isBorrowed ? invocationArgs[0] : (callNode.arguments?.[0] ?? null)
+        const storedValues = isApplyDynamic
+          ? (callNode.arguments?.slice(1, 2) ?? [])
+          : details.owner === 'Object' && details.method === 'assign'
+            ? invocationArgs.slice(1)
+            : details.owner === 'Object' && details.method === 'defineProperties'
+              ? invocationArgs.slice(1, 2)
+              : details.owner === 'Object' && details.method === 'defineProperty'
+                ? invocationArgs.slice(2, 3)
+                : details.owner === 'Reflect' && (details.method === 'set' || details.method === 'defineProperty')
+                  ? invocationArgs.slice(2, 3)
+                  : (details.owner === 'Object' || details.owner === 'Reflect') && details.method === 'setPrototypeOf'
+                    ? invocationArgs.slice(1, 2)
+                    : []
+        return {
+          kind: 'static',
+          owner: details.owner,
+          method: details.method,
+          mutatedTarget,
+          storedValues,
+        }
+      }
+      if (details.isPrototype && MUTATING_MEMBER_CALLEES.has(details.method)) {
+        const mutatedTarget = isBorrowed ? thisArg : (callee.type === 'MemberExpression' ? callee.object : null)
+        const storedValues = isApplyDynamic
+          ? (callNode.arguments?.slice(1, 2) ?? [])
+          : ['push', 'unshift'].includes(details.method)
+            ? invocationArgs
+            : details.method === 'splice'
+              ? invocationArgs.slice(2)
+              : details.method === 'fill'
+                ? invocationArgs.slice(0, 1)
+                : details.method === 'set'
+                  ? invocationArgs.slice(1, 2)
+                  : details.method === 'add'
+                    ? invocationArgs.slice(0, 1)
+                    : []
+        return {
+          kind: 'collection',
+          owner: details.owner,
+          method: details.method,
+          mutatedTarget,
+          storedValues,
+        }
+      }
+    }
+    if (callee?.type === 'MemberExpression') {
+      const method = memberNameFromNode(callee)
+      if (method && MUTATING_MEMBER_CALLEES.has(method)) {
+        const mutatedTarget = callee.object
+        const storedValues = ['push', 'unshift'].includes(method)
+          ? (callNode.arguments ?? [])
+          : method === 'splice'
+            ? (callNode.arguments?.slice(2) ?? [])
+            : method === 'fill'
+              ? (callNode.arguments?.slice(0, 1) ?? [])
+              : method === 'set'
+                ? (callNode.arguments?.slice(1, 2) ?? [])
+                : method === 'add'
+                  ? (callNode.arguments?.slice(0, 1) ?? [])
+                  : []
+        return {
+          kind: 'member',
+          owner: null,
+          method,
+          mutatedTarget,
+          storedValues,
+        }
+      }
+    }
+    return null
+  }
+
   const inspectObjectPatches = (node) => {
     const target = node.type === 'AssignmentExpression'
       ? node.left
@@ -870,11 +1053,11 @@ function publicSiteConfigProjection(program) {
         !safeFreezeCall
         && (node.arguments ?? []).some((argument) => isGlobalObject(argument))
       ) trustedObjectFreeze = false
+      const invocation = resolvePublicInvocation(node)
       if (
-        callee?.type === 'MemberExpression'
-        && isGlobalObject(callee.object)
+        invocation?.kind === 'static'
         && ['assign', 'defineProperties', 'defineProperty', 'setPrototypeOf'].includes(
-          localMemberName(callee),
+          invocation.method,
         )
         && (node.arguments ?? []).some((argument) => isGlobalObject(argument))
       ) trustedObjectFreeze = false
@@ -1064,48 +1247,15 @@ function publicSiteConfigProjection(program) {
     } else if (node.type === 'UnaryExpression' && node.operator === 'delete') {
       rejectUsedIdentity(node.argument, 'mutation of')
     } else if (node.type === 'CallExpression' || node.type === 'NewExpression') {
-      if (node.type === 'CallExpression' && node.callee.type === 'MemberExpression') {
-        const wrapperMethod = memberNameFromNode(node.callee)
-        const borrowed = ['apply', 'call'].includes(wrapperMethod)
-        const target = borrowed ? unwrap(node.callee.object) : node.callee
-        const owner = target?.type === 'MemberExpression' ? unwrap(target.object) : null
-        const method = target?.type === 'MemberExpression'
-          ? memberNameFromNode(target)
-          : null
-        const builtinOwner = owner?.type === 'Identifier'
-          && !bindings.has(owner.name)
-          ? owner.name
-          : null
-        const invocationArguments = wrapperMethod === 'call'
-          ? node.arguments?.slice(1) ?? []
-          : wrapperMethod === 'apply'
-            ? null
-            : node.arguments ?? []
-        const storedValues = wrapperMethod === 'apply'
-          ? node.arguments?.slice(1, 2) ?? []
-          : builtinOwner === 'Object' && method === 'assign'
-          ? invocationArguments?.slice(1) ?? []
-          : builtinOwner === 'Object' && method === 'defineProperties'
-            ? invocationArguments?.slice(1, 2) ?? []
-            : builtinOwner === 'Object' && method === 'defineProperty'
-              ? invocationArguments?.slice(2, 3) ?? []
-              : builtinOwner === 'Reflect' && method === 'set'
-                ? invocationArguments?.slice(2, 3) ?? []
-                : builtinOwner === 'Reflect' && method === 'defineProperty'
-                  ? invocationArguments?.slice(2, 3) ?? []
-                  : ['push', 'unshift'].includes(method)
-                    ? invocationArguments ?? []
-                    : method === 'splice'
-                      ? invocationArguments?.slice(2) ?? []
-                      : method === 'fill'
-                        ? invocationArguments?.slice(0, 1) ?? []
-                        : method === 'set'
-                          ? invocationArguments?.slice(1, 2) ?? []
-                          : method === 'add'
-                            ? invocationArguments?.slice(0, 1) ?? []
-                            : []
-        if (storedValues.some((argument) => mayContainGlobalContainer(argument))) {
-          unsupported('member-stored global container')
+      if (node.type === 'CallExpression') {
+        const invocation = resolvePublicInvocation(node)
+        if (invocation) {
+          if (invocation.storedValues.some((argument) => mayContainGlobalContainer(argument))) {
+            unsupported('member-stored global container')
+          }
+          if (invocation.mutatedTarget) {
+            rejectUsedIdentity(invocation.mutatedTarget, 'mutation of')
+          }
         }
       }
       const safeObjectFreeze = node.type === 'CallExpression'
@@ -3075,12 +3225,56 @@ function semanticBindingGraph(program, path, analysisContext = {}) {
   }
 
   function directConstInitializer(binding) {
-    const relation = nodeParents.get(binding?.identifier)
-    if (relation?.parent.type !== 'VariableDeclarator' || relation.key !== 'id') return null
-    const declaration = nodeParents.get(relation.parent)?.parent
-    return declaration?.type === 'VariableDeclaration' && declaration.kind === 'const'
-      ? relation.parent.init
-      : null
+    if (!binding?.identifier) return null
+    let current = binding.identifier
+    const steps = []
+    while (nodeParents.has(current)) {
+      const { parent, key } = nodeParents.get(current)
+      if (parent.type === 'Property' && key === 'value') {
+        steps.unshift({ type: 'property', key: parent.key, computed: parent.computed })
+        current = parent
+        continue
+      }
+      if (parent.type === 'ObjectPattern' && key === 'properties') {
+        current = parent
+        continue
+      }
+      if (parent.type === 'ArrayPattern' && key === 'elements') {
+        const index = parent.elements.indexOf(current)
+        if (index === -1) return null
+        steps.unshift({ type: 'element', index })
+        current = parent
+        continue
+      }
+      if (parent.type === 'VariableDeclarator' && key === 'id') {
+        const declaration = nodeParents.get(parent)?.parent
+        if (declaration?.type !== 'VariableDeclaration' || declaration.kind !== 'const') {
+          return null
+        }
+        if (!parent.init) return null
+        let result = parent.init
+        for (const step of steps) {
+          if (step.type === 'property') {
+            result = {
+              type: 'MemberExpression',
+              object: result,
+              property: step.key,
+              computed: step.computed,
+            }
+          } else if (step.type === 'element') {
+            result = {
+              type: 'MemberExpression',
+              object: result,
+              property: { type: 'Literal', value: step.index },
+              computed: true,
+            }
+          }
+        }
+        return result
+      }
+      break
+    }
+    return null
   }
 
   function unboundGlobalContainer(node, seen = new Set()) {
@@ -3423,6 +3617,163 @@ function semanticBindingGraph(program, path, analysisContext = {}) {
     return false
   }
 
+  function resolveCallableDetails(node, seen = new Set()) {
+    const value = unwrapExpression(node)
+    if (!value || typeof value !== 'object') return null
+    if (value.type === 'MemberExpression') {
+      const method = memberName(value)
+      const obj = unwrapExpression(value.object)
+      if (obj?.type === 'Identifier' && !lookup(obj)) {
+        if (method === 'prototype') {
+          return { owner: obj.name, isPrototype: true, method: null }
+        }
+        if (
+          STATIC_TARGET_MUTATORS.has(obj.name)
+          || ['Array', 'Set', 'Map', 'String', 'Object', 'Reflect'].includes(obj.name)
+        ) {
+          return { owner: obj.name, isPrototype: false, method }
+        }
+      }
+      if (obj?.type === 'ArrayExpression') {
+        return { owner: 'Array', isPrototype: true, method }
+      }
+      if (obj?.type === 'NewExpression' && obj.callee?.type === 'Identifier') {
+        if (['Set', 'Map'].includes(obj.callee.name) && !lookup(obj.callee)) {
+          return { owner: obj.callee.name, isPrototype: true, method }
+        }
+      }
+      const resolvedObj = resolveCallableDetails(obj, seen)
+      if (resolvedObj) {
+        if (resolvedObj.isPrototype || method === 'prototype') {
+          return {
+            owner: resolvedObj.owner,
+            isPrototype: true,
+            method: method === 'prototype' ? resolvedObj.method : method,
+          }
+        }
+        return {
+          owner: resolvedObj.owner,
+          isPrototype: false,
+          method: method ?? resolvedObj.method,
+        }
+      }
+      return null
+    }
+    if (value.type === 'Identifier') {
+      const binding = lookup(value)
+      if (!binding) {
+        if (
+          STATIC_TARGET_MUTATORS.has(value.name)
+          || ['Array', 'Set', 'Map', 'String', 'Object', 'Reflect'].includes(value.name)
+        ) {
+          return { owner: value.name, isPrototype: false, method: null }
+        }
+        return null
+      }
+      if (seen.has(binding)) return null
+      const init = directConstInitializer(binding)
+      if (init) {
+        return resolveCallableDetails(init, new Set([...seen, binding]))
+      }
+    }
+    return null
+  }
+
+  function resolveInvocation(callNode) {
+    const callee = unwrapExpression(callNode.callee)
+    const wrapper = callee?.type === 'MemberExpression' ? memberName(callee) : null
+    const isCall = wrapper === 'call'
+    const isApply = wrapper === 'apply'
+    const isBorrowed = isCall || isApply
+    const underlying = isBorrowed ? unwrapExpression(callee.object) : callee
+    const thisArg = isBorrowed ? (callNode.arguments?.[0] ?? null) : null
+    const rawArgs = isBorrowed
+      ? (callNode.arguments?.slice(1) ?? [])
+      : (callNode.arguments ?? [])
+    const isApplyDynamic = isApply && callNode.arguments?.[1]?.type !== 'ArrayExpression'
+    const invocationArgs = isApply && callNode.arguments?.[1]?.type === 'ArrayExpression'
+      ? callNode.arguments[1].elements.map(unwrapExpression)
+      : rawArgs
+
+    const details = resolveCallableDetails(underlying)
+    if (details) {
+      if (details.owner && STATIC_TARGET_MUTATORS.get(details.owner)?.has(details.method)) {
+        const mutatedTarget = isBorrowed ? invocationArgs[0] : (callNode.arguments?.[0] ?? null)
+        const storedValues = isApplyDynamic
+          ? (callNode.arguments?.slice(1, 2) ?? [])
+          : details.owner === 'Object' && details.method === 'assign'
+            ? invocationArgs.slice(1)
+            : details.owner === 'Object' && details.method === 'defineProperties'
+              ? invocationArgs.slice(1, 2)
+              : details.owner === 'Object' && details.method === 'defineProperty'
+                ? invocationArgs.slice(2, 3)
+                : details.owner === 'Reflect' && (details.method === 'set' || details.method === 'defineProperty')
+                  ? invocationArgs.slice(2, 3)
+                  : (details.owner === 'Object' || details.owner === 'Reflect') && details.method === 'setPrototypeOf'
+                    ? invocationArgs.slice(1, 2)
+                    : []
+        return {
+          kind: 'static',
+          owner: details.owner,
+          method: details.method,
+          mutatedTarget,
+          storedValues,
+          rawArgs: invocationArgs,
+        }
+      }
+      if (details.isPrototype && MUTATING_MEMBER_CALLEES.has(details.method)) {
+        const mutatedTarget = isBorrowed ? thisArg : (callee.type === 'MemberExpression' ? callee.object : null)
+        const storedValues = isApplyDynamic
+          ? (callNode.arguments?.slice(1, 2) ?? [])
+          : ['push', 'unshift'].includes(details.method)
+            ? invocationArgs
+            : details.method === 'splice'
+              ? invocationArgs.slice(2)
+              : details.method === 'fill'
+                ? invocationArgs.slice(0, 1)
+                : details.method === 'set'
+                  ? invocationArgs.slice(1, 2)
+                  : details.method === 'add'
+                    ? invocationArgs.slice(0, 1)
+                    : []
+        return {
+          kind: 'collection',
+          owner: details.owner,
+          method: details.method,
+          mutatedTarget,
+          storedValues,
+          rawArgs: invocationArgs,
+        }
+      }
+    }
+    if (callee?.type === 'MemberExpression') {
+      const method = memberName(callee)
+      if (method && MUTATING_MEMBER_CALLEES.has(method)) {
+        const mutatedTarget = callee.object
+        const storedValues = ['push', 'unshift'].includes(method)
+          ? (callNode.arguments ?? [])
+          : method === 'splice'
+            ? (callNode.arguments?.slice(2) ?? [])
+            : method === 'fill'
+              ? (callNode.arguments?.slice(0, 1) ?? [])
+              : method === 'set'
+                ? (callNode.arguments?.slice(1, 2) ?? [])
+                : method === 'add'
+                  ? (callNode.arguments?.slice(0, 1) ?? [])
+                  : []
+        return {
+          kind: 'member',
+          owner: null,
+          method,
+          mutatedTarget,
+          storedValues,
+          rawArgs: callNode.arguments ?? [],
+        }
+      }
+    }
+    return null
+  }
+
   function indexPatchedStaticOwners(node) {
     if (node.type === 'AssignmentExpression' || node.type === 'UpdateExpression') {
       const target = node.type === 'AssignmentExpression' ? node.left : node.argument
@@ -3447,51 +3798,55 @@ function semanticBindingGraph(program, path, analysisContext = {}) {
       const owner = mutationMemberOwner(node.argument) ?? globalStaticOwner(node.argument)
       markStaticOwnerPatched(owner)
     }
-    if (node.type === 'CallExpression' && node.callee.type === 'MemberExpression') {
-      const owner = globalStaticOwner(node.callee.object)
-      const method = memberName(node.callee)
-      if (
-        owner
-        && STATIC_TARGET_MUTATORS.get(owner)?.has(method)
-        && globalOwnerRoot(node.arguments?.[0])
-      ) {
-        markStaticOwnerPatched(globalOwnerRoot(node.arguments[0]))
-      }
-      if (unboundGlobalContainer(node.arguments?.[0])) {
-        const patchOwnerKey = (key) => {
-          const name = (
-            key?.type === 'StringLiteral'
-            || key?.type === 'Literal'
-          ) && typeof key.value === 'string'
-            ? key.value
-            : null
-          if (name && TRACKED_GLOBAL_OWNERS.has(name)) patchedStaticOwners.add(name)
-          else if (!name) markAllStaticOwnersPatched()
-        }
-        const patchObjectKeys = (value) => {
-          if (value?.type !== 'ObjectExpression') {
-            markAllStaticOwnersPatched()
-            return
-          }
-          for (const property of value.properties) {
-            if (property.type !== 'Property' || property.computed) {
-              markAllStaticOwnersPatched()
-              continue
-            }
-            patchOwnerKey(property.key)
-          }
-        }
-        if (owner === 'Object' && method === 'assign') {
-          for (const source of node.arguments?.slice(1) ?? []) patchObjectKeys(source)
-        } else if (owner === 'Object' && method === 'defineProperties') {
-          patchObjectKeys(node.arguments?.[1])
-        } else if (
-          (owner === 'Object' && method === 'defineProperty')
-          || (owner === 'Reflect' && (method === 'defineProperty' || method === 'set'))
+    if (node.type === 'CallExpression') {
+      const invocation = resolveInvocation(node)
+      if (invocation?.kind === 'static') {
+        const owner = invocation.owner
+        const method = invocation.method
+        const target = invocation.mutatedTarget
+        if (
+          owner
+          && STATIC_TARGET_MUTATORS.get(owner)?.has(method)
+          && globalOwnerRoot(target)
         ) {
-          patchOwnerKey(node.arguments?.[1])
-        } else if (owner && STATIC_TARGET_MUTATORS.get(owner)?.has(method)) {
-          markAllStaticOwnersPatched()
+          markStaticOwnerPatched(globalOwnerRoot(target))
+        }
+        if (unboundGlobalContainer(target)) {
+          const patchOwnerKey = (key) => {
+            const name = (
+              key?.type === 'StringLiteral'
+              || key?.type === 'Literal'
+            ) && typeof key.value === 'string'
+              ? key.value
+              : null
+            if (name && TRACKED_GLOBAL_OWNERS.has(name)) patchedStaticOwners.add(name)
+            else if (!name) markAllStaticOwnersPatched()
+          }
+          const patchObjectKeys = (value) => {
+            if (value?.type !== 'ObjectExpression') {
+              markAllStaticOwnersPatched()
+              return
+            }
+            for (const property of value.properties) {
+              if (property.type !== 'Property' || property.computed) {
+                markAllStaticOwnersPatched()
+                continue
+              }
+              patchOwnerKey(property.key)
+            }
+          }
+          if (owner === 'Object' && method === 'assign') {
+            for (const source of invocation.storedValues) patchObjectKeys(source)
+          } else if (owner === 'Object' && method === 'defineProperties') {
+            if (invocation.storedValues[0]) patchObjectKeys(invocation.storedValues[0])
+          } else if (
+            (owner === 'Object' && method === 'defineProperty')
+            || (owner === 'Reflect' && (method === 'defineProperty' || method === 'set'))
+          ) {
+            patchOwnerKey(invocation.rawArgs?.[1])
+          } else if (owner && STATIC_TARGET_MUTATORS.get(owner)?.has(method)) {
+            markAllStaticOwnersPatched()
+          }
         }
       }
     }
@@ -3890,54 +4245,16 @@ function semanticBindingGraph(program, path, analysisContext = {}) {
       record(node.left, 'write', { propagateAliases: false })
     }
     if (node.type === 'CallExpression' && !isReactEffectCall(node)) {
-      const callee = node.callee
-      if (callee.type === 'MemberExpression') {
-        const wrapperMethod = memberName(callee)
-        const borrowed = ['apply', 'call'].includes(wrapperMethod)
-        const target = borrowed ? unwrapExpression(callee.object) : callee
-        const method = target?.type === 'MemberExpression' ? memberName(target) : null
-        const staticOwner = target?.type === 'MemberExpression'
-          && target.object.type === 'Identifier'
-          && !lookup(target.object)
-          ? target.object.name
-          : null
-        const invocationArguments = wrapperMethod === 'call'
-          ? node.arguments?.slice(1) ?? []
-          : wrapperMethod === 'apply'
-            ? null
-            : node.arguments ?? []
-        const storedValues = wrapperMethod === 'apply'
-          ? node.arguments?.slice(1, 2) ?? []
-          : staticOwner === 'Object' && method === 'assign'
-          ? invocationArguments?.slice(1) ?? []
-          : staticOwner === 'Object' && method === 'defineProperties'
-            ? invocationArguments?.slice(1, 2) ?? []
-            : staticOwner === 'Object' && method === 'defineProperty'
-              ? invocationArguments?.slice(2, 3) ?? []
-              : staticOwner === 'Reflect' && method === 'set'
-                ? invocationArguments?.slice(2, 3) ?? []
-                : staticOwner === 'Reflect' && method === 'defineProperty'
-                  ? invocationArguments?.slice(2, 3) ?? []
-                  : ['push', 'unshift'].includes(method)
-                    ? invocationArguments ?? []
-                    : method === 'splice'
-                      ? invocationArguments?.slice(2) ?? []
-                      : method === 'fill'
-                        ? invocationArguments?.slice(0, 1) ?? []
-                        : method === 'set'
-                          ? invocationArguments?.slice(1, 2) ?? []
-                          : method === 'add'
-                            ? invocationArguments?.slice(0, 1) ?? []
-                            : []
-        if (storedValues.some((argument) => mayContainUnboundGlobalContainer(argument))) {
-          unsupportedRootCalls.push({
-            executionScope,
-            message: 'Unsupported member-stored global container',
-            mutationNode: node,
-            semanticNode,
-          })
-        }
+      const invocation = resolveInvocation(node)
+      if (invocation?.storedValues?.some((argument) => mayContainUnboundGlobalContainer(argument))) {
+        unsupportedRootCalls.push({
+          executionScope,
+          message: 'Unsupported member-stored global container',
+          mutationNode: node,
+          semanticNode,
+        })
       }
+      const callee = node.callee
       const provenAsyncCallbackIndexes = new Set(
         isKnownAsyncCallbackCall(node) ? clientAsyncCallbackIndexes(node) : [],
       )
@@ -4046,18 +4363,24 @@ function semanticBindingGraph(program, path, analysisContext = {}) {
         })
       }
       const method = callee.type === 'MemberExpression' ? memberName(callee) : null
-      const staticOwner = callee.type === 'MemberExpression'
-        && callee.object.type === 'Identifier'
-        ? callee.object.name
-        : null
-      const isStaticTargetMutator = method
-        && callee.object.type === 'Identifier'
-        && !lookup(callee.object)
-        && !patchedStaticOwners.has(staticOwner)
-        && STATIC_TARGET_MUTATORS.get(staticOwner)?.has(method)
-      if (isStaticTargetMutator) {
-        record(node.arguments?.[0])
-        for (const argument of node.arguments?.slice(1) ?? []) {
+      if (
+        invocation?.kind === 'static'
+        && !patchedStaticOwners.has(invocation.owner)
+        && STATIC_TARGET_MUTATORS.get(invocation.owner)?.has(invocation.method)
+      ) {
+        if (invocation.mutatedTarget) record(invocation.mutatedTarget)
+        for (const argument of invocation.storedValues) {
+          record(argument, 'ambiguous-mutation', { trackDynamic: false })
+        }
+      } else if (invocation?.kind === 'collection') {
+        if (invocation.mutatedTarget) {
+          record(
+            invocation.mutatedTarget,
+            MUTATING_MEMBER_CALLEES.has(invocation.method) ? 'write' : 'ambiguous-mutation',
+            { trackDynamic: false },
+          )
+        }
+        for (const argument of invocation.storedValues) {
           record(argument, 'ambiguous-mutation', { trackDynamic: false })
         }
       } else if (callee.type === 'MemberExpression') {
