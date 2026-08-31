@@ -102,7 +102,7 @@ This target uses a single-context domain-doc layout. See `docs/agents/domain.md`
 
 ### Related engineering skills
 
-See `docs/agents/skill-workflows.md` for recommendations on when to use the installed engineering skills and how their workflows compose.
+Working rules by phase, completion criteria, and the skill mapping live in the workspace-root [`Docs/dev_guide.md`](../Docs/dev_guide.md), which is imported into every session. It replaced the per-project `docs/agents/skill-workflows.md` copies, which had drifted and named uninstalled skills.
 
 ### Documentation system
 
