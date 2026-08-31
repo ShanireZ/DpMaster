@@ -22,7 +22,7 @@
   },
   "scripts": {
     "dev": "vite",
-    "baseline:check": "node scripts/check-baseline.mjs",
+    "baseline:check": "node scripts/check-baseline-copy.mjs && node scripts/check-baseline.mjs",
     "prebuild": "pnpm content:generate && pnpm seo:generate",
     "build": "tsc -b && node scripts/build.mjs",
     "test": "node --test scripts/*.test.mjs",
