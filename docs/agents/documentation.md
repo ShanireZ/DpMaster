@@ -6,7 +6,7 @@ tags: [documentation, okf, knowledge-bundle]
 status: stable
 sources:
   - id: okf-v02
-    resource: https://github.com/GoogleCloudPlatform/knowledge-catalog/blob/main/okf/SPEC.md
+    resource: https://github.com/GoogleCloudPlatform/open-knowledge-format/blob/main/SPEC.md
     title: Open Knowledge Format v0.2 specification
 ---
 
@@ -67,4 +67,4 @@ OKF v0.2 consumers can read v0.1 bundles using documented fallbacks. When a v0.1
 
 Do not change a bundle-root `okf_version` declaration to `"0.2"` until the bundle has been audited for the version it claims.
 
-[^okf-v02]: [Open Knowledge Format v0.2 specification](https://github.com/GoogleCloudPlatform/knowledge-catalog/blob/main/okf/SPEC.md)
+[^okf-v02]: [Open Knowledge Format v0.2 specification](https://github.com/GoogleCloudPlatform/open-knowledge-format/blob/main/SPEC.md)

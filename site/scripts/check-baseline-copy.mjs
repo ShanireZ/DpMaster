@@ -1,8 +1,8 @@
-// baseline-copy: authority=Docs/baseline-copy-check.template.mjs sha256=ef89982d3cca5c7bf3df589eb2e6e98e1c1574feb9581df02746403b874fd85a
+// baseline-copy: authority=Docs/baseline-copy-check.template.mjs sha256=9f8899702d7a673e96af9c7e1db6f61c1737a97fe92f67b1c493ad322b82d092
 
 // （无 shebang：钉子必须是第 1 行，而 shebang 只在第 1 行才有效 —— 两者不能共存。
 //   本脚本一律以 `node scripts/check-baseline-copy.mjs` 调用。）
-// nxtplan §4.3：本仓 docs/ 下的 baseline 副本必须与工作区权威逐字节一致。
+// 本仓 docs/ 下的 baseline 副本必须与工作区权威逐字节一致。
 //
 // ★ 本文件是从 Docs/baseline-copy-check.template.mjs 生成的副本，**不要就地改**——
 //   工作区的 `node Docs/check-baseline-copies.mjs` 会逐字节比对它，改了即红。
@@ -12,7 +12,7 @@
 //   所以找不到工作区权威时它**显式宣告跳过并退 0**，不是静默通过：
 //   - 开发机（工作区在）→ 真判，不一致即红。
 //   - 单仓 CI（工作区不在）→ 打一行大写 SKIP。**唯一的执法点是工作区级那条命令**，
-//     写在 nxtplan §6 验收判据里。
+//     执法点是工作区级的 node Docs/check-baseline-copies.mjs。
 //   这条取舍是 owner 2026-08-30 拍的：让「没判」看得见，比让它假装判过要好。
 
 import { readFileSync, existsSync, readdirSync } from 'node:fs';
