@@ -1,5 +1,3 @@
-<!-- baseline-copy: authority=Docs/web-baseline.md sha256=10550b43b998640a27434496e284e4291f3d72de454f6698ed05906f7fd93682 -->
-
 ---
 type: contract
 title: Web Platform Baseline 治理（工作区唯一权威）
@@ -13,7 +11,10 @@ tags: [baseline, browsers, compatibility, contract]
 > 副本与权威不一致时，那个项目的质量门**会红**。⇒ **改本文件就要重跑各项目的门并同步副本**，
 > 不要只改一边。
 >
-> 该 hash 门是 `nxtplan.md` 阶段 4 的交付物 —— 它挡的是 §8 那条陷阱：**自洽的陈旧抄件会通过每一道门**。
+> ⛔ **本文件正文不得出现相对链接**（外部 URL 可以）：它会被逐字节复制到各项目 `docs/` 的
+> 不同深度，在那里相对路径必然解不开，而只有个别项目的 bundle 测试会发现。文件名写成代码跨度即可。
+>
+> 该 hash 门挡的是这样一条陷阱：**自洽的陈旧抄件会通过每一道门** —— 副本与权威脱钩后仍然自洽，没有任何东西会因此变红。
 >
 > 参考：[Baseline](https://web.dev/baseline) · [How to use Baseline](https://web.dev/how-to-use-baseline)
 
@@ -25,7 +26,7 @@ tags: [baseline, browsers, compatibility, contract]
 
 1. 目标项目自己的产品、安全、隐私、许可和浏览器合同优先。
 2. 本文件统一 Baseline 分类、六字段声明、工具链接线和复核门。
-3. [`web-contracts.md`](web-contracts.md) 在本文件之上登记 sitemap、同 URL Markdown 内容协商与 Accept 判据，**不得复制或降低本文件的浏览器合同**。
+3. `web-contracts.md` 在本文件之上登记 sitemap、同 URL Markdown 内容协商与 Accept 判据，**不得复制或降低本文件的浏览器合同**。
 
 工作区采用以下默认策略：
 
@@ -137,5 +138,5 @@ verification: 构建检查 + Chromium/Firefox/WebKit 自动化 + RUM 复核
 - 公网项目至少覆盖 Chromium、Firefox 和 WebKit/Safari 等价环境的关键路径验证。
 - 用户脚本在实际目标页面中验证；受控环境项目在实际部署浏览器中验证。
 - Baseline 不负责业务功能降级、运行时 Web API polyfill 或测试覆盖；这些必须由项目分别落实。
-- ★ **不要在本文件登记任何技能版本号**：那类值必然过期且不会红。Modern Web Guidance 的加载时机写在 [`dev_guide.md`](dev_guide.md) 环节 4，版本从当时安装的技能现读。
+- ★ **不要在本文件登记任何技能版本号**：那类值必然过期且不会红。Modern Web Guidance 的加载时机写在工作区的 `Docs/dev_guide.md` 环节 4，版本从当时安装的技能现读。
 - 后续实施必须先读取对应项目的 `AGENTS.md` 和权威文档，并尊重项目当前脏工作树及发布约束。

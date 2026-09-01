@@ -1,5 +1,3 @@
-<!-- baseline-copy: authority=Docs/web-contracts.md sha256=9f63b5a7850c358def642253b4c1a813ce5e99eb378ed873b05d049562a43742 -->
-
 ---
 type: contract
 title: Sitemap / 同 URL Markdown 协商 / Accept 判据（工作区唯一权威）
@@ -9,11 +7,13 @@ tags: [sitemap, markdown, content-negotiation, accept, contract]
 
 # Sitemap · 同 URL Markdown 协商 · Accept 判据
 
-> ★★★ **本文件是唯一权威**，与 [`web-baseline.md`](web-baseline.md) 同一套 hash 门：
+> ⛔ **本文件正文不得出现相对链接**（外部 URL 可以）：它会被逐字节复制到各项目 `docs/` 的不同深度。
+>
+> ★★★ **本文件是唯一权威**，与 `web-baseline.md` 同一套 hash 门：
 > 启用这三块的项目在自己的 `docs/` 下持完整副本并钉住本文件的 sha256，不一致即红。
 >
 > 来源：原 `NxtAgents/modern-web-guidance-sitemap-markdown-negotiation-plan.md` 的 §3.3 / §3.4 / §6.1–6.3。
-> 该仓已按 `nxtplan.md` N05 移除，**这三块因为 `dp.round1.cc` 线上正按它们运行而必须留下**（N10）。
+> 该仓已移除，**这三块因为 `dp.round1.cc` 线上正按它们运行而必须留下**。
 > 原计划 §4 的八波实施包与 §5 的 PubEnv 搜索闭环**已作废**（N10）；§5.3 的上线预检 10 步
 > 因为是 DpMaster 退出门的验收依据，已内联进 [`ShanireZ/DpMaster#6`](https://github.com/ShanireZ/DpMaster/issues/6)。
 
