@@ -26,15 +26,16 @@ const docsDir = join(projectDir, 'docs')
 /**
  * ★★ 只要求通用 OKF 字段、不要求本仓 `generated` 溯源的目录。
  *
- * `agents/` 是 workspace 级的共享 agent 约定包，同一批文件**逐字节**铺在 betai、
- * 贝塔通、成均、枢衡、问天录与本仓（sha256 相同）。给它补本仓特有的 `generated:`
- * 与 `sources: - resource:` 写法，等于让本仓的副本从此和上游分叉，下次同步必冲突。
+ * `agents/` 与两份顶层 Web 契约是 workspace 级共享文档，同一批文件**逐字节**铺在
+ * 多个项目。给它们补本仓特有的 `generated:` 与 `sources: - resource:` 写法，等于让
+ * 本仓的副本从此和上游分叉，下次同步必冲突。
  * ⇒ 它们仍须有 `type` 与 `status`，也仍须**可达**，只是不受本仓溯源格式约束。
  *
  * ★★★ 豁免名单底下有断言守着（目录真的在、且 index 真的声明了它的定位）——
  * **把「跳过」写成「断言它缺席」**，否则名单腐烂了没有任何声音。
  */
 const SHARED_UPSTREAM_DIRS = ['agents']
+const SHARED_UPSTREAM_FILES = ['web-baseline.md', 'web-contracts.md']
 
 /**
  * ★★ 有意不进导航的文件：模板不是知识，列进 index 只会让目录多一条没人读的项。
@@ -135,7 +136,10 @@ test('the documentation bundle follows the current OKF v0.2 contract', () => {
     assert.ok(frontmatter, `${relative(projectDir, path)} has OKF frontmatter`)
     assert.match(frontmatter[1], /^type:\s*\S.+$/m)
     assert.match(frontmatter[1], /^status: (draft|stable|deprecated)$/m)
-    if (SHARED_UPSTREAM_DIRS.some((dir) => inDir(rel, dir))) continue
+    if (
+      SHARED_UPSTREAM_FILES.includes(rel) ||
+      SHARED_UPSTREAM_DIRS.some((dir) => inDir(rel, dir))
+    ) continue
     assert.match(
       frontmatter[1],
       /^generated: \{ by: [^,]+, at: \d{4}-\d{2}-\d{2}T[^}]+ \}$/m,
@@ -161,6 +165,17 @@ test('the exemptions above still describe something that exists', () => {
     assert.ok(
       index.includes(`\`${dir}/\``),
       `index.md no longer explains what ${dir}/ is`,
+    )
+  }
+
+  for (const rel of SHARED_UPSTREAM_FILES) {
+    assert.ok(
+      files.includes(rel),
+      `exempt shared file ${rel} is gone — drop the exemption`,
+    )
+    assert.ok(
+      index.includes(`](./${rel})`),
+      `index.md no longer links to exempt shared file ${rel}`,
     )
   }
 

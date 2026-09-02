@@ -65,6 +65,7 @@
   border: 1px solid color-mix(in srgb, var(--viz-current) 34%, transparent);
   border-radius: var(--r-full);
   background: color-mix(in srgb, var(--viz-current) 8%, transparent);
+  -webkit-backdrop-filter: blur(4px);
   backdrop-filter: blur(4px);
 }
 
@@ -161,6 +162,7 @@
   border: 1px solid var(--border-strong);
   color: var(--text-1);
   background: color-mix(in srgb, var(--surface-1) 55%, transparent);
+  -webkit-backdrop-filter: blur(4px);
   backdrop-filter: blur(4px);
 }
 .nf-btn--ghost:hover { background: var(--surface-2); transform: translateY(-2px); }
