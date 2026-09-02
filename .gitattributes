@@ -6,3 +6,14 @@ site/src/data/problems.ts text eol=lf
 site/public/sitemap.xml text eol=lf
 site/public/robots.txt text eol=lf
 site/tests/browser/routes.spec.ts text eol=lf
+
+# ★ 工作区级门 `node Docs/check-baseline-copies.mjs` 拿这份 wrapper 与
+#   `Docs/baseline-copy-check.template.mjs` **逐字节**比对（这一项不做行尾归一）。
+#   2026-09-02 实测：7 个仓的副本是**同一个 blob（纯 LF）**，而没钉 eol 的三个仓
+#   在 `core.autocrlf=true` 的机器上被检出成 CRLF ⇒ 那道门恒红。
+#   ★★ 而它在开发机上几乎看不见：`git status` 干净（索引里仍是 LF），
+#   Linux CI 也全绿 —— 只有在 Windows 上跑那条工作区级命令才看得见。
+# ★ 钉在这里而不是靠每台机器自己设 `core.autocrlf`：后者带不过机器。
+# ⚠ 只点名这一个文件：`site/scripts/` 下另外 53 个 .mjs 现在工作树多是 CRLF，
+#   用 glob 会一次改动四十来个文件 —— 那是另一件事，别顺手干。
+site/scripts/check-baseline-copy.mjs text eol=lf
