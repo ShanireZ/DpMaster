@@ -1,3 +1,14 @@
+# 跨平台一致：仓库内与工作区均为 LF。
+#
+# ★★ 2026-09-02 工作区统一加上这条。没有它时，检出行尾由每台机器的
+#   `core.autocrlf` 决定（Git for Windows 装机默认在 system 层是 true），
+#   于是**同一个 blob 在不同机器上被检出成不同字节**。
+# ★★★ 而这件事几乎不可见：`git status` 干净（索引里仍是 LF），
+#   Linux CI 全绿 —— 只有当某处判据拿**工作树字节**做逐字节/哈希比对时
+#   才会突然变红，而且看上去像是别的问题（“资产版本对不上”之类）。
+# ★ 钉在这里而不是靠每台机器自己设 `core.autocrlf`：后者带不过机器。
+* text=auto eol=lf
+
 # 生成物与测试规范文件强制 LF 行尾。
 # 修复 Windows(autocrlf) 上 npm run verify 误报 stale / 测试挂红的问题：
 # generate-*.mjs 用 \n(LF) 拼字符串做逐字节比对，而 Windows 检出的文件是 CRLF，
