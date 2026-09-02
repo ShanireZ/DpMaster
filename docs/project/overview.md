@@ -15,9 +15,9 @@ sources:
 
 DP大师 is an independent Chinese interactive teaching site for dynamic programming. It targets C++ algorithm learners around NOIP, CSP, and provincial-selection preparation, and uses a normal teaching voice rather than a fantasy or 修真 narrative.
 
-The current local project root is `D:\WorkSpace\DpMaster`. The public remote is `https://github.com/ShanireZ/DpMaster.git`.
+The current local project root is `D:\Workspace\DpMaster`. The public remote is `https://github.com/ShanireZ/DpMaster.git`.
 
-DP大师 is not part of `WenTian` or any earlier `wentian-animation-lab` work. Treat paths that mention `D:\WorkSpace\dp` as stale historical text.
+DP大师 is not part of `WenTian` or any earlier `wentian-animation-lab` work. Treat paths that mention `D:\Workspace\dp` as stale historical text.
 
 # Current Status
 
@@ -43,4 +43,4 @@ The current phase does not include browser-side C++ execution, online judging, a
 
 Durable project knowledge belongs in this OKF bundle. Operational deployment and feedback instructions belong in root `deploy.md`. Root `README.md` is only an entrypoint and quick-start map.
 
-Project-level maintenance rules live in `D:\WorkSpace\DpMaster\AGENTS.md` and inherit the workspace-level rules.
+Project-level maintenance rules live in `D:\Workspace\DpMaster\AGENTS.md` and inherit the workspace-level rules.

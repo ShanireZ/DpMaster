@@ -3,6 +3,7 @@ type: contract
 title: Web Platform Baseline 治理（工作区唯一权威）
 description: 各 Web 项目可以使用哪些 Web 平台能力、面向哪些浏览器构建、兼容性目标如何验证。
 tags: [baseline, browsers, compatibility, contract]
+status: stable
 ---
 
 # Web Platform Baseline 治理（工作区唯一权威）

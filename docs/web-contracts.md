@@ -3,6 +3,7 @@ type: contract
 title: Sitemap / 同 URL Markdown 协商 / Accept 判据（工作区唯一权威）
 description: 三块跨项目通用的公共 HTTP 契约，dp.round1.cc 线上正按它们运行。
 tags: [sitemap, markdown, content-negotiation, accept, contract]
+status: stable
 ---
 
 # Sitemap · 同 URL Markdown 协商 · Accept 判据

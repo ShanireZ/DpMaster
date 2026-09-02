@@ -27,7 +27,7 @@ Avoid: rainbow saturation, candy colors, flower or petal look, pinwheel toy, loa
 ```
 
 - 内置生成路径：`C:\Users\SkySa\.codex\generated_images\01a01cb2-f669-7023-a3f9-d66659d9078a\exec-9e77107d-1e30-4fe9-905f-2ec454e8d78a.png`
-- 候选路径：`D:\WorkSpace\BetaPass\std\candidates\dpmaster\logo-source.png`
+- 候选路径：`D:\Workspace\BetaPass\std\candidates\dpmaster\logo-source.png`
 
 ## 3:1 徽章背景
 
@@ -48,7 +48,7 @@ Avoid: rainbow gradient, candy colors, neon cyberpunk, blue-purple tech grid, gl
 ```
 
 - 内置生成路径：`C:\Users\SkySa\.codex\generated_images\01a01cb2-f669-7023-a3f9-d66659d9078a\exec-b4c4faa9-b6f5-4f98-a3ad-e9a86ceb7086.png`
-- 候选路径：`D:\WorkSpace\BetaPass\std\candidates\dpmaster\badge-bg-source.png`
+- 候选路径：`D:\Workspace\BetaPass\std\candidates\dpmaster\badge-bg-source.png`
 
 ## 4:5 竖版背景
 
@@ -69,4 +69,4 @@ Avoid: rainbow gradient, candy colors, neon, blue-purple tech grid, glassmorphis
 ```
 
 - 内置生成路径：`C:\Users\SkySa\.codex\generated_images\01a01cb2-f669-7023-a3f9-d66659d9078a\exec-52430613-f97b-4414-853b-6fe980ae0084.png`
-- 候选路径：`D:\WorkSpace\BetaPass\std\candidates\dpmaster\stage-bg-source.png`
+- 候选路径：`D:\Workspace\BetaPass\std\candidates\dpmaster\stage-bg-source.png`
