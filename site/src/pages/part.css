@@ -28,6 +28,7 @@
     linear-gradient(90deg, var(--border) 1px, transparent 1px);
   background-size: 64px 64px;
   opacity: 0.62;
+  -webkit-mask-image: linear-gradient(90deg, transparent 8%, #000 50%, #000 100%);
   mask-image: linear-gradient(90deg, transparent 8%, #000 50%, #000 100%);
 }
 
@@ -155,6 +156,7 @@
   font-weight: 700;
   line-height: 1;
   -webkit-text-stroke: 1px color-mix(in srgb, var(--accent-1) 18%, transparent);
+  -webkit-user-select: none;
   user-select: none;
 }
 
@@ -563,6 +565,7 @@
 .partpage[data-part-id='a'] .partcover::before {
   background-size: 72px 72px;
   opacity: 0.48;
+  -webkit-mask-image: linear-gradient(90deg, transparent 2%, #000 50%, #000 100%);
   mask-image: linear-gradient(90deg, transparent 2%, #000 50%, #000 100%);
 }
 
@@ -959,6 +962,7 @@
 .partpage[data-part-id='b'] .partcover::before {
   background-size: 72px 72px;
   opacity: 0.42;
+  -webkit-mask-image: linear-gradient(90deg, transparent 4%, #000 52%, #000 100%);
   mask-image: linear-gradient(90deg, transparent 4%, #000 52%, #000 100%);
 }
 

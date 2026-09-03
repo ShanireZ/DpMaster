@@ -6,6 +6,7 @@
   height: auto;
   object-fit: contain;
   object-position: center;
+  -webkit-user-select: none;
   user-select: none;
   filter: drop-shadow(0 30px 64px color-mix(in srgb, var(--accent-1) 18%, transparent));
 }

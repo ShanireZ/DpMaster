@@ -23,6 +23,7 @@
   height: auto;
   object-fit: contain;
   object-position: center;
+  -webkit-user-select: none;
   user-select: none;
 }
 
