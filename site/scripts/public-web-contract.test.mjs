@@ -14,7 +14,7 @@ test('one public-Web contract owns the content signal and Markdown asset mapping
     PUBLIC_CONTENT_SIGNAL,
     baseline.markdownNegotiation.contentSignal,
   )
-  assert.equal(CONTENT_SIGNAL_HEADER, 'ai-train=yes, search=yes, ai-input=yes')
+  assert.equal(CONTENT_SIGNAL_HEADER, 'search=yes, ai-train=no, ai-input=yes')
   assert.equal(markdownAssetPath('/'), '/_representations/markdown/index.md')
   assert.equal(markdownAssetRelativePath('/'), '_representations/markdown/index.md')
   assert.equal(

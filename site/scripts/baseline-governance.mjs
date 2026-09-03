@@ -71,11 +71,13 @@ export function validateWebGovernancePolicy(policy) {
     errors.push('markdownNegotiation.contentLanguage must be zh-CN')
   }
   if (
-    markdown?.contentSignal?.['ai-train'] !== 'yes'
-    || markdown?.contentSignal?.search !== 'yes'
+    markdown?.contentSignal?.search !== 'yes'
+    || markdown?.contentSignal?.['ai-train'] !== 'no'
     || markdown?.contentSignal?.['ai-input'] !== 'yes'
   ) {
-    errors.push('markdownNegotiation.contentSignal must allow approved public content uses')
+    errors.push(
+      'markdownNegotiation.contentSignal must match the edge policy: search and ai-input allowed, ai-train refused',
+    )
   }
   if (markdown?.notApplicableReason !== null) {
     errors.push('enabled Markdown negotiation must have a null notApplicableReason')
