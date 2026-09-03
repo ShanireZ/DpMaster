@@ -15,25 +15,20 @@ function xml(value: string): string {
 }
 
 /**
- * 已批准公开内容允许检索、引用、模型输入与训练。这里列出已知的检索类、用户触发类
- * 与训练类抓取器，让源代码立场保持单向明确。Cloudflare AI Crawl Control 仍可能在
- * 边缘注入相反规则；发布移交必须关闭那段托管 no-train 策略并做线上冒烟。
+ * 已批准公开内容允许检索、引用与模型输入，不允许训练。
+ * round1.cc 开着 Cloudflare 托管 robots.txt，它已对训练类抓取器写下 `Disallow: /`，
+ * 那份是权威。所以这里只对托管块未点名的检索类与用户触发类抓取器表态：同一个 UA
+ * 若同时落进托管块的 Disallow 与这里的 Allow，各家抓取器的合并与优先级实现并不一致，
+ * 靠「后面的 Allow 覆盖前面的 Disallow」是不可靠的。
+ * scripts/seo-contract.test.mjs 用正反两组断言锁这条边界。
  */
 const AI_CRAWLERS = Object.freeze([
-  'GPTBot',
   'OAI-SearchBot',
   'ChatGPT-User',
-  'ClaudeBot',
-  'PerplexityBot',
-  'Perplexity-User',
   'Claude-User',
   'Claude-SearchBot',
-  'Google-Extended',
-  'Applebot-Extended',
-  'CCBot',
-  'Bytespider',
-  'Amazonbot',
-  'meta-externalagent',
+  'PerplexityBot',
+  'Perplexity-User',
 ])
 
 interface RouteSummary {
@@ -108,7 +103,7 @@ export function generateDiscoveryFiles(
     'User-agent: *',
     'Allow: /',
     '',
-    '# 已批准公开内容允许检索、引用、模型输入与训练；引用时请保留原文链接与页面标题。',
+    '# 已批准公开内容允许检索、引用与模型输入，不允许训练；引用时请保留原文链接与页面标题。',
     ...AI_CRAWLERS.map((agent) => `User-agent: ${agent}`),
     'Allow: /',
     '',

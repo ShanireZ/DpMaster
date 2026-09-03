@@ -99,9 +99,9 @@ Deployment checks live in root [deploy.md](../../deploy.md). At minimum after de
 
 * Open a normal route and a direct deep link on `https://dp.round1.cc`; confirm both self-canonicalize and emit zero hreflang links.
 * Run GET and HEAD against a public route with `Accept: text/html` and `Accept: text/markdown`, then request an unacceptable media type and confirm 406.
-* Confirm both successful representations carry distinct ETag values, `Vary: Accept`, the appropriate alternate/canonical `Link`, and `Content-Signal: ai-train=yes, search=yes, ai-input=yes`.
+* Confirm both successful representations carry distinct ETag values, `Vary: Accept`, the appropriate alternate/canonical `Link`, and `Content-Signal: search=yes, ai-train=no, ai-input=yes`.
 * Alternate HTML, Markdown, and HTML requests through the final edge to prove the cache never crosses representations; direct requests under `/_representations/` must return 404.
-* Inspect the final `robots.txt` and confirm Cloudflare has not injected `ai-train=no` or crawler `Disallow` rules that conflict with the repository policy.
+* Inspect the final `robots.txt` and confirm no crawler disallowed by the Cloudflare managed block also appears in the repository `Allow` group. The managed block is authoritative for AI crawling and is zone-wide across `round1.cc`.
 * Request a made-up path and confirm HTTP 404 plus `noindex,nofollow`.
 * Submit a feedback test.
 * Confirm `POST /api/analytics` returns 204 for a valid same-origin event and inspect the platform log.

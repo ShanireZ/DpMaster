@@ -94,8 +94,8 @@
     "mediaType": "text/markdown; charset=utf-8",
     "contentLanguage": "zh-CN",
     "contentSignal": {
-      "ai-train": "yes",
       "search": "yes",
+      "ai-train": "no",
       "ai-input": "yes"
     },
     "notApplicableReason": null,

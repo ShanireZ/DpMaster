@@ -163,7 +163,7 @@ curl.exe -i https://dp.round1.cc/part/a/01 -H "Accept: application/json"
 curl.exe -i https://dp.round1.cc/_representations/markdown/part/a/01.md
 ```
 
-依次应看到 Markdown 200、HTML 200、无正文的 Markdown HEAD 200、406，以及内部路径 404。两种 200 都必须带 `Vary: Accept`、表示专属 ETag、alternate `Link` 和 `Content-Signal: ai-train=yes, search=yes, ai-input=yes`；Markdown 另带 `Content-Type: text/markdown; charset=utf-8`、`Content-Language: zh-CN` 与 canonical `Link`。
+依次应看到 Markdown 200、HTML 200、无正文的 Markdown HEAD 200、406，以及内部路径 404。两种 200 都必须带 `Vary: Accept`、表示专属 ETag、alternate `Link` 和 `Content-Signal: search=yes, ai-train=no, ai-input=yes`；Markdown 另带 `Content-Type: text/markdown; charset=utf-8`、`Content-Language: zh-CN` 与 canonical `Link`。
 
 目录名 `DpMaster`、GitHub 仓库 `ShanireZ/DpMaster` 与 Worker 名 `dpmaster` 都是历史标识符，域名迁移不改动它们。
 
@@ -261,13 +261,12 @@ wrangler tail dpmaster
 2. Bing Webmaster Tools：验证新站点并提交 sitemap；可从 Search Console 导入。
 3. 百度搜索资源平台：站点已迁到境外托管，收录预期本就有限；如仍要提交，验证 `dp.round1.cc` 并提交同一份 sitemap。
 
-`robots.txt` 除 `User-agent: *` 外，还显式声明并放行检索、用户触发与训练类生成式引擎抓取器（包括 `GPTBot`、`OAI-SearchBot`、`ChatGPT-User`、`ClaudeBot`、`Claude-User`、`Claude-SearchBot`、`PerplexityBot`、`Perplexity-User`、`Google-Extended`、`Applebot-Extended`、`CCBot`、`Bytespider`、`Amazonbot` 与 `meta-externalagent`）。当前已批准的公开内容策略固定为 `ai-train=yes, search=yes, ai-input=yes`。
+`robots.txt` 除 `User-agent: *` 外，只显式放行检索类与用户触发类生成式引擎抓取器（`OAI-SearchBot`、`ChatGPT-User`、`Claude-User`、`Claude-SearchBot`、`PerplexityBot`、`Perplexity-User`）。训练类抓取器交给 Cloudflare 托管 robots.txt 的 `Disallow`，仓内不再对它们表态。当前已批准的公开内容策略是 `search=yes, ai-train=no, ai-input=yes`。
 
-★ **上线实测发现：Cloudflare 在边缘往 robots.txt 里注入了一段托管内容，与仓库这份直接冲突，尚未解决。**
-
-`curl https://dp.round1.cc/robots.txt` 返回的正文里，仓库那份之前多出一整段 `# BEGIN Cloudflare Managed content`：
+★ **AI 抓取策略的权威是边缘，仓内与它同向。** round1.cc 开着 Cloudflare 的托管 robots.txt，开关在 **AI Crawl Control → 概览 / 信号 → 「托管 robots.txt」**（旧文档写的 Security → Settings → Bot traffic 是同一设置的旧入口）。它会把一段托管内容合并到仓内这份的**前面**：
 
 ```
+# BEGIN Cloudflare Managed content
 User-agent: *
 Content-Signal: search=yes,ai-train=no,use=reference
 Allow: /
@@ -275,14 +274,17 @@ Allow: /
 User-agent: GPTBot
 Disallow: /
 （ClaudeBot / CCBot / Google-Extended / Applebot-Extended / Bytespider /
-  Amazonbot / meta-externalagent 同样 Disallow）
+  Amazonbot / meta-externalagent / CloudflareBrowserRenderingCrawler 同样 Disallow）
+# END Cloudflare Managed Content
 ```
 
-也就是说 **Cloudflare 的 AI Crawl Control 正在 `Disallow` 仓库这份明确 `Allow` 的同一批抓取器**，并且用 `Content-Signal` 声明了 `ai-train=no`。同一个 user-agent 出现在两个组里，各家抓取器的合并与优先级实现并不一致，靠「后面的 Allow 覆盖前面的 Disallow」是不可靠的。
+⚠ 这个开关是 **zone 级（round1.cc）而不是 hostname 级**：AI Crawl Control 的「信号」页把 `dp.round1.cc` 与 `luogusp.round1.cc` 都列为「Cloudflare 托管」。动它之前先确认 LuoguSP 侧没有反向依赖。
 
-产品立场已经选定，不再保留二选一：发布维护者必须在 Cloudflare Dashboard 关闭该域会注入 no-train/Disallow 的 AI Crawl Control 托管 robots 段，使边缘行为与仓库的允许策略同向。这个控制面变更不由构建或部署代码完成；在它被修改并完成线上冒烟之前，本次代码可以构建，但不能宣称生产策略已完成切换。
+因此仓内 `robots.txt` **不得**再对被托管块 `Disallow` 的那批抓取器写 `Allow: /` —— 同一个 user-agent 落进两个组时，各家抓取器的合并与优先级实现并不一致，靠「后面的 Allow 覆盖前面的 Disallow」是不可靠的。`site/src/lib/discovery.ts` 的 `AI_CRAWLERS` 只保留托管块未点名的检索类与用户触发类，`site/scripts/seo-contract.test.mjs` 用正反两组断言锁这条边界（正组必须出现、反组必须不出现）。
 
-线上验收必须同时检查：最终 `robots.txt` 不含 `ai-train=no` 或同一抓取器的冲突 `Disallow`；HTML 与 Markdown 响应都保留 `Content-Signal: ai-train=yes, search=yes, ai-input=yes`。若任一项被 Cloudflare 重写，停止搜索平台提交并先修正控制面。
+`ai-input` 托管块未声明。按 Content Signals 规范「未声明＝既不授予也不限制」，所以仓内保留 `ai-input=yes` 不与边缘冲突。
+
+线上验收必须同时检查：被托管块 `Disallow` 的抓取器不出现在仓内 `Allow` 组中；HTML 与 Markdown 响应都带 `Content-Signal: search=yes, ai-train=no, ai-input=yes`。任一项对不上，停止搜索平台提交并先查控制面。
 
 同时确认以下文件可匿名访问且返回 200：
 
