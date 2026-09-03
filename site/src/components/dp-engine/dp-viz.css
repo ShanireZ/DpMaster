@@ -25,6 +25,7 @@
 .dp-corner, .dp-colh, .dp-rowh {
   display: grid; place-items: center;
   font-family: var(--font-mono); font-size: 12px; color: var(--text-3);
+  -webkit-user-select: none;
   user-select: none;
 }
 .dp-colh { border-bottom: 1px solid var(--border); }

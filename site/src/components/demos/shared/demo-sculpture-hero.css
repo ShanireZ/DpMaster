@@ -8,6 +8,7 @@
   overflow: hidden;
   isolation: isolate;
   pointer-events: none;
+  -webkit-user-select: none;
   user-select: none;
   contain: layout paint style;
 }

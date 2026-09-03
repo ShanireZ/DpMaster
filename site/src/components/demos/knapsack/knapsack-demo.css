@@ -21,6 +21,7 @@
     linear-gradient(0deg, transparent 49.8%, color-mix(in srgb, var(--text-3) 5%, transparent) 50%, transparent 50.2%);
   background-size: 72px 72px;
   content: '';
+  -webkit-mask-image: linear-gradient(90deg, transparent 6%, #000 36%, #000 84%, transparent);
   mask-image: linear-gradient(90deg, transparent 6%, #000 36%, #000 84%, transparent);
   pointer-events: none;
 }
@@ -33,6 +34,7 @@
   object-fit: contain;
   object-position: center;
   filter: drop-shadow(0 15px 24px color-mix(in srgb, var(--accent-1) 12%, transparent));
+  -webkit-user-select: none;
   user-select: none;
 }
 

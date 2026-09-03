@@ -340,6 +340,7 @@
   font-weight: 700;
   line-height: 1;
   -webkit-text-stroke: 1px color-mix(in srgb, var(--family-color) 13%, transparent);
+  -webkit-user-select: none;
   user-select: none;
 }
 
@@ -440,6 +441,7 @@
   .home--gsap .state-atlas--draggable {
     cursor: grab;
     touch-action: pan-y;
+    -webkit-user-select: none;
     user-select: none;
     -webkit-user-drag: none;
   }

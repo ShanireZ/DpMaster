@@ -25,6 +25,7 @@
   max-width: none;
   height: auto;
   pointer-events: none;
+  -webkit-user-select: none;
   user-select: none;
   transform-origin: top left;
 }
