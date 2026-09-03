@@ -315,7 +315,9 @@
 .viz-state-mark[data-viz-role='source'] { --state-color: var(--viz-source); }
 .viz-state-mark[data-viz-role='current'] { --state-color: var(--viz-current); }
 .viz-state-mark[data-viz-role='chosen'] { --state-color: var(--viz-chosen); }
-.viz-state-mark[data-viz-role='settled'] { --state-color: var(--viz-settled); }
+/* settled 是唯一的中性 role，用常规次要文字色 —— --viz-settled 太淡，做文字读不出来。
+   它仍然承担这个状态的斜纹与描边（非文本），只是不再当字色。 */
+.viz-state-mark[data-viz-role='settled'] { --state-color: var(--text-2); }
 .viz-state-mark[data-viz-role='invalid'] { --state-color: var(--viz-invalid); }
 
 .viz-state-mark__symbol {

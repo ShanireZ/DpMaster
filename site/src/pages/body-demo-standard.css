@@ -572,7 +572,7 @@
 }
 
 .standard-table td[data-viz-role='settled'] {
-  color: var(--viz-settled);
+  color: var(--text-3);
   background-image: repeating-linear-gradient(135deg, transparent 0 4px, color-mix(in srgb, var(--viz-settled) 11%, transparent) 4px 5px);
 }
 
@@ -785,7 +785,7 @@
   }
 
   .standard-sculpture__mobile li[data-viz-role='settled'] {
-    color: var(--viz-settled);
+    color: var(--text-3);
     background-image: repeating-linear-gradient(135deg, transparent 0 7px, color-mix(in srgb, var(--viz-settled) 9%, transparent) 7px 8px);
   }
 

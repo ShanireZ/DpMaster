@@ -16,7 +16,7 @@
 
   --text-1: #ece7de;
   --text-2: #a7a097;
-  --text-3: #6e685f;
+  --text-3: #8c8479;
   --text-on-accent: #221708;
 
   /* ---------- 品牌主色：蜜金（默认强调 / 首页 / 全局） ---------- */
@@ -106,11 +106,22 @@
 
   --text-1: #1d1812;
   --text-2: #5a5347;
-  --text-3: #8a8276;
+  --text-3: #706960;
 
   --viz-cell: #efeae0;
   --viz-cell-2: #e7e0d3;
   --viz-settled: #a79e90;
+
+  /* 四个状态色同样要加深。它们既做 fill/stroke 也做 color（bitmask-demo.css、
+     plug-contour-demo.css），按最严的用途算门槛就是上面那句的 4.5:1；
+     深色原值直接落在奶油底上只有 1.75~2.35:1。取法与蜜金一致——只压明度，
+     色相与饱和度不动，状态语义（珊瑚/青/绿/陶红）因此保住。 */
+  --viz-current: #a45210;
+  --viz-source: #337280;
+  --viz-chosen: #507331;
+  --viz-invalid: #c63030;
+  --viz-chosen-border: rgba(80, 115, 49, 0.4);
+  --viz-invalid-border: rgba(198, 48, 48, 0.4);
 
   --shadow-2: 0 18px 44px -24px rgba(70, 52, 22, 0.16);
   --shadow-3: 0 36px 90px -30px rgba(70, 52, 22, 0.18);
