@@ -61,7 +61,7 @@ Markdown 响应：
 ```http
 Content-Type: text/markdown; charset=utf-8
 Content-Language: zh-CN
-Content-Signal: ai-train=yes, search=yes, ai-input=yes
+Content-Signal: <该项目已批准的公开内容策略>
 Vary: Accept
 X-Content-Type-Options: nosniff
 ```
@@ -76,7 +76,8 @@ HTML 与 Markdown 均须：
 - Markdown 响应声明 canonical 以及同 URL、`type="text/html"` 的 alternate。
 - `HEAD` 与相应 `GET` 状态码、协商选择及响应头一致，但不返回正文。
 - 条件请求只命中相同表示的 ETag。
-- Content-Signal 的三项允许值只适用于已批准公开内容，不替代认证、授权或 noindex。
+- Content-Signal 只表达对**已批准公开内容**的使用许可，不替代认证、授权或 noindex。具体取值由各项目自己的权威声明，**本文件不规定**。
+- ★ Content-Signal 必须与该域边缘**实际下发**的 `robots.txt` 同向 —— 包括 CDN 托管块注入的 `Content-Signal` 与爬虫 `Disallow`。响应头与 `robots.txt` 各说各话，就是对外发出互相矛盾的声明，而**两边都不会因此变红**：仓内判据看不见边缘注入，边缘也不读仓内声明。同一个 user-agent 同时落进「托管块 Disallow」与「仓内 Allow」两个组时，各家抓取器的合并与优先级实现并不一致，靠「后面的 Allow 覆盖前面的 Disallow」不可靠。
 
 项目主动生成的 Markdown 是权威实现。Cloudflare Markdown for Agents 只允许作为经批准的可关闭加速器，不能成为唯一内容源；其能力和 Content-Signal 语义参考 [Cloudflare 官方说明](https://developers.cloudflare.com/fundamentals/reference/markdown-for-agents/)。
 
