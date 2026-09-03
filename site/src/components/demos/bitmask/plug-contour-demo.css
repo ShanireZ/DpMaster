@@ -247,7 +247,7 @@
     gap: var(--sp-3);
     padding: 0 var(--sp-3) 0 18px;
     border-bottom: 1px solid var(--border);
-    color: var(--viz-settled);
+    color: var(--text-3);
     font-family: var(--font-mono);
   }
 

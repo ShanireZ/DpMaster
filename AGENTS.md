@@ -24,6 +24,14 @@
 - 任何覆盖 Analytics 页面响应的 CSP 都必须在 `script-src` 放行 `https://static.cloudflareinsights.com`，并在 `connect-src` 放行 `'self' https://cloudflareinsights.com`，同时保留站点自身需要的来源。
 - 构建、预渲染、CSP 或部署合同变化时，必须由测试锁住「HTML 数量正确」与「零手工 beacon」这两条。
 
+## Design system
+
+- **Token 权威是 [`site/src/styles/tokens.css`](./site/src/styles/tokens.css) 本身**；方向（Warm Ink）与主题机制写在该文件头部注释，改它之前先读那段。[`docs/design/visual-system.md`](./docs/design/visual-system.md) 是 OKF 导航层**不是权威** —— 冲突以 tokens.css 为准，并把 docs 那一处一并改掉。
+- ★ **判据是 [`site/scripts/design-token-contract.test.mjs`](./site/scripts/design-token-contract.test.mjs)**（在 `pnpm test` 里）：锁「每处 `var(--x)` 都有定义」与「深色有的颜色 token 浅色也要有」，各带一条反证。⚠ **白名单每条必须写清谁在 CSS 之外设置它** —— 写不出来的不是豁免，是缺陷。浅色豁免名单**当前为空**，加一条就得说明凭什么复用深色值。
+- ★★ **对比度也归这道门**：做 `color:` 的 token 必须登记，按 AA 4.5:1 对它**实际落地的表面**（`--viz-cell-2` 不算，那上面的文字是 `--text-1`）在**两个主题**下核算；新增文字色不登记就红。★ **债务清单当前为空且数量钉死** —— 想登记一条来消红会被另一条断言拦住，只能把颜色改够、或让它不再做字色（`--viz-settled` 走的是后一条）。
+- ⚠ 仍不判**不走 token 的硬编码色值**。
+- 改变视觉方向属于「必须带对比证据弹窗确认」那一类（见下面 Change rules），**不得静默代替 owner 拍板**。
+
 ## Commands
 
 所有包管理命令从 `site/` 执行。运行时基线以 `site/.node-version` 与 `site/package.json` 为准（`site/pnpm-workspace.yaml` 强制 Node 引擎，版本不符即红）。Node 与 pnpm **都是全局安装、不经 Corepack**，见 [`../Init_essential.md`](../Init_essential.md)。不得混用 npm、yarn 或 bun。
