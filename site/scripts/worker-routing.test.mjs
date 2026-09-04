@@ -59,7 +59,7 @@ test('a public route can negotiate its internal Markdown representation', async 
   assert.equal(await response.text(), '# 背包 DP\n')
 })
 
-test('HTML exposes a weak validator that survives edge content encoding', async () => {
+test('the Worker preserves representation validators before edge transforms', async () => {
   const env = {
     ASSETS: {
       fetch: async (request) => {
@@ -84,7 +84,7 @@ test('HTML exposes a weak validator that survives edge content encoding', async 
     env,
   )
 
-  assert.equal(html.headers.get('ETag'), 'W/"html-etag"')
+  assert.equal(html.headers.get('ETag'), '"html-etag"')
   assert.equal(markdown.headers.get('ETag'), '"markdown-etag"')
 })
 
