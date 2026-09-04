@@ -69,6 +69,11 @@ function localMarkdownLinks(path, source) {
 
 function assertLocalLinks(path, source) {
   for (const link of localMarkdownLinks(path, source)) {
+    const projectRelative = relative(projectDir, link.resolved).split('\\').join('/')
+    assert.ok(
+      projectRelative !== '..' && !projectRelative.startsWith('../'),
+      `${relative(projectDir, path)} links outside the repository to ${link.raw}`,
+    )
     assert.ok(
       existsSync(link.resolved),
       `${relative(projectDir, path)} links to missing ${link.raw}`,
