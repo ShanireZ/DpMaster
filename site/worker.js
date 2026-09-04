@@ -41,11 +41,6 @@ function representationResponse(asset, url, representation, includeBody) {
       `<${canonical}>; rel="canonical", <${canonical}>; rel="alternate"; type="text/html"`,
     )
   } else {
-    // Static Assets exposes a strong validator, but Cloudflare may encode HTML on
-    // the way out. A weak validator remains valid across that byte transformation
-    // and is therefore not stripped at the edge.
-    const etag = headers.get('ETag')
-    if (etag && !etag.startsWith('W/')) headers.set('ETag', `W/${etag}`)
     headers.set('Link', `<${canonical}>; rel="alternate"; type="text/markdown"`)
   }
   return new Response(includeBody ? asset.body : null, { status: asset.status, headers })

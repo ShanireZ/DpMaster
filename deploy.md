@@ -161,7 +161,7 @@ curl.exe -i https://dp.round1.cc/part/a/01 -H "Accept: application/json"
 curl.exe -i https://dp.round1.cc/_representations/markdown/part/a/01.md
 ```
 
-依次应看到 Markdown 200、HTML 200、无正文的 Markdown HEAD 200、406，以及内部路径 404。两种 200 都必须带 `Vary: Accept`、表示专属 ETag、alternate `Link` 和 `Content-Signal: search=yes, ai-train=no, ai-input=yes`；HTML ETag 必须是弱 validator（Cloudflare 内容编码不会移除它），Markdown 保留独立的静态资产 ETag，并另带 `Content-Type: text/markdown; charset=utf-8`、`Content-Language: zh-CN` 与 canonical `Link`。
+依次应看到 Markdown 200、HTML 200、无正文的 Markdown HEAD 200、406，以及内部路径 404。两种 200 都必须带 `Vary: Accept`、alternate `Link` 和 `Content-Signal: search=yes, ai-train=no, ai-input=yes`；Markdown 还必须带独立的静态资产 ETag、`Content-Type: text/markdown; charset=utf-8`、`Content-Language: zh-CN` 与 canonical `Link`。HTML 在 Worker 内保留其资产 ETag，但 Cloudflare 会向最终响应注入 Web Analytics 与 JavaScript Detections；[JSD 注入会移除 HTML ETag](https://developers.cloudflare.com/cloudflare-challenges/challenge-types/javascript-detections/#if-you-have-etags)，所以客户端看不到 HTML ETag 是当前边缘合同，不得为制造 304 关闭既定注入。
 
 目录名 `DpMaster`、GitHub 仓库 `ShanireZ/DpMaster` 与 Worker 名 `dpmaster` 都是历史标识符，域名迁移不改动它们。
 
