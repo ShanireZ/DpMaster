@@ -59,6 +59,35 @@ test('a public route can negotiate its internal Markdown representation', async 
   assert.equal(await response.text(), '# 背包 DP\n')
 })
 
+test('HTML exposes a weak validator that survives edge content encoding', async () => {
+  const env = {
+    ASSETS: {
+      fetch: async (request) => {
+        const markdown = new URL(request.url).pathname.startsWith(
+          '/_representations/markdown/',
+        )
+        return new Response(markdown ? '# 背包 DP\n' : '<main>背包 DP</main>', {
+          headers: {
+            ETag: markdown ? '"markdown-etag"' : '"html-etag"',
+          },
+        })
+      },
+    },
+  }
+
+  const html = await worker.fetch(
+    new Request(`${ORIGIN}/part/a`, { headers: { Accept: 'text/html' } }),
+    env,
+  )
+  const markdown = await worker.fetch(
+    new Request(`${ORIGIN}/part/a`, { headers: { Accept: 'text/markdown' } }),
+    env,
+  )
+
+  assert.equal(html.headers.get('ETag'), 'W/"html-etag"')
+  assert.equal(markdown.headers.get('ETag'), '"markdown-etag"')
+})
+
 test('public route HTTP responses apply the approved Accept selection matrix', async () => {
   const vectors = [
     [null, '/part/a', 200],
