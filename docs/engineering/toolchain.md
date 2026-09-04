@@ -16,13 +16,13 @@ sources:
 
 # Runtime and package authority
 
-`site/` is the only package root. `.node-version` fixes the current Node 26 patch, `package.json` fixes pnpm 11 through `packageManager` and `devEngines`, and `pnpm-lock.yaml` is the reproducible dependency graph used by CI.
+`site/` is the only package root. `.node-version` fixes the current Node 26 patch, `package.json` fixes pnpm 12 through `packageManager` and `devEngines`, and `pnpm-lock.yaml` is the reproducible dependency graph used by CI.
 
-All package commands use pnpm through Corepack. npm, yarn, and bun are not alternative project workflows. Direct dependencies use a caret range whose lower bound is the current stable mainline version eligible under the release-age policy.
+Node and pnpm are installed globally through pnpm's standalone runtime flow; this workspace does not use Corepack. npm, yarn, and bun are not alternative project workflows. Direct dependencies use a caret range whose lower bound is the current stable mainline version eligible under the release-age policy.
 
 # Supply-chain policy
 
-`pnpm-workspace.yaml` is the pnpm 11 settings authority:
+`pnpm-workspace.yaml` is the package-root settings authority:
 
 * New package releases are quarantined for 1,440 minutes and missing publication times fail resolution.
 * Node engine checks are strict.
