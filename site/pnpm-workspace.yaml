@@ -3,8 +3,8 @@ minimumReleaseAgeIgnoreMissingTime: false
 minimumReleaseAgeStrict: true
 # 运行基线。`site/.node-version` 必须同值 —— CI 的两个 workflow 都用
 # `node-version-file: site/.node-version` 取它，本地则由这里强制相等。
-# 2026-08-15 全工作区从 Node 24 抬到 26.7.0，开发机的 Node 改由 pnpm 管理。
-nodeVersion: 26.7.0
+# 2026-08-15 全工作区从 Node 24 抬到 26；2026-09-04 跟进 26.8.1 补丁线。
+nodeVersion: 26.8.1
 engineStrict: true
 verifyDepsBeforeRun: error
 allowBuilds:

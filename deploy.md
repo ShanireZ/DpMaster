@@ -33,9 +33,8 @@ pnpm deploy:cf
 
 ```bash
 # 1. 安装（Windows 默认 shell；gh 也可用 winget install --id GitHub.cli）
-pnpm add -g wrangler
+pnpm add -g wrangler @cnbcool/cnb-cli
 winget install --id GitHub.cli   # 已装则跳过
-# cnb 见下方「cnb 的两条安装渠道」——本机用的是原生二进制，不要再用 npm 装一遍
 
 # 2. 登录（均为一次性 OAuth，凭证缓存在用户目录，各项目共用）
 wrangler login
@@ -47,20 +46,19 @@ gh auth login
 
 ```bash
 wrangler --version && wrangler whoami
-cnb status
+git -C .. ls-remote --heads cnb refs/heads/main
 gh auth status
 ```
 
-> **cnb 的两条安装渠道，只能选一条。** 官方文档给的是 `npm install -g @cnbcool/cnb-cli`（npm 上现为 1.13.0）或 Docker 镜像 `cnbcool/cnb-cli`；**本机实际用的是原生二进制** `~/.cnb/bin/cnb.exe`（`cnb --version` 报 1.11.1），由 `%USERPROFILE%\.cnb\bin` 上 PATH。
-> ★ 两条渠道会互相遮蔽：User PATH 里 `%PNPM_HOME%\bin` 排在 `%USERPROFILE%\.cnb\bin` **之前**，所以一旦再用 npm/pnpm 全局装一份，它会盖住原生那份，且版本不同。工作区所有 `cnb.cool` 推送依赖的 credential helper 路径写的是 `$HOME/.cnb/bin/cnb`（见根 `AGENTS.md`），因此**保持原生这一条**，不要 npm 装。
+`cnb status` 未登录也可能返回成功，因此不作为 Git 凭据判据；上面的 `ls-remote` 会从带 `cnb` remote 的仓库上下文走已配置的 credential helper。
+
+> **cnb 只保留 pnpm 全局安装这一条渠道。** 不要再安装 `~/.cnb/bin/cnb.exe` 原生副本；两份并存会被 PATH 静默遮蔽，且行为不同。工作区 Git credential helper 使用 PATH 形式的 `!cnb git-credential`，完整验证方法见根 `AGENTS.md` 与 `../Init_essential.md` §4.3。
 
 全局 CLI 升级：
 
 ```bash
-pnpm add -g wrangler      # gh 用 winget upgrade --id GitHub.cli
+pnpm add -g wrangler @cnbcool/cnb-cli  # gh 用 winget upgrade --id GitHub.cli
 ```
-
-`cnb` 无自更新子命令；原生二进制按 CNB 官方渠道重新下载覆盖 `~/.cnb/bin/cnb.exe` 即可，升级后 `cnb status` 应仍是已登录（token 在 `~/.cnb/token`，与二进制分离）。
 
 升级后把下方“全局 CLI 基线”表中的版本号同步为实际安装版本，并在本仓库跑一次 `pnpm verify` 确认部署链路不受影响。
 
@@ -70,13 +68,13 @@ pnpm add -g wrangler      # gh 用 winget upgrade --id GitHub.cli
 
 | CLI | 当前基线 |
 | --- | --- |
-| wrangler | 4.125.0 |
+| wrangler | 4.128.0 |
 
 ## 部署前准备
 
 需要准备：
 
-- Node.js 26.7.0 与 pnpm 12.0.0-rc.6，均为**全局安装**（见 [`../Init_essential.md`](../Init_essential.md)）。仓库使用 `pnpm-lock.yaml` 锁版，版本权威是 `site/.node-version`、`site/package.json` 和 `site/pnpm-workspace.yaml`。
+- Node.js 26.8.1 与 pnpm 12.3.1，均为**全局安装**（见 [`../Init_essential.md`](../Init_essential.md)）。仓库使用 `pnpm-lock.yaml` 锁版，版本权威是 `site/.node-version`、`site/package.json` 和 `site/pnpm-workspace.yaml`。
 - 已完成“全局 CLI 准备”：`wrangler`、`gh`、`cnb` 全局安装并登录。
 - Cloudflare 账号，已允许 Wrangler 发布 Workers，且 `round1.cc` zone 在该账号下。
 - 如果需要站内反馈，先读完“反馈与告警送达”一节——当前这条链路是断的。

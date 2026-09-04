@@ -43,9 +43,8 @@ test('the package root pins one Node version consistently across all four declar
 test('the package root pins one pnpm version consistently', () => {
   const pnpmVersion = packageJson.packageManager.replace(/^pnpm@/, '')
 
-  // 允许预发布后缀：2026-08-17 全工作区钉到 12.0.0-rc.6，因为 pnpm 12 还没有正式版
-  // （registry 的 latest 仍是 11.22.0，12.x 只有 rc 串）。12 GA 之后版本会自然回到
-  // 三段式，这条正则不必再动 —— 它守的是形态，不是某个具体版本。
+  // 允许预发布后缀：版本线偶尔会在稳定版前先验证 rc，三处仍必须保持同值。
+  // GA 版本自然使用三段式；这条正则守的是形态，不是某个具体版本。
   assert.match(pnpmVersion, /^\d+\.\d+\.\d+(?:-[0-9A-Za-z.-]+)?$/)
   assert.equal(packageJson.devEngines.packageManager.name, 'pnpm')
   assert.equal(packageJson.devEngines.packageManager.version, pnpmVersion)
