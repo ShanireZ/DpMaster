@@ -1,6 +1,6 @@
 # 2026-09-02 · 装「type-aware 覆盖面」这道门
 
-> **本文是计划，不是完成报告。下面清单一项都还没勾。**
+> **本文原为计划，已于 2026-09-04 执行并完成验收；清单按新鲜证据勾选。**
 > 测量由 workspace-e2（Claude 会话）于 2026-09-02 16:20–17:00 只读完成，
 > **该会话未对本仓做任何写入**（本文件除外）。执行留给接手者。
 > 同一形态已在 BetAI（`b0e73af`）与 BetaPass（`990c443`）落地，两份都做过撤掉即红的反证。
@@ -57,28 +57,28 @@ oxlint --type-aware --ignore-pattern '.storybook/**'   → 442 文件 / 75 错 /
 并进 node 档 → DOM 类型对整档可见；并进 app 档 → `dom` 泄漏进 `src/**`。
 ⇒ 浏览器测试必须**自成一个 project**。
 
-- [ ] 新增 `site/tsconfig.scripts.json`
+- [x] 新增 `site/tsconfig.scripts.json`
       —— `"allowJs": true`、**不开 `checkJs`**（目的是把 `.mjs`/`.js` 收进 Program
       供 oxlint 用，不是让 tsc 检查它们）；`types: ["node"]`；
       include：`scripts` 下的 `.mjs`、`worker` 下的 `.js`、`worker.js`、
       `baseline-targets.ts`、`vitest.config.ts`
-- [ ] 新增 `site/tsconfig.browser-tests.json`
+- [x] 新增 `site/tsconfig.browser-tests.json`
       —— include：`tests/browser` 下的 `.ts`、`playwright.config.ts`；`lib` 含 DOM
       ⚠ **这 11 个 `.ts` 会被 tsc 真检查**（不像 `.mjs`），大概率要修几处，
       **这是本次工作量的主要来源**
-- [ ] 两者挂进 `site/tsconfig.json` 的 `references`
-- [ ] 探针复算：**程序外 = 0**
+- [x] 两者挂进 `site/tsconfig.json` 的 `references`
+- [x] 探针复算：**程序外 = 0**
 
 ## 4. 门本身：抄 BetaPass 那份，改三处
 
 源：`../BetaPass/test/lint-type-aware-coverage.test.ts`（该仓 `990c443`）。
 
-- [ ] 移植测试文件（放 `scripts/*.test.mjs` 还是 vitest 那套按本仓惯例定；
+- [x] 移植测试文件（放 `scripts/*.test.mjs` 还是 vitest 那套按本仓惯例定；
       放进前者的话它自己也要进 §3 第一个 project 的 include）
-- [ ] 改动一：**不传任何旗标**跑 `oxlint --debug=files`
+- [x] 改动一：**不传任何旗标**跑 `oxlint --debug=files`
       —— 本仓靠配置开 type-aware，传旗标会问出一份**不属于 `pnpm lint`** 的清单
-- [ ] 改动二：**程序集取并集** —— 读根 `--showConfig` 的 `references`，逐个 `-p` 再并
-- [ ] 改动三：★★★ **子项目的 `files` 相对它自己所在目录解析**，不是相对仓根
+- [x] 改动二：**程序集取并集** —— 读根 `--showConfig` 的 `references`，逐个 `-p` 再并
+- [x] 改动三：★★★ **子项目的 `files` 相对它自己所在目录解析**，不是相对仓根
 
 ⚠ 改动三是实收教训：按仓根解析会得到一批不存在的绝对路径，
 症状是**程序集数字变大了、差集却一个都没减少** —— 「加了东西却没生效」最难看出来的形态。
@@ -86,10 +86,10 @@ oxlint --type-aware --ignore-pattern '.storybook/**'   → 442 文件 / 75 错 /
 
 ## 5. 验收（缺一不可）
 
-- [ ] 探针：程序外 = 0
-- [ ] `pnpm verify` 十步全绿
-- [ ] **反证**：撤掉 `allowJs` 或任一条 include，门当场红并逐个点名
-- [ ] ★★★ **另跑探针法**：临时放一个必然违反 `typescript/no-deprecated` 的文件
+- [x] 探针：程序外 = 0
+- [x] `pnpm verify` 十步全绿
+- [x] **反证**：撤掉 `allowJs` 或任一条 include，门当场红并逐个点名
+- [x] ★★★ **另跑探针法**：临时放一个必然违反 `typescript/no-deprecated` 的文件
       （例：声明一个 `@deprecated` 函数并调用它），确认 `pnpm lint` 当场红，删掉即消失
 
 ⚠ 第四条不可省，两个理由：
@@ -120,9 +120,30 @@ oxlint --type-aware --ignore-pattern '.storybook/**'   → 442 文件 / 75 错 /
 ★★ 失效形态是测试报 **「no tests」**，而**「no tests」与「测试全过」在 CI 摘要里长得很像**
 —— 尤其那个文件是新增的、没人知道它本该有几个用例时。
 
-## 7. 本次没做什么
+## 7. 2026-09-02 测量会话没做什么
 
 - ⛔ **未改本仓任何配置或代码**（本文件除外）。`tsconfig` 三份、`.oxlintrc.json` 一字未动。
 - 未提交、未推送本仓其它任何改动；工作树上那 7 个文件不是 workspace-e2 的。
 - 停手理由：本仓当时有另一个（Codex）agent 在作业，它不在 Claude 的会话清单里
   ⇒ **既发不出消息，也收不到它的「我正在写」**。★ 协调不了的并发，唯一安全的操作是只读。
+
+## 8. 2026-09-04 执行证据与后续边界
+
+- 覆盖门落在 `site/scripts/lint-type-aware-coverage.test.mjs`；最终探针为
+  `walked=394, program=394, outside=0`。
+- `tsconfig.scripts.json` 额外使用 TypeScript 的 `noCheck`：这份 project 只负责为
+  oxlint 建 Program、由 tsc 守关键解析错误，不因脚本导入课程 catalog 而把 DOM/JSX
+  环境反向引进 Node 档；其中两个 TS 配置根仍由 `tsconfig.node.json` 真检查。
+  实际 type-aware 活性由下一条反证独立证明。
+- 浏览器 project 真检查出 `tests/browser/web-vitals.spec.ts` 的 layout-shift 记录形状
+  少声明 `at` / `spacers` / `scrollY`，已补为完整 `ShiftRecord`，未改变运行时行为。
+- 临时移除 `worker.js` include 后，门报告
+  `walked=394, program=393, outside=1` 并逐名指出 `site/worker.js`；恢复后重新全绿。
+- 在 `src/` 与 `scripts/` 各放一个临时 `@deprecated` 调用时，真正的 `pnpm lint`
+  同时报出两条 `typescript(no-deprecated)` 并退出 1；删除探针后 lint 恢复退出 0。
+- 使用仓库锁定的 Node 26.7.0 与 pnpm 12.0.0-rc.6，沙箱外完整运行 `pnpm verify`：
+  Node 341/341（0 skip）、Vitest 65/65、Playwright 56/56，余下构建/HTML/资产门均通过。
+  沙箱内 Firefox/WebKit 无法创建子进程，浏览器日志确认发生在执行站点代码之前；
+  同一命令移出受限进程环境后通过。
+- 本 task 未执行 commit、push、部署、Cloudflare 或搜索平台写入。后续外部退出与 wave 2
+  仍回到 GitHub issue #6；执行前须以当前 `main` 合同复核其带日期的旧描述。

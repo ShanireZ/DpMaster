@@ -12,15 +12,23 @@ import { expect, test, type Page } from '@playwright/test'
  * 所以这套只能跑在 Playwright 里，不能挪进 jsdom 单测。
  */
 
+interface ShiftRecord {
+  value: number
+  at: number
+  spacers: number
+  scrollY: number
+  sources: string[]
+}
+
 interface ShiftReport {
   cls: number
-  worst: Array<{ value: number; sources: string[] }>
+  worst: ShiftRecord[]
 }
 
 /** 安装 layout-shift 观察器；返回一个取当前累计值的函数。 */
 async function trackLayoutShift(page: Page) {
   await page.evaluate(() => {
-    const w = window as unknown as { __dpShifts?: Array<{ value: number; sources: string[] }> }
+    const w = window as unknown as { __dpShifts?: ShiftRecord[] }
     w.__dpShifts = []
     const describe = (node: Node | null) => {
       const el = node as Element | null
@@ -53,7 +61,7 @@ async function trackLayoutShift(page: Page) {
 
 async function readLayoutShift(page: Page): Promise<ShiftReport> {
   return page.evaluate(() => {
-    const w = window as unknown as { __dpShifts?: Array<{ value: number; sources: string[] }> }
+    const w = window as unknown as { __dpShifts?: ShiftRecord[] }
     const shifts = w.__dpShifts ?? []
     return {
       cls: shifts.reduce((total, s) => total + s.value, 0),

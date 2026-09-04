@@ -1,0 +1,34 @@
+{
+  "compilerOptions": {
+    "tsBuildInfoFile": "./node_modules/.tmp/tsconfig.scripts.tsbuildinfo",
+    "target": "es2023",
+    "lib": ["ES2023"],
+    "types": ["node"],
+    // This project supplies a Program to oxlint; tsc only guards parse-level validity.
+    "allowJs": true,
+    "checkJs": false,
+    "noCheck": true,
+    "skipLibCheck": true,
+
+    /* Bundler and script modules */
+    "module": "esnext",
+    "moduleResolution": "bundler",
+    "allowImportingTsExtensions": true,
+    "verbatimModuleSyntax": true,
+    "moduleDetection": "force",
+    "noEmit": true,
+
+    /* Linting */
+    "noUnusedLocals": true,
+    "noUnusedParameters": true,
+    "erasableSyntaxOnly": true,
+    "noFallthroughCasesInSwitch": true
+  },
+  "include": [
+    "scripts/**/*.mjs",
+    "worker/**/*.js",
+    "worker.js",
+    "baseline-targets.ts",
+    "vitest.config.ts"
+  ]
+}
