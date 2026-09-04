@@ -60,6 +60,7 @@ pnpm verify
 
 ## Toolchain and compatibility
 
+- ★ `site/scripts/lint-type-aware-coverage.test.mjs` 锁 oxlint 走查集 ⊆ 根 solution 的 Program 并集。Node 脚本进 `tsconfig.scripts.json`（`allowJs` + `noCheck`、无 DOM），Playwright 进 `tsconfig.browser-tests.json`（含 DOM、真检查）。红时补 project，禁止改 `ignorePatterns`；改 lint/tsconfig 后须用 `typescript/no-deprecated` 临时探针验活。
 - Web Platform Baseline：`runtime: public-web`、`featureTarget: newly`；生产构建由 `site/baseline-targets.ts` 显式冻结为 Vite 8 的 Widely 目标，`baseline widely available with downstream` 只用于能力审查，不会被误写成 Vite 自动消费的构建配置。
 - `pnpm baseline:check` 校验四大桌面引擎、iOS 与 downstream、批准版本快照及 `vite.config.ts build.target` 接线；它是 `pnpm verify` 的第一道门。Baseline 六字段以及 Modern Web Guidance、sitemap、Markdown 内容协商的当前声明统一维护在 `site/baseline.config.json`。
 - 已批准公开页面同时提供 HTML 与 `text/markdown` 表示，策略 `search=yes, ai-train=no, ai-input=yes`。★ **AI 抓取策略的权威是边缘**：round1.cc 开着 Cloudflare 托管 robots.txt（**zone 级**，`luogusp.round1.cc` 同受影响），仓内声明必须与它同向 —— `robots.txt` 不得对被它 `Disallow` 的抓取器写 `Allow`。Worker 必须按 `Accept` 协商、合并 `Vary: Accept`、隔离表示 ETag/缓存键并隐藏 `/_representations/`。
