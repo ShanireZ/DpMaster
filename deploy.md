@@ -74,7 +74,7 @@ pnpm add -g wrangler @cnbcool/cnb-cli  # gh 用 winget upgrade --id GitHub.cli
 
 需要准备：
 
-- Node.js 26.8.1 与 pnpm 12.6.0，均为**全局安装**（见 [`../Init_essential.md`](../Init_essential.md)）。仓库使用 `pnpm-lock.yaml` 锁版，版本权威是 `site/.node-version`、`site/package.json` 和 `site/pnpm-workspace.yaml`。
+- Node.js 26.10.0 与 pnpm 12.6.0，均为**全局安装**（见 [`../Init_essential.md`](../Init_essential.md)）。仓库使用 `pnpm-lock.yaml` 锁版，版本权威是 `site/.node-version`、`site/package.json` 和 `site/pnpm-workspace.yaml`。
 - 已完成“全局 CLI 准备”：`wrangler`、`gh`、`cnb` 全局安装并登录。
 - Cloudflare 账号，已允许 Wrangler 发布 Workers，且 `round1.cc` zone 在该账号下。
 - 如果需要站内反馈，先读完“反馈与告警送达”一节——当前这条链路是断的。
