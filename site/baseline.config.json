@@ -15,15 +15,15 @@
   },
   "requiredBrowsers": ["chrome", "edge", "firefox", "safari", "ios_saf"],
   "approvedMinimums": {
-    "chrome": 121,
-    "edge": 121,
-    "firefox": 123,
-    "safari": 17.2,
-    "ios_saf": 17.2,
+    "chrome": 123,
+    "edge": 123,
+    "firefox": 124,
+    "safari": 17.4,
+    "ios_saf": 17.4,
     "android": 151,
     "and_chr": 151,
     "and_ff": 153,
-    "samsung": 25
+    "samsung": 27
   },
   "negativeQuery": "baseline newly available",
   "criticalFallback": "Newly 能力必须渐进增强；课程正文、导航、题目索引和反馈入口在不支持时仍须可用。",
@@ -106,7 +106,7 @@
     ]
   },
   "snapshot": {
-    "approvedAt": "2026-08-24",
+    "approvedAt": "2026-09-26",
     "browserslist": "4.28.8",
     "vite": "8.2.2",
     "baselineBrowserMapping": "2.11.17",
