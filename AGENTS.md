@@ -1,6 +1,6 @@
 # AGENTS.md — DP大师
 
-> 继承 [`../AGENTS.md`](../AGENTS.md) 与 [`../Docs/dev_guide.md`](../Docs/dev_guide.md)；勿假定自动加载。
+> 继承 [`../AGENTS.md`](../AGENTS.md)；勿假定自动加载。
 
 ## 项目与权威
 

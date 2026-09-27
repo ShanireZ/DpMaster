@@ -139,5 +139,5 @@ verification: 构建检查 + Chromium/Firefox/WebKit 自动化 + RUM 复核
 - 公网项目至少覆盖 Chromium、Firefox 和 WebKit/Safari 等价环境的关键路径验证。
 - 用户脚本在实际目标页面中验证；受控环境项目在实际部署浏览器中验证。
 - Baseline 不负责业务功能降级、运行时 Web API polyfill 或测试覆盖；这些必须由项目分别落实。
-- ★ **不要在本文件登记任何技能版本号**：那类值必然过期且不会红。Modern Web Guidance 的加载时机写在工作区的 `Docs/dev_guide.md` 环节 4，版本从当时安装的技能现读。
+- ★ **不要在本文件登记任何技能版本号**：那类值必然过期且不会红。Modern Web Guidance 的使用时机写在工作区根 `AGENTS.md`「工作方式 · 实现」，版本从当时安装的技能现读。
 - 后续实施必须先读取对应项目的 `AGENTS.md` 和权威文档，并尊重项目当前脏工作树及发布约束。
