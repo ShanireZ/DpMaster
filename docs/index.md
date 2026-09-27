@@ -38,9 +38,9 @@ This directory is the canonical, current-truth OKF bundle for DP大师. It conta
 
 # Agent Conventions
 
-`agents/` records **how tooling uses this repository** (where issues live, where to find domain docs, which engineering skills are installed, and this bundle's own maintenance contract) rather than product knowledge. The authority on project-level agent constraints is always [`AGENTS.md`](../AGENTS.md); this directory only carries the details it references.
+`agents/` records **how tooling uses this repository** (where issues live, how triage labels map, where to find domain docs) rather than product knowledge; the workspace rules and the OKF maintenance contract are kept once at the workspace root and only pointed to from the index. The authority on project-level agent constraints is always [`AGENTS.md`](../AGENTS.md); this directory only carries the details it references.
 
-* [Agent Configuration](/agents/index.md) - entry point for five conventions: issue tracker and Wayfinder rules, triage-label mapping, domain-doc layout (`CONTEXT.md` / ADRs, silently skipped when absent), engineering-skill orchestration, and the OKF v0.2 maintenance contract this bundle follows.
+* [Agent Configuration](/agents/index.md) - entry point for three conventions: issue tracker and Wayfinder rules, triage-label mapping, domain-doc layout (`CONTEXT.md` / ADRs, silently skipped when absent), plus pointers to the workspace rules and the OKF v0.2 maintenance contract this bundle follows.
 
 # Web 治理
 
