@@ -50,7 +50,7 @@ test('a public route can negotiate its internal Markdown representation', async 
   assert.equal(response.headers.get('Content-Language'), 'zh-CN')
   assert.equal(
     response.headers.get('Content-Signal'),
-    'search=yes, ai-train=no, ai-input=yes',
+    'search=yes, ai-train=yes, ai-input=yes',
   )
   assert.equal(response.headers.get('Vary'), 'Accept')
   assert.equal(response.headers.get('Cache-Control'), 'public, max-age=0, must-revalidate')
@@ -142,7 +142,7 @@ test('public route HTTP responses apply the approved Accept selection matrix', a
       )
       assert.equal(
         get.headers.get('Content-Signal'),
-        'search=yes, ai-train=no, ai-input=yes',
+        'search=yes, ai-train=yes, ai-input=yes',
         label,
       )
     }

@@ -179,8 +179,8 @@ test('discovery files expose the 47 approved URLs and real summaries', async () 
   assert.match(robots, /User-agent:\s*\*/)
   assert.match(robots, /Allow:\s*\//)
   assert.match(robots, /Sitemap: https:\/\/dp\.round1\.cc\/sitemap\.xml/)
-  // GEO：已批准公开内容允许检索、引用与模型输入，不允许训练。仓内只对 Cloudflare 托管
-  // robots.txt 未点名的检索类与用户触发类抓取器表态。
+  // GEO：已批准公开内容允许检索、引用、模型输入与训练。检索类、用户触发类与训练类
+  // 抓取器都显式放行，仓内 robots.txt 是唯一权威，不得出现任何 Disallow。
   for (const agent of [
     'OAI-SearchBot',
     'ChatGPT-User',
@@ -188,12 +188,6 @@ test('discovery files expose the 47 approved URLs and real summaries', async () 
     'Claude-SearchBot',
     'PerplexityBot',
     'Perplexity-User',
-  ]) {
-    assert.ok(robots.includes(`User-agent: ${agent}` + NEWLINE), agent)
-  }
-  // 反证方向：训练类抓取器已被托管块 Disallow，仓内再 Allow 就是同一个 UA 落进两个组，
-  // 各家抓取器的合并与优先级实现并不一致。这一组必须不出现。
-  for (const agent of [
     'GPTBot',
     'ClaudeBot',
     'Google-Extended',
@@ -203,8 +197,9 @@ test('discovery files expose the 47 approved URLs and real summaries', async () 
     'Amazonbot',
     'meta-externalagent',
   ]) {
-    assert.ok(!robots.includes(`User-agent: ${agent}` + NEWLINE), agent)
+    assert.ok(robots.includes(`User-agent: ${agent}` + NEWLINE), agent)
   }
+  assert.doesNotMatch(robots, /^Disallow:/m)
 
   assert.equal(routeSummaries.routes.length, 47)
   assert.equal(routeSummaries.brand, 'DP大师')
@@ -222,7 +217,7 @@ test('discovery files expose the 47 approved URLs and real summaries', async () 
   assert.match(llms, /^## 使用说明$/m)
   assert.equal((llms.match(/^## /gm) || []).length, 2 + PARTS.length)
   assert.match(llms, /无账号、无登录、无付费墙/)
-  assert.match(llms, /search=yes, ai-train=no, ai-input=yes/)
+  assert.match(llms, /search=yes, ai-train=yes, ai-input=yes/)
   assert.match(llms, /同一 URL 请求 `text\/markdown`/)
 
   assert.match(generator, /\.\.\/src\/lib\/publicRoutes\.ts/)
@@ -314,7 +309,7 @@ test('deployment verification documents the single-origin negotiation exit gate'
     'Vary: Accept',
     '/_representations/',
     'Content-Signal',
-    'search=yes, ai-train=no, ai-input=yes',
+    'search=yes, ai-train=yes, ai-input=yes',
   ]) {
     assert.ok(verification.includes(contract), contract)
   }

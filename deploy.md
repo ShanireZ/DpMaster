@@ -161,7 +161,7 @@ curl.exe -i https://dp.round1.cc/part/a/01 -H "Accept: application/json"
 curl.exe -i https://dp.round1.cc/_representations/markdown/part/a/01.md
 ```
 
-依次应看到 Markdown 200、HTML 200、无正文的 Markdown HEAD 200、406，以及内部路径 404。两种 200 都必须带 `Vary: Accept`、alternate `Link` 和 `Content-Signal: search=yes, ai-train=no, ai-input=yes`；Markdown 还必须带独立的静态资产 ETag、`Content-Type: text/markdown; charset=utf-8`、`Content-Language: zh-CN` 与 canonical `Link`。HTML 在 Worker 内保留其资产 ETag，但 Cloudflare 会向最终响应注入 Web Analytics 与 JavaScript Detections；[JSD 注入会移除 HTML ETag](https://developers.cloudflare.com/cloudflare-challenges/challenge-types/javascript-detections/#if-you-have-etags)，所以客户端看不到 HTML ETag 是当前边缘合同，不得为制造 304 关闭既定注入。
+依次应看到 Markdown 200、HTML 200、无正文的 Markdown HEAD 200、406，以及内部路径 404。两种 200 都必须带 `Vary: Accept`、alternate `Link` 和 `Content-Signal: search=yes, ai-train=yes, ai-input=yes`；Markdown 还必须带独立的静态资产 ETag、`Content-Type: text/markdown; charset=utf-8`、`Content-Language: zh-CN` 与 canonical `Link`。HTML 在 Worker 内保留其资产 ETag，但 Cloudflare 会向最终响应注入 Web Analytics 与 JavaScript Detections；[JSD 注入会移除 HTML ETag](https://developers.cloudflare.com/cloudflare-challenges/challenge-types/javascript-detections/#if-you-have-etags)，所以客户端看不到 HTML ETag 是当前边缘合同，不得为制造 304 关闭既定注入。
 
 目录名 `DpMaster`、GitHub 仓库 `ShanireZ/DpMaster` 与 Worker 名 `dpmaster` 都是历史标识符，域名迁移不改动它们。
 
@@ -259,9 +259,9 @@ wrangler tail dpmaster
 2. Bing Webmaster Tools：验证新站点并提交 sitemap；可从 Search Console 导入。
 3. 百度搜索资源平台：站点已迁到境外托管，收录预期本就有限；如仍要提交，验证 `dp.round1.cc` 并提交同一份 sitemap。
 
-`robots.txt` 除 `User-agent: *` 外，只显式放行检索类与用户触发类生成式引擎抓取器（`OAI-SearchBot`、`ChatGPT-User`、`Claude-User`、`Claude-SearchBot`、`PerplexityBot`、`Perplexity-User`）。训练类抓取器交给 Cloudflare 托管 robots.txt 的 `Disallow`，仓内不再对它们表态。当前已批准的公开内容策略是 `search=yes, ai-train=no, ai-input=yes`。
+`robots.txt` 除 `User-agent: *` 外，显式放行检索类、用户触发类与训练类生成式引擎抓取器（`GPTBot`、`OAI-SearchBot`、`ChatGPT-User`、`ClaudeBot`、`PerplexityBot`、`Perplexity-User`、`Claude-User`、`Claude-SearchBot`、`Google-Extended`、`Applebot-Extended`、`CCBot`、`Bytespider`、`Amazonbot`、`meta-externalagent`），不写任何 `Disallow`。当前已批准的公开内容策略是 `search=yes, ai-train=yes, ai-input=yes`。
 
-★ **AI 抓取策略的权威是边缘，仓内与它同向。** round1.cc 开着 Cloudflare 的托管 robots.txt，开关在 **AI Crawl Control → 概览 / 信号 → 「托管 robots.txt」**（旧文档写的 Security → Settings → Bot traffic 是同一设置的旧入口）。它会把一段托管内容合并到仓内这份的**前面**：
+★ **AI 抓取策略的权威是仓内这份 `robots.txt` 与 `Content-Signal` 头，round1.cc 的 Cloudflare 托管 robots.txt 必须保持关闭。** 开关在 **AI Crawl Control → 概览 / 信号 → 「托管 robots.txt」**（旧入口是 Security → Settings → Bot traffic）。2026-10-11 线上复核时托管块已不存在。一旦重新打开，它会把下面这段合并到仓内这份的**前面**，与本站策略直接冲突：
 
 ```
 # BEGIN Cloudflare Managed content
@@ -276,13 +276,13 @@ Disallow: /
 # END Cloudflare Managed Content
 ```
 
-⚠ 这个开关是 **zone 级（round1.cc）而不是 hostname 级**：AI Crawl Control 的「信号」页把 `dp.round1.cc` 与 `luogusp.round1.cc` 都列为「Cloudflare 托管」。动它之前先确认 LuoguSP 侧没有反向依赖。
+⚠ 这个开关是 **zone 级（round1.cc）而不是 hostname 级**，同时作用于 `luogusp.round1.cc`。重新打开会改变本站的 AI 抓取策略，动它之前须两个主机名的 owner 都同意。同一个 user-agent 落进托管 `Disallow` 与仓内 `Allow` 两个组时，各家抓取器的合并与优先级实现并不一致，不能指望「后面的 Allow 覆盖前面的 Disallow」。
 
-因此仓内 `robots.txt` **不得**再对被托管块 `Disallow` 的那批抓取器写 `Allow: /` —— 同一个 user-agent 落进两个组时，各家抓取器的合并与优先级实现并不一致，靠「后面的 Allow 覆盖前面的 Disallow」是不可靠的。`site/src/lib/discovery.ts` 的 `AI_CRAWLERS` 只保留托管块未点名的检索类与用户触发类，`site/scripts/seo-contract.test.mjs` 用正反两组断言锁这条边界（正组必须出现、反组必须不出现）。
+托管 robots.txt 只是声明；AI Crawl Control 对单个抓取器设的「阻止」属于请求层拦截，robots 放行也无效。发布后在控制台确认训练类抓取器没有被设为阻止。
 
-`ai-input` 托管块未声明。按 Content Signals 规范「未声明＝既不授予也不限制」，所以仓内保留 `ai-input=yes` 不与边缘冲突。
+`site/src/lib/discovery.ts` 的 `AI_CRAWLERS` 是显式放行名单，`site/scripts/seo-contract.test.mjs` 锁住名单逐个出现、生成的 `robots.txt` 不含 `Disallow`。
 
-线上验收必须同时检查：被托管块 `Disallow` 的抓取器不出现在仓内 `Allow` 组中；HTML 与 Markdown 响应都带 `Content-Signal: search=yes, ai-train=no, ai-input=yes`。任一项对不上，停止搜索平台提交并先查控制面。
+线上验收必须同时检查：最终 `robots.txt` 不含 `# BEGIN Cloudflare Managed content` 托管块、不含任何 `Disallow`；HTML 与 Markdown 响应都带 `Content-Signal: search=yes, ai-train=yes, ai-input=yes`。任一项对不上，停止搜索平台提交并先查控制面。
 
 同时确认以下文件可匿名访问且返回 200：
 

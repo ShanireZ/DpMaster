@@ -95,7 +95,7 @@
     "contentLanguage": "zh-CN",
     "contentSignal": {
       "search": "yes",
-      "ai-train": "no",
+      "ai-train": "yes",
       "ai-input": "yes"
     },
     "notApplicableReason": null,

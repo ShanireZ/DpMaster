@@ -72,12 +72,10 @@ export function validateWebGovernancePolicy(policy) {
   }
   if (
     markdown?.contentSignal?.search !== 'yes'
-    || markdown?.contentSignal?.['ai-train'] !== 'no'
+    || markdown?.contentSignal?.['ai-train'] !== 'yes'
     || markdown?.contentSignal?.['ai-input'] !== 'yes'
   ) {
-    errors.push(
-      'markdownNegotiation.contentSignal must match the edge policy: search and ai-input allowed, ai-train refused',
-    )
+    errors.push('markdownNegotiation.contentSignal must allow approved public content uses')
   }
   if (markdown?.notApplicableReason !== null) {
     errors.push('enabled Markdown negotiation must have a null notApplicableReason')
