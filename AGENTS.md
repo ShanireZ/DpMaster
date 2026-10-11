@@ -38,7 +38,7 @@
 - 投递经 `site/worker/socket-fetch.js`：**fetch 优先，仅 52x 或抛错才 socket 降级**；其他 4xx/5xx 不重试。socket 不能直连 Cloudflare IP，不得反转顺序。
 - relay 协议及测试保留；`site/worker/feedback-core.js` 也是 relay 主机参考实现，勿因未使用删除。
 - `POST /api/_diag/egress` 仅配置 `EGRESS_DIAG_SECRET` 时存在；删除 secret 后仍须重新部署才关闭，secret 按版本绑定。
-- 公开页提供 HTML/`text/markdown`，策略见 `site/baseline.config.json`。AI 抓取以边缘为权威：round1.cc 的托管 robots 是 zone 级（含 luogusp.round1.cc），仓内不得对边缘 Disallow 的抓取器写 Allow。HTML 边缘注入移除 ETag，不得为消红关闭注入。
+- 公开页提供 HTML/`text/markdown`，策略见 `site/baseline.config.json`。AI 抓取以仓内 `robots.txt` 与 `Content-Signal` 为权威（允许训练）；round1.cc 的 Cloudflare 托管 robots 是 zone 级（含 luogusp.round1.cc），须保持关闭。HTML 边缘注入移除 ETag，不得为消红关闭注入。
 
 ## 视觉与工具链
 

@@ -1,12 +1,11 @@
 /**
- * 权威在边缘：round1.cc 开着 Cloudflare 托管 robots.txt，它对全域声明
- * `search=yes,ai-train=no,use=reference`，本仓的响应头必须与它同向。
- * ai-input 托管块未点名，按 Content Signals 规范「未声明＝既不授予也不限制」，
- * 所以这里保留明确授予，不构成冲突。字段顺序即 header 顺序。
+ * 已批准公开内容允许检索、模型输入与训练。权威在仓内：round1.cc 的 Cloudflare
+ * 托管 robots.txt 必须保持关闭，否则它会在边缘注入 `ai-train=no` 与训练类
+ * `Disallow`，与这里冲突。字段顺序即 header 顺序。
  */
 export const PUBLIC_CONTENT_SIGNAL = Object.freeze({
   search: 'yes',
-  'ai-train': 'no',
+  'ai-train': 'yes',
   'ai-input': 'yes',
 })
 

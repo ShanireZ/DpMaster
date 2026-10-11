@@ -29,7 +29,7 @@ const COMPLETE_POLICY = Object.freeze({
     source: 'local prerendered semantic HTML',
     mediaType: 'text/markdown; charset=utf-8',
     contentLanguage: 'zh-CN',
-    contentSignal: { search: 'yes', 'ai-train': 'no', 'ai-input': 'yes' },
+    contentSignal: { search: 'yes', 'ai-train': 'yes', 'ai-input': 'yes' },
     notApplicableReason: null,
     verification: ['pnpm test'],
   },
