@@ -8,6 +8,9 @@ export const ASSET_BUDGET = Object.freeze({
   css: 80_000,
 })
 
+// 构建只发布 woff2：Baseline 目标浏览器全部支持，旧格式只会占预算、不会被下载。
+const LEGACY_FONT_EXTENSIONS = new Set(['.woff', '.ttf', '.otf', '.eot'])
+
 function filesUnder(root) {
   const files = []
   for (const entry of readdirSync(root, { withFileTypes: true })) {
@@ -31,6 +34,9 @@ export function checkAssets(root, budget = ASSET_BUDGET) {
   const errors = []
   if (total > budget.total) errors.push(`Total output ${format(total)} exceeds ${format(budget.total)} bytes`)
   for (const file of files) {
+    if (LEGACY_FONT_EXTENSIONS.has(extname(file.path).toLowerCase())) {
+      errors.push(`${file.path} is a legacy font format; only woff2 is published`)
+    }
     const limit = extname(file.path).toLowerCase() === '.css' ? budget.css : budget.file
     if (file.bytes > limit) {
       errors.push(`${file.path} is oversized: ${format(file.bytes)} > ${format(limit)} bytes`)

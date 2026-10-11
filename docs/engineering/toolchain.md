@@ -47,6 +47,8 @@ Dependency upgrades are independent tasks. `pnpm maintenance:check` compares the
 
 Shiki is deliberately fixed at 4.3.1: 4.4.3 increased the lazily loaded C++ grammar chunk from about 733 KB to 869 KB and broke both the per-file and total asset budgets. The maintenance checker treats this as an explicit approved pin, not as silent drift; remove it only after a smaller upstream release or a verified split-loading design passes `pnpm verify`.
 
+Fonts are published as woff2 only. KaTeX and fontsource stylesheets list woff2, woff, and TrueType sources for every `@font-face`; every Baseline target browser uses woff2, so the legacy files were never downloaded yet consumed about 925 KB of the asset budget. The `woff2OnlyFonts` Vite plugin in `site/woff2-fonts.ts` rewrites each `src` to its woff2 entries before Vite resolves assets and fails the build when a face has no woff2 source. `scripts/check-assets.mjs` rejects any `.woff`, `.ttf`, `.otf`, or `.eot` in `dist/assets`, and the `@cross-browser` font test confirms that all three engines load KaTeX and UI fonts from woff2 without requesting another format.
+
 The scheduled GitHub workflow maintains one rolling issue for drift. It does not edit source, create upgrade pull requests, or deploy. Pull requests and main-branch pushes run CI only.
 
 `pnpm release` is the sole complete production-release entry point. It runs the full verification gate once, reuses the resulting `dist/` artifact, and deploys the Cloudflare Worker. Production credentials stay local to the Wrangler CLI; GitHub Actions never receives them.

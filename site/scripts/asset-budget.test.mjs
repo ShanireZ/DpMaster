@@ -31,6 +31,23 @@ test('asset checker accepts output within every budget', (t) => {
   assert.equal(result.status, 0, result.stderr || result.stdout)
 })
 
+test('asset checker rejects legacy font formats: only woff2 is published', (t) => {
+  for (const extension of ['woff', 'ttf', 'otf', 'eot']) {
+    const root = fixture('font', 1024)
+    t.after(() => rmSync(root, { recursive: true, force: true }))
+    writeFileSync(join(root, 'assets', `KaTeX_Main-Regular.${extension}`), Buffer.alloc(16))
+
+    const result = run(root)
+    assert.notEqual(result.status, 0, extension)
+    assert.match(result.stderr + result.stdout, /legacy font/i, extension)
+  }
+
+  const root = fixture('woff2', 1024)
+  t.after(() => rmSync(root, { recursive: true, force: true }))
+  writeFileSync(join(root, 'assets', 'KaTeX_Main-Regular.woff2'), Buffer.alloc(16))
+  assert.equal(run(root).status, 0)
+})
+
 test('asset checker rejects an oversized file', (t) => {
   const root = fixture('oversized', 760001)
   t.after(() => rmSync(root, { recursive: true, force: true }))
