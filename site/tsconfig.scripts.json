@@ -29,6 +29,7 @@
     "worker/**/*.js",
     "worker.js",
     "baseline-targets.ts",
+    "woff2-fonts.ts",
     "vitest.config.ts"
   ]
 }

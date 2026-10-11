@@ -19,5 +19,5 @@
     "erasableSyntaxOnly": true,
     "noFallthroughCasesInSwitch": true
   },
-  "include": ["vite.config.ts", "vitest.config.ts", "baseline-targets.ts"]
+  "include": ["vite.config.ts", "vitest.config.ts", "baseline-targets.ts", "woff2-fonts.ts"]
 }
