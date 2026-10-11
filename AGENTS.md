@@ -10,6 +10,7 @@
 - `site/src/data/catalog.ts` 统一课程身份、顺序、正文与家族游戏 lazy import，勿另建 registry；正文按课独立分包，游戏也须 lazy-load。
 - 题目以 `ExampleCard` / `Exercise` 为准；`site/src/data/problems.ts` 是生成文件，不手改。题目变化跑 `pnpm content:generate`，提交生成物并同步 README/OKF 数量。
 - `site/src/lib/publicRoutes.ts` 的 `PUBLIC_PATHS` 是公开 URL、sitemap、预渲染、同 URL Markdown 协商的唯一集合；内部标本、未知路由不得公开。
+- Web 治理的退出门是 [`ShanireZ/DpMaster#6`](https://github.com/ShanireZ/DpMaster/issues/6)。
 - 部署与反馈操作读 [`deploy.md`](deploy.md)；Web 合同读 [`docs/web-contracts.md`](docs/web-contracts.md)，Baseline 读 [`docs/web-baseline.md`](docs/web-baseline.md)。核心路由、语料、部署标识变化同步对应文档与测试。
 
 ## 命令与验收
