@@ -33,7 +33,7 @@ status: stable
 - 不使用构建时间伪造 `lastmod`。
 - 不生成无依据的 `changefreq` 或 `priority`。
 - URL 集为空时 `/sitemap.xml` 返回 404 或不存在，`robots.txt` 不声明它；禁止发布空 `<urlset>`。
-- `robots.txt` 的最终线上版本由 Cloudflare 管理，项目仓保存期望契约和可验证源数据，PubEnv 负责保证边缘结果一致。
+- `robots.txt` 的最终线上版本由 Cloudflare 管理，项目仓保存期望契约和可验证源数据。
 - Sitemap 协议与 Google 的提交规范以 [sitemaps.org](https://www.sitemaps.org/protocol.html) 和 [Google Search Central](https://developers.google.com/search/docs/crawling-indexing/sitemaps/build-sitemap) 为准。
 
 ## 2. 同 URL Markdown 内容协商
