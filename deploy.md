@@ -70,6 +70,10 @@ pnpm add -g wrangler @cnbcool/cnb-cli  # gh 用 winget upgrade --id GitHub.cli
 | --- | --- |
 | wrangler | 4.128.0 |
 
+## Baseline 設定複核
+
+2026-10-17，owner 核准：「核准最低 125；RUM 未取得如實記錄，不宣稱已複核流量」。`site/baseline.config.json` 僅將 Firefox 的批准最低版本由 124 更新為 125，並記錄本次設定複核日期；既有能力審查查詢、Vite 顯式語法目標、其他瀏覽器批准值與工具鏈快照保持。**尚未取得 RUM，不宣稱已複核流量或完成實機驗收。** `site/scripts/baseline-browser-review.test.mjs` 執行原守衛正向檢查，並以舊批准值 124 的隔離副本證明前移仍會被拒絕。需要撤回時只還原這兩個設定值和本次測試／複核登記，原守衛應重新報紅。
+
 ## 部署前準備
 
 需要準備：
