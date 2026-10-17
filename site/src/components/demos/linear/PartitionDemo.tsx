@@ -35,9 +35,9 @@ function Stepper({
 }
 
 /**
- * 整数划分二维计数演示：dp[i][j] =「把 i 拆成每个数不超过 j 的方案数」，
- * 逐格由 dp[i][j-1]（不用 j）+ dp[i-j][j]（至少用一个 j）累加而来。
- * 被拆的数 N ≤ 8（网格 (N+1)×(N+1)，避免过大）。答案在右下角 dp[N][N]。
+ * 整數劃分二維計數演示：dp[i][j] =「把 i 拆成每個數不超過 j 的方案數」，
+ * 逐格由 dp[i][j-1]（不用 j）+ dp[i-j][j]（至少用一個 j）累加而來。
+ * 被拆的數 N ≤ 8（網格 (N+1)×(N+1)，避免過大）。答案在右下角 dp[N][N]。
  */
 export default function PartitionDemo() {
   const [n, setN] = useState(5)

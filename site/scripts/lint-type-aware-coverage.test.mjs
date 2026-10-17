@@ -5,13 +5,13 @@ import { dirname, resolve } from 'node:path'
 import test from 'node:test'
 
 /**
- * oxlint 走查到的每一个文件，都必须落在本仓某一个 TypeScript Program 里。
+ * oxlint 走查到的每一個檔案，都必須落在本儲存庫某一個 TypeScript Program 裡。
  *
- * type-aware lint 遇到程序外文件时可能整趟静默放弃，表现仍是零诊断和成功退出。
- * 因此本门直接锁住静默失效的前提，而不是把「lint 退出 0」误当作充分证据。
+ * type-aware lint 遇到處理程序外檔案時可能整趟靜默放棄，表現仍是零診斷和成功退出。
+ * 因此本門直接鎖住靜默失效的前提，而不是把「lint 退出 0」誤當作充分證據。
  *
- * 根 tsconfig 是 solution 配置；子项目的 files 必须相对各自配置目录解析。
- * 新增走查文件时，应把它纳入环境匹配的子项目，而不是加入 oxlint 忽略清单。
+ * 根 tsconfig 是 solution 設定；子專案的 files 必須相對各自設定目錄解析。
+ * 新增走查檔案時，應把它納入環境匹配的子專案，而不是加入 oxlint 忽略清單。
  */
 
 const ROOT = resolve(import.meta.dirname, '..')

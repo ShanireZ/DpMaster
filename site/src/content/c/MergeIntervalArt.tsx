@@ -1,6 +1,6 @@
-// C5 合并 / 删除类区间 DP 讲解用插图（on-brand SVG，随强调色变色）。
+// C5 合併 / 刪除類區間 DP 講解用插圖（on-brand SVG，隨強調色變色）。
 
-// 图 1：一排数字，两个玩家只能从「最左」或「最右」端拿走一个数。
+// 圖 1：一排數字，兩個玩家只能從「最左」或「最右」端拿走一個數。
 export function TakeEndsSetupFigure() {
   const a = [3, 9, 1, 2]
   const bw = 70
@@ -37,10 +37,10 @@ export function TakeEndsSetupFigure() {
           </g>
         )
       })}
-      {/* 左端箭头 */}
+      {/* 左端箭頭 */}
       <path d={`M ${lx} 44 C ${x0 - 30} 8, ${x0 - 60} 40, ${x0 - 60} 90`} fill="none" stroke="var(--accent-2)" strokeWidth="2" markerEnd="url(#mi-ar)" />
       <text x={x0 - 66} y="112" textAnchor="middle" fontSize="12" fill="var(--text-2)">取左端</text>
-      {/* 右端箭头 */}
+      {/* 右端箭頭 */}
       <path d={`M ${rx} 44 C ${rx + 30} 8, ${rx + 60} 40, ${rx + 60} 90`} fill="none" stroke="var(--accent-2)" strokeWidth="2" markerEnd="url(#mi-ar)" />
       <text x={rx + 60} y="112" textAnchor="middle" fontSize="12" fill="var(--text-2)">取右端</text>
       <text x="320" y="150" textAnchor="middle" fontSize="12.5" fill="var(--text-2)">
@@ -50,7 +50,7 @@ export function TakeEndsSetupFigure() {
   )
 }
 
-// 图 2：dp[l][r] 的两端收缩转移——取左端接子问题 [l+1,r]，取右端接 [l,r-1]，对手净胜差取反。
+// 圖 2：dp[l][r] 的兩端收縮轉移——取左端接子問題 [l+1,r]，取右端接 [l,r-1]，對手淨勝差取反。
 export function ShrinkTransitionFigure() {
   return (
     <svg viewBox="0 0 640 274" role="img" aria-label="两端取数的转移：取左或取右，子区间收缩一格">
@@ -95,7 +95,7 @@ export function ShrinkTransitionFigure() {
   )
 }
 
-// 图 3：248 的相邻相等合并——两个 2 并成一个 3；两段先各自缩成同一数，才能再并一级。
+// 圖 3：248 的相鄰相等合併——兩個 2 併成一個 3；兩段先各自縮成同一數，才能再並一級。
 export function Merge248Figure() {
   const bw = 58
   const bh = 54
@@ -130,7 +130,7 @@ export function Merge248Figure() {
       <text x="326" y="42" textAnchor="middle" fontSize="11" fill="var(--accent-1)">并</text>
       {cell(372, 26, 1, false)}
       {cell(372 + 70, 26, 3, true)}
-      {/* 第二步：1 3 无法合并（不相等） */}
+      {/* 第二步：1 3 無法合併（不相等） */}
       <text x="20" y="150" fontSize="12.5" fill="var(--text-3)">第 2 步</text>
       {cell(96, 124, 1, false)}
       {cell(96 + 70, 124, 3, false)}

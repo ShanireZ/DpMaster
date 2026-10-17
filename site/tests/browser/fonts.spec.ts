@@ -2,8 +2,8 @@ import { expect, test } from '@playwright/test'
 
 const FONT_FILE = /\.(?:woff2?|ttf|otf|eot)(?:[?#]|$)/i
 
-// 构建只发布 woff2（见 woff2-fonts.ts）。三个引擎都要真的把公式字体从 woff2 装上，
-// 并且不去请求任何旧格式字体。
+// 建置只發布 woff2（見 woff2-fonts.ts）。三個引擎都要真的把公式字體從 woff2 裝上，
+// 並且不去請求任何舊格式字體。
 test('@cross-browser formula and UI fonts load from woff2 only', async ({ page }) => {
   const fontRequests: string[] = []
   page.on('request', (request) => {

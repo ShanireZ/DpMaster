@@ -89,14 +89,14 @@ export default function HomeMotionController({ rootRef }: HomeMotionControllerPr
                   start: 'top top',
                   end: () => `+=${distance()}`,
                   pin: true,
-                  // ★ 必须是 transform，不能让 ScrollTrigger 自己选 fixed。
-                  // 这一处曾贡献 CLS 0.46（线上与本地实测一致）：pin 用
-                  // position: fixed 接管时，祖先 .route-stage 带 transform 会
-                  // 破坏 fixed 的包含块，接管那一帧整块跳一下。改走 transform
-                  // 之后实测降到 0.00001。
-                  // 排除过但无效的猜测：anticipatePin（数值一字不差）、
-                  // spacer 插入时机（偏移发生时 spacer 早已存在）、
-                  // topbar--atlas 类切换（只改颜色，无布局属性）。
+                  // ★ 必須是 transform，不能讓 ScrollTrigger 自己選 fixed。
+                  // 這一處曾貢獻 CLS 0.46（線上與本機實測一致）：pin 用
+                  // position: fixed 接管時，祖先 .route-stage 帶 transform 會
+                  // 破壞 fixed 的包含塊，接管那一影格整塊跳一下。改走 transform
+                  // 之後實測降到 0.00001。
+                  // 排除過但無效的猜測：anticipatePin（數值一字不差）、
+                  // spacer 插入時機（偏移發生時 spacer 早已存在）、
+                  // topbar--atlas 類切換（只改顏色，無佈局屬性）。
                   pinType: 'transform',
                   scrub: true,
                   invalidateOnRefresh: true,

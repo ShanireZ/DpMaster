@@ -1,5 +1,5 @@
-// 反馈处理核心 —— Cloudflare Worker 与（可选的）外部 relay 主机共用。
-// 仅依赖 Fetch API 与 Web Crypto；运行时 Adapter 不得复制校验、限流或回执语义。
+// 回饋處理核心 —— Cloudflare Worker 與（可選的）外部 relay 主機共用。
+// 僅依賴 Fetch API 與 Web Crypto；執行環境 Adapter 不得複製檢核、限流或回執語義。
 import {
   applyCors,
   clip,
@@ -41,9 +41,9 @@ const defaultLog = (entry) => console.log('[feedback]', JSON.stringify(entry))
 const defaultErrorLog = (entry) => console.error('[feedback]', JSON.stringify(entry))
 
 function sourceFromRequest(request) {
-  // Cloudflare Worker 里 cf-connecting-ip 由平台保证注入并覆盖，可信。
-  // x-real-ip / x-forwarded-for 只作为非 Cloudflare 部署（外部 relay 主机）的
-  // 兜底，客户端可伪造；relay 会用 x-dp-client-ip 携带经密钥认证的真实 IP。
+  // Cloudflare Worker 裡 cf-connecting-ip 由平台保證注入並覆蓋，可信。
+  // x-real-ip / x-forwarded-for 只作為非 Cloudflare 部署（外部 relay 主機）的
+  // 備援，用戶端可偽造；relay 會用 x-dp-client-ip 攜帶經金鑰認證的真實 IP。
   const forwarded = request.headers.get('cf-connecting-ip')
     || request.headers.get('x-real-ip')
     || request.headers.get('x-forwarded-for')?.split(',')[0]?.trim()
@@ -51,14 +51,14 @@ function sourceFromRequest(request) {
 }
 
 /**
- * 从 Cloudflare 的 `request.cf` 取粗粒度地理位置，用来给反馈里的 IP 加注解。
+ * 從 Cloudflare 的 `request.cf` 取粗粒度地理位置，用來給回饋裡的 IP 加註解。
  *
- * 用平台字段而不是第三方 IP 库：`request.cf` 由 Cloudflare 边缘填充，客户端
- * 伪造不了，也不需要额外出站请求。国家码经 Intl.DisplayNames 转成中文；
- * 城市与一级行政区是 Cloudflare 给的英文原文，不做翻译（没有可信的映射表）。
+ * 用平台欄位而不是第三方 IP 庫：`request.cf` 由 Cloudflare 邊緣填充，用戶端
+ * 偽造不了，也不需要額外出站請求。國家碼經 Intl.DisplayNames 轉成中文；
+ * 城市與一級行政區是 Cloudflare 給的英文原文，不做翻譯（沒有可信的映射表）。
  *
- * ★ 经 relay 转发时必须返回空：那时 `request.cf` 描述的是 relay 主机的位置，
- * 不是访客的，标上去就是错的。
+ * ★ 經 relay 轉發時必須回傳空：那時 `request.cf` 描述的是 relay 主機的位置，
+ * 不是訪客的，標上去就是錯的。
  */
 function geoFromRequest(request, { relayed = false } = {}) {
   if (relayed) return ''
@@ -71,13 +71,13 @@ function geoFromRequest(request, { relayed = false } = {}) {
     try {
       label = new Intl.DisplayNames(['zh'], { type: 'region' }).of(country) || country
     } catch {
-      // 运行时没有对应 ICU 数据时退回两位国家码。
+      // 執行環境沒有對應 ICU 資料時退回兩位國家碼。
     }
     parts.push(label)
   }
   const region = String(cf.region || '').trim()
   const city = String(cf.city || '').trim()
-  // region 与 city 常常重复（例如「Shanghai / Shanghai」），去重后更好读。
+  // region 與 city 常常重複（例如「Shanghai / Shanghai」），去重後更好讀。
   for (const value of [region, city]) {
     if (value && !parts.includes(value)) parts.push(value)
   }
@@ -90,7 +90,7 @@ const RELAY_KIND_HEADER = 'x-dp-relay-kind'
 const RELAY_ALERT_KIND = 'alert'
 const ALERT_TEXT_LIMIT = 1000
 
-/** 恒定时间字符串比较，避免共享密钥被时序侧信道探测。 */
+/** 恆定時間字串比較，避免共享金鑰被時序側信道探測。 */
 function secureEqual(a, b) {
   const bytesA = new TextEncoder().encode(String(a || ''))
   const bytesB = new TextEncoder().encode(String(b || ''))
@@ -101,11 +101,11 @@ function secureEqual(a, b) {
 }
 
 /**
- * 识别来自上游 Worker 的可信转发请求（relay 主机侧使用）。
- * Cloudflare 出口到钉钉的 TLS 被打断，反馈与告警需要经一台能连钉钉的主机中转；
- * 转发请求携带共享密钥（x-dp-relay-secret），只有密钥匹配才视为可信。
- * 返回 { trusted, clientIp }：clientIp 仅在 x-dp-client-ip 为合法 IPv4/IPv6
- * 字面量时给出，否则为 null（调用方回退平台 IP）。
+ * 識別來自上游 Worker 的可信轉發請求（relay 主機側使用）。
+ * Cloudflare 出口到釘釘的 TLS 被打斷，回饋與告警需要經一臺能連釘釘的主機中轉；
+ * 轉發請求攜帶共享金鑰（x-dp-relay-secret），只有金鑰匹配才視為可信。
+ * 回傳 { trusted, clientIp }：clientIp 僅在 x-dp-client-ip 為合法 IPv4/IPv6
+ * 字面值時給出，否則為 null（呼叫方退回平台 IP）。
  */
 function trustedRelay(request, env) {
   const secret = env.FEEDBACK_RELAY_SECRET
@@ -123,7 +123,7 @@ async function forwardRelayFeedback({ relayUrl, secret, clientIp, rawBody, fetch
   return forwardRelay({ relayUrl, secret, clientIp, body: rawBody, fetchImpl })
 }
 
-/** 告警送达：配了 relay 就经 relay 主机中转，否则直连告警机器人。告警失败不得影响主流程。 */
+/** 告警送達：配了 relay 就經 relay 主機中轉，否則直連告警機器人。告警失敗不得影響主流程。 */
 async function deliverAlert({ env, runtime, text }) {
   const relayUrl = env.FEEDBACK_RELAY_URL
   if (relayUrl) {
@@ -165,10 +165,10 @@ async function alertFailure({ env, runtime, requestId, relay, webhook }) {
 }
 
 /**
- * relay 主机侧处理来自上游 Worker 的告警转发（x-dp-relay-kind: alert）：
- * 密钥已由 trustedRelay 验证，这里按转发 IP 限流后转发到 relay 主机自己的
- * ALERT_WEBHOOK_URL（该主机到钉钉可达）。告警分流直接返回，
- * 不会再进入反馈 relay 分支，天然防循环。
+ * relay 主機側處理來自上游 Worker 的告警轉發（x-dp-relay-kind: alert）：
+ * 金鑰已由 trustedRelay 驗證，這裡按轉發 IP 限流後轉發到 relay 主機自己的
+ * ALERT_WEBHOOK_URL（該主機到釘釘可達）。告警分流直接回傳，
+ * 不會再進入回饋 relay 分支，天然防循環。
  */
 async function handleRelayAlert({ env, runtime, data, ip }) {
   const text = data && typeof data === 'object'
@@ -291,10 +291,10 @@ export function createFeedbackLimiter({ limit = DEFAULT_LIMIT, windowMs = DEFAUL
 const defaultLimiter = createFeedbackLimiter()
 
 /**
- * 拼投递到 IM 的消息文本。
- * ★ 诊断信息（浏览器 / 设备 / 视口 / 区域 / UA）是**用户勾选才附带**的，默认不带。
- * 这些行必须在缺省时整行省略，否则绝大多数反馈都会带一串空标签。
- * 规则与 FeedbackWidget 的「复制反馈内容」兜底文本保持一致。
+ * 拼投遞到 IM 的訊息文字。
+ * ★ 診斷資訊（瀏覽器 / 設備 / 視口 / 區域 / UA）是**使用者勾選才附帶**的，預設不帶。
+ * 這些行必須在預設時整行省略，否則絕大多數回饋都會帶一串空標籤。
+ * 規則與 FeedbackWidget 的「複製回饋內容」備援文字保持一致。
  */
 function buildText(data, id) {
   return [
@@ -347,9 +347,9 @@ async function handleFeedbackCore(request, env, runtime) {
     return fail('bad_json', '反馈内容不是有效的 JSON', 400)
   }
 
-  // 告警分流：上游 Worker 的告警也经本端点 relay（x-dp-relay-kind: alert），
-  // 由 relay 主机转发到自己的 ALERT_WEBHOOK_URL。仅在密钥匹配时生效，
-  // 且必须在反馈格式校验之前，因为告警 body（{text}）不是反馈格式。
+  // 告警分流：上游 Worker 的告警也經本端點 relay（x-dp-relay-kind: alert），
+  // 由 relay 主機轉發到自己的 ALERT_WEBHOOK_URL。僅在金鑰匹配時生效，
+  // 且必須在回饋格式檢核之前，因為告警 body（{text}）不是回饋格式。
   const relay = trustedRelay(request, env)
   if (relay && request.headers.get(RELAY_KIND_HEADER) === RELAY_ALERT_KIND) {
     return handleRelayAlert({ env, runtime, data, ip: relay.clientIp || sourceFromRequest(request) })
@@ -379,7 +379,7 @@ async function handleFeedbackCore(request, env, runtime) {
   const kind = env.FEEDBACK_WEBHOOK_KIND || 'wecom'
   const log = runtime.log || defaultLog
   const errorLog = runtime.errorLog || defaultErrorLog
-  // 地区注解跟着 IP 走：经 relay 转发时 request.cf 描述的是 relay 主机，必须省略。
+  // 地區註解跟著 IP 走：經 relay 轉發時 request.cf 描述的是 relay 主機，必須省略。
   const geo = runtime.geo ? runtime.geo(request) : geoFromRequest(request, { relayed: Boolean(relay) })
   const feedback = { ...normalized.value, ip, ...(geo ? { geo } : {}) }
   const receipt = {
@@ -408,8 +408,8 @@ async function handleFeedbackCore(request, env, runtime) {
     )
   }
 
-  // Cloudflare 出口到钉钉 TLS 被打断，配置 relay 时经 relay 主机中转进钉钉。
-  // 已识别为可信转发的请求（secret 匹配）绝不再次转发，防止误配造成转发循环。
+  // Cloudflare 出口到釘釘 TLS 被打斷，設定 relay 時經 relay 主機中轉進釘釘。
+  // 已識別為可信轉發的請求（secret 匹配）絕不再次轉發，防止誤配造成轉發循環。
   if (relayUrl && !relay) {
     let relayed
     try {
@@ -426,7 +426,7 @@ async function handleFeedbackCore(request, env, runtime) {
     try {
       log({ event: 'feedback_relay', requestId: id, relay: { status: relayed.status } })
     } catch {
-      // 首条反馈日志已成功，转发诊断日志失败不改变最终送达判断。
+      // 首條回饋紀錄已成功，轉發診斷紀錄失敗不改變最終送達判斷。
     }
 
     if (relayed.status === 429) {
@@ -466,7 +466,7 @@ async function handleFeedbackCore(request, env, runtime) {
   try {
     log({ event: 'feedback_webhook', requestId: id, webhook })
   } catch {
-    // 首条反馈日志已成功，转发诊断日志失败不改变最终送达判断。
+    // 首條回饋紀錄已成功，轉發診斷紀錄失敗不改變最終送達判斷。
   }
 
   if (webhook.status !== 'forwarded') {

@@ -1,7 +1,7 @@
 import type { HighlighterCore } from 'shiki/core'
 
-// 懒加载单例：shiki 核心 + cpp 语法 + 两个主题 + JS 正则引擎，全部按需动态载入，
-// 不进入首屏 bundle（首页无代码块）。
+// 懶載入單例：shiki 核心 + cpp 語法 + 兩個主題 + JS 正則引擎，全部按需動態載入，
+// 不進入首屏 bundle（首頁無程式碼塊）。
 let hlP: Promise<HighlighterCore> | null = null
 
 export function getHighlighter(): Promise<HighlighterCore> {

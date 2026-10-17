@@ -41,7 +41,7 @@ function Stepper({
   )
 }
 
-/** 二维费用背包演示：dp[费用2][费用1]，逐件更新，高亮 dp[x][y] ← dp[x−a][y−b]+v 的来源。 */
+/** 二維費用揹包演示：dp[費用2][費用1]，逐件更新，高亮 dp[x][y] ← dp[x−a][y−b]+v 的來源。 */
 export default function KnapsackCost2DDemo() {
   const [items, setItems] = useState<C2Item[]>([
     { a: 1, b: 2, v: 3 },

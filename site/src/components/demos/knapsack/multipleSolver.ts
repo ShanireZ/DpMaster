@@ -15,23 +15,23 @@ function settled(vals: (number | null)[][]): Record<string, CellState> {
   return s
 }
 
-/** 一个「打包件」：由 cnt 件原物品捆成，等效重量 w=cnt·w0、价值 v=cnt·v0。 */
+/** 一個「打包件」：由 cnt 件原物品捆成，等效重量 w=cnt·w0、價值 v=cnt·v0。 */
 export type Pack = MultiplePack
 
-/** 把件数上限 m 二进制拆分成若干打包件：1,2,4,…,以及余数。 */
+/** 把件數上限 m 二進位拆分成若干打包件：1,2,4,…,以及餘數。 */
 export function binarySplit(items: MultiItem[]): Pack[] {
   return splitMultipleItems(items)
 }
 
-/** 朴素打包数（Σmᵢ）与二进制打包数（Σ⌈log₂(mᵢ+1)⌉），供工具条对比。 */
+/** 樸素打包數（Σmᵢ）與二進位打包數（Σ⌈log₂(mᵢ+1)⌉），供工具條對比。 */
 export function packCounts(items: MultiItem[]): { naive: number; binary: number } {
   return multiplePackCounts(items)
 }
 
 /**
- * 多重背包 · 二进制拆分 + 一维 01 倒序。
- * 把每种物品拆成若干打包件，每包当一件做 01 背包（倒序，保证一包至多用一次）。
- * 网格为一维（1 行 W+1 列）。
+ * 多重揹包 · 二進位拆分 + 一維 01 倒序。
+ * 把每種物品拆成若干打包件，每包當一件做 01 揹包（倒序，保證一包至多用一次）。
+ * 網格為一維（1 行 W+1 列）。
  */
 export function multipleKnapsack(items: MultiItem[], W: number): VizModel {
   const packs = binarySplit(items)

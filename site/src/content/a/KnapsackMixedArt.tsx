@@ -1,7 +1,7 @@
-// 混合背包讲解用的插图（on-brand SVG，随强调色变色）。
-// 三张：MixedSetupFigure（三类物品同场）、DispatchFigure（件数属性→循环方向分派表）、MixedTraceFigure（同一维 f[j] 分段处理）。
+// 混合揹包講解用的插圖（on-brand SVG，隨強調色變色）。
+// 三張：MixedSetupFigure（三類物品同場）、DispatchFigure（件數屬性→循環方向分派表）、MixedTraceFigure（同一維 f[j] 分段處理）。
 
-/** 三件物品各带件数徽标（×1 / ×∞ / ×m），一起进同一个背包，件数属性各不相同。 */
+/** 三件物品各帶件數徽標（×1 / ×∞ / ×m），一起進同一個揹包，件數屬性各不相同。 */
 export function MixedSetupFigure() {
   const items = [
     { w: 2, v: 3, badge: '×1', tip: '恰一件' },
@@ -44,7 +44,7 @@ export function MixedSetupFigure() {
   )
 }
 
-/** 分派表：三种件数属性各自映射到「循环方向 / 是否拆包」，但落点都是同一套 f[j]=max(f[j],f[j-w]+v)。 */
+/** 分派表：三種件數屬性各自映射到「循環方向 / 是否拆包」，但落點都是同一套 f[j]=max(f[j],f[j-w]+v)。 */
 export function DispatchFigure() {
   const rows = [
     { kind: '01（恰一件）', how: '倒序一遍', note: 'j: W → w', color: 'var(--viz-chosen)' },
@@ -86,12 +86,12 @@ export function DispatchFigure() {
   )
 }
 
-/** 同一维 f[j] 被三段处理：先 01 件倒序、再完全件正序、再多重件拆包倒序，值就地累积。 */
+/** 同一維 f[j] 被三段處理：先 01 件倒序、再完全件正序、再多重件拆包倒序，值就地累積。 */
 export function MixedTraceFigure() {
-  // 例：01(2,3) 倒序 → 完全(3,4) 正序，容量 8 的两段快照（示意值，与讲解手算一致）。
+  // 例：01(2,3) 倒序 → 完全(3,4) 正序，容量 8 的兩段快照（示意值，與講解手算一致）。
   const cols = [0, 1, 2, 3, 4, 5, 6, 7, 8]
-  const rowA = [0, 0, 3, 3, 3, 3, 3, 3, 3] // 处理完 01 件 (2,3)
-  const rowB = [0, 0, 3, 4, 4, 7, 8, 8, 11] // 再处理完 完全件 (3,4)
+  const rowA = [0, 0, 3, 3, 3, 3, 3, 3, 3] // 處理完 01 件 (2,3)
+  const rowB = [0, 0, 3, 4, 4, 7, 8, 8, 11] // 再處理完 完全件 (3,4)
   const x0 = 96
   const cw = 52
   const gap = 4
@@ -105,7 +105,7 @@ export function MixedTraceFigure() {
           j={j}
         </text>
       ))}
-      {/* A 行：01 件处理后 */}
+      {/* A 行：01 件處理後 */}
       <text x="20" y={rowY(0) + ch / 2 + 5} fontSize="11.5" fill="var(--viz-chosen)">01 后</text>
       {cols.map((j) => (
         <g key={`a${j}`} transform={`translate(${cx(j)},${rowY(0)})`}>
@@ -113,7 +113,7 @@ export function MixedTraceFigure() {
           <text x={cw / 2} y={ch / 2 + 6} textAnchor="middle" fontSize="15" className="mono" fill="var(--text-1)">{rowA[j]}</text>
         </g>
       ))}
-      {/* B 行：完全件处理后，变化的格高亮 */}
+      {/* B 行：完全件處理後，變化的格高亮 */}
       <text x="20" y={rowY(1) + ch / 2 + 5} fontSize="11.5" fill="var(--viz-current)">完全后</text>
       {cols.map((j) => {
         const changed = rowB[j] !== rowA[j]

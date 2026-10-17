@@ -1,7 +1,7 @@
 ---
 type: Product Scope
-title: DP大师 Product Scope
-description: User-facing DP大师 scope, routes, learning flow, and explicit exclusions.
+title: DP大師 Product Scope
+description: User-facing DP大師 scope, routes, learning flow, and explicit exclusions.
 tags: [product, routes, scope]
 status: stable
 generated: { by: openai/codex, at: 2026-07-31T15:32:38+08:00 }
@@ -16,7 +16,7 @@ sources:
 
 # Promise
 
-DP大师 teaches dynamic programming through precise explanations, editable visualizations, and small interactive games. The teaching promise is "精讲 + 重交互": explain the state and transition, then let the learner change inputs and watch the DP table, tree, or bitmask state recompute.
+DP大師 teaches dynamic programming through precise explanations, editable visualizations, and small interactive games. The teaching promise is "精講 + 重交互": explain the state and transition, then let the learner change inputs and watch the DP table, tree, or bitmask state recompute.
 
 # Routes
 
@@ -51,16 +51,16 @@ Every type page should provide:
 
 Every family has one registered game:
 
-* A 背包 DP - 装包大师.
-* B 线性 DP - LIS 接龙.
-* C 区间 DP - 合并石子.
-* D 矩阵 DP - 幂次加速器.
-* E 换根 DP - 换根巡礼.
-* F 树形 DP - 舞会邀请.
-* G 状压 DP - 棋盘布阵.
+* A 揹包 DP - 裝包大師.
+* B 線性 DP - LIS 接龍.
+* C 區間 DP - 合併石子.
+* D 矩陣 DP - 冪次加速器.
+* E 換根 DP - 換根巡禮.
+* F 樹形 DP - 舞會邀請.
+* G 狀壓 DP - 棋盤佈陣.
 
 The shared shell supports keyboard navigation with a skip link, explicit current-page state, route announcements, an accessible mobile drawer, visible focus styles, and reduced-motion behavior. Visualization playback uses the same reset/previous/play-pause/next/progress/speed semantics across full and compact layouts.
 
 # Exclusions
 
-DP大师 does not copy full Luogu statements. It uses summaries, teaching commentary, and links to the original problem pages. It does not ship paid or redistribution-prohibited assets.
+DP大師 does not copy full Luogu statements. It uses summaries, teaching commentary, and links to the original problem pages. It does not ship paid or redistribution-prohibited assets.

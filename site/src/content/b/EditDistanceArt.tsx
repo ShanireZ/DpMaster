@@ -1,7 +1,7 @@
-// 编辑距离讲解用的插图（on-brand SVG，随强调色变色；A 线性 DP 部分自动着蓝紫宝石调）。
-// 不引外部图片；不做 opacity:0 起步动画。
+// 編輯距離講解用的插圖（on-brand SVG，隨強調色變色；A 線性 DP 部分自動著藍紫寶石調）。
+// 不引外部圖片；不做 opacity:0 起步動畫。
 
-// ① 引入图：三种基本操作把 "cat" 一步步改写——删 / 插 / 改各一例。
+// ① 引入圖：三種基本操作把 "cat" 一步步改寫——刪 / 插 / 改各一例。
 export function SetupFigure() {
   const rows = [
     { op: '删', from: 'cart', mark: 2, to: 'cat', note: '去掉一个字符 r' },
@@ -67,7 +67,7 @@ export function SetupFigure() {
   )
 }
 
-// ② 转移决策图：dp[i][j] 从上（删）、左（插）、左上（改/匹配）三个邻格取 min。
+// ② 轉移決策圖：dp[i][j] 從上（刪）、左（插）、左上（改/匹配）三個鄰格取 min。
 export function TransitionFigure() {
   const CW = 96
   const CH = 46
@@ -96,7 +96,7 @@ export function TransitionFigure() {
           <path d="M0,0 L6,3 L0,6 Z" fill="var(--viz-current)" />
         </marker>
       </defs>
-      {/* 三条来源箭头（指向右下当前格） */}
+      {/* 三條來源箭頭（指向右下當前格） */}
       <line x1={cxp(0)} y1={gy(0) + CH} x2={cxp(1) - 46} y2={gy(1)} stroke={col('sub')} strokeWidth="2.5" markerEnd="url(#edt-sub)" />
       <line x1={cxp(1)} y1={gy(0) + CH} x2={cxp(1)} y2={gy(1)} stroke={col('del')} strokeWidth="2.5" markerEnd="url(#edt-del)" />
       <line x1={gx(0) + CW} y1={cyp(1)} x2={gx(1)} y2={cyp(1)} stroke={col('ins')} strokeWidth="2.5" markerEnd="url(#edt-ins)" />
@@ -130,7 +130,7 @@ export function TransitionFigure() {
   )
 }
 
-// ③ 带权对照图：普通编辑距离每步恒 +1；带权版把「改」的代价换成两字符的差异度。
+// ③ 帶權對照圖：普通編輯距離每步恆 +1；帶權版把「改」的代價換成兩字元的差異度。
 export function WeightedFigure() {
   const rows = [
     { label: '普通', c1: '删 = 1', c2: '插 = 1', c3: '改 = 1', accent: false },

@@ -35,7 +35,7 @@ function Stepper({
   )
 }
 
-/** 两端取数博弈区间 DP 三角表演示：dp[l][r] 按长度递推，高亮取左 / 取右选中的那个收缩后子区间。 */
+/** 兩端取數博弈區間 DP 三角表演示：dp[l][r] 按長度遞推，高亮取左 / 取右選中的那個收縮後子區間。 */
 export default function MergeIntervalDemo() {
   const [nums, setNums] = useState<number[]>([3, 9, 1, 2])
 

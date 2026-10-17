@@ -1,6 +1,6 @@
-// Cloudflare Worker 入口（wrangler.jsonc 的 "main"）—— 站点唯一的发布目标。
-// 作用：先接住反馈、统计与诊断端点，在公开 GET/HEAD 上协商 HTML/Markdown，
-// 其余请求交回静态资源绑定（含预渲染 HTML 与真实 404）。
+// Cloudflare Worker 入口（wrangler.jsonc 的 "main"）—— 站台唯一的發佈目標。
+// 作用：先接住回饋、統計與診斷端點，在公開 GET/HEAD 上協商 HTML/Markdown，
+// 其餘請求交回靜態資源綁定（含預繪製 HTML 與真實 404）。
 import { handleFeedback } from './worker/feedback-core.js'
 import { handleAnalytics } from './worker/analytics-core.js'
 import { corsDecision, preflightResponse } from './worker/webhook-core.js'
@@ -31,7 +31,7 @@ function representationResponse(asset, url, representation, includeBody) {
   mergeVary(headers, 'Accept')
   headers.set('X-Content-Type-Options', 'nosniff')
   headers.set('Content-Signal', CONTENT_SIGNAL_HEADER)
-  // 页面表示都必须重验证；Markdown 不得因内部 `.md` 扩展名获得比 HTML 更宽的浏览器缓存。
+  // 頁面表示都必須重驗證；Markdown 不得因內部 `.md` 副檔名獲得比 HTML 更寬的瀏覽器快取。
   headers.set('Cache-Control', 'public, max-age=0, must-revalidate')
   if (representation === 'markdown') {
     headers.set('Content-Type', 'text/markdown; charset=utf-8')
@@ -64,8 +64,8 @@ async function negotiatedResponse(request, env, url, representation) {
   return representationResponse(asset, url, representation, request.method !== 'HEAD')
 }
 
-// cloudflare:sockets 只在 Workers 运行时存在；用惰性动态 import，
-// 这样 Node 下的合同测试也能直接 import 本文件。
+// cloudflare:sockets 只在 Workers 執行環境存在；用惰性動態 import，
+// 這樣 Node 下的合同測試也能直接 import 本檔案。
 const loadConnect = async () => {
   try {
     return (await import('cloudflare:sockets')).connect
@@ -89,9 +89,9 @@ function analyticsRuntime(env, context) {
           entry.title,
           String(metadata.name || ''),
           String(metadata.rating || ''),
-          // blob7 原来是 region。区域概念已取消，但 dpmaster 数据集里还有历史行，
-          // 抽掉这一格会让 build 从 blob8 移到 blob7、新旧数据混在一起，
-          // 因此保留空占位，位置不动。
+          // blob7 原來是 region。區域概念已取消，但 dpmaster 資料集裡還有歷史行，
+          // 抽掉這一格會讓 build 從 blob8 移到 blob7、新舊資料混在一起，
+          // 因此保留空佔位，位置不動。
           '',
           String(metadata.build || ''),
         ],
@@ -128,8 +128,8 @@ export default {
       return new Response('Method Not Allowed', { status: 405, headers: { Allow: 'POST' } })
     }
     if (url.pathname === '/api/_diag/egress') {
-      // 未配置 EGRESS_DIAG_SECRET 或密钥不匹配时返回 null，请求落回静态资源，
-      // 得到与任何其他未知路径一样的真实 404 —— 不泄露端点是否存在。
+      // 未設定 EGRESS_DIAG_SECRET 或金鑰不匹配時回傳 null，請求落回靜態資源，
+      // 得到與任何其他未知路徑一樣的真實 404 —— 不洩露端點是否存在。
       const probe = await handleEgressProbe(request, env, { loadConnect })
       if (probe) return probe
     }
@@ -144,7 +144,7 @@ export default {
         negotiateRepresentation(request.headers.get('Accept')),
       )
     }
-    // 其余请求交给静态资源绑定：已知路由命中预渲染 HTML，未知路径返回真实 404。
+    // 其餘請求交給靜態資源綁定：已知路由命中預繪製 HTML，未知路徑回傳真實 404。
     return env.ASSETS.fetch(request)
   },
 }

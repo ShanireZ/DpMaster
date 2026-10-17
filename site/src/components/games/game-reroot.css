@@ -1,10 +1,10 @@
-/* 换根巡礼专属样式——复用 game.css 外壳（game / game__head / game__panel /
-   game__value / game__feedback / game__compare / gbtn / game__stats 等），此处只补
-   树画布。配色只用设计令牌（E 换根在 <html data-part="e"> 下 --accent-* 为灰紫宝石色）；
-   ★不做 opacity:0 起步动画（节点高亮靠 fill/stroke 切换）。前缀 grr__，绝不改动 game.css。 */
+/* 換根巡禮專屬樣式——重複使用 game.css 外殼（game / game__head / game__panel /
+   game__value / game__feedback / game__compare / gbtn / game__stats 等），此處只補
+   樹畫布。配色只用設計權杖（E 換根在 <html data-part="e"> 下 --accent-* 為灰紫寶石色）；
+   ★不做 opacity:0 起步動畫（節點高亮靠 fill/stroke 切換）。前綴 grr__，絕不改動 game.css。 */
 
 .grr__body {
-  /* 左列树画布，右列面板 280（与其它游戏一致） */
+  /* 左列樹畫布，右列面板 280（與其它遊戲一致） */
   grid-template-columns: 1fr 280px;
 }
 @media (max-width: 860px) {

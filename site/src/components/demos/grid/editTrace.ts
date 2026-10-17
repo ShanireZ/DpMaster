@@ -1,21 +1,21 @@
-// 编辑距离回溯：先填 dp 表，再从 dp[m][n] 沿「当初取的那条来源」倒着走回 dp[0][0]，
-// 还原出把 A 变成 B 的一串操作（保留 / 删 / 插 / 改）。纯函数，供自建可视化用。
+// 編輯距離回溯：先填 dp 表，再從 dp[m][n] 沿「當初取的那條來源」倒著走回 dp[0][0]，
+// 還原出把 A 變成 B 的一串操作（保留 / 刪 / 插 / 改）。純函式，供自建視覺化用。
 
 export type Op = 'keep' | 'del' | 'ins' | 'sub'
 
 export interface Step {
   op: Op
-  a?: string // 涉及的 A 字符（del / keep / sub 有）
-  b?: string // 涉及的 B 字符（ins / keep / sub 有）
+  a?: string // 涉及的 A 字元（del / keep / sub 有）
+  b?: string // 涉及的 B 字元（ins / keep / sub 有）
 }
 
 export interface TraceResult {
   dist: number
-  steps: Step[] // 从左到右、把 A 逐步对齐到 B 的操作序列
+  steps: Step[] // 從左到右、把 A 逐步對齊到 B 的操作序列
   dp: number[][]
 }
 
-/** 返回编辑距离、回溯出的操作序列、以及完整 dp 表。 */
+/** 回傳編輯距離、回溯出的操作序列、以及完整 dp 表。 */
 export function editTrace(a: string, b: string): TraceResult {
   const m = a.length
   const n = b.length
@@ -33,7 +33,7 @@ export function editTrace(a: string, b: string): TraceResult {
     }
   }
 
-  // 回溯：优先走对角线（匹配/改），其次删，最后插——与主演示的 chosen 判定一致。
+  // 回溯：優先走對角線（匹配/改），其次刪，最後插——與主演示的 chosen 判定一致。
   const rev: Step[] = []
   let i = m
   let j = n

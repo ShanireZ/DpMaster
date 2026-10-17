@@ -1,8 +1,8 @@
-// F 部分 · 树形 DP 讲解插图（on-brand SVG，随部分强调色变色）
-// 约定：节点圆 var(--surface-3) 描边 var(--border-strong)；强调走 var(--accent-1/2)；
-// 被选/最优走 var(--viz-chosen)，来源走 var(--viz-source)，越界走 var(--viz-invalid)。
+// F 部分 · 樹形 DP 講解插圖（on-brand SVG，隨部分強調色變色）
+// 約定：節點圓 var(--surface-3) 描邊 var(--border-strong)；強調走 var(--accent-1/2)；
+// 被選/最優走 var(--viz-chosen)，來源走 var(--viz-source)，越界走 var(--viz-invalid)。
 
-// —— 通用：一个树节点圆 ——
+// —— 通用：一個樹節點圓 ——
 function Node({
   x,
   y,
@@ -31,9 +31,9 @@ function Node({
   )
 }
 
-// ① 后序遍历：自底向上处理次序（叶子先亮，根最后）
+// ① 後序遍歷：自底向上處理次序（葉子先亮，根最後）
 export function PostorderFigure() {
-  // 树： 1 -> {2,3}; 2 -> {4,5}
+  // 樹： 1 -> {2,3}; 2 -> {4,5}
   const P: Record<string, [number, number]> = {
     '1': [300, 40],
     '2': [170, 130],
@@ -47,7 +47,7 @@ export function PostorderFigure() {
     ['2', '4'],
     ['2', '5'],
   ]
-  // 后序编号：4,5,2,3,1
+  // 後序編號：4,5,2,3,1
   const orderNo: Record<string, number> = { '4': 1, '5': 2, '2': 3, '3': 4, '1': 5 }
   return (
     <svg viewBox="0 0 560 268" role="img" aria-label="后序遍历：孩子先于父亲被处理">
@@ -72,7 +72,7 @@ export function PostorderFigure() {
   )
 }
 
-// ② 独立集决策：dp[u][0] / dp[u][1] 两条路
+// ② 獨立集決策：dp[u][0] / dp[u][1] 兩條路
 export function IndepDecisionFigure() {
   return (
     <svg viewBox="0 0 600 300" role="img" aria-label="选点 u 时 dp[u][0] 与 dp[u][1] 的分叉">
@@ -113,7 +113,7 @@ export function IndepDecisionFigure() {
   )
 }
 
-// ③ 独立集 ↔ 点覆盖：同一棵树，选中集合互补
+// ③ 獨立集 ↔ 點覆蓋：同一棵樹，選中集合互補
 export function CoverContrastFigure() {
   const P: Record<string, [number, number]> = {
     '1': [130, 40],
@@ -163,7 +163,7 @@ export function CoverContrastFigure() {
   )
 }
 
-// ④ 三状态支配集：放警卫 / 被孩子覆盖 / 等父亲
+// ④ 三狀態支配集：放警衛 / 被孩子覆蓋 / 等父親
 export function ThreeStateFigure() {
   const cell = (x: number, color: string, tag: string, desc: string) => (
     <g transform={`translate(${x},20)`}>
@@ -188,9 +188,9 @@ export function ThreeStateFigure() {
   )
 }
 
-// ⑤ 直径：两条最深孩子链在某点拼接
+// ⑤ 直徑：兩條最深孩子鏈在某點拼接
 export function DiameterFigure() {
-  // 峰顶 u 在中间，两侧各一条向下链
+  // 峰頂 u 在中間，兩側各一條向下鏈
   const P: Record<string, [number, number]> = {
     u: [280, 46],
     a: [160, 130],
@@ -207,9 +207,9 @@ export function DiameterFigure() {
   ]
   return (
     <svg viewBox="0 0 560 268" role="img" aria-label="过某点的最长链由两条最深孩子链拼成">
-      {/* 非链边 */}
+      {/* 非鏈邊 */}
       <line x1={P.u[0]} y1={P.u[1] + 20} x2={P.c[0]} y2={P.c[1] - 20} stroke="var(--border-strong)" strokeWidth="1.6" />
-      {/* 链边加粗 */}
+      {/* 鏈邊加粗 */}
       {chain.map(([a, b], i) => (
         <line key={i} x1={P[a][0]} y1={P[a][1] + 20} x2={P[b][0]} y2={P[b][1] - 20} stroke="var(--viz-chosen)" strokeWidth="3.4" />
       ))}
@@ -242,7 +242,7 @@ export function DiameterFigure() {
   )
 }
 
-// ⑥ 树上背包依赖：选子必先选连它的边
+// ⑥ 樹上揹包依賴：選子必先選連它的邊
 export function TreeKnapDepFigure() {
   return (
     <svg viewBox="0 0 560 200" role="img" aria-label="树上背包：选子树先花掉连父亲的边">
@@ -268,7 +268,7 @@ export function TreeKnapDepFigure() {
   )
 }
 
-// ⑦ 联合权值：距离 2 = 有公共中间点
+// ⑦ 聯合權值：距離 2 = 有公共中間點
 export function JointWeightFigure() {
   return (
     <svg viewBox="0 0 560 200" role="img" aria-label="距离为 2 的点对有一个公共中间点">
@@ -291,10 +291,10 @@ export function JointWeightFigure() {
   )
 }
 
-// ⑧ 森林接虚根：多棵依赖树挂到虚根 0 下，化森林为树
+// ⑧ 森林接虛根：多棵依賴樹掛到虛根 0 下，化森林為樹
 export function VirtualRootFigure() {
   const trees: [number, number][][] = [
-    // 每棵树的节点坐标（相对）
+    // 每棵樹的節點座標（相對）
     [
       [110, 130],
       [70, 210],
@@ -308,14 +308,14 @@ export function VirtualRootFigure() {
   ]
   return (
     <svg viewBox="0 0 560 250" role="img" aria-label="森林接一个虚根 0 合成一棵树">
-      {/* 虚根 */}
+      {/* 虛根 */}
       <g transform="translate(280,44)">
         <circle r="22" fill="var(--grad-accent)" stroke="var(--accent-2)" strokeWidth="2.2" strokeDasharray="4 3" />
         <text textAnchor="middle" y="5" fontSize="15" fontWeight="700" fill="var(--text-on-accent)">
           0
         </text>
       </g>
-      {/* 虚根到每棵树根的虚线边 */}
+      {/* 虛根到每棵樹根的虛線邊 */}
       {trees.map((t, i) => (
         <line
           key={`ve${i}`}
@@ -328,7 +328,7 @@ export function VirtualRootFigure() {
           strokeDasharray="4 3"
         />
       ))}
-      {/* 各树内部边 */}
+      {/* 各樹內部邊 */}
       {trees.map((t, ti) =>
         t.slice(1).map(([x, y], k) => (
           <line key={`te${ti}-${k}`} x1={t[0][0]} y1={t[0][1] + 20} x2={x} y2={y - 20} stroke="var(--border-strong)" strokeWidth="1.6" />
@@ -346,7 +346,7 @@ export function VirtualRootFigure() {
   )
 }
 
-// ⑨ 重心：删去它后最大子树最小
+// ⑨ 重心：刪去它後最大子樹最小
 export function CentroidFigure() {
   const P: Record<string, [number, number]> = {
     c: [280, 130],
@@ -389,7 +389,7 @@ export function CentroidFigure() {
   )
 }
 
-// ⑩ 括号树：沿根链把 f 从父递推到子
+// ⑩ 括號樹：沿根鏈把 f 從父遞推到子
 export function BracketTreeFigure() {
   const seq = ['(', '(', ')', ')']
   const xs = [130, 230, 330, 430]
@@ -399,7 +399,7 @@ export function BracketTreeFigure() {
         <line key={i} x1={x + 22} y1="70" x2={xs[i + 1] - 22} y2="70" stroke="var(--border-strong)" strokeWidth="1.6" />
       ))}
       {seq.map((ch, i) => {
-        const matched = i >= 2 // 后两个 ) 配对成功
+        const matched = i >= 2 // 後兩個 ) 配對成功
         return (
           <g key={i} transform={`translate(${xs[i]},70)`}>
             <circle

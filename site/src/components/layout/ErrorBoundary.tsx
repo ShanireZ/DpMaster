@@ -14,8 +14,8 @@ interface ErrorBoundaryState {
   error: Error | null
 }
 
-// 类组件错误边界：兜住任一懒加载课节（含 import() 失败）的渲染异常，
-// 避免整站白屏。Suspense 只接 loading，接不住 rejected 的动态 import。
+// 類元件錯誤邊界：兜住任一懶載入課節（含 import() 失敗）的繪製異常，
+// 避免整站白屏。Suspense 只接 loading，接不住 rejected 的動態 import。
 export default class ErrorBoundary extends Component<ErrorBoundaryProps, ErrorBoundaryState> {
   state: ErrorBoundaryState = { error: null }
 
@@ -24,12 +24,12 @@ export default class ErrorBoundary extends Component<ErrorBoundaryProps, ErrorBo
   }
 
   componentDidCatch(error: Error, info: ErrorInfo): void {
-    // 第二道网。`installVitePreloadRecovery` 只接 Vite 自己派发的
-    // `vite:preloadError`；懒加载失败若以别的形态到达这里，从前就只剩那张要用户
-    // 手点的卡片。2026-08-13 那版线上告警就是这么来的：chunk 当时取不到，
-    // 事后复查它在两个 region 都健在，用户却已经看到失败页了。
+    // 第二道網。`installVitePreloadRecovery` 只接 Vite 自己派發的
+    // `vite:preloadError`；懶載入失敗若以別的形態到達這裡，從前就只剩那張要使用者
+    // 手點的卡片。2026-08-13 那版線上告警就是這麼來的：chunk 當時取不到，
+    // 事後複查它在兩個 region 都健在，使用者卻已經看到失敗頁了。
     const moduleLoadFailure = isModuleLoadError(error)
-    // 额度与 preload 那条路径共用，用尽即退回人工路径 —— 见 preloadRecovery.ts。
+    // 額度與 preload 那條路徑共用，用盡即退回人工路徑 —— 見 preloadRecovery.ts。
     const willReload = moduleLoadFailure && reserveModuleLoadRecovery()
 
     console.error('[DP大师] 路由渲染出错：', error, info.componentStack)
@@ -40,9 +40,9 @@ export default class ErrorBoundary extends Component<ErrorBoundaryProps, ErrorBo
         source: 'react_boundary',
         message: error.message.slice(0, 160),
         component: (info.componentStack || '').trim().slice(0, 160),
-        // ★ 自动刷新必须留痕。静默恢复会让这类告警整体消失，而「告警不再出现」
-        //   与「问题不再发生」是两回事 —— recovery=auto_reload 的持续增长正是
-        //   「资源在反复取不到」的信号，别把它优化掉。
+        // ★ 自動刷新必須留痕。靜默恢復會讓這類告警整體消失，而「告警不再出現」
+        //   與「問題不再發生」是兩回事 —— recovery=auto_reload 的持續增長正是
+        //   「資源在反覆取不到」的信號，別把它優化掉。
         recovery: willReload
           ? 'auto_reload'
           : moduleLoadFailure
@@ -51,7 +51,7 @@ export default class ErrorBoundary extends Component<ErrorBoundaryProps, ErrorBo
       },
     })
 
-    // 上报走 sendBeacon / keepalive fetch，两者都能挺过随后的导航，所以先报后刷。
+    // 上報走 sendBeacon / keepalive fetch，兩者都能挺過隨後的導覽，所以先報後刷。
     if (willReload) window.location.reload()
   }
 

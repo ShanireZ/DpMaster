@@ -40,6 +40,6 @@ export function playGameTone(
     oscillator.start(now)
     oscillator.stop(now + length)
   } catch {
-    // 音频不是游戏正确性边界；浏览器拒绝时静默降级。
+    // 音訊不是遊戲正確性邊界；瀏覽器拒絕時靜默降級。
   }
 }

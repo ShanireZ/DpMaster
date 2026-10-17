@@ -22,10 +22,10 @@ function probeRequest(body, headers = { 'x-dp-diag-secret': SECRET }) {
 
 test('the default target list covers both DingTalk entry points plus controls', () => {
   const hosts = DEFAULT_TARGETS.map((target) => target.host)
-  // 老接入点是当前 webhook 用的；新 OpenAPI 是不同接入点，值得单独测一次。
+  // 老接入點是當前 webhook 用的；新 OpenAPI 是不同接入點，值得單獨測一次。
   assert.ok(hosts.includes('oapi.dingtalk.com'))
   assert.ok(hosts.includes('api.dingtalk.com'))
-  // 没有对照组就分不清「钉钉不通」和「探针自己坏了」。
+  // 沒有對照組就分不清「釘釘不通」和「探針自己壞了」。
   assert.ok(hosts.includes('www.cloudflare.com'))
   assert.equal(new Set(hosts).size, hosts.length)
 })
@@ -46,7 +46,7 @@ test('every probe reports both egress paths for every target', async () => {
   assert.equal(entry.host, 'example.test')
   assert.equal(entry.fetch.reachable, true)
   assert.equal(entry.fetch.status, 204)
-  // connect() 不可用时如实报告，而不是伪装成「不通」。
+  // connect() 不可用時如實報告，而不是偽裝成「不通」。
   assert.equal(entry.socket.reachable, false)
   assert.match(entry.socket.error, /cloudflare:sockets unavailable/)
 })
@@ -150,7 +150,7 @@ test('secureEqual compares in constant time and rejects length mismatches', () =
 test('the POST round-trip targets DingTalk without credentials so nothing is delivered', () => {
   for (const target of DEFAULT_POST_TARGETS) {
     assert.match(target.host, /dingtalk\.com$/)
-    // 不带 access_token / 签名：钉钉只会回 errcode，不会往群里投递。
+    // 不帶 access_token / 簽名：釘釘只會回 errcode，不會往群裡投遞。
     assert.doesNotMatch(target.path, /access_token|sign=/)
   }
   assert.equal(DEFAULT_POST_TARGETS.length, 2)
@@ -200,7 +200,7 @@ test('the POST round-trip sends a body and parses a chunked response', async () 
   assert.equal(first.reachable, true)
   assert.equal(first.statusLine, 'HTTP/1.1 200 OK')
   assert.equal(first.transferEncoding, 'chunked')
-  // chunked 解码后应还原成完整 JSON，而不是带着长度前缀的原文。
+  // chunked 解碼後應還原成完整 JSON，而不是帶著長度前綴的原文。
   assert.match(first.body, /"errcode":300001/)
   assert.doesNotMatch(first.body, /^1a/)
 

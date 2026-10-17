@@ -20,12 +20,12 @@ function textFiles(directory, extensions) {
   })
 }
 
-// Node 版本在四个地方各写一遍：`.node-version`（CI 的 node-version-file 读它）、
-// `pnpm-workspace.yaml` 的 nodeVersion（本地强制相等）、`package.json` 的
-// devEngines.runtime.version，以及 engines.node 的下限。真正要守的不变式是
-// **四处一致**，而不是某个字面量 —— 所以这里不再写死版本号：写死的话每次抬版本
-// 都会红一次假警报，而真正危险的「只改了其中两处」反而可能蒙混过去。
-// 2026-08-15 从 24.18.1 抬到 26.7.0 时，就是这条测试挡下了漏改。
+// Node 版本在四個地方各寫一遍：`.node-version`（CI 的 node-version-file 讀它）、
+// `pnpm-workspace.yaml` 的 nodeVersion（本機強制相等）、`package.json` 的
+// devEngines.runtime.version，以及 engines.node 的下限。真正要守的不變式是
+// **四處一致**，而不是某個字面值 —— 所以這裡不再寫死版本號：寫死的話每次抬版本
+// 都會紅一次假警報，而真正危險的「只改了其中兩處」反而可能矇混過去。
+// 2026-08-15 從 24.18.1 抬到 26.7.0 時，就是這條測試擋下了漏改。
 test('the package root pins one Node version consistently across all four declarations', () => {
   const nodeVersion = readFileSync(join(siteDir, '.node-version'), 'utf8').trim()
   const settings = readFileSync(join(siteDir, 'pnpm-workspace.yaml'), 'utf8')
@@ -37,14 +37,14 @@ test('the package root pins one Node version consistently across all four declar
   assert.equal(packageJson.engines.node, `>=${nodeVersion}`)
 })
 
-// 同 Node：pnpm 版本也在三处各写一遍（packageManager、devEngines.packageManager、
-// engines.pnpm 的下限），要守的是**三处一致**而不是某个字面量。写死的话每次升级
-// 都会红一次假警报，而真正危险的「只改了其中两处」反而可能溜过去。
+// 同 Node：pnpm 版本也在三處各寫一遍（packageManager、devEngines.packageManager、
+// engines.pnpm 的下限），要守的是**三處一致**而不是某個字面值。寫死的話每次升級
+// 都會紅一次假警報，而真正危險的「只改了其中兩處」反而可能溜過去。
 test('the package root pins one pnpm version consistently', () => {
   const pnpmVersion = packageJson.packageManager.replace(/^pnpm@/, '')
 
-  // 允许预发布后缀：版本线偶尔会在稳定版前先验证 rc，三处仍必须保持同值。
-  // GA 版本自然使用三段式；这条正则守的是形态，不是某个具体版本。
+  // 允許預發佈後綴：版本線偶爾會在穩定版前先驗證 rc，三處仍必須保持同值。
+  // GA 版本自然使用三段式；這條正則守的是形態，不是某個具體版本。
   assert.match(pnpmVersion, /^\d+\.\d+\.\d+(?:-[0-9A-Za-z.-]+)?$/)
   assert.equal(packageJson.devEngines.packageManager.name, 'pnpm')
   assert.equal(packageJson.devEngines.packageManager.version, pnpmVersion)

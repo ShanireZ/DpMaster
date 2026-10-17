@@ -63,7 +63,7 @@ export default function CoverDemo() {
       fill = 'color-mix(in srgb, var(--viz-chosen) 30%, var(--surface-3))'
       stroke = 'var(--viz-chosen)'
     } else if (isLastFrame) {
-      // 非警卫点：被覆盖，淡青
+      // 非警衛點：被覆蓋，淡青
       fill = 'color-mix(in srgb, var(--viz-source) 16%, var(--surface-3))'
       stroke = 'var(--viz-source)'
     } else if (isCurrent) {

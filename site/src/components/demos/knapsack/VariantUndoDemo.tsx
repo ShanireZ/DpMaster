@@ -35,22 +35,22 @@ function Stepper({
 }
 
 /**
- * 撤销可视化演示（洛谷 P4141「消失之物」）：
- * 先算含全部物品的全集方案数 f[j]，再选定「让第几件消失」，
- * 对它做逆操作 g[j] -= g[j-w] 正序退掉，看「缺这件」的方案数长出来。
- * 物品重量可编辑；目标容量 W ≤ 12；用按钮组挑选要消失的物品。
+ * 撤銷視覺化演示（洛谷 P4141「消失之物」）：
+ * 先算含全部物品的全集方案數 f[j]，再選定「讓第幾件消失」，
+ * 對它做逆操作 g[j] -= g[j-w] 正序退掉，看「缺這件」的方案數長出來。
+ * 物品重量可編輯；目標容量 W ≤ 12；用按鈕組挑選要消失的物品。
  */
 export default function VariantUndoDemo() {
   const [items, setItems] = useState<UndoItem[]>([{ w: 2 }, { w: 3 }, { w: 5 }])
   const [cap, setCap] = useState(5)
-  const [victim, setVictim] = useState(2) // 默认让第 3 件（w=5）消失 → g[5] 应从 2 降到 1
+  const [victim, setVictim] = useState(2) // 預設讓第 3 件（w=5）消失 → g[5] 應從 2 降到 1
 
-  // victim 落在合法范围内（物品增删后夹回）。
+  // victim 落在合法範圍內（物品增刪後夾回）。
   const k = Math.min(victim, items.length - 1)
 
   const model = useMemo(() => undoKnapsack(items, cap, k), [items, cap, k])
 
-  // 末帧读数：全集 f[W] 与缺第 k 件 g[W]。
+  // 末影格讀數：全集 f[W] 與缺第 k 件 g[W]。
   const last = model.frames[model.frames.length - 1].values
   const fAns = (last[0]?.[cap] as number) ?? 0
   const gAns = (last[1]?.[cap] as number) ?? 0

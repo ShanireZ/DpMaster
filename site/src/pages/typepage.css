@@ -1,4 +1,4 @@
-/* ============ 课程页：算法图谱 + 推导手记 ============ */
+/* ============ 課程頁：演算法圖譜 + 推導手記 ============ */
 .typepage-layout {
   display: grid;
   grid-template-columns: minmax(0, 1fr) 194px;
@@ -15,7 +15,7 @@
   max-width: var(--content-max);
 }
 
-/* ---- 开场：把课程身份做成一张算法图谱 ---- */
+/* ---- 開場：把課程身分做成一張演算法圖譜 ---- */
 .typehead {
   position: relative;
   margin-bottom: clamp(var(--sp-8), 8vw, 112px);
@@ -240,7 +240,7 @@
   content: '';
 }
 
-/* ---- 讲解流：开放排版与页边注记 ---- */
+/* ---- 講解流：開放排版與頁邊註記 ---- */
 .lesson-flow {
   position: relative;
   counter-reset: lesson-section;
@@ -329,7 +329,7 @@
   font-size: 0.9em;
 }
 
-/* ---- 科学图版 ---- */
+/* ---- 科學圖版 ---- */
 .figure {
   position: relative;
   margin: clamp(var(--sp-6), 6vw, 72px) 0;
@@ -385,7 +385,7 @@
   text-align: right;
 }
 
-/* ---- 推导步骤：序列而非卡片 ---- */
+/* ---- 推導步驟：序列而非卡片 ---- */
 .steps {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
@@ -446,7 +446,7 @@
   color: var(--accent-1);
 }
 
-/* ---- 页边信息：像注释，不像告警卡 ---- */
+/* ---- 頁邊資訊：像註解，不像告警卡 ---- */
 .infobox {
   display: grid;
   grid-template-columns: 26px minmax(0, 1fr);
@@ -493,7 +493,7 @@
 
 .infobox--key .infobox__icon { color: var(--viz-chosen); }
 
-/* ---- 例题：题目卷宗 ---- */
+/* ---- 例題：題目卷宗 ---- */
 .example {
   margin: clamp(var(--sp-7), 7vw, 88px) 0;
   border-top: 1px solid var(--border-strong);
@@ -570,7 +570,7 @@
   letter-spacing: 0.16em;
 }
 
-/* ---- 练习：索引轨道 ---- */
+/* ---- 練習：索引軌道 ---- */
 .exercises {
   margin: clamp(var(--sp-6), 6vw, 72px) 0;
   border-top: 1px solid var(--border-strong);
@@ -633,7 +633,7 @@
 
 .exercise__link:hover { color: var(--accent-2); }
 
-/* ---- 互动演示：状态剧场 ---- */
+/* ---- 互動演示：狀態劇場 ---- */
 .demo {
   position: relative;
   container-name: lesson-demo;
@@ -789,7 +789,7 @@
   padding-right: 0;
 }
 
-/* ---- 章节收束 ---- */
+/* ---- 章節收束 ---- */
 .type-nav {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
@@ -835,7 +835,7 @@
   font-weight: 650;
 }
 
-/* ---- 右侧学习轨迹 ---- */
+/* ---- 右側學習軌跡 ---- */
 .lesson-outline--desktop {
   position: sticky;
   top: calc(var(--topbar-h) + var(--sp-5));
@@ -1154,7 +1154,7 @@
   }
 }
 
-/* ---------------- C–G：统一课程页头图集槽位 ---------------- */
+/* ---------------- C–G：統一課程頁頭圖集槽位 ---------------- */
 .typepage:is([data-part-id='c'], [data-part-id='d'], [data-part-id='e'], [data-part-id='f'], [data-part-id='g']) .typehead__canvas {
   grid-template-columns: minmax(0, 0.82fr) minmax(0, 1.18fr);
   column-gap: clamp(12px, 1.2vw, 18px);
@@ -1259,7 +1259,7 @@
   }
 }
 
-/* ---------------- A 背包 DP：科学图谱原子 ---------------- */
+/* ---------------- A 揹包 DP：科學圖譜原子 ---------------- */
 .typepage[data-part-id='a'] .typehead__canvas {
   grid-template-columns: minmax(0, 0.86fr) minmax(0, 1.14fr);
   min-height: clamp(390px, 43vw, 548px);
@@ -1419,7 +1419,7 @@
   }
 }
 
-/* ---------------- B 线性 DP：索引轨道与双序列图版 ---------------- */
+/* ---------------- B 線性 DP：索引軌道與雙序列圖版 ---------------- */
 .typepage[data-part-id='b'] .typehead__canvas {
   grid-template-columns: minmax(0, 0.86fr) minmax(0, 1.14fr);
   min-height: clamp(390px, 43vw, 548px);

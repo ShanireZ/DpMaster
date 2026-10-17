@@ -34,7 +34,7 @@ function Stepper({
   )
 }
 
-/** 同一排石子：左求最小合并代价、右求最大，并排两张三角表——点明「一题双问」。 */
+/** 同一排石子：左求最小合併代價、右求最大，並排兩張三角表——點明「一題雙問」。 */
 export default function StoneMinMaxDemo() {
   const [stones, setStones] = useState<number[]>([7, 6, 5, 4])
 

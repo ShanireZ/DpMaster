@@ -76,7 +76,7 @@
 
 .dpviz__arrows { position: absolute; pointer-events: none; overflow: visible; }
 
-/* 解说面板 */
+/* 解說面板 */
 .dpviz__panel {
   grid-area: panel;
   display: flex;
@@ -96,7 +96,7 @@
 .dpviz__caption .ok { color: var(--viz-chosen); }
 .dpviz__caption .bad { color: var(--viz-invalid); }
 
-/* 图例 */
+/* 圖例 */
 .dpviz__legend {
   display: flex;
   grid-area: legend;

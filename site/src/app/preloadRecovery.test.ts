@@ -57,8 +57,8 @@ describe('createVitePreloadRecoveryHandler', () => {
     expect(reload).not.toHaveBeenCalled()
   })
 
-  // 两条恢复路径共用同一把锁。分开计数的话，同一次失败会被刷两次 ——
-  // 第二次刷新发生在第一次的导航过程中，表现为闪一下再白屏，很难复现。
+  // 兩條恢復路徑共用同一把鎖。分開計數的話，同一次失敗會被刷兩次 ——
+  // 第二次刷新發生在第一次的導覽過程中，表現為閃一下再白屏，很難重現。
   it('shares one reload budget with the error boundary path', () => {
     const storage = memoryStorage()
     const reload = vi.fn()
@@ -73,10 +73,10 @@ describe('createVitePreloadRecoveryHandler', () => {
     handler(new Event('vite:preloadError', { cancelable: true }))
     expect(reload).toHaveBeenCalledTimes(1)
 
-    // 边界随后就同一次失败再来一遍，必须被拒。
+    // 邊界隨後就同一次失敗再來一遍，必須被拒。
     expect(createModuleLoadRecovery(options).reserve()).toBe(false)
 
-    // 换一条路径仍有自己的额度：一次部署里多个路由各允许恢复一次。
+    // 換一條路徑仍有自己的額度：一次部署裡多個路由各允許恢復一次。
     expect(
       createModuleLoadRecovery({ ...options, pathname: '/part/b' }).reserve(),
     ).toBe(true)
@@ -84,8 +84,8 @@ describe('createVitePreloadRecoveryHandler', () => {
 })
 
 describe('isModuleLoadError', () => {
-  // 三家浏览器措辞各不相同，而我们只拿得到 message。少认一种，那家浏览器的用户
-  // 就完全走不到自动恢复 —— 而且不会有任何迹象表明少认了。
+  // 三家瀏覽器措辭各不相同，而我們只拿得到 message。少認一種，那家瀏覽器的使用者
+  // 就完全走不到自動恢復 —— 而且不會有任何跡象表明少認了。
   it.each([
     'Failed to fetch dynamically imported module: https://dp.round1.cc/assets/KnapsackGroup-CS9oy4kI.js',
     'error loading dynamically imported module: https://dp.round1.cc/assets/KnapsackGroup-CS9oy4kI.js',
@@ -99,8 +99,8 @@ describe('isModuleLoadError', () => {
     expect(isModuleLoadError(new Error(message))).toBe(true)
   })
 
-  // 刷新只对「资源当时取不到」有用。组件自身的异常刷几次都一样，必须留给人工
-  // 路径，否则就是拿自动刷新掩盖真 bug。
+  // 刷新只對「資源當時取不到」有用。元件自身的異常刷幾次都一樣，必須留給人工
+  // 路徑，否則就是拿自動刷新掩蓋真 bug。
   it.each([
     'Cannot read properties of undefined (reading of map)',
     'NetworkError when attempting to fetch resource.',

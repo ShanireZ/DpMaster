@@ -34,7 +34,7 @@ function Stepper({
   )
 }
 
-/** 多重背包演示：物品含件数上限 m，二进制拆包后在一维 f[j] 上倒序做 01 转移。 */
+/** 多重揹包演示：物品含件數上限 m，二進位拆包後在一維 f[j] 上倒序做 01 轉移。 */
 export default function KnapsackMultipleDemo() {
   const [items, setItems] = useState<MultiItem[]>([
     { w: 2, v: 3, m: 3 },

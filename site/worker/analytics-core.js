@@ -1,4 +1,4 @@
-// 第一方统计接收器。只记录无身份、无联系方式的有限事件字段。
+// 第一方統計接收器。只記錄無身分、無聯繫方式的有限事件欄位。
 import { applyCors, corsDecision, forwardRelay, forwardWebhook } from './webhook-core.js'
 
 const BODY_LIMIT_BYTES = 4_000
@@ -114,8 +114,8 @@ async function handleAnalyticsCore(request, runtime) {
       `页面：${entry.path}`,
       `详情：${JSON.stringify(entry.metadata)}`,
     ].join('\n')
-    // Cloudflare 出口直连钉钉握手被打断：配了 relay 时告警经 relay 主机中转，
-    // 否则直连告警机器人。目标由环境变量决定，代码不绑定任何具体主机。
+    // Cloudflare 出口直連釘釘握手被打斷：配了 relay 時告警經 relay 主機中轉，
+    // 否則直連告警機器人。目標由環境變數決定，程式碼不綁定任何具體主機。
     const alert = (env.FEEDBACK_RELAY_URL
       ? forwardRelay({
           relayUrl: env.FEEDBACK_RELAY_URL,

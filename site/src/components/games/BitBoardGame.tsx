@@ -13,7 +13,7 @@ interface DiffSpec {
   K: number
 }
 
-// 王两两不相邻，N×N 最多能放约 ceil(N/2)^2 个；K 取一个有挑战但可完成的值。
+// 王兩兩不相鄰，N×N 最多能放約 ceil(N/2)^2 個；K 取一個有挑戰但可完成的值。
 const DIFFS: Record<Difficulty, DiffSpec> = {
   easy: { label: '简单', N: 4, K: 4 },
   medium: { label: '中等', N: 5, K: 5 },
@@ -21,7 +21,7 @@ const DIFFS: Record<Difficulty, DiffSpec> = {
 }
 const DIFF_ORDER: Difficulty[] = ['easy', 'medium', 'hard']
 
-// 王 (r,c) 是否与 (r2,c2) 相邻（含斜角）——即两格在 8 邻域内。
+// 王 (r,c) 是否與 (r2,c2) 相鄰（含斜角）——即兩格在 8 鄰域內。
 function adjacent(r: number, c: number, r2: number, c2: number): boolean {
   return Math.max(Math.abs(r - r2), Math.abs(c - c2)) === 1
 }
@@ -30,13 +30,13 @@ export default function BitBoardGame() {
   const [difficulty, setDifficulty] = useState<Difficulty>('easy')
   const { N, K } = DIFFS[difficulty]
 
-  // 每行用一个 mask 表示玩家在该行放的王；rows[r] 的第 c 位=1 表示 (r,c) 放了王。
+  // 每行用一個 mask 表示玩家在該行放的王；rows[r] 的第 c 位=1 表示 (r,c) 放了王。
   const [rows, setRows] = useState<number[]>(() => Array<number>(DIFFS['easy'].N).fill(0))
   const [muted, setMuted] = useState(false)
   const [revealed, setRevealed] = useState(false)
   const round = useRoundStats()
 
-  // 所有已放王的坐标
+  // 所有已放王的座標
   const kings = useMemo(() => {
     const list: { r: number; c: number }[] = []
     for (let r = 0; r < rows.length; r++)
@@ -44,7 +44,7 @@ export default function BitBoardGame() {
     return list
   }, [rows, N])
 
-  // 每个王是否与别的王冲突（8 邻域内还有王）——用于高亮非法。
+  // 每個王是否與別的王衝突（8 鄰域內還有王）——用於高亮非法。
   const conflictSet = useMemo(() => {
     const bad = new Set<string>()
     for (let i = 0; i < kings.length; i++)
@@ -63,7 +63,7 @@ export default function BitBoardGame() {
   const hasConflict = conflictSet.size > 0
   const win = placed === K && !hasConflict
 
-  // DP 方案总数（点击才算，避免困难档每次渲染都跑）
+  // DP 方案總數（點擊才算，避免困難檔每次繪製都跑）
   const [totalShown, setTotalShown] = useState<number | null>(null)
 
   const resetBoard = (spec: DiffSpec) => {
@@ -73,7 +73,7 @@ export default function BitBoardGame() {
     round.start()
   }
 
-  // 计算「若在 (r,c) 落子后」是否恰好达成，用于即时反馈音与计数。
+  // 計算「若在 (r,c) 落子後」是否恰好達成，用於即時回饋音與計數。
   const wouldWinAfter = (nextRows: number[]): boolean => {
     const list: { r: number; c: number }[] = []
     for (let r = 0; r < nextRows.length; r++)

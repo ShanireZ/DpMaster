@@ -1,9 +1,9 @@
-// 回文 / 括号区间 DP 讲解用插图（on-brand SVG，随部分强调色变色）。
+// 迴文 / 括號區間 DP 講解用插圖（on-brand SVG，隨部分強調色變色）。
 
-// 一个串里的「最长回文子序列」：对称的字符两两配对，弧线勾出（不必相邻，只需镜像对称）。
+// 一個串裡的「最長迴文子序列」：對稱的字元兩兩配對，弧線勾出（不必相鄰，只需鏡像對稱）。
 export function PalindromeSetupFigure() {
   const s = ['c', 'h', 'a', 'r', 'a', 'c', 't', 'e', 'r']
-  // 最长回文子序列 "carac"（下标 0,2,3,4,5）——两端向内成对：0↔5(c)、2↔4(a)、中心 3(r)。
+  // 最長迴文子序列 "carac"（下標 0,2,3,4,5）——兩端向內成對：0↔5(c)、2↔4(a)、中心 3(r)。
   const pairs = [
     { a: 0, b: 5 },
     { a: 2, b: 4 },
@@ -60,7 +60,7 @@ export function PalindromeSetupFigure() {
   )
 }
 
-// dp[i][j] 的两条转移：两端相等 → 收缩到左下 dp[i+1][j-1] 再 +2；不等 → 取下 / 左的较大者。
+// dp[i][j] 的兩條轉移：兩端相等 → 收縮到左下 dp[i+1][j-1] 再 +2；不等 → 取下 / 左的較大者。
 export function CollapseFigure() {
   return (
     <svg viewBox="0 0 640 300" role="img" aria-label="回文区间 DP 的两条转移分叉">
@@ -69,7 +69,7 @@ export function CollapseFigure() {
           <path d="M0,0 L6,3 L0,6 Z" fill="var(--text-3)" />
         </marker>
       </defs>
-      {/* 顶：区间 [i,j] */}
+      {/* 頂：區間 [i,j] */}
       <g transform="translate(244,8)">
         <rect width="152" height="48" rx="12" fill="var(--surface-3)" stroke="var(--border-strong)" strokeWidth="1.5" />
         <text x="76" y="21" textAnchor="middle" fontSize="12.5" fill="var(--text-2)">子串 s[i..j]</text>
@@ -79,7 +79,7 @@ export function CollapseFigure() {
       <path d="M344 56 L494 100" stroke="var(--text-3)" strokeWidth="2" markerEnd="url(#pc-ar)" />
       <text x="150" y="82" textAnchor="middle" fontSize="12.5" fill="var(--viz-chosen)">s[i] = s[j]（相等）</text>
       <text x="496" y="82" textAnchor="middle" fontSize="12.5" fill="var(--text-2)">s[i] ≠ s[j]（不等）</text>
-      {/* 左：相等收缩 */}
+      {/* 左：相等收縮 */}
       <g transform="translate(30,104)">
         <rect
           width="248"
@@ -123,10 +123,10 @@ export function CollapseFigure() {
   )
 }
 
-// 最少插入构回文：插入次数 = 串长 − 最长回文子序列；把非回文补成对称。
+// 最少插入構迴文：插入次數 = 串長 − 最長迴文子序列；把非迴文補成對稱。
 export function InsertFigure() {
-  const src = ['a', 'b', 'c', 'd', 'a'] // "abcda"：最长回文子序列 aba/ada 长 3，需插入 2 → "abcdcba"
-  // 结果 "abcdcba"：标出哪几个是新插入的（'c'、'b' 各补一次到左半镜像）。
+  const src = ['a', 'b', 'c', 'd', 'a'] // "abcda"：最長迴文子序列 aba/ada 長 3，需插入 2 → "abcdcba"
+  // 結果 "abcdcba"：標出哪幾個是新插入的（'c'、'b' 各補一次到左半鏡像）。
   const out = [
     { c: 'a', ins: false },
     { c: 'b', ins: false },

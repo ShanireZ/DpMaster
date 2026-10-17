@@ -35,7 +35,7 @@ function Stepper({
   )
 }
 
-// 收集以 node 为根的子树里所有节点 id（含自身）。
+// 收集以 node 為根的子樹裡所有節點 id（含自身）。
 function subtreeIds(node: TreeNode | null, acc: Set<number>) {
   if (!node) return
   acc.add(node.id)
@@ -44,18 +44,18 @@ function subtreeIds(node: TreeNode | null, acc: Set<number>) {
 }
 
 /**
- * 第二演示：用主演示记下的 root[i][j] 前序回溯，把最优二叉树画出来。
- * 点任一节点 → 高亮「它这棵子树」，同时在下方中序刻度条上点亮它覆盖的连续区间 [lo,hi]，
- * 把「一段连续区间 ⇔ 一棵子树」这层对应关系摊在眼前。
+ * 第二演示：用主演示記下的 root[i][j] 前序回溯，把最優二叉樹畫出來。
+ * 點任一節點 → 高亮「它這棵子樹」，同時在下方中序刻度條上點亮它覆蓋的連續區間 [lo,hi]，
+ * 把「一段連續區間 ⇔ 一棵子樹」這層對應關係攤在眼前。
  */
 export default function ScoreTreeBuildDemo() {
   const [scores, setScores] = useState<number[]>([5, 7, 1, 2, 10])
-  const [sel, setSel] = useState<number | null>(null) // 选中的节点 id
+  const [sel, setSel] = useState<number | null>(null) // 選中的節點 id
 
   const res = useMemo(() => solveScoreTree(scores), [scores])
   const { nodes, maxDepth } = useMemo(() => layoutScoreTree(res), [res])
 
-  // 节点 id → 节点对象，便于取选中子树
+  // 節點 id → 節點物件，便於取選中子樹
   const byId = useMemo(() => {
     const m = new Map<number, TreeNode>()
     nodes.forEach((nd) => m.set(nd.id, nd))
@@ -79,7 +79,7 @@ export default function ScoreTreeBuildDemo() {
     setScores((arr) => (arr.length > 3 ? arr.filter((_, k) => k !== i) : arr))
   }
 
-  // —— SVG 布局：x 用中序位置铺开、y 用深度分层
+  // —— SVG 佈局：x 用中序位置鋪開、y 用深度分層
   const W = 560
   const padX = 40
   const topY = 40
@@ -88,7 +88,7 @@ export default function ScoreTreeBuildDemo() {
   const px = (x: number) => padX + x * (W - 2 * padX)
   const py = (d: number) => topY + d * rowH
 
-  // 边（父 → 子）
+  // 邊（父 → 子）
   const edges: { a: TreeNode; b: TreeNode; side: 'L' | 'R' }[] = []
   nodes.forEach((nd) => {
     if (nd.left) edges.push({ a: nd, b: nd.left, side: 'L' })
@@ -134,7 +134,7 @@ export default function ScoreTreeBuildDemo() {
             </marker>
           </defs>
 
-          {/* 连边 */}
+          {/* 連邊 */}
           {edges.map((e, i) => {
             const on = selSet.has(e.a.id) && selSet.has(e.b.id)
             return (
@@ -149,7 +149,7 @@ export default function ScoreTreeBuildDemo() {
               />
             )
           })}
-          {/* L/R 标记 */}
+          {/* L/R 標記 */}
           {edges.map((e, i) => (
             <text
               key={`lab${i}`}
@@ -164,7 +164,7 @@ export default function ScoreTreeBuildDemo() {
             </text>
           ))}
 
-          {/* 节点 */}
+          {/* 節點 */}
           {nodes.map((nd) => {
             const on = selSet.has(nd.id)
             const isRoot = sel === nd.id
@@ -209,7 +209,7 @@ export default function ScoreTreeBuildDemo() {
             )
           })}
 
-          {/* 中序刻度条：n 个格子，1..n */}
+          {/* 中序刻度條：n 個格子，1..n */}
           {Array.from({ length: n }, (_, k) => {
             const cw = (W - 2 * padX) / n
             const x = padX + k * cw

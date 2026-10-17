@@ -1,6 +1,6 @@
-// 有依赖的背包讲解用插图（on-brand SVG，随强调色变色）。
+// 有依賴的揹包講解用插圖（on-brand SVG，隨強調色變色）。
 
-// 引入图：1 个主件 + 2 个附件，附件用虚线「依赖」箭头挂在主件下，不选主件，附件就非法。
+// 引入圖：1 個主件 + 2 個附件，附件用虛線「依賴」箭頭掛在主件下，不選主件，附件就非法。
 export function DepSetupFigure() {
   return (
     <svg viewBox="0 0 640 232" role="img" aria-label="一个主件与两个附件，附件依赖主件">
@@ -29,7 +29,7 @@ export function DepSetupFigure() {
           v=3
         </text>
       </g>
-      {/* 依赖箭头：从附件指向主件 */}
+      {/* 依賴箭頭：從附件指向主件 */}
       <path d="M150 150 Q150 108 300 96" fill="none" stroke="var(--accent-2)" strokeWidth="2" strokeDasharray="5 4" markerEnd="url(#dep-dep)" />
       <path d="M492 150 Q492 108 342 96" fill="none" stroke="var(--accent-2)" strokeWidth="2" strokeDasharray="5 4" markerEnd="url(#dep-dep)" />
       {/* 附件 1 / 2 */}
@@ -57,7 +57,7 @@ export function DepSetupFigure() {
   )
 }
 
-// 归约图：把「主 + 附件子集」枚举成 4 个组合，四者归为同一组（组内至多选一个）。
+// 歸約圖：把「主 + 附件子集」枚舉成 4 個組合，四者歸為同一組（組內至多選一個）。
 export function DepReduceFigure() {
   const combos = [
     { label: '仅主', w: 2, v: 3 },
@@ -70,7 +70,7 @@ export function DepReduceFigure() {
   const x0 = 20
   return (
     <svg viewBox="0 0 640 176" role="img" aria-label="把主件与附件子集枚举成四个组合，归为同一组">
-      {/* 外框：同一组 */}
+      {/* 外框：同一組 */}
       <rect
         x="8"
         y="30"
@@ -105,7 +105,7 @@ export function DepReduceFigure() {
   )
 }
 
-// 转移图：落到分组背包，f[j] 两条路：不选本组(继承)，或选组内某个组合(枚举取 max)。
+// 轉移圖：落到分組揹包，f[j] 兩條路：不選本組(繼承)，或選組內某個組合(枚舉取 max)。
 export function DepTransitionFigure() {
   return (
     <svg viewBox="0 0 640 300" role="img" aria-label="有依赖的背包落到分组背包的一格转移">

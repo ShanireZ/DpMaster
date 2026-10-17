@@ -34,14 +34,14 @@ interface GameState {
   weight: number[]
 }
 
-// 随机长一棵树：每个新节点挂到一个已存在的、孩子数未超上限的节点下。
+// 隨機長一棵樹：每個新節點掛到一個已存在的、孩子數未超上限的節點下。
 // oxlint-disable-next-line react/only-export-components -- executable tests import the pure round builder
 export function buildPartyRound(difficulty: Difficulty, random: RandomSource): GameState {
   const d = DIFFS[difficulty]
   const parent: number[] = [-1]
   const childCount: number[] = [0]
   for (let i = 1; i < d.count; i++) {
-    // 候选父亲：孩子数未满
+    // 候選父親：孩子數未滿
     const cand: number[] = []
     for (let j = 0; j < i; j++) if (childCount[j] < d.maxChildren) cand.push(j)
     const fa = cand[randomInt(random, 0, cand.length - 1)]
@@ -84,7 +84,7 @@ export default function TreePartyGame() {
   const layout = useMemo(() => layoutRootedTree(tree), [tree])
   const opt = useMemo(() => solveTreeIndependentSet(tree), [tree])
 
-  // 玩家当前是否违规：存在一对被选中的直接上下级
+  // 玩家當前是否違規：存在一對被選中的直接上下級
   const conflictPairs = useMemo(() => {
     const bad: [number, number][] = []
     for (let u = 0; u < tree.n; u++) {
@@ -146,7 +146,7 @@ export default function TreePartyGame() {
     feedback = `最优欢乐值是 ${opt.ans}，你现在 ${curJoy}，还差 ${opt.ans - curJoy}。星标方案只是参考最优解之一。`
   }
 
-  // SVG 布局
+  // SVG 佈局
   const width = 640
   const padX = 40
   const topY = 36

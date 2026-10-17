@@ -31,8 +31,8 @@ outputs.push([
   ),
 ])
 
-// index.html 的首页 head 由渲染 47 条路由的同一个渲染器生成。手工维护过一次
-// canonical / hreflang / og:url 之后就会和 SITE.origin 漂移，这里彻底断掉这条路。
+// index.html 的首頁 head 由繪製 47 條路由的同一個繪製器生成。手動維護過一次
+// canonical / hreflang / og:url 之後就會和 SITE.origin 漂移，這裡徹底斷掉這條路。
 const indexUrl = new URL('../index.html', import.meta.url)
 const indexHtml = readFileSync(indexUrl, 'utf8').replace(/\r\n/g, '\n')
 outputs.push([
@@ -62,7 +62,7 @@ if (write) {
     try {
       actual = readFileSync(url, 'utf8').replace(/\r\n/g, '\n')
     } catch {
-      // 统一按“生成产物缺失”报告，不暴露平台差异的异常格式。
+      // 統一按“生成產物缺失”報告，不暴露平台差異的異常格式。
     }
     if (actual !== expected) {
       drift = true

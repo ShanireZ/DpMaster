@@ -13,33 +13,33 @@ const projectDir = join(siteDir, '..')
 const docsDir = join(projectDir, 'docs')
 
 /**
- * ★★★ 2026-08-21：这道门补上了它一直缺的那条判据 —— **可达性**。
+ * ★★★ 2026-08-21：這道門補上了它一直缺的那條判據 —— **可達性**。
  *
- * 它此前的作用域是全的（`markdownFiles` 递归），frontmatter 与断链也都在查，
- * 但它**从来没问过「这份文档从 index.md 走得到吗」**。于是 owner 08-21 推的
- * `docs/agents/` 六份进了 bundle、通过了 frontmatter 检查，却从入口一份都到不了。
+ * 它此前的作用域是全的（`markdownFiles` 遞歸），frontmatter 與斷鏈也都在查，
+ * 但它**從來沒問過「這份文件從 index.md 走得到嗎」**。於是 owner 08-21 推的
+ * `docs/agents/` 六份進了 bundle、通過了 frontmatter 檢查，卻從入口一份都到不了。
  *
- * ★ 对照：betai 与贝塔通那道同族的门是反过来坏的 —— 判据在，作用域漏了子目录。
- * 一个作用域全判据缺，一个判据在作用域缺，**同一个漂移有两种漏法**。
+ * ★ 對照：betai 與貝塔通那道同族的門是反過來壞的 —— 判據在，作用域漏了子目錄。
+ * 一個作用域全判據缺，一個判據在作用域缺，**同一個漂移有兩種漏法**。
  */
 
 /**
- * ★★ 只要求通用 OKF 字段、不要求本仓 `generated` 溯源的目录。
+ * ★★ 只要求通用 OKF 欄位、不要求本儲存庫 `generated` 溯源的目錄。
  *
- * `agents/` 与两份顶层 Web 契约是 workspace 级共享文档，同一批文件**逐字节**铺在
- * 多个项目。给它们补本仓特有的 `generated:` 与 `sources: - resource:` 写法，等于让
- * 本仓的副本从此和上游分叉，下次同步必冲突。
- * ⇒ 它们仍须有 `type` 与 `status`，也仍须**可达**，只是不受本仓溯源格式约束。
+ * `agents/` 與兩份頂層 Web 契約是 workspace 級共享文件，同一批檔案**逐位元組**鋪在
+ * 多個專案。給它們補本儲存庫特有的 `generated:` 與 `sources: - resource:` 寫法，等於讓
+ * 本儲存庫的副本從此和上游分叉，下次同步必衝突。
+ * ⇒ 它們仍須有 `type` 與 `status`，也仍須**可達**，只是不受本儲存庫溯源格式約束。
  *
- * ★★★ 豁免名单底下有断言守着（目录真的在、且 index 真的声明了它的定位）——
- * **把「跳过」写成「断言它缺席」**，否则名单腐烂了没有任何声音。
+ * ★★★ 豁免名單底下有斷言守著（目錄真的在、且 index 真的宣告了它的定位）——
+ * **把「跳過」寫成「斷言它缺席」**，否則名單腐爛了沒有任何聲音。
  */
 const SHARED_UPSTREAM_DIRS = ['agents']
 const SHARED_UPSTREAM_FILES = ['web-baseline.md', 'web-contracts.md']
 
 /**
- * ★★ 有意不进导航的文件：模板不是知识，列进 index 只会让目录多一条没人读的项。
- * 同样配一条断言守着 —— 文件哪天没了，这条豁免必须跟着响。
+ * ★★ 有意不進導覽的檔案：範本不是知識，列進 index 只會讓目錄多一條沒人讀的項。
+ * 同樣配一條斷言守著 —— 檔案哪天沒了，這條豁免必須跟著響。
  */
 const NOT_IN_NAVIGATION = ['concepts/README.template.md']
 
@@ -51,7 +51,7 @@ function markdownFiles(directory) {
   })
 }
 
-/** 一份文档里指向本地 Markdown 的链接，按它自己所在目录解析，返回绝对路径。 */
+/** 一份文件裡指向本機 Markdown 的連結，按它自己所在目錄解析，回傳絕對路徑。 */
 function localMarkdownLinks(path, source) {
   const targets = []
   for (const match of source.matchAll(/\[[^\]]*]\(([^)]+)\)/g)) {
@@ -81,7 +81,7 @@ function assertLocalLinks(path, source) {
   }
 }
 
-/** 从 index.md 出发的传递闭包 —— 「在 bundle 里」不够，要**走得到**。 */
+/** 從 index.md 出發的傳遞閉包 —— 「在 bundle 裡」不夠，要**走得到**。 */
 function reachableFromIndex(files) {
   const known = new Set(files)
   const entry = join(docsDir, 'index.md')
@@ -112,7 +112,7 @@ test('the documentation bundle follows the current OKF v0.2 contract', () => {
   const files = markdownFiles(docsDir)
   const relative_ = (path) => relative(docsDir, path).split('\\').join('/')
 
-  // ★ 扫描没瞎：递归确实进了子目录。退化回「只有顶层」时，下面的可达性会变成空断言。
+  // ★ 掃描沒瞎：遞歸確實進了子目錄。退化回「只有頂層」時，下面的可達性會變成空斷言。
   assert.ok(
     files.some((path) => relative_(path).includes('/')),
     'recursive scan reached no subdirectory',
@@ -134,8 +134,8 @@ test('the documentation bundle follows the current OKF v0.2 contract', () => {
     const rel = relative_(path)
     const source = readFileSync(path, 'utf8')
     assertLocalLinks(path, source)
-    // OKF 保留文件名按 **basename** 判定：子目录的 index.md 也是目录入口，同样不是概念文档。
-    // ★ 原来这里只跳过根 index.md，于是 agents/index.md 被当成概念文档要求 frontmatter。
+    // OKF 保留檔案名按 **basename** 判定：子目錄的 index.md 也是目錄入口，同樣不是概念文件。
+    // ★ 原來這裡只跳過根 index.md，於是 agents/index.md 被當成概念文件要求 frontmatter。
     if (rel === 'index.md' || rel.endsWith('/index.md')) continue
     const frontmatter = source.match(/^---\r?\n([\s\S]*?)\r?\n---/)
     assert.ok(frontmatter, `${relative(projectDir, path)} has OKF frontmatter`)

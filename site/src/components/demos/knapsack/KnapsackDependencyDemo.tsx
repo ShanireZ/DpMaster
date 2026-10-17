@@ -37,8 +37,8 @@ function Stepper({
 }
 
 /**
- * 有依赖的背包演示：1 个主件 + 2 个附件，可改 w / v。
- * 先把「主 + 附件子集」枚举成 4 个组合，再把这 4 个组合当作同一组做分组背包。
+ * 有依賴的揹包演示：1 個主件 + 2 個附件，可改 w / v。
+ * 先把「主 + 附件子集」枚舉成 4 個組合，再把這 4 個組合當作同一組做分組揹包。
  */
 export default function KnapsackDependencyDemo() {
   const [master, setMaster] = useState<Master>({ w: 2, v: 3 })

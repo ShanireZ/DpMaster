@@ -37,8 +37,8 @@ function Stepper({
 }
 
 /**
- * 计数型 01 背包演示：一维 f[j]「恰好装满容量 j 的方案数」，逐格累加。
- * 方案数只与重量有关，故物品只留重量 w 可编辑；容量 W ≤ 12。
+ * 計數型 01 揹包演示：一維 f[j]「恰好裝滿容量 j 的方案數」，逐格累加。
+ * 方案數只與重量有關，故物品只留重量 w 可編輯；容量 W ≤ 12。
  */
 export default function KnapsackVariantDemo() {
   const [items, setItems] = useState<CountItem[]>([{ w: 2 }, { w: 3 }, { w: 5 }])

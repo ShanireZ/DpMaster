@@ -1,6 +1,6 @@
 import { CLIENT_RUNTIME } from '../config/client-runtime.ts'
 
-/** 唯一的统计 Provider。站点只发布到 Cloudflare Worker。 */
+/** 唯一的統計 Provider。站台只發布到 Cloudflare Worker。 */
 export const ANALYTICS_PROVIDER = 'cloudflare'
 
 export type AnalyticsEventName =
@@ -24,11 +24,11 @@ export interface AnalyticsEvent {
 }
 
 /**
- * Cloudflare Web Analytics / RUM 由 Cloudflare 代理自动注入，源码与预渲染产物
- * 都不得再手工加 beacon，否则同一次浏览会被重复统计。这里只发第一方事件。
+ * Cloudflare Web Analytics / RUM 由 Cloudflare 代理自動注入，原始碼與預繪製產物
+ * 都不得再手動加 beacon，否則同一次瀏覽會被重複統計。這裡只發第一方事件。
  */
 function sendFirstPartyEvent(event: AnalyticsEvent): void {
-  // 只在生产域名上报：localhost、预览域和任何镜像都不写入数据集。
+  // 只在生產網域上報：localhost、預覽域和任何鏡像都不寫入資料集。
   if (window.location.hostname !== CLIENT_RUNTIME.productionHostname) return
 
   const body = JSON.stringify({
@@ -54,7 +54,7 @@ function sendFirstPartyEvent(event: AnalyticsEvent): void {
       return
     }
   } catch {
-    // sendBeacon 不可用时降级为 keepalive fetch。
+    // sendBeacon 不可用時降級為 keepalive fetch。
   }
 
   void fetch(CLIENT_RUNTIME.analyticsEndpoint, {
@@ -63,7 +63,7 @@ function sendFirstPartyEvent(event: AnalyticsEvent): void {
     body,
     keepalive: true,
   }).catch(() => {
-    // 统计永远不影响教学、小游戏或反馈流程。
+    // 統計永遠不影響教學、小遊戲或回饋流程。
   })
 }
 

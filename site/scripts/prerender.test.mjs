@@ -4,8 +4,8 @@ import test from 'node:test'
 import { settleSuspenseMarkup } from './prerender.mjs'
 
 test('the prerenderer never injects a Web Analytics beacon', async () => {
-  // Cloudflare 代理自动注入 Web Analytics / RUM。预渲染再手工塞一份 beacon
-  // 会让同一次浏览重复统计，所以这条路必须从源头上不存在。
+  // Cloudflare 代理自動注入 Web Analytics / RUM。預繪製再手動塞一份 beacon
+  // 會讓同一次瀏覽重複統計，所以這條路必須從源頭上不存在。
   const source = await readFile(new URL('./prerender.mjs', import.meta.url), 'utf8')
   assert.doesNotMatch(source, /cloudflareinsights/)
   assert.doesNotMatch(source, /data-cf-beacon/)

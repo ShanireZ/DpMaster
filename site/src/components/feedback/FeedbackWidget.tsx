@@ -47,8 +47,8 @@ function brandVersions(value: unknown): BrandVersion[] {
 
 function browserLabel(ua: string, brands: BrandVersion[]): string {
   const usefulBrands = brands.filter(({ brand }) => !/not.?a.?brand|chromium/i.test(brand))
-  // UA-CH 往往会同时返回浏览器品牌与 Chromium/Chrome 品牌；按派生浏览器
-  // 优先级挑选，避免把 Edge、Opera 等误报成 Chrome。
+  // UA-CH 往往會同時回傳瀏覽器品牌與 Chromium/Chrome 品牌；按派生瀏覽器
+  // 優先級挑選，避免把 Edge、Opera 等誤報成 Chrome。
   for (const pattern of [/edge/i, /opera/i, /vivaldi/i, /brave/i, /firefox/i, /chrome/i]) {
     const preferredBrand = usefulBrands.find(({ brand }) => pattern.test(brand))
     if (preferredBrand) {
@@ -106,7 +106,7 @@ async function collectDiagnostics(): Promise<Diagnostics> {
         'wow64',
       ])
     } catch {
-      // 部分浏览器会拒绝高熵 UA-CH；下面仍会提交标准 UA 与平台信息。
+      // 部分瀏覽器會拒絕高熵 UA-CH；下面仍會提交標準 UA 與平台資訊。
     }
   }
 
@@ -137,7 +137,7 @@ async function collectDiagnostics(): Promise<Diagnostics> {
   }
 }
 
-/** 把当前路由翻成一个人话页面标签，便于反馈自动定位。 */
+/** 把當前路由翻成一個人話頁面標籤，便於回饋自動定位。 */
 function pageLabel(pathname: string): string {
   const m = pathname.match(/^\/part\/([a-g])(?:\/([a-z0-9]+))?/)
   if (m) {
@@ -168,7 +168,7 @@ export default function FeedbackWidget() {
   const dialogRef = useRef<HTMLDivElement>(null)
   const doneRef = useRef<HTMLButtonElement>(null)
 
-  // 打开时快照当前页、锁定背景滚动，并把键盘焦点限定在对话框内。
+  // 打開時快照當前頁、鎖定背景捲動，並把鍵盤焦點限定在對話框內。
   useEffect(() => {
     if (!open) return
     setPage(pageLabel(location.pathname))
@@ -216,7 +216,7 @@ export default function FeedbackWidget() {
   const close = () => {
     setOpen(false)
     setTimeout(() => triggerRef.current?.focus(), 0)
-    // 提交成功后关闭时清空，避免下次残留
+    // 提交成功後關閉時清空，避免下次殘留
     if (status === 'ok') setTimeout(reset, 200)
   }
 
@@ -305,7 +305,7 @@ export default function FeedbackWidget() {
         metadata: { kind },
       })
     } catch {
-      // 后端未接通/网络失败：降级为「复制反馈」，让用户仍能把内容交出去
+      // 後端未接通/網路失敗：降級為「複製回饋」，讓使用者仍能把內容交出去
       setErrorMessage('提交没成功，请检查网络后再试。')
       setStatus('error')
       trackAnalyticsEvent({
@@ -322,7 +322,7 @@ export default function FeedbackWidget() {
       setCopied(true)
       setTimeout(() => setCopied(false), 1800)
     } catch {
-      /* 剪贴板不可用则忽略 */
+      /* 剪貼板不可用則忽略 */
     }
   }
 

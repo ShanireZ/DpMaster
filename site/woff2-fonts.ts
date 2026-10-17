@@ -1,19 +1,19 @@
 import type { Plugin } from 'vite'
 
 /**
- * 字体只发布 woff2。KaTeX 与 fontsource 的样式表为每个 @font-face 同时列出
- * woff2 / woff / ttf；Baseline 目标浏览器全部支持 woff2，旧格式永远不会被下载，
- * 却会被 Vite 当作资产发布并计入资源预算。这里在 Vite 处理 CSS 之前把 `src`
- * 只留下 woff2 条目；某个 @font-face 没有 woff2 时直接报错，不悄悄丢字体。
- * scripts/check-assets.mjs 在产物侧再锁一次：dist/assets 不得出现旧格式字体。
+ * 字體只發布 woff2。KaTeX 與 fontsource 的樣式表為每個 @font-face 同時列出
+ * woff2 / woff / ttf；Baseline 目標瀏覽器全部支援 woff2，舊格式永遠不會被下載，
+ * 卻會被 Vite 當作資產發佈並計入資源預算。這裡在 Vite 處理 CSS 之前把 `src`
+ * 只留下 woff2 條目；某個 @font-face 沒有 woff2 時直接回報錯誤，不悄悄丟字體。
+ * scripts/check-assets.mjs 在產物側再鎖一次：dist/assets 不得出現舊格式字體。
  */
 const FONT_FACE = /@font-face\s*\{[^}]*\}/g
 const SRC_PREFIX = /[{;]\s*src\s*:\s*/g
 const WOFF2_FORMAT = /format\(\s*(["']?)woff2\1\s*\)/i
 
 /**
- * 在引号与括号之外，按 `stops` 中的字符切分。url() 里的 data URL 可以含 `,` 与 `;`，
- * 不能用正则直接截。返回各段起止位置，最后一段止于第一个 `end` 字符或文本末尾。
+ * 在引號與括號之外，按 `stops` 中的字元切分。url() 裡的 data URL 可以含 `,` 與 `;`，
+ * 不能用正則直接截。回傳各段起止位置，最後一段止於第一個 `end` 字元或文字末尾。
  */
 function scan(text: string, from: number, separator: string, end: string): number[] {
   const cuts = [from]

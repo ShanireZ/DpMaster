@@ -1,6 +1,6 @@
-/* 股票买卖状态机 · 逐日转移的自建轻量可视化样式。
-   不引用 DPViz / knapsack-demo.css；独立命名前缀 stk__，配色只用设计令牌。
-   ★不做 opacity:0 起步动画——内容一律从可见态开始，仅用颜色/边框区分状态。 */
+/* 股票買賣狀態機 · 逐日轉移的自建輕量視覺化樣式。
+   不引用 DPViz / knapsack-demo.css；獨立命名前綴 stk__，配色只用設計權杖。
+   ★不做 opacity:0 起步動畫——內容一律從可見態開始，僅用顏色/邊框區分狀態。 */
 
 .stk__toolbar {
   display: flex;
@@ -56,7 +56,7 @@
   height: 15px;
 }
 
-/* ---------- 逐日时间轴：价格柱 + 当日动作徽标 ---------- */
+/* ---------- 逐日時間軸：價格柱 + 當日動作徽標 ---------- */
 .stk__timeline-label {
   display: flex;
   align-items: baseline;
@@ -102,10 +102,10 @@
   background: color-mix(in srgb, var(--accent-1) 10%, var(--surface-2));
 }
 .stk__day.past {
-  opacity: 0.96; /* 已走过的日子，正常显示（不从 0 起步） */
+  opacity: 0.96; /* 已走過的日子，正常顯示（不從 0 起步） */
 }
 .stk__day.future {
-  opacity: 0.5; /* 未到的日子弱化，但仍可见 */
+  opacity: 0.5; /* 未到的日子弱化，但仍可見 */
 }
 .stk__bar-wrap {
   display: flex;
@@ -133,7 +133,7 @@
   font-size: 10px;
   color: var(--text-3);
 }
-/* 当日动作徽标：买 / 卖 / 持 / 空 / 冷 */
+/* 當日動作徽標：買 / 賣 / 持 / 空 / 冷 */
 .stk__act {
   font-size: 10.5px;
   font-weight: 700;
@@ -162,7 +162,7 @@
   border: 1px solid color-mix(in srgb, var(--viz-source) 50%, transparent);
 }
 
-/* ---------- 两状态节点图：持有 / 空仓，及当日转移边 ---------- */
+/* ---------- 兩狀態節點圖：持有 / 空倉，及當日轉移邊 ---------- */
 .stk__machine {
   margin-top: var(--sp-5);
 }
@@ -232,7 +232,7 @@
   color: var(--text-2);
   font-weight: 700;
 }
-/* 转移来源标记：本日该状态由哪条边转来 */
+/* 轉移來源標記：本日該狀態由哪條邊轉來 */
 .stk__edge {
   display: inline-block;
   margin-top: 8px;
@@ -254,7 +254,7 @@
   border: 1px solid var(--border-strong);
 }
 
-/* ---------- 底部读数 + 步进控制 ---------- */
+/* ---------- 底部讀數 + 步進控制 ---------- */
 .stk__readout {
   margin-top: var(--sp-4);
   font-size: 14px;

@@ -1,8 +1,8 @@
-// G 部分（状压 DP）讲解用插图：on-brand SVG，随强调色变色。
-// 核心是可复用的「比特点阵」BitLattice——多页共用：n 个方块，亮=1 / 灭=0，附二进制标注。
+// G 部分（狀壓 DP）講解用插圖：on-brand SVG，隨強調色變色。
+// 核心是可重複使用的「位元點陣」BitLattice——多頁共用：n 個方塊，亮=1 / 滅=0，附二進位標註。
 
-/** 可复用比特点阵：把一个集合画成 n 个方块（亮=在集合内 / 灭=不在），下方标出二进制串。
- *  bits[0] 是最低位（右起第 1 个格），与代码里 `mask & (1<<i)` 的 i 对应；渲染时最高位在左，符合书写习惯。 */
+/** 可重複使用位元點陣：把一個集合畫成 n 個方塊（亮=在集合內 / 滅=不在），下方標出二進位串。
+ *  bits[0] 是最低位（右起第 1 個格），與程式碼裡 `mask & (1<<i)` 的 i 對應；繪製時最高位在左，符合書寫習慣。 */
 export function BitLattice({
   bits,
   labels,
@@ -11,12 +11,12 @@ export function BitLattice({
   showBinary = true,
   highlight,
 }: {
-  bits: number[] // 每位 0/1，bits[i] 对应第 i 位（i=0 最低位）
-  labels?: string[] // 每格顶端可选标注（如元素名 / 城市号），按位 i 给
+  bits: number[] // 每位 0/1，bits[i] 對應第 i 位（i=0 最低位）
+  labels?: string[] // 每格頂端可選標註（如元素名 / 城市號），按位 i 給
   cell?: number
   gap?: number
   showBinary?: boolean
-  highlight?: number[] // 要描边强调的位下标
+  highlight?: number[] // 要描邊強調的位下標
 }) {
   const n = bits.length
   const hl = new Set(highlight ?? [])
@@ -24,7 +24,7 @@ export function BitLattice({
   const topPad = labels ? 20 : 6
   const botPad = showBinary ? 26 : 6
   const H = topPad + cell + botPad
-  // 视觉最高位在左：位 i 画在第 (n-1-i) 列
+  // 視覺最高位在左：位 i 畫在第 (n-1-i) 列
   const colX = (i: number) => (n - 1 - i) * (cell + gap)
   return (
     <svg viewBox={`0 0 ${Math.max(totalW, 40)} ${H}`} width={totalW} height={H} role="img" aria-label="比特点阵">
@@ -69,11 +69,11 @@ export function BitLattice({
   )
 }
 
-// ============ board 页：棋盘 / 轮廓状压 ============
+// ============ board 頁：棋盤 / 輪廓狀壓 ============
 
-// 一行棋盘 → 二进制串：把「哪些列放了棋子」压成一个整数。
+// 一行棋盤 → 二進位串：把「哪些列放了棋子」壓成一個整數。
 export function RowToMaskFigure() {
-  const row = [1, 0, 1, 0, 0] // 列 1、3 放王（从左到右展示）
+  const row = [1, 0, 1, 0, 0] // 列 1、3 放王（從左到右展示）
   const cell = 46
   const gap = 8
   const x0 = 40
@@ -107,7 +107,7 @@ export function RowToMaskFigure() {
       <text x={x0 + 150} y={112} fontSize="12" fill="var(--text-2)">
         压成一个整数 mask
       </text>
-      {/* 二进制串：最高位在左 → 列 5..1；这里列 1、3 有子 */}
+      {/* 二進位串：最高位在左 → 列 5..1；這裡列 1、3 有子 */}
       {[0, 0, 1, 0, 1].map((b, k) => (
         <g key={k} transform={`translate(${bx + k * (cell + gap)},${by})`}>
           <rect width={cell} height={cell} rx="9" fill="var(--surface-3)" stroke="var(--border-strong)" strokeWidth="1.4" />
@@ -123,7 +123,7 @@ export function RowToMaskFigure() {
   )
 }
 
-// 行内 / 行间合法性判定：x&(x<<1) 查同行相邻、x&y 查上下相邻。
+// 行內 / 行間合法性判定：x&(x<<1) 查同行相鄰、x&y 查上下相鄰。
 export function BoardCheckFigure() {
   const cell = 40
   const gap = 7
@@ -146,7 +146,7 @@ export function BoardCheckFigure() {
     ))
   return (
     <svg viewBox="0 0 560 168" role="img" aria-label="行内相邻与行间相邻的位运算判定">
-      {/* 行内合法：x=01010 无相邻 */}
+      {/* 行內合法：x=01010 無相鄰 */}
       <text x="20" y={rowY + 18} fontSize="13" fontWeight="600" fill="var(--viz-chosen)">
         行内 ✓
       </text>
@@ -154,7 +154,7 @@ export function BoardCheckFigure() {
         x&amp;(x&lt;&lt;1)=0
       </text>
       {draw([0, 1, 0, 1, 0], rowY, 'color-mix(in srgb, var(--accent-1) 26%, var(--surface-3))', 'var(--surface-3)')}
-      {/* 行间冲突：本行与上一行同列都放 → x&y≠0 */}
+      {/* 行間衝突：本行與上一行同列都放 → x&y≠0 */}
       <text x="20" y={nextY + 18} fontSize="13" fontWeight="600" fill="var(--viz-invalid)">
         行间 ✗
       </text>
@@ -162,7 +162,7 @@ export function BoardCheckFigure() {
         x&amp;y≠0
       </text>
       {draw([0, 1, 0, 0, 1], nextY, 'color-mix(in srgb, var(--viz-invalid) 22%, var(--surface-3))', 'var(--surface-3)')}
-      {/* 冲突列高亮竖线：列 2、列 5 上下都亮 */}
+      {/* 衝突列高亮豎線：列 2、列 5 上下都亮 */}
       {[1, 4].map((c) => (
         <line
           key={c}
@@ -185,7 +185,7 @@ export function BoardCheckFigure() {
   )
 }
 
-// 炮兵：攻击隔两格 → 状态必须同时记住「前两行」。
+// 炮兵：攻擊隔兩格 → 狀態必須同時記住「前兩行」。
 export function CannonTwoRowFigure() {
   const cell = 30
   const gap = 5
@@ -231,9 +231,9 @@ export function CannonTwoRowFigure() {
   )
 }
 
-// ============ tsp 页：集合状压 / TSP ============
+// ============ tsp 頁：集合狀壓 / TSP ============
 
-// TSP 状态 dp[S][i]：已访问集合 S（点阵）+ 当前停在点 i（旗标）。
+// TSP 狀態 dp[S][i]：已訪問集合 S（點陣）+ 當前停在點 i（旗標）。
 export function TspStateFigure() {
   return (
     <svg viewBox="0 0 560 150" role="img" aria-label="TSP 状态 dp[S][i] 的两个维度">
@@ -241,7 +241,7 @@ export function TspStateFigure() {
         <text x="0" y="0" fontSize="12.5" fill="var(--text-2)">
           维度一：已访问集合 S（用点阵表示）
         </text>
-        {/* 显示顺序：最高位在左 → 点 3、2、1、0；S=0110 故点 1、2 亮 */}
+        {/* 顯示順序：最高位在左 → 點 3、2、1、0；S=0110 故點 1、2 亮 */}
         {[0, 1, 1, 0].map((bit, k) => (
           <g key={k} transform={`translate(${k * 44},14)`}>
             <rect
@@ -283,7 +283,7 @@ export function TspStateFigure() {
   )
 }
 
-// TSP 转移：从 dp[S][i] 走向未访问点 j，S 里点亮第 j 位。
+// TSP 轉移：從 dp[S][i] 走向未訪問點 j，S 裡點亮第 j 位。
 export function TspTransFigure() {
   const dot = (x: number, y: number, id: number, on: boolean, cur = false) => (
     <g transform={`translate(${x},${y})`}>
@@ -308,10 +308,10 @@ export function TspTransFigure() {
       <text x="20" y="20" fontSize="12.5" fill="var(--text-2)">
         已在集合 S={'{0,1}'}、当前停在点 1，下一步去未访问的点 2 或 3
       </text>
-      {/* 已访问 0,1（点亮），当前 1 */}
+      {/* 已訪問 0,1（點亮），當前 1 */}
       {dot(70, 90, 0, true)}
       {dot(160, 60, 1, false, true)}
-      {/* 候选 2,3 */}
+      {/* 候選 2,3 */}
       {dot(320, 60, 2, false)}
       {dot(360, 140, 3, false)}
       <line x1="178" y1="66" x2="300" y2="62" stroke="var(--viz-chosen)" strokeWidth="2.4" markerEnd="url(#tsp-ar)" />
@@ -335,7 +335,7 @@ export function TspTransFigure() {
   )
 }
 
-// 开环 vs 闭环 TSP：Hamilton 路径不回起点；售货员必须回到起点。
+// 開環 vs 閉環 TSP：Hamilton 路徑不回起點；售貨員必須回到起點。
 export function OpenClosedFigure() {
   const ring = (cx: number, cy: number, close: boolean) => {
     const pts = [
@@ -398,20 +398,20 @@ export function OpenClosedFigure() {
   )
 }
 
-// ============ cover 页：状压 + 覆盖 ============
+// ============ cover 頁：狀壓 + 覆蓋 ============
 
-// 每个「选择」覆盖一批元素 → 压成一个 mask；若干 mask 并起来填满全集。
+// 每個「選擇」覆蓋一批元素 → 壓成一個 mask；若干 mask 並起來填滿全集。
 export function CoverMaskFigure() {
   const universe = 5
   const choices = [
-    { name: '选择 A', bits: [1, 1, 0, 0, 0] }, // 覆盖元素 0,1
-    { name: '选择 B', bits: [0, 0, 1, 1, 0] }, // 覆盖元素 2,3
-    { name: '选择 C', bits: [0, 0, 0, 0, 1] }, // 覆盖元素 4
+    { name: '选择 A', bits: [1, 1, 0, 0, 0] }, // 覆蓋元素 0,1
+    { name: '选择 B', bits: [0, 0, 1, 1, 0] }, // 覆蓋元素 2,3
+    { name: '选择 C', bits: [0, 0, 0, 0, 1] }, // 覆蓋元素 4
   ]
   const cell = 30
   const gap = 6
   const x0 = 96
-  // 展示时元素 0..4 从左到右（低位在左，便于按「元素编号」阅读覆盖情况）
+  // 展示時元素 0..4 從左到右（低位在左，便於按「元素編號」閱讀覆蓋情況）
   const draw = (bits: number[], y: number, strong: boolean) =>
     bits.map((b, k) => (
       <g key={k} transform={`translate(${x0 + k * (cell + gap)},${y})`}>
@@ -450,11 +450,11 @@ export function CoverMaskFigure() {
   )
 }
 
-// ============ subset 页：枚举子集 / 计数变形 ============
+// ============ subset 頁：枚舉子集 / 計數變形 ============
 
-// 子集枚举：for(T=S;T;T=(T-1)&S) 依次跳过 S 的所有非空子集。
+// 子集枚舉：for(T=S;T;T=(T-1)&S) 依次跳過 S 的所有非空子集。
 export function SubsetEnumFigure() {
-  // S = 1011（元素 0,1,3）。它的非空子集按枚举顺序：
+  // S = 1011（元素 0,1,3）。它的非空子集按枚舉順序：
   const S = [1, 1, 0, 1]
   const subs = [
     [1, 1, 0, 1],
@@ -470,7 +470,7 @@ export function SubsetEnumFigure() {
   const rowH = 30
   const bx = 130
   const drawMini = (bits: number[], x: number, y: number, dimZero: boolean) =>
-    // 渲染列 k 从左到右显示高位→低位；列 k 对应位下标 i = n-1-k
+    // 繪製列 k 從左到右顯示高位→低位；列 k 對應位下標 i = n-1-k
     Array.from({ length: bits.length }, (_, k) => {
       const i = bits.length - 1 - k
       const bit = bits[i]
@@ -518,7 +518,7 @@ export function SubsetEnumFigure() {
   )
 }
 
-// 计数变形：dp[mask][余数] —— 位掩码之外再挂一维（如模 d 的余数）。
+// 計數變形：dp[mask][餘數] —— 位掩碼之外再掛一維（如模 d 的餘數）。
 export function CountVariantFigure() {
   return (
     <svg viewBox="0 0 440 168" role="img" aria-label="位掩码加附加维的计数状态">
@@ -526,7 +526,7 @@ export function CountVariantFigure() {
         <text x="0" y="0" fontSize="12.5" fill="var(--text-2)">
           主维：已用数字集合 mask
         </text>
-        {/* 显示列 k：最高位在左（位3..0）；mask=0101 → 位0、位2 亮 */}
+        {/* 顯示列 k：最高位在左（位3..0）；mask=0101 → 位0、位2 亮 */}
         {[0, 1, 0, 1].map((bit, k) => (
           <g key={k} transform={`translate(${k * 40},14)`}>
             <rect width="34" height="34" rx="7" fill={bit ? 'color-mix(in srgb, var(--accent-1) 28%, var(--surface-3))' : 'var(--surface-3)'} stroke={bit ? 'var(--accent-2)' : 'var(--border-strong)'} strokeWidth="1.5" />
@@ -558,16 +558,16 @@ export function CountVariantFigure() {
   )
 }
 
-// ============ plug 页：插头 DP / 轮廓线 ============
+// ============ plug 頁：插頭 DP / 輪廓線 ============
 
-// 轮廓线：处理到某格时，已决区与未决区之间的一条折线，线上每格挂「插头」连通信息。
+// 輪廓線：處理到某格時，已決區與未決區之間的一條折線，線上每格掛「插頭」連通訊息。
 export function ContourFigure() {
   const cols = 5
   const rows = 4
   const cell = 34
   const x0 = 40
   const y0 = 30
-  // 处理到第 2 行第 2 列（r=1,c=2）：其上方与左侧为已决
+  // 處理到第 2 行第 2 列（r=1,c=2）：其上方與左側為已決
   const cutR = 1
   const cutC = 2
   const decided = (r: number, c: number) => r < cutR || (r === cutR && c <= cutC)
@@ -591,7 +591,7 @@ export function ContourFigure() {
           )
         }),
       )}
-      {/* 轮廓折线 */}
+      {/* 輪廓折線 */}
       <polyline
         points={`${x0},${y0 + (cutR + 1) * cell - 1.5} ${x0 + (cutC + 1) * cell - 1.5},${y0 + (cutR + 1) * cell - 1.5} ${x0 + (cutC + 1) * cell - 1.5},${y0 + cutR * cell - 1.5} ${x0 + cols * cell - 1.5},${y0 + cutR * cell - 1.5}`}
         fill="none"

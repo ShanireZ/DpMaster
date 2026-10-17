@@ -1,4 +1,4 @@
-// 01 背包讲解用的插图（on-brand SVG，随强调色变色）
+// 01 揹包講解用的插圖（on-brand SVG，隨強調色變色）
 export function SetupFigure() {
   const items = [
     { w: 2, v: 3 },
@@ -80,8 +80,8 @@ export function DecisionFigure() {
   )
 }
 
-// 逆推 vs 正推：同一件物品 (w=2,v=3)、容量 6 的两行结果对比。
-// 逆推每格恒 3（只装 1 件）；正推 f[0]→f[2]→f[4]→f[6] 链式 +3 滚到 9（同一件被装 3 次）。
+// 逆推 vs 正推：同一件物品 (w=2,v=3)、容量 6 的兩行結果對比。
+// 逆推每格恆 3（只裝 1 件）；正推 f[0]→f[2]→f[4]→f[6] 鏈式 +3 滾到 9（同一件被裝 3 次）。
 export function ForwardBugFigure() {
   const cols = [
     { j: 0, rev: 0, fwd: 0 },
@@ -146,7 +146,7 @@ export function ForwardBugFigure() {
   )
 }
 
-// 完全背包场景：每种物品带 ×∞ 徽标，可无限次取用。
+// 完全揹包場景：每種物品帶 ×∞ 徽標，可無限次取用。
 export function CompleteSetupFigure() {
   const items = [
     { w: 2, v: 3 },
@@ -187,7 +187,7 @@ export function CompleteSetupFigure() {
   )
 }
 
-// 完全背包的核心优化图解：01 的「取」来源在上一行(每件一次)，完全的「取」来源在本行(同种可再取)。
+// 完全揹包的核心優化圖解：01 的「取」來源在上一行(每件一次)，完全的「取」來源在本行(同種可再取)。
 export function CompleteOptFigure() {
   const CW = 76
   const CH = 40

@@ -14,7 +14,7 @@
 .game__title { font-weight: 700; font-size: 16px; display: flex; align-items: center; gap: 8px; }
 .game__sub { font-size: 13px; color: var(--text-2); }
 
-/* 难度分段选择器（简单 / 中等 / 困难） */
+/* 難度分段選擇器（簡單 / 中等 / 困難） */
 .game__diff {
   margin-left: auto;
   display: inline-flex; gap: 4px;
@@ -81,7 +81,7 @@
 .gbtn--primary { background: var(--grad-accent); color: var(--text-on-accent); border-color: transparent; }
 .gbtn--primary:hover { transform: translateY(-1px); box-shadow: var(--glow-accent); }
 
-/* 三方对照：贪心 · 你 · DP 最优 */
+/* 三方對照：貪心 · 你 · DP 最優 */
 .game__compare {
   padding: 10px 12px; border-radius: var(--r-2);
   background: var(--surface-2); border: 1px solid var(--border);
@@ -104,7 +104,7 @@
   border-top: 1px solid var(--border);
 }
 
-/* 战绩 */
+/* 戰績 */
 .game__stats {
   text-align: center; font-size: 12px; color: var(--text-3);
   font-family: var(--font-mono); letter-spacing: 0.02em;

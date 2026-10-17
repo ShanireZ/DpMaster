@@ -33,7 +33,7 @@ function Stepper({
   )
 }
 
-// 默认 3×3 权值网格，两条右/下路径的最大权值和 = 19（重叠格只算一次）。
+// 預設 3×3 權值網格，兩條右/下路徑的最大權值和 = 19（重疊格只算一次）。
 const DEFAULT_GRID: number[][] = [
   [1, 2, 3],
   [2, 5, 1],
@@ -51,7 +51,7 @@ function resizeGrid(g: number[][], rows: number, cols: number): number[][] {
   return out
 }
 
-/** 双线程（传纸条）演示：两条路径同步从左上到右下，按步数压成 dp[k][x1][x2]，同格权值只算一次。可改每格权值与网格大小。 */
+/** 雙執行緒（傳紙條）演示：兩條路徑同步從左上到右下，按步數壓成 dp[k][x1][x2]，同格權值只算一次。可改每格權值與網格大小。 */
 export default function TwoPathDemo() {
   const [rows, setRows] = useState(3)
   const [cols, setCols] = useState(3)

@@ -1,7 +1,7 @@
 ---
 type: Engineering Contract
 title: Toolchain and Modernity Contract
-description: Current Node, pnpm, TypeScript, dependency, compatibility, CI, and local release rules for DP大师.
+description: Current Node, pnpm, TypeScript, dependency, compatibility, CI, and local release rules for DP大師.
 tags: [engineering, node, pnpm, typescript, ci]
 status: stable
 generated: { by: openai/codex, at: 2026-07-31T15:32:38+08:00 }

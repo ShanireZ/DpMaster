@@ -1,24 +1,24 @@
-// Worker 出口可达性探针（一次性诊断用，不属于站点功能）。
+// Worker 出口可達性探針（一次性診斷用，不屬於站台功能）。
 //
-// 背景：Cloudflare 数据中心出口到钉钉 oapi.dingtalk.com 的 TLS 被系统性打断
-// （2026-08 多轮实测稳定 525），而普通海外节点到钉钉正常。站点收敛到单一 CF
-// Worker 之后，原来经国内站中转的告警链路没了，必须先测清楚"到底哪条出口能通"
-// 才能选送达方案。
+// 背景：Cloudflare 資料中心出口到釘釘 oapi.dingtalk.com 的 TLS 被系統性打斷
+// （2026-08 多輪實測穩定 525），而普通海外節點到釘釘正常。站台收斂到單一 CF
+// Worker 之後，原來經國內站中轉的告警連線路徑沒了，必須先測清楚"到底哪條出口能通"
+// 才能選送達方案。
 //
-// 探针对每个目标跑两条出口：
-//   - fetch()：走 Cloudflare 的反向代理栈，出口在 Cloudflare 公开 IP 段内。
-//   - connect()（cloudflare:sockets）：官方文档明确说明其出口前缀**不在**
-//     Cloudflare 公开 IP 段里。如果对端是按 CF 公开段封的，这条有机会通。
+// 探針對每個目標跑兩條出口：
+//   - fetch()：走 Cloudflare 的反向代理棧，出口在 Cloudflare 公開 IP 段內。
+//   - connect()（cloudflare:sockets）：官方文件明確說明其出口前綴**不在**
+//     Cloudflare 公開 IP 段裡。如果對端是按 CF 公開段封的，這條有機會通。
 //
-// 两种模式：
-//   - 默认（可达性）：对每个目标 GET / 与 HEAD /，纯读，无副作用。
-//   - `{"mode":"post"}`（POST 往返）：向钉钉两个接入点发一次真实的 HTTPS POST，
-//     验证「发请求体 + 完整读回响应（含 chunked）」这条链路。★ 不带 access_token
-//     与签名，钉钉会用 errcode 拒绝，不会向任何群投递消息。
+// 兩種模式：
+//   - 預設（可達性）：對每個目標 GET / 與 HEAD /，純讀，無副作用。
+//   - `{"mode":"post"}`（POST 往返）：向釘釘兩個接入點發一次真實的 HTTPS POST，
+//     驗證「發請求體 + 完整讀迴回應（含 chunked）」這條連線路徑。★ 不帶 access_token
+//     與簽名，釘釘會用 errcode 拒絕，不會向任何群投遞訊息。
 //
-// 启用方式：给 Worker 配 EGRESS_DIAG_SECRET，然后带 x-dp-diag-secret 头 POST。
-// 不配这个变量时端点不存在（请求落回静态资源，与任意未知路径同样返回
-// POST 405 / GET 404，不泄露端点是否存在）。
+// 啟用方式：給 Worker 配 EGRESS_DIAG_SECRET，然後帶 x-dp-diag-secret 頭 POST。
+// 不配這個變數時端點不存在（請求落回靜態資源，與任意未知路徑同樣回傳
+// POST 405 / GET 404，不洩露端點是否存在）。
 
 const DEFAULT_TARGETS = Object.freeze([
   { host: 'oapi.dingtalk.com', note: '钉钉自定义机器人（当前 webhook 接入点）' },
@@ -36,9 +36,9 @@ const DEFAULT_TIMEOUT_MS = 8000
 const MAX_TARGETS = 12
 
 /**
- * POST 往返验证目标。★ 一律不带 access_token / 签名：钉钉会用 errcode 拒绝，
- * 不会向任何群投递消息。这里要验证的是「连接 + 发请求体 + 完整读回响应」这条
- * 链路本身，不是投递。
+ * POST 往返驗證目標。★ 一律不帶 access_token / 簽名：釘釘會用 errcode 拒絕，
+ * 不會向任何群投遞訊息。這裡要驗證的是「連接 + 發請求體 + 完整讀迴回應」這條
+ * 連線路徑本身，不是投遞。
  */
 const DEFAULT_POST_TARGETS = Object.freeze([
   {
@@ -53,7 +53,7 @@ const DEFAULT_POST_TARGETS = Object.freeze([
   },
 ])
 
-/** 恒定时间字符串比较，避免诊断密钥被时序侧信道探测。 */
+/** 恆定時間字串比較，避免診斷金鑰被時序側信道探測。 */
 export function secureEqual(a, b) {
   const bytesA = new TextEncoder().encode(String(a || ''))
   const bytesB = new TextEncoder().encode(String(b || ''))
@@ -102,11 +102,11 @@ async function probeFetch(host, timeoutMs, fetchImpl, now) {
 }
 
 /**
- * 走 raw socket 发一次真实的 HTTPS POST 并完整读回响应。
- * 这是「能不能用 connect() 顶替 fetch() 投递 webhook」的决定性验证：
- * 光有 TLS 握手不够，还要能发请求体、能把响应（可能是 chunked）解回来。
- * ★ 复用 worker/socket-fetch.js —— 那份是生产投递真正在用的实现，探针必须
- * 测的是它，而不是一份长得像它的副本。
+ * 走 raw socket 發一次真實的 HTTPS POST 並完整讀迴回應。
+ * 這是「能不能用 connect() 頂替 fetch() 投遞 webhook」的決定性驗證：
+ * 光有 TLS 握手不夠，還要能發請求體、能把回應（可能是 chunked）解回來。
+ * ★ 重複使用 worker/socket-fetch.js —— 那份是生產投遞真正在用的實作，探針必須
+ * 測的是它，而不是一份長得像它的副本。
  */
 async function probeSocketPost(target, timeoutMs, connect, now) {
   if (!connect) {
@@ -169,14 +169,14 @@ async function probeSocket(host, timeoutMs, connect, now) {
     try {
       await socket?.close()
     } catch {
-      // 关闭失败不影响探测结论。
+      // 關閉失敗不影響探測結論。
     }
   }
 }
 
 /**
- * 跑一轮出口探测。
- * `runtime` 可注入 `fetchImpl` / `loadConnect` / `now`，便于在 Node 里测试外壳逻辑。
+ * 跑一輪出口探測。
+ * `runtime` 可注入 `fetchImpl` / `loadConnect` / `now`，便於在 Node 裡測試外殼邏輯。
  */
 export async function runEgressProbe(targets = DEFAULT_TARGETS, runtime = {}) {
   const fetchImpl = runtime.fetchImpl || fetch
@@ -195,7 +195,7 @@ export async function runEgressProbe(targets = DEFAULT_TARGETS, runtime = {}) {
   return { schema: 1, timeoutMs, results }
 }
 
-/** 只跑 POST 往返验证。目标固定，不接受自定义主机：这条路径会真的发请求体。 */
+/** 只跑 POST 往返驗證。目標固定，不接受自定義主機：這條路徑會真的發請求體。 */
 export async function runPostRoundTrip(runtime = {}) {
   const now = runtime.now || Date.now
   const timeoutMs = runtime.timeoutMs || DEFAULT_TIMEOUT_MS
@@ -223,8 +223,8 @@ const json = (body, status = 200) =>
   })
 
 /**
- * 端点处理器。返回 `null` 表示"这个端点不存在"，调用方应把请求交回静态资源，
- * 从而在未启用诊断时得到真实 404，不泄露端点是否存在。
+ * 端點處理器。回傳 `null` 表示"這個端點不存在"，呼叫方應把請求交回靜態資源，
+ * 從而在未啟用診斷時得到真實 404，不洩露端點是否存在。
  */
 export async function handleEgressProbe(request, env, runtime = {}) {
   const secret = env?.EGRESS_DIAG_SECRET

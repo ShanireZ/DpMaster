@@ -1,7 +1,7 @@
 ---
 type: Runbook
 title: Verification Runbook
-description: Build, lint, route, documentation, and deployment verification gates for DP大师.
+description: Build, lint, route, documentation, and deployment verification gates for DP大師.
 tags: [operations, verification, build]
 status: stable
 generated: { by: openai/codex, at: 2026-07-31T15:32:38+08:00 }

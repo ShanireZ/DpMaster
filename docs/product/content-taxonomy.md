@@ -11,49 +11,49 @@ sources:
 
 # Authority
 
-The live taxonomy and route order are `site/src/data/catalog.ts`. Older planning documents used a different order where A was 线性 DP and B was 背包 DP. The implemented site has reversed that order: A is now 背包 DP and B is now 线性 DP. New documentation must use the implemented order below.
+The live taxonomy and route order are `site/src/data/catalog.ts`. Older planning documents used a different order where A was 線性 DP and B was 揹包 DP. The implemented site has reversed that order: A is now 揹包 DP and B is now 線性 DP. New documentation must use the implemented order below.
 
 # Families
 
 | Code | Route ID | Family | Types | Motif |
 |---|---:|---|---:|---|
-| A | `a` | 背包 DP | 9 | 逐格填充的容器 / 方格堆 |
-| B | `b` | 线性 DP | 7 | 沿一条链推进的刻度序列 |
-| C | `c` | 区间 DP | 5 | 嵌套的括号弧 / 区间桥 |
-| D | `d` | 矩阵 DP | 2 | 方阵网格 / 矩阵块 |
-| E | `e` | 换根 DP | 4 | 以不同节点为心的放射树 |
-| F | `f` | 树形 DP | 5 | 分叉的树冠 |
-| G | `g` | 状压 DP | 5 | 比特点阵 / 超立方体 |
+| A | `a` | 揹包 DP | 9 | 逐格填充的容器 / 方格堆 |
+| B | `b` | 線性 DP | 7 | 沿一條鏈推進的刻度序列 |
+| C | `c` | 區間 DP | 5 | 嵌套的括號弧 / 區間橋 |
+| D | `d` | 矩陣 DP | 2 | 方陣網格 / 矩陣塊 |
+| E | `e` | 換根 DP | 4 | 以不同節點為心的放射樹 |
+| F | `f` | 樹形 DP | 5 | 分叉的樹冠 |
+| G | `g` | 狀壓 DP | 5 | 位元點陣 / 超立方體 |
 
 # Type Inventory
 
-## A 背包 DP
+## A 揹包 DP
 
-01 背包; 完全背包; 多重背包; 分组背包; 混合背包; 二维费用背包; 有依赖的背包; 背包综合变形; 辨析：分数背包=贪心.
+01 揹包; 完全揹包; 多重揹包; 分組揹包; 混合揹包; 二維費用揹包; 有依賴的揹包; 揹包綜合變形; 辨析：分數揹包=貪心.
 
-## B 线性 DP
+## B 線性 DP
 
-路径型 / 递推入门; 最大子段和; 最长上升子序列 LIS; 最长公共子序列 LCS; 编辑距离; 线性状态机 DP; 计数 / 划分型.
+路徑型 / 遞推入門; 最大子段和; 最長上升子序列 LIS; 最長公共子序列 LCS; 編輯距離; 線性狀態機 DP; 計數 / 劃分型.
 
-## C 区间 DP
+## C 區間 DP
 
-石子合并（链形）; 环形区间 DP; 回文 / 括号; 加分二叉树型; 合并 / 删除类.
+石子合併（鍊形）; 環形區間 DP; 迴文 / 括號; 加分二叉樹型; 合併 / 刪除類.
 
-## D 矩阵 DP
+## D 矩陣 DP
 
-网格 / 矩阵上的 DP; 矩阵快速幂加速.
+網格 / 矩陣上的 DP; 矩陣快速冪加速.
 
-## E 换根 DP
+## E 換根 DP
 
-换根基础模型; 距离和换根; 子树内外合并; 中心 / 偏心距.
+換根基礎模型; 距離和換根; 子樹內外合併; 中心 / 偏心距.
 
-## F 树形 DP
+## F 樹形 DP
 
-选点 / 最大独立集; 树上背包; 直径 / 重心 DP; 覆盖 / 支配 / 染色; 方案数 / 距离统计.
+選點 / 最大獨立集; 樹上揹包; 直徑 / 重心 DP; 覆蓋 / 支配 / 染色; 方案數 / 距離統計.
 
-## G 状压 DP
+## G 狀壓 DP
 
-棋盘 / 轮廓状压; 集合状压 / TSP; 状压 + 覆盖; 综合技巧; 插头 DP.
+棋盤 / 輪廓狀壓; 集合狀壓 / TSP; 狀壓 + 覆蓋; 綜合技巧; 插頭 DP.
 
 # Cross-Family Reuse
 

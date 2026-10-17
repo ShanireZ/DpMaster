@@ -38,7 +38,7 @@ sources:
 
 # Stack
 
-DP大师 is a prerendered static React app in `site/`. Build-time React rendering supplies complete HTML for every public route; the browser hydrates that HTML so interactive visualizations, games, feedback, and client navigation work normally.
+DP大師 is a prerendered static React app in `site/`. Build-time React rendering supplies complete HTML for every public route; the browser hydrates that HTML so interactive visualizations, games, feedback, and client navigation work normally.
 
 Key dependencies actively used by current source:
 
@@ -69,7 +69,7 @@ The manifest intentionally keeps only dependencies imported by current source. D
 | `site/src/components/dp-engine/` | Shared visualization, playback, controls, and safe-caption rendering. |
 | `site/src/components/games/` | One game per family; games consume public result Interfaces instead of teaching frames. |
 | `site/src/components/games/runtime/` | Shared deterministic random source, round statistics, lazy audio, and viewport gate for the seven games. |
-| `site/src/config/site.ts` | Public representation identity only: DP大师 brand, canonical origin, and language. Client endpoints and sidebar-only copy live in separate modules that the semantic route graph cannot reach. |
+| `site/src/config/site.ts` | Public representation identity only: DP大師 brand, canonical origin, and language. Client endpoints and sidebar-only copy live in separate modules that the semantic route graph cannot reach. |
 | `site/src/lib/publicRoutes.ts` | Catalog-derived authority for 47 public routes plus one separately declared internal prerender specimen. |
 | `site/src/lib/publicWebContract.ts` | Shared internal representation paths and public `Content-Signal` contract consumed by generation, discovery, and the Worker. |
 | `site/src/lib/pageMeta.ts` | Pure route metadata authority for titles, summaries, canonicals, breadcrumbs, and indexing policy. |

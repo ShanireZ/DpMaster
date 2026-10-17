@@ -28,13 +28,13 @@ const DIFFS: Record<Difficulty, DiffSpec> = {
 }
 const DIFF_ORDER: Difficulty[] = ['easy', 'medium', 'hard']
 
-// 随机生成一棵树（每个新点挂到一个已有点上），0-based 边
+// 隨機生成一棵樹（每個新點掛到一個已有點上），0-based 邊
 // oxlint-disable-next-line react/only-export-components -- executable tests import the pure round builder
 export function buildTreeRound(difficulty: Difficulty, random: RandomSource): Edge[] {
   const n = DIFFS[difficulty].n
   const edges: Edge[] = []
   for (let v = 1; v < n; v++) {
-    const p = randomInt(random, 0, v - 1) // 0..v-1 里随机父
+    const p = randomInt(random, 0, v - 1) // 0..v-1 裡隨機父
     edges.push({ u: p, v })
   }
   return edges
@@ -68,7 +68,7 @@ export default function RerootGame() {
     }
   }, [difficulty, roundSeed, startRound])
 
-  // 换根一次算好每点距离和（O(n)），并布局
+  // 換根一次算好每點距離和（O(n)），並佈局
   const { nodes, maxDepth, dist, best, bestNodes } = useMemo(() => {
     const t = buildRerootTree(n, edges, 0)
     const { nodes, maxDepth } = layoutRerootTree(t)
@@ -115,7 +115,7 @@ export default function RerootGame() {
     feedback = `最小距离和是 ${best}，最优点为节点 ${bestNodes.map((id) => id + 1).join('、')}。你选的节点 ${rootSel + 1} 是 ${distOfSel}，还差 ${distOfSel - best}。`
   }
 
-  // SVG 布局
+  // SVG 佈局
   const W = 560
   const padX = 40
   const topY = 38

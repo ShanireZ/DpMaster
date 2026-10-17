@@ -3,7 +3,7 @@ import { key } from '../../dp-engine/types.ts'
 import { recordGroupKnapsack } from '../../../algorithms/knapsack-group/internal.ts'
 import type { Group } from './groupSolver'
 
-// 复用 groupSolver 的 Group / GItem 类型：Group = GItem[]，GItem = { w, v }
+// 重複使用 groupSolver 的 Group / GItem 類型：Group = GItem[]，GItem = { w, v }
 export type { Group } from './groupSolver'
 
 function settled(row: (number | null)[]): Record<string, CellState> {
@@ -17,10 +17,10 @@ const itemsStr = (items: readonly Group[number][], hit: number) =>
   items.map((it, k) => `${k === hit ? '★' : ''}(${it.w},${it.v})`).join(' ')
 
 /**
- * 一维分组背包 · 正确的循环顺序：
- *   for 组 g:  for j = W..0(倒序):  for 组内每件 (w,v):  f[j]=max(f[j], f[j-w]+v)
- * 容量循环夹在「组」与「组内件」之间，处理某组时，组内不管试哪一件，f[j-w] 用的都是
- * 「本组尚未出手」的旧值，各件在同一起点上竞争，每组至多有一件胜出被计入。
+ * 一維分組揹包 · 正確的循環順序：
+ *   for 組 g:  for j = W..0(倒序):  for 組內每件 (w,v):  f[j]=max(f[j], f[j-w]+v)
+ * 容量循環夾在「組」與「組內件」之間，處理某組時，組內不管試哪一件，f[j-w] 用的都是
+ * 「本組尚未出手」的舊值，各件在同一起點上競爭，每組至多有一件勝出被計入。
  */
 export function groupOrderCorrect(groups: Group[], W: number): VizModel {
   const run = recordGroupKnapsack(groups, W, 'rolling-correct')
@@ -56,7 +56,7 @@ export function groupOrderCorrect(groups: Group[], W: number): VizModel {
       let formula: string
       if (hit >= 0) {
         const { w, v } = items[hit]
-        const src = best - v // f[j-w] 的旧值（本组未动过）
+        const src = best - v // f[j-w] 的舊值（本組未動過）
         caption =
           `<b>${label(g)}</b> [${itemsStr(items, hit)}] · <b>倒序</b> j=${j}：` +
           `组内挑最好的一件 <b>(${w},${v})</b> → f[${j - w}]+${v} = <b>${best}</b> &gt; f[${j}]=<b>${oldJ}</b> → 更新为 <b>${best}</b>。` +
@@ -89,10 +89,10 @@ export function groupOrderCorrect(groups: Group[], W: number): VizModel {
 }
 
 /**
- * 一维分组背包 · 错误的循环顺序：
- *   for 组 g:  for 组内每件 (w,v):  for j = W..0:  f[j]=max(f[j], f[j-w]+v)
- * 容量循环沉到最里层，组内每一件各自独立跑一遍完整倒序背包。前一件已改过 f[·]，后一件
- * 又在「前一件已装进去」的结果上继续叠，于是同组多件可同时选中，答案偏大。
+ * 一維分組揹包 · 錯誤的循環順序：
+ *   for 組 g:  for 組內每件 (w,v):  for j = W..0:  f[j]=max(f[j], f[j-w]+v)
+ * 容量循環沉到最裡層，組內每一件各自獨立跑一遍完整倒序揹包。前一件已改過 f[·]，後一件
+ * 又在「前一件已裝進去」的結果上繼續疊，於是同組多件可同時選中，答案偏大。
  */
 export function groupOrderWrong(groups: Group[], W: number): VizModel {
   const run = recordGroupKnapsack(groups, W, 'rolling-wrong')

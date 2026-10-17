@@ -9,7 +9,7 @@ import './bitmask-demo.css'
 const N = 4 // 元素 0..3
 
 export default function SubsetEnumDemo() {
-  // 母集 S：默认 {0,1,3} = 1011
+  // 母集 S：預設 {0,1,3} = 1011
   const [S, setS] = useState(0b1011)
 
   const steps = useMemo(() => enumerateSubsets(S), [S])
@@ -24,7 +24,7 @@ export default function SubsetEnumDemo() {
   const Sbits = toBits(S, N)
   const Tbits = cur ? toBits(cur.T, N) : Array<number>(N).fill(0)
 
-  // 比特点阵渲染参数
+  // 位元點陣繪製參數
   const cell = 46
   const gap = 10
   const totalW = N * cell + (N - 1) * gap

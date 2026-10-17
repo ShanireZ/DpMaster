@@ -3,10 +3,10 @@ import { key } from '../../dp-engine/types.ts'
 import { recordCountKnapsack } from '../../../algorithms/knapsack-variant/internal.ts'
 import type { CountKnapsackItem } from '../../../algorithms/knapsack-variant/index.ts'
 
-// 撤销演示只关心重量；对应洛谷 P4141「消失之物」。
+// 撤銷演示只關心重量；對應洛谷 P4141「消失之物」。
 export type UndoItem = CountKnapsackItem
 
-// 把非 null 的单元全部标成 settled（从 variantSolver 复制的样板）。
+// 把非 null 的單元全部標成 settled（從 variantSolver 複製的樣板）。
 function settled(vals: (number | null)[][]): Record<string, CellState> {
   const s: Record<string, CellState> = {}
   for (let r = 0; r < vals.length; r++)
@@ -15,13 +15,13 @@ function settled(vals: (number | null)[][]): Record<string, CellState> {
 }
 
 /**
- * 撤销可视化 · 洛谷 P4141「消失之物」。
- * 分两幕：
- *   第一幕，先把全部物品都放进去，倒序 f[j] += f[j-w] 建好全集方案数 f[j]（多帧展示）。
- *   第二幕，从全集拷一份 g=f，对选定的第 k 件做逆操作 g[j] -= g[j-w]，
- *            方向与加时相反（正序 j:w→m），逐帧把这件「退」出去。
- * 末帧对比：全集 f[j]（含第 k 件）vs 缺第 k 件 g[j]。
- * 网格两行：第 0 行 f（全集，第二幕保持不动作参照），第 1 行 g（正在被退掉第 k 件）。
+ * 撤銷視覺化 · 洛谷 P4141「消失之物」。
+ * 分兩幕：
+ *   第一幕，先把全部物品都放進去，倒序 f[j] += f[j-w] 建好全集方案數 f[j]（多影格展示）。
+ *   第二幕，從全集拷一份 g=f，對選定的第 k 件做逆操作 g[j] -= g[j-w]，
+ *            方向與加時相反（正序 j:w→m），逐影格把這件「退」出去。
+ * 末影格對比：全集 f[j]（含第 k 件）vs 缺第 k 件 g[j]。
+ * 網格兩行：第 0 行 f（全集，第二幕保持不動作參照），第 1 行 g（正在被退掉第 k 件）。
  */
 export function undoKnapsack(items: UndoItem[], W: number, victim: number): VizModel {
   const n = items.length
@@ -31,8 +31,8 @@ export function undoKnapsack(items: UndoItem[], W: number, victim: number): VizM
 
   const f = run.result.counts
 
-  // 两行网格：第 0 行 = 全集 f，第 1 行 = 撤销中的 g。
-  // 第一幕里 g 行整行留空（null），只演 f 行的累加。
+  // 兩行網格：第 0 行 = 全集 f，第 1 行 = 撤銷中的 g。
+  // 第一幕裡 g 行整行留空（null），只演 f 行的累加。
   const fRow: (number | null)[] = Array<number | null>(W + 1).fill(0)
   fRow[0] = 1
   let gRow: (number | null)[] = Array<number | null>(W + 1).fill(null)
@@ -67,12 +67,12 @@ export function undoKnapsack(items: UndoItem[], W: number, victim: number): VizM
         `建全集 · 物品 <b>${i + 1}</b>（w=${w}）· <b>倒序</b> j=${j}：` +
         `f[${j}] <b>+=</b> f[${j - w}]=<b>${add}</b> → f[${j}] 从 <b>${old}</b> 变为 <b>${now}</b>` +
         `${grew ? '' : '（来源为 0，保持不变）'}。`
-      // ★formula 内禁中文，纯符号
+      // ★formula 內禁中文，純符號
       const formula = `f[${j}]\\mathrel{+}=f[${j - w}]=${old}+${add}=${now}`
       frames.push({ values: snap(), states, active: { r: 0, c: j }, arrows, caption, formula })
   }
 
-  // 全集建成，作一帧收束（f 行全高亮）。
+  // 全集建成，作一影格收束（f 行全高亮）。
   {
     const st = settled(snap())
     for (let j = 0; j <= W; j++) st[key(0, j)] = 'chosen'
@@ -87,7 +87,7 @@ export function undoKnapsack(items: UndoItem[], W: number, victim: number): VizM
   }
 
   if (n === 0 || wk > W) {
-    // 极端兜底：没有物品或该件比容量还大（退不动），直接给末帧。
+    // 極端備援：沒有物品或該件比容量還大（退不動），直接給末影格。
     gRow = (run.result.withoutVictim ?? f).slice()
     const st = settled(snap())
     for (let j = 0; j <= W; j++) {
@@ -106,7 +106,7 @@ export function undoKnapsack(items: UndoItem[], W: number, victim: number): VizM
   }
 
   // ---------- 第二幕：拷 g=f，逆操作 g[j] -= g[j-w] 退掉第 k 件（正序）----------
-  gRow = fRow.slice() // 从全集出发：g ← f
+  gRow = fRow.slice() // 從全集出發：g ← f
   {
     const st = settled(snap())
     for (let j = 0; j <= W; j++) {
@@ -123,7 +123,7 @@ export function undoKnapsack(items: UndoItem[], W: number, victim: number): VizM
     })
   }
 
-  // 正序事件由领域 Implementation 产生，Adapter 只负责重放。
+  // 正序事件由領域 Implementation 產生，Adapter 只負責重放。
   for (const event of run.events) {
     if (event.type !== 'undo-cell') continue
     const { capacity: j, before: old, subtract: sub, after: now } = event
@@ -136,26 +136,26 @@ export function undoKnapsack(items: UndoItem[], W: number, victim: number): VizM
     ]
     states[key(1, j - wk)] = changed ? 'chosen' : 'source'
     states[key(1, j)] = 'current'
-    // 顶上对照：同列全集 f 标为 source，直观看到「退掉后比全集少了多少」。
+    // 頂上對照：同列全集 f 標為 source，直觀看到「退掉後比全集少了多少」。
     states[key(0, j)] = 'source'
 
     const caption =
       `正在退第 <b>${k + 1}</b> 件：<b>g[j] −= g[j−w]</b> · <b>正序</b> j=${j}（w=${wk}）：` +
       `g[${j}] −= g[${j - wk}]=<b>${sub}</b> → g[${j}] 从 <b>${old}</b> 减为 <b>${now}</b>` +
       `${changed ? '' : '（要减的量为 0，保持不变）'}。对照上方全集 f[${j}]=<b>${f[j]}</b>。`
-    // ★formula 内禁中文，纯符号；用 w_k 标明退的是第 k 件
+    // ★formula 內禁中文，純符號；用 w_k 標明退的是第 k 件
     const formula = `g[${j}]\\mathrel{-}=g[${j - wk}]=${old}-${sub}=${now}`
     frames.push({ values: snap(), states, active: { r: 1, c: j }, arrows, caption, formula })
   }
 
-  // ---------- 末帧：全集 f[j] vs 缺第 k 件 g[j] 逐格对比 ----------
+  // ---------- 末影格：全集 f[j] vs 缺第 k 件 g[j] 逐格對比 ----------
   {
     const st = settled(snap())
     for (let j = 0; j <= W; j++) {
-      st[key(0, j)] = 'source' // 全集作参照
-      st[key(1, j)] = 'chosen' // 缺件结果高亮
+      st[key(0, j)] = 'source' // 全集作參照
+      st[key(1, j)] = 'chosen' // 缺件結果高亮
     }
-    // 找一处「方案数被退掉」的容量，点名教学点。
+    // 找一處「方案數被退掉」的容量，點名教學點。
     let demoJ = W
     for (let j = W; j >= 1; j--) {
       if ((gRow[j] as number) !== f[j]) {
@@ -181,7 +181,7 @@ export function undoKnapsack(items: UndoItem[], W: number, victim: number): VizM
   return pack(frames, W, k)
 }
 
-// 组装 VizModel：两行 f / g，列头为容量 0..W。
+// 組裝 VizModel：兩行 f / g，列頭為容量 0..W。
 function pack(frames: Frame[], W: number, k: number): VizModel {
   return {
     rows: 2,

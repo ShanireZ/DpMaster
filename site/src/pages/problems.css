@@ -24,7 +24,7 @@
   line-height: 1.7;
 }
 
-/* ---------- 工具栏 ---------- */
+/* ---------- 工具欄 ---------- */
 .problems-toolbar {
   display: flex;
   flex-direction: column;
@@ -225,7 +225,7 @@
   border-color: transparent;
 }
 
-/* ---------- 响应式：窄屏堆叠 ---------- */
+/* ---------- 響應式：窄螢幕堆疊 ---------- */
 @media (max-width: 760px) {
   .prob {
     grid-template-columns: 1fr auto;

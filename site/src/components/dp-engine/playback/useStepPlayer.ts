@@ -8,7 +8,7 @@ import {
 import type { PlaybackSpeed } from './state'
 import type { StepPlayer } from './types'
 
-/** 逐帧教学播放：统一单步、进度、调速、结尾重播与输入变更处理。 */
+/** 逐影格教學播放：統一單步、進度、調速、結尾重播與輸入變更處理。 */
 export function useStepPlayer(count: number): StepPlayer {
   const safeCount = Number.isFinite(count) ? Math.max(0, Math.trunc(count)) : 0
   const hasFrames = count > 0
@@ -60,7 +60,7 @@ export function useStepPlayer(count: number): StepPlayer {
     return () => window.clearTimeout(timer)
   }, [index, playing, safeCount, speed])
 
-  // 更换输入/帧轨时暂停，并把焦点帧拉回有效范围。
+  // 更換輸入/影格軌時暫停，並把焦點影格拉回有效範圍。
   useEffect(() => {
     let active = true
     queueMicrotask(() => {

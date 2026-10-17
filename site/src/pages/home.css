@@ -6,7 +6,7 @@
   overflow: clip;
 }
 
-/* ---------------- 首屏：状态转移成为画面 ---------------- */
+/* ---------------- 首屏：狀態轉移成為畫面 ---------------- */
 .home-hero {
   position: relative;
   min-height: 100dvh;
@@ -170,7 +170,7 @@
   transform: translateY(1px);
 }
 
-/* 浅色首屏与暗色首屏共用同一构图，仅切换照明与文字对比。 */
+/* 淺色首屏與暗色首屏共用同一構圖，僅切換照明與文字對比。 */
 [data-theme='light'] .home-hero {
   background: #f4f1ea;
 }
@@ -217,7 +217,7 @@
   border-color: #8f6015;
 }
 
-/* ---------------- 状态图谱：桌面横向叙事，移动端纵向展开 ---------------- */
+/* ---------------- 狀態圖譜：桌面橫向敘事，行動裝置端縱向展開 ---------------- */
 .state-atlas {
   position: relative;
   background: var(--canvas);

@@ -1,6 +1,6 @@
-/* 幂次加速器专用样式（前缀 gpw__）——只补 game.css 未覆盖的部分，复用其余通用类 */
+/* 冪次加速器專用樣式（前綴 gpw__）——只補 game.css 未覆蓋的部分，重複使用其餘通用類 */
 
-/* 目标幂次卡 */
+/* 目標冪次卡 */
 .gpw__target-card {
   padding: var(--sp-4) var(--sp-5);
   border-radius: var(--r-3);
@@ -32,7 +32,7 @@
   color: var(--text-2);
 }
 
-/* 已得指数芯片 */
+/* 已得指數芯片 */
 .gpw__chips {
   display: flex;
   flex-wrap: wrap;
@@ -87,7 +87,7 @@
   filter: drop-shadow(0 1px 3px rgba(0, 0, 0, 0.5));
 }
 
-/* 合成过程日志 */
+/* 合成過程紀錄 */
 .gpw__log-label {
   margin-top: var(--sp-5);
 }
@@ -128,7 +128,7 @@
   background: var(--grad-accent);
 }
 
-/* 操作按钮组（翻倍 / 相乘）与管理按钮组（撤销 / 重来） */
+/* 操作按鈕組（翻倍 / 相乘）與管理按鈕組（撤銷 / 重來） */
 .gpw__ops,
 .gpw__manage {
   display: flex;

@@ -1,10 +1,10 @@
-/* LIS 接龙专属样式——复用 game.css 的外壳（game / game__head / game__panel /
-   game__feedback / game__compare / gbtn / game__stats 等），此处只补数列卡片、
-   链条 chip、链序徽章、★ 标的自建视觉。配色只用设计令牌；★不做 opacity:0 起步动画。
-   前缀 glis__，绝不改动 game.css。 */
+/* LIS 接龍專屬樣式——重複使用 game.css 的外殼（game / game__head / game__panel /
+   game__feedback / game__compare / gbtn / game__stats 等），此處只補數列卡片、
+   鏈條 chip、鏈序徽章、★ 標的自建視覺。配色只用設計權杖；★不做 opacity:0 起步動畫。
+   前綴 glis__，絕不改動 game.css。 */
 
 .glis__body {
-  /* 数列可能较长（困难 ~14），左列比背包宽松：面板略窄 */
+  /* 數列可能較長（困難 ~14），左列比揹包寬鬆：面板略窄 */
   grid-template-columns: 1fr 280px;
 }
 @media (max-width: 860px) {
@@ -13,7 +13,7 @@
   }
 }
 
-/* ---------- 数列一行：横排数字卡片 ---------- */
+/* ---------- 數列一行：橫排數字卡片 ---------- */
 .glis__row {
   display: flex;
   flex-wrap: wrap;
@@ -41,13 +41,13 @@
   transform: translateY(-2px);
   border-color: var(--border-strong);
 }
-/* 已选入链：蜜金/部分强调描边 + 轻底 */
+/* 已選入鏈：蜜金/部分強調描邊 + 輕底 */
 .glis__cell.picked {
   border-color: var(--accent-2);
   background: color-mix(in srgb, var(--accent-1) 16%, var(--surface-3));
   box-shadow: 0 2px 10px color-mix(in srgb, var(--accent-1) 26%, transparent);
 }
-/* 当前不可接（下标在链尾前 或 值不够大）——弱化并去掉悬浮抬升，暗示禁选 */
+/* 當前不可接（下標在鏈尾前 或 值不夠大）——弱化並去掉懸浮抬升，暗示禁選 */
 .glis__cell.blocked {
   opacity: 0.42;
   cursor: not-allowed;
@@ -56,12 +56,12 @@
   transform: none;
   border-color: var(--border);
 }
-/* 揭示后：DP 最优取法的一格——绿色定稿描边（同背包 ★ 语义） */
+/* 揭示後：DP 最優取法的一格——綠色定稿描邊（同揹包 ★ 語義） */
 .glis__cell.opt {
   border-color: var(--viz-chosen);
   background: color-mix(in srgb, var(--viz-chosen) 16%, var(--surface-3));
 }
-/* 玩家选中且恰好也在最优集里——蜜金底 + 绿描边叠加 */
+/* 玩家選中且恰好也在最優集裡——蜜金底 + 綠描邊疊加 */
 .glis__cell.picked.opt {
   border-color: var(--viz-chosen);
   background: color-mix(in srgb, var(--accent-1) 14%, color-mix(in srgb, var(--viz-chosen) 14%, var(--surface-3)));
@@ -81,7 +81,7 @@
   color: var(--text-3);
 }
 
-/* 链序徽章（左上角，1-based 表示第几个被接上） */
+/* 鏈序徽章（左上角，1-based 表示第幾個被接上） */
 .glis__rank {
   position: absolute;
   top: -7px;
@@ -99,7 +99,7 @@
   background: var(--grad-accent);
   box-shadow: var(--shadow-1);
 }
-/* ★ 最优标（右上角，仿背包 gitem__star） */
+/* ★ 最優標（右上角，仿揹包 gitem__star） */
 .glis__star {
   position: absolute;
   top: -8px;
@@ -108,7 +108,7 @@
   filter: drop-shadow(0 1px 3px rgba(0, 0, 0, 0.5));
 }
 
-/* ---------- 「你的链」条：把已选数按序连成 a → b → c ---------- */
+/* ---------- 「你的鏈」條：把已選數按序連成 a → b → c ---------- */
 .glis__chain {
   display: flex;
   flex-wrap: wrap;

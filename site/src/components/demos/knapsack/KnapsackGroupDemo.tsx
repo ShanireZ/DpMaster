@@ -36,7 +36,7 @@ function Stepper({
   )
 }
 
-/** 分组背包二维演示：f[组][j]，逐格取「跳过本组」与「选组内某件」的较大者。 */
+/** 分組揹包二維演示：f[組][j]，逐格取「跳過本組」與「選組內某件」的較大者。 */
 export default function KnapsackGroupDemo() {
   const [groups, setGroups] = useState<Group[]>([
     [

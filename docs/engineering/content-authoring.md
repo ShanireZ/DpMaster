@@ -1,7 +1,7 @@
 ---
 type: Engineering Contract
 title: Content Authoring Contract
-description: How to maintain DP大师 type pages, examples, formulas, code, and registration.
+description: How to maintain DP大師 type pages, examples, formulas, code, and registration.
 tags: [content, authoring, lessons]
 status: stable
 generated: { by: openai/codex, at: 2026-07-31T15:32:38+08:00 }
@@ -25,7 +25,7 @@ Each DP type page should follow this teaching sequence:
 7. 3 exercises where the native problem pool supports it.
 8. Previous/next navigation.
 
-The A/01 背包 and A/完全背包 pages are the strongest current templates.
+The A/01 揹包 and A/完全揹包 pages are the strongest current templates.
 
 # Minimum Page Shape
 
@@ -34,7 +34,7 @@ A mature type page should usually have:
 * 6-8 `section.lesson` blocks.
 * At least 3 on-brand figures when the topic allows it.
 * At least 1 editable demo.
-* At least 1 "本质" info box and a "常见陷阱" box where applicable.
+* At least 1 "本質" info box and a "常見陷阱" box where applicable.
 * 2-3 example cards and practice entries.
 * Cross-links to nearby families/types when a concept is reused.
 

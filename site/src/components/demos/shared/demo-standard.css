@@ -329,8 +329,8 @@
 .viz-state-mark[data-viz-role='source'] { --state-color: var(--viz-source); }
 .viz-state-mark[data-viz-role='current'] { --state-color: var(--viz-current); }
 .viz-state-mark[data-viz-role='chosen'] { --state-color: var(--viz-chosen); }
-/* settled 是唯一的中性 role，用常规次要文字色 —— --viz-settled 太淡，做文字读不出来。
-   它仍然承担这个状态的斜纹与描边（非文本），只是不再当字色。 */
+/* settled 是唯一的中性 role，用常規次要文字色 —— --viz-settled 太淡，做文字讀不出來。
+   它仍然承擔這個狀態的斜紋與描邊（非文字），只是不再當字色。 */
 .viz-state-mark[data-viz-role='settled'] { --state-color: var(--text-2); }
 .viz-state-mark[data-viz-role='invalid'] { --state-color: var(--viz-invalid); }
 

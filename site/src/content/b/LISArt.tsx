@@ -1,9 +1,9 @@
-// LIS 讲解用的插图（on-brand SVG，随强调色变色）。★不用外部图片、不做 opacity:0 起步动画。
+// LIS 講解用的插圖（on-brand SVG，隨強調色變色）。★不用外部圖片、不做 opacity:0 起步動畫。
 
-// 引入图：一条序列排成刻度条，高亮其中一条上升子序列（1→3→6→8→9）。
+// 引入圖：一條序列排成刻度條，高亮其中一條上升子序列（1→3→6→8→9）。
 export function SetupFigure() {
   const a = [2, 1, 5, 3, 6, 4, 8, 9, 7]
-  // 被选中的上升子序列下标（1,3,6,8,9 → 值在下标 1,3,4,6,7）
+  // 被選中的上升子序列下標（1,3,6,8,9 → 值在下標 1,3,4,6,7）
   const pick = new Set([1, 3, 4, 6, 7])
   const x0 = 26
   const dx = 64
@@ -16,7 +16,7 @@ export function SetupFigure() {
           <path d="M0,0 L6,3 L0,6 Z" fill="var(--accent-2)" />
         </marker>
       </defs>
-      {/* 连接被选子序列的折线（上升） */}
+      {/* 連接被選子序列的折線（上升） */}
       {[1, 3, 4, 6].map((i, k) => {
         const arr = [1, 3, 4, 6, 7]
         const j = arr[k + 1]
@@ -36,7 +36,7 @@ export function SetupFigure() {
         const y = 150 - v * 9
         return (
           <g key={i} transform={`translate(${x0 + i * dx},0)`}>
-            {/* 刻度柱：值越大越高，直观呈现「上升」 */}
+            {/* 刻度柱：值越大越高，直觀呈現「上升」 */}
             <rect
               x="0"
               y={y}
@@ -66,9 +66,9 @@ export function SetupFigure() {
   )
 }
 
-// O(n²) 转移图解：dp[i] = 1 + max over j<i, a[j]<a[i] of dp[j]。
+// O(n²) 轉移圖解：dp[i] = 1 + max over j<i, a[j]<a[i] of dp[j]。
 export function DecisionFigure() {
-  // 展示 a = ...,3,6,4,8,... 里算 dp(8) 的来源：左边所有更矮的 dp 取最大。
+  // 展示 a = ...,3,6,4,8,... 裡算 dp(8) 的來源：左邊所有更矮的 dp 取最大。
   const cells = [
     { lab: 'a=3', dp: 2, ok: true },
     { lab: 'a=6', dp: 3, ok: true },
@@ -94,7 +94,7 @@ export function DecisionFigure() {
       <text x="310" y="22" textAnchor="middle" fontSize="13" fill="var(--text-2)">
         算 dp（a=9）：向左看每个更矮的数，取它们 dp 的最大值，再 +1
       </text>
-      {/* 来源箭头：a=6 的 dp=3 是最大 → chosen；其余 source */}
+      {/* 來源箭頭：a=6 的 dp=3 是最大 → chosen；其餘 source */}
       {cells.slice(0, 3).map((_, i) => {
         const chosen = i === 1 // a=6 dp=3 最大
         return (
@@ -136,7 +136,7 @@ export function DecisionFigure() {
           </g>
         )
       })}
-      {/* 结论条 */}
+      {/* 結論條 */}
       <g transform="translate(180,188)">
         <rect
           width="260"
@@ -154,7 +154,7 @@ export function DecisionFigure() {
   )
 }
 
-// O(n log n) tails 维护图解：追加（比末尾大）vs 替换（二分命中位）两种动作对比。
+// O(n log n) tails 維護圖解：追加（比末尾大）vs 替換（二分命中位）兩種動作對比。
 export function PatienceFigure() {
   const panel = (
     dx: number,
@@ -172,7 +172,7 @@ export function PatienceFigure() {
         <text x="0" y="16" fontSize="12.5" fontWeight="600" fill={accent}>
           {title}
         </text>
-        {/* 当前元素 */}
+        {/* 當前元素 */}
         <g transform="translate(0,30)">
           <rect width="46" height="34" rx="9" fill="var(--grad-accent)" />
           <text x="23" y="23" textAnchor="middle" fontSize="15" className="mono" fill="var(--text-on-accent)">

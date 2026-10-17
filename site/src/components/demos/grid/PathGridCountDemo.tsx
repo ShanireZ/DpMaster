@@ -35,8 +35,8 @@ function Stepper({
 }
 
 /**
- * 过河卒网格路径计数演示：点小网格里的格子切换障碍（红），实时重算方案数。
- * 默认 4×4，起点(1,1)、终点(4,4)不可设障碍。无障碍 20 条；点中间一格看它如何被截断。
+ * 過河卒網格路徑計數演示：點小網格里的格子切換障礙（紅），即時重算方案數。
+ * 預設 4×4，起點(1,1)、終點(4,4)不可設障礙。無障礙 20 條；點中間一格看它如何被截斷。
  */
 export default function PathGridCountDemo() {
   const [rows, setRows] = useState(4)
@@ -62,7 +62,7 @@ export default function PathGridCountDemo() {
     })
   }
 
-  // 改尺寸时，剔除越界或落在新起终点的障碍
+  // 改尺寸時，剔除越界或落在新起終點的障礙
   const clampBlocked = (r: number, c: number, prev: Set<string>): Set<string> => {
     const next = new Set<string>()
     for (const b of prev) {

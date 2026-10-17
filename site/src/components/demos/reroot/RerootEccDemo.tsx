@@ -8,8 +8,8 @@ import { TreeCanvas } from './TreeCanvas'
 import type { NodeStyle, EdgeStyle } from './TreeCanvas'
 import './reroot-demo.css'
 
-// 主链 + 分支的小树，直观展示「每点偏心距」与中心。点节点看它到最远点的距离拆成
-// 向下 down1 / 向上 up 两支，最大者即偏心距；全树偏心距最小者=中心。
+// 主鏈 + 分支的小樹，直觀展示「每點偏心距」與中心。點節點看它到最遠點的距離拆成
+// 向下 down1 / 向上 up 兩支，最大者即偏心距；全樹偏心距最小者=中心。
 const N = 8
 const EDGES: Edge[] = [
   { u: 0, v: 1 },

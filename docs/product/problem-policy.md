@@ -1,7 +1,7 @@
 ---
 type: Policy
 title: Luogu Problem Policy
-description: DP大师 only uses Luogu-native P/B problems and records caveats for thin or disputed pools.
+description: DP大師 only uses Luogu-native P/B problems and records caveats for thin or disputed pools.
 tags: [content, luogu, policy]
 status: stable
 generated: { by: openai/codex, at: 2026-07-31T15:32:38+08:00 }
@@ -33,8 +33,8 @@ The index is derived from implemented content pages and should be updated whenev
 Some concepts have thin native problem pools:
 
 * LCIS has no official P/B template currently used by the site; it is treated as a concept note in the LCS lesson rather than forced into the exercise list.
-* 打家劫舍 and common stock-buying names do not have exact Luogu-native counterparts; DP大师 teaches the same state-machine idea through native constrained-selection problems and P2569.
-* 分组 / 混合 / 依赖背包 and some interval/bitmask variants have narrower pools; reuse and explicit caveats are preferred over invented coverage.
+* 打家劫舍 and common stock-buying names do not have exact Luogu-native counterparts; DP大師 teaches the same state-machine idea through native constrained-selection problems and P2569.
+* 分組 / 混合 / 依賴揹包 and some interval/bitmask variants have narrower pools; reuse and explicit caveats are preferred over invented coverage.
 
 # Rejected Or Cautious Items
 

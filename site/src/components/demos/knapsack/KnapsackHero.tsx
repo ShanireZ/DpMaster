@@ -7,8 +7,8 @@ const HERO_ART = {
 } as const
 
 /**
- * 纯装饰 Hero：只负责课程气质，不映射输入、容量或播放状态。
- * 教学数据与交互全部留在编辑器和 DPViz 中。
+ * 純裝飾 Hero：只負責課程氣質，不映射輸入、容量或播放狀態。
+ * 教學資料與交互全部留在編輯器和 DPViz 中。
  */
 export function KnapsackHero({ variant = '01' }: { variant?: keyof typeof HERO_ART }) {
   return (

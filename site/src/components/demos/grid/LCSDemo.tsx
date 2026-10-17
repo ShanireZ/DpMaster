@@ -6,7 +6,7 @@ import { lcs2D } from './lcsSolver'
 import '../shared/demo-workbench.css'
 import './lcs-demo.css'
 
-// 字符池：够演示又不至于让表太大。改字符只在池内循环。
+// 字元池：夠演示又不至於讓表太大。改字元只在池內循環。
 const POOL = ['A', 'B', 'C', 'D']
 const MAXLEN = 7
 
@@ -16,7 +16,7 @@ const PRESETS: { label: string; a: string; b: string }[] = [
   { label: '完全一致', a: 'ABCD', b: 'ABCD' },
 ]
 
-/** 一个字符位：上下箭头在字符池里循环，可删除。 */
+/** 一個字元位：上下箭頭在字元池裡循環，可刪除。 */
 function CharCell({
   ch,
   onCycle,
@@ -106,8 +106,8 @@ function StringRow({
 }
 
 /**
- * LCS 主演示：两串可编辑（短，长度 ≤ 7），二维 dp 填表 + 回溯路径。
- * 匹配则来自左上 +1、否则来自上 / 左取 max，逐格高亮来源；填完从 dp[m][n] 回溯重构一条 LCS。
+ * LCS 主演示：兩串可編輯（短，長度 ≤ 7），二維 dp 填表 + 回溯路徑。
+ * 匹配則來自左上 +1、否則來自上 / 左取 max，逐格高亮來源；填完從 dp[m][n] 回溯重構一條 LCS。
  */
 export default function LCSDemo() {
   const [a, setA] = useState('ABCBDAB')

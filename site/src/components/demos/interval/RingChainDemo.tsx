@@ -2,16 +2,16 @@ import { useState } from 'react'
 import { Scissors } from 'lucide-react'
 import '../shared/demo-workbench.css'
 
-// 环上固定一组数值；演示“断环为链”的几何直觉：选一个断点，环展开成 2n 直链，
-// 从断点起长度 n 的窗口 = 该断法下要合并的“一整圈”。纯 SVG，不走 DPViz。
+// 環上固定一組數值；演示“斷環為鏈”的幾何直覺：選一個斷點，環展開成 2n 直鏈，
+// 從斷點起長度 n 的視窗 = 該斷法下要合併的“一整圈”。純 SVG，不走 DPViz。
 const RING = [3, 9, 3, 4]
 
 export default function RingChainDemo() {
   const n = RING.length
-  const [cut, setCut] = useState(1) // 断点：在第 (cut-1) 堆与第 cut 堆之间剪开，窗口起点 = cut
+  const [cut, setCut] = useState(1) // 斷點：在第 (cut-1) 堆與第 cut 堆之間剪開，視窗起點 = cut
   const a2 = [...RING, ...RING]
 
-  // 环布局
+  // 環佈局
   const cx = 130
   const cy = 130
   const R = 84
@@ -19,16 +19,16 @@ export default function RingChainDemo() {
     const ang = -Math.PI / 2 + (i * 2 * Math.PI) / n
     return { x: cx + R * Math.cos(ang), y: cy + R * Math.sin(ang) }
   }
-  // 剪开处在第 (cut-1) 堆与第 cut 堆的中间角度
+  // 剪開處在第 (cut-1) 堆與第 cut 堆的中間角度
   const cutAng = -Math.PI / 2 + ((cut - 0.5) * 2 * Math.PI) / n
   const cutPt = { x: cx + (R + 4) * Math.cos(cutAng), y: cy + (R + 4) * Math.sin(cutAng) }
 
-  // 链布局
+  // 鏈佈局
   const bw = 42
   const gap = 6
   const lx0 = 300
   const lY = 96
-  // 窗口 = 链下标 [cut, cut+n-1]
+  // 視窗 = 鏈下標 [cut, cut+n-1]
   const winStart = cut
   const winW = n * (bw + gap) - gap
 
@@ -59,11 +59,11 @@ export default function RingChainDemo() {
           </marker>
         </defs>
 
-        {/* 左：环 */}
+        {/* 左：環 */}
         <circle cx={cx} cy={cy} r={R} fill="none" stroke="var(--border-strong)" strokeWidth="1.5" strokeDasharray="4 5" />
         {RING.map((p, i) => {
           const { x, y } = pos(i)
-          const isStart = i === cut // 该断法下的窗口起点堆
+          const isStart = i === cut // 該斷法下的視窗起點堆
           return (
             <g key={i}>
               <circle
@@ -83,7 +83,7 @@ export default function RingChainDemo() {
             </g>
           )
         })}
-        {/* 剪刀记号 */}
+        {/* 剪刀記號 */}
         <text x={cutPt.x} y={cutPt.y + 5} textAnchor="middle" fontSize="16" fill="var(--viz-chosen)">
           ✂
         </text>
@@ -91,13 +91,13 @@ export default function RingChainDemo() {
           起点 {cut}
         </text>
 
-        {/* 展开箭头 */}
+        {/* 展開箭頭 */}
         <path d="M 232 130 H 288" stroke="var(--accent-2)" strokeWidth="2" markerEnd="url(#rc-ar)" fill="none" />
         <text x="260" y="120" textAnchor="middle" fontSize="11" fill="var(--accent-1)">
           展开
         </text>
 
-        {/* 右：2n 直链，从断点 cut 处“接缝”对齐到窗口起点 */}
+        {/* 右：2n 直鏈，從斷點 cut 處“接縫”對齊到視窗起點 */}
         {a2.map((p, i) => {
           const x = lx0 + i * (bw + gap)
           const isCopy = i >= n
@@ -122,7 +122,7 @@ export default function RingChainDemo() {
           )
         })}
 
-        {/* 窗口高亮框：链下标 [cut, cut+n-1] */}
+        {/* 視窗高亮框：鏈下標 [cut, cut+n-1] */}
         <rect
           x={lx0 + winStart * (bw + gap) - 4}
           y={lY - 12}

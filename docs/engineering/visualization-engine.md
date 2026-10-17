@@ -1,7 +1,7 @@
 ---
 type: Engineering Contract
 title: Visualization Engine Contract
-description: Shared DP大师 DP visualization model and demo behavior contract.
+description: Shared DP大師 DP visualization model and demo behavior contract.
 tags: [engineering, visualization, dp-engine]
 status: stable
 generated: { by: openai/codex, at: 2026-07-31T15:32:38+08:00 }

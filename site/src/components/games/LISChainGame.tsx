@@ -15,7 +15,7 @@ interface DiffSpec {
   label: string
   count: number
   vMin: number
-  vRange: number // 值随机上限（不含）：实际值 = vMin + floor(random * vRange)
+  vRange: number // 值隨機上限（不含）：實際值 = vMin + floor(random * vRange)
 }
 
 const DIFFS: Record<Difficulty, DiffSpec> = {
@@ -26,8 +26,8 @@ const DIFFS: Record<Difficulty, DiffSpec> = {
 
 const DIFF_ORDER: Difficulty[] = ['easy', 'medium', 'hard']
 
-// 玩家手动挑出的严格上升子序列长度（按原下标序、后选值 > 前一已选值）。
-// 因为下方交互只允许合法追加，selOrder 天然满足条件，这里直接返回其长度。
+// 玩家手動挑出的嚴格上升子序列長度（按原下標序、後選值 > 前一已選值）。
+// 因為下方交互只允許合法追加，selOrder 天然滿足條件，這裡直接回傳其長度。
 function chainLen(selOrder: number[]): number {
   return selOrder.length
 }
@@ -36,7 +36,7 @@ function chainLen(selOrder: number[]): number {
 export function buildSequenceRound(difficulty: Difficulty, random: RandomSource): number[] {
   const d = DIFFS[difficulty]
   const seq = Array.from({ length: d.count }, () => randomInt(random, d.vMin, d.vMin + d.vRange - 1))
-  // 保证至少存在一条长度≥3 的上升子序列，避免生成近乎单调下降的枯燥串（重开即可）。
+  // 保證至少存在一條長度≥3 的上升子序列，避免生成近乎單調下降的枯燥串（重開即可）。
   if (solveLis(seq).length < 3) return buildSequenceRound(difficulty, random)
   return seq
 }
@@ -47,7 +47,7 @@ export default function LISChainGame() {
   const [seq, setSeq] = useState<number[]>(() =>
     buildSequenceRound('medium', createSeededRandom(roundSeed.seed)),
   )
-  // 玩家已选下标，按点击（=原序）先后记录，构成一条链
+  // 玩家已選下標，按點擊（=原序）先後記錄，構成一條鏈
   const [selOrder, setSelOrder] = useState<number[]>([])
   const [revealed, setRevealed] = useState(false)
   const [muted, setMuted] = useState(false)
@@ -73,31 +73,31 @@ export default function LISChainGame() {
   const win = revealed && you === dp.length && you > 0
   const sameAsReference = dp.pick.every((picked, index) => picked === selOrder.includes(index))
 
-  // 每个下标的选中序号（1-based）；未选为 0。用于卡片上标「链序」。
+  // 每個下標的選中序號（1-based）；未選為 0。用於卡片上標「鏈序」。
   const rank = useMemo(() => {
     const r = Array<number>(seq.length).fill(0)
     selOrder.forEach((idx, k) => (r[idx] = k + 1))
     return r
   }, [selOrder, seq.length])
 
-  // 当前链的末值——决定下一个可合法追加的门槛（严格大于它）。
+  // 當前鏈的末值——決定下一個可合法追加的門檻（嚴格大於它）。
   const lastVal = selOrder.length ? seq[selOrder[selOrder.length - 1]] : -Infinity
   const lastIdx = selOrder.length ? selOrder[selOrder.length - 1] : -1
 
-  // 某下标此刻能否被点选（未选状态下：下标必须在链尾之后、值必须严格更大）。
+  // 某下標此刻能否被點選（未選狀態下：下標必須在鏈尾之後、值必須嚴格更大）。
   const canPick = (i: number) => !revealed && i > lastIdx && seq[i] > lastVal
 
   const clickCard = (i: number) => {
     if (revealed) return
     const pos = selOrder.indexOf(i)
     if (pos !== -1) {
-      // 已选：允许「回退到此」——砍掉这一格及其后的所有选择（保持链的前缀合法）。
+      // 已選：允許「退回到此」——砍掉這一格及其後的所有選擇（保持鏈的前綴合法）。
       playGameTone({ frequency: 320, duration: 0.07, type: 'sine' }, muted)
       setSelOrder((s) => s.slice(0, pos))
       return
     }
     if (!canPick(i)) {
-      // 非法点击：给一个低沉的轻提示，不改动链。
+      // 非法點擊：給一個低沉的輕提示，不改動鏈。
       playGameTone({ frequency: 180, duration: 0.08, type: 'sine' }, muted)
       return
     }

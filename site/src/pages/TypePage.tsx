@@ -152,7 +152,7 @@ export default function TypePage() {
     }
   }, [path])
 
-  // 无效部分 / 无效类型 / 尚未上线（无内容）的类型 —— 一律视为不存在，跳 404
+  // 無效部分 / 無效類型 / 尚未上線（無內容）的類型 —— 一律視為不存在，跳 404
   if (!part || !type || !Body) {
     return (
       <Suspense fallback={null}>

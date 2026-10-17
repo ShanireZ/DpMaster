@@ -36,7 +36,7 @@
   line-height: 1.75;
 }
 
-/* ---------- 区块通用 ---------- */
+/* ---------- 區塊通用 ---------- */
 .about-block { margin-top: var(--sp-8); }
 .about-block__title {
   font-size: clamp(21px, 2.6vw, 29px);
@@ -53,7 +53,7 @@
   background: var(--border);
 }
 
-/* ---------- 怎么用 · 卡片 ---------- */
+/* ---------- 怎麼用 · 卡片 ---------- */
 .about-grid {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(230px, 1fr));
@@ -91,7 +91,7 @@
   line-height: 1.65;
 }
 
-/* ---------- 覆盖范围 · 数字 + 家族 ---------- */
+/* ---------- 覆蓋範圍 · 數字 + 家族 ---------- */
 .about-stats {
   display: grid;
   grid-template-columns: repeat(4, 1fr);
@@ -167,7 +167,7 @@
   color: var(--text-3);
 }
 
-/* ---------- 数据来源 · 列表 ---------- */
+/* ---------- 資料來源 · 列表 ---------- */
 .about-list {
   list-style: none;
   padding: 0;

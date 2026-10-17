@@ -4,7 +4,7 @@ import { useStepPlayer } from '../../dp-engine/playback/useStepPlayer'
 import { InstrumentRail, VizStateKey } from '../shared'
 import './lis-patience.css'
 
-// 与主演示同源的预设，方便两处对照（经典乱序最终 LIS=5）。
+// 與主演示同源的預設，方便兩處對照（經典亂序最終 LIS=5）。
 const PRESETS: { label: string; a: number[] }[] = [
   { label: '经典乱序', a: [2, 1, 5, 3, 6, 4, 8, 9, 7] },
   { label: '已升序', a: [1, 2, 3, 4, 5, 6] },
@@ -12,21 +12,21 @@ const PRESETS: { label: string; a: number[] }[] = [
 ]
 
 interface Step {
-  i: number // 正在处理的元素下标
+  i: number // 正在處理的元素下標
   x: number // 元素值
-  pos: number // 二分命中位（lower_bound：第一个 ≥ x 的位置）
-  append: boolean // true=追加(pos==len)，false=替换 tails[pos]
-  before: number[] // 处理前的 tails
-  after: number[] // 处理后的 tails
+  pos: number // 二分命中位（lower_bound：第一個 ≥ x 的位置）
+  append: boolean // true=追加(pos==len)，false=替換 tails[pos]
+  before: number[] // 處理前的 tails
+  after: number[] // 處理後的 tails
 }
 
-/** 用 lower_bound 维护 tails，逐元素记录一步（供动画步进）。 */
+/** 用 lower_bound 維護 tails，逐元素記錄一步（供動畫步進）。 */
 function buildSteps(a: number[]): Step[] {
   const tails: number[] = []
   const steps: Step[] = []
   for (let i = 0; i < a.length; i++) {
     const x = a[i]
-    // lower_bound：第一个 >= x 的位置（严格上升 → 相等也要替换，保证「最小结尾」）。
+    // lower_bound：第一個 >= x 的位置（嚴格上升 → 相等也要替換，保證「最小結尾」）。
     let lo = 0
     let hi = tails.length
     while (lo < hi) {
@@ -45,16 +45,16 @@ function buildSteps(a: number[]): Step[] {
 }
 
 /**
- * O(n log n) LIS · 耐心排序动画（自建可视化，非 DPViz）。
- * 维护 tails[k]=「长度为 k+1 的上升子序列里最小的结尾」。逐元素二分：
- * 比末尾大 → 追加（LIS 长度 +1）；否则替换第一个 ≥ 它的位置（把该长度的结尾压得更小）。
- * 最终 tails 的长度就是 LIS。tails 本身不一定是某条真实子序列，但长度恒正确。
+ * O(n log n) LIS · 耐心排序動畫（自建視覺化，非 DPViz）。
+ * 維護 tails[k]=「長度為 k+1 的上升子序列裡最小的結尾」。逐元素二分：
+ * 比末尾大 → 追加（LIS 長度 +1）；否則替換第一個 ≥ 它的位置（把該長度的結尾壓得更小）。
+ * 最終 tails 的長度就是 LIS。tails 本身不一定是某條真實子序列，但長度恆正確。
  */
 export default function LISPatienceDemo() {
   const [a, setA] = useState<number[]>(PRESETS[0].a)
   const steps = useMemo(() => buildSteps(a), [a])
 
-  // player 0 是显式初始帧；算法第 k 步位于 player k+1。
+  // player 0 是顯式初始影格；演算法第 k 步位於 player k+1。
   const player = useStepPlayer(steps.length + 1)
   const idx = player.index - 1
   const started = idx >= 0
@@ -94,7 +94,7 @@ export default function LISPatienceDemo() {
         </div>
       </div>
 
-      {/* 输入序列一行：已处理弱化、当前高亮 */}
+      {/* 輸入序列一行：已處理弱化、當前高亮 */}
       <div className="lp__seq">
         <div className="lp__seq-label">
           <span>逐个扫描输入序列 a[]，每个数用二分决定它在 tails 里的落点</span>
@@ -112,7 +112,7 @@ export default function LISPatienceDemo() {
         </div>
       </div>
 
-      {/* tails 舞台 */}
+      {/* tails 舞臺 */}
       <div className="lp__stage">
         <div className="lp__stage-head">
           <span>
@@ -140,7 +140,7 @@ export default function LISPatienceDemo() {
         </div>
       </div>
 
-      {/* 读数：这一步做了什么 */}
+      {/* 讀數：這一步做了什麼 */}
       <div className="lp__readout">
         {!started ? (
           <>
@@ -171,7 +171,7 @@ export default function LISPatienceDemo() {
   )
 }
 
-// 简单洗牌（Fisher–Yates），保证与原数组不同（长度≥2 时）。
+// 簡單洗牌（Fisher–Yates），保證與原陣列不同（長度≥2 時）。
 function shuffle(src: number[]): number[] {
   const a = src.slice()
   for (let i = a.length - 1; i > 0; i--) {

@@ -8,7 +8,7 @@ export const ASSET_BUDGET = Object.freeze({
   css: 80_000,
 })
 
-// 构建只发布 woff2：Baseline 目标浏览器全部支持，旧格式只会占预算、不会被下载。
+// 建置只發布 woff2：Baseline 目標瀏覽器全部支援，舊格式只會佔預算、不會被下載。
 const LEGACY_FONT_EXTENSIONS = new Set(['.woff', '.ttf', '.otf', '.eot'])
 
 function filesUnder(root) {

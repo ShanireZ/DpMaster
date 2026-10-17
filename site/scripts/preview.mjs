@@ -10,8 +10,8 @@ const valueAfter = (flag, fallback) => {
 }
 const host = valueAfter('--host', '127.0.0.1')
 const port = Number(valueAfter('--port', '4173'))
-// 相对脚本自身解析，而不是相对 cwd：Playwright 从 site/ 启动，
-// 工作区级 launch.json 从工作区根启动，两边都要能找到产物。
+// 相對指令碼自身解析，而不是相對 cwd：Playwright 從 site/ 啟動，
+// 工作區級 launch.json 從工作區根啟動，兩邊都要能找到產物。
 const root = resolve(fileURLToPath(new URL('../dist/', import.meta.url)))
 
 const contentTypes = {

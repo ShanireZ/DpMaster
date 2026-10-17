@@ -1,22 +1,22 @@
-// 走 cloudflare:sockets 的最小 HTTPS 客户端。
+// 走 cloudflare:sockets 的最小 HTTPS 用戶端。
 //
-// 存在的理由：Cloudflare 反代出口（`fetch()`）到钉钉等一批对端的 TLS 握手被
-// 系统性打断，稳定返回 52x；而官方文档写明 TCP 出站（`connect()`）的出口前缀
-// **不在** Cloudflare 公开 IP 段内 —— 2026-08-22 生产实测，同样的目标 `fetch()`
-// 得 525、`connect()` 得 200，POST + JSON body + 读回响应整条链路都通。
+// 存在的理由：Cloudflare 反代出口（`fetch()`）到釘釘等一批對端的 TLS 握手被
+// 系統性打斷，穩定回傳 52x；而官方文件寫明 TCP 出站（`connect()`）的出口前綴
+// **不在** Cloudflare 公開 IP 段內 —— 2026-08-22 生產實測，同樣的目標 `fetch()`
+// 得 525、`connect()` 得 200，POST + JSON body + 讀迴回應整條連線路徑都通。
 //
-// 只实现投递 webhook 需要的那一小块：单次 HTTPS POST、`Connection: close`、
-// 读到 EOF、解析状态行与响应体（Content-Length 与 chunked 都支持）。
-// 不做 keep-alive、不做重定向、不做压缩协商，也不接受明文 http://。
+// 只實作投遞 webhook 需要的那一小塊：單次 HTTPS POST、`Connection: close`、
+// 讀到 EOF、解析狀態行與回應體（Content-Length 與 chunked 都支援）。
+// 不做 keep-alive、不做重定向、不做壓縮協商，也不接受明文 http://。
 //
-// ★ 反向限制：Cloudflare 禁止 TCP 出站连到自己的 IP 段。所以这条通道**不能**
-// 顶替 fetch 去投递托管在 Cloudflare 后面的 webhook（Discord / Slack 常见），
-// 调用方必须保持「fetch 优先，失败才降级到这里」的顺序。
+// ★ 反向限制：Cloudflare 禁止 TCP 出站連到自己的 IP 段。所以這條通道**不能**
+// 頂替 fetch 去投遞託管在 Cloudflare 後面的 webhook（Discord / Slack 常見），
+// 呼叫方必須保持「fetch 優先，失敗才降級到這裡」的順序。
 
 const DEFAULT_TIMEOUT_MS = 10_000
 const MAX_RESPONSE_BYTES = 64 * 1024
 
-/** 惰性加载运行时 API：Node 下不存在，返回 null 让调用方降级。 */
+/** 惰性載入執行環境 API：Node 下不存在，回傳 null 讓呼叫方降級。 */
 export async function loadConnect() {
   try {
     return (await import('cloudflare:sockets')).connect
@@ -39,7 +39,7 @@ async function withTimeout(promise, timeoutMs, label) {
   }
 }
 
-/** 读到对端关闭为止。请求带 Connection: close，所以 EOF 就是响应结束。 */
+/** 讀到對端關閉為止。請求帶 Connection: close，所以 EOF 就是回應結束。 */
 async function readAll(socket, timeoutMs) {
   const reader = socket.readable.getReader()
   const chunks = []
@@ -57,7 +57,7 @@ async function readAll(socket, timeoutMs) {
     try {
       reader.releaseLock()
     } catch {
-      // 读侧随连接关闭时释放会抛，不影响结果。
+      // 讀側隨連接關閉時釋放會拋，不影響結果。
     }
   }
   const merged = new Uint8Array(total)
@@ -83,7 +83,7 @@ export function decodeChunked(body) {
   return out
 }
 
-/** 把原始字节切成 { status, statusLine, headers, body }，按需解 chunked。 */
+/** 把原始位元組切成 { status, statusLine, headers, body }，按需解 chunked。 */
 export function parseHttpResponse(bytes) {
   const text = new TextDecoder().decode(bytes)
   const split = text.indexOf('\r\n\r\n')
@@ -105,8 +105,8 @@ export function parseHttpResponse(bytes) {
 }
 
 /**
- * 对 `url` 发一次 HTTPS POST，返回 `{ status, statusLine, headers, body }`。
- * 连接失败、超时、非 https、响应无法解析都会抛出，由调用方决定如何降级。
+ * 對 `url` 發一次 HTTPS POST，回傳 `{ status, statusLine, headers, body }`。
+ * 連接失敗、超時、非 https、回應無法解析都會拋出，由呼叫方決定如何降級。
  */
 export async function postOverSocket({
   url,
@@ -127,7 +127,7 @@ export async function postOverSocket({
     `Host: ${target.host}`,
     `Content-Type: ${contentType}`,
     `Content-Length: ${payload.byteLength}`,
-    // 不协商压缩，省掉一层解码；不 keep-alive，靠 EOF 判定响应结束。
+    // 不協商壓縮，省掉一層解碼；不 keep-alive，靠 EOF 判定回應結束。
     'Accept-Encoding: identity',
     'Connection: close',
     '',
@@ -142,7 +142,7 @@ export async function postOverSocket({
     )
     await withTimeout(socket.opened, timeoutMs, 'tls handshake')
 
-    // ★ 必须按编码后的字节长度拼，不能用 head.length —— 那是 UTF-16 码元数。
+    // ★ 必須按編碼後的位元組長度拼，不能用 head.length —— 那是 UTF-16 碼元數。
     const headBytes = new TextEncoder().encode(head)
     const request = new Uint8Array(headBytes.byteLength + payload.byteLength)
     request.set(headBytes, 0)
@@ -159,7 +159,7 @@ export async function postOverSocket({
     try {
       await socket?.close()
     } catch {
-      // 关闭失败不影响已经拿到的响应。
+      // 關閉失敗不影響已經拿到的回應。
     }
   }
 }

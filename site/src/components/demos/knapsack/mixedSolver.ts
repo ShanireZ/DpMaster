@@ -3,7 +3,7 @@ import { key } from '../../dp-engine/types.ts'
 import { countMixedUnits, recordMixedKnapsack } from '../../../algorithms/knapsack-mixed/internal.ts'
 import type { MixedKnapsackItem, MixedKnapsackKind } from '../../../algorithms/knapsack-mixed/index.ts'
 
-/** 物品的「件数属性」：01 = 恰一件、complete = 无限件、multiple = 有限 m 件。 */
+/** 物品的「件數屬性」：01 = 恰一件、complete = 無限件、multiple = 有限 m 件。 */
 export type MixKind = MixedKnapsackKind
 export type MixItem = MixedKnapsackItem
 
@@ -18,10 +18,10 @@ const KIND_CN: Record<MixKind, string> = { '01': '01（恰一件）', complete: 
 const DIR_CN = { reverse: '倒序', forward: '正序' } as const
 
 /**
- * 混合背包 · 同一维 f[j] 上按件数属性分派。
- * 01 → 倒序一遍；complete → 正序一遍；multiple → 二进制拆包后每包倒序。
- * 三者共用同一套 f[j]=max(f[j], f[j-w]+v)，只有循环方向 / 是否拆包不同。
- * 网格为一维（1 行 W+1 列）。
+ * 混合揹包 · 同一維 f[j] 上按件數屬性分派。
+ * 01 → 倒序一遍；complete → 正序一遍；multiple → 二進位拆包後每包倒序。
+ * 三者共用同一套 f[j]=max(f[j], f[j-w]+v)，只有循環方向 / 是否拆包不同。
+ * 網格為一維（1 行 W+1 列）。
  */
 export function mixedKnapsack(items: MixItem[], W: number): VizModel {
   const run = recordMixedKnapsack(items, W)
@@ -60,7 +60,7 @@ export function mixedKnapsack(items: MixItem[], W: number): VizModel {
       const caption =
         `物品 <b>${un.itemIndex + 1}</b>${unitDesc} · 本件按【<b>${KIND_CN[un.kind]}</b>】处理 → <b>${DIR_CN[un.direction]}</b> j=${j}：` +
         `f[${j - un.w}]+${un.v} = <b>${cand}</b> ${better ? '&gt;' : '≤'} f[${j}]=<b>${old}</b> → ${better ? `更新为 <b>${cand}</b>` : '不变'}。`
-      // ★ formula 只含数学，禁中文（KaTeX 无 CJK 字形）。
+      // ★ formula 只含數學，禁中文（KaTeX 無 CJK 字形）。
       const formula = `f[${j}]=\\max(f[${j}],\\ f[${j - un.w}]+${un.v})=${better ? cand : old}`
       frames.push({ values: snap(), states, active: { r: 0, c: j }, arrows, caption, formula })
   }
@@ -83,7 +83,7 @@ export function mixedKnapsack(items: MixItem[], W: number): VizModel {
   }
 }
 
-/** 供工具条展示：本组混合物品展开成多少个转移单元。 */
+/** 供工具條展示：本組混合物品展開成多少個轉移單元。 */
 export function unitCount(items: MixItem[]): number {
   return countMixedUnits(items)
 }

@@ -1,6 +1,6 @@
-/* 多重背包 · 二进制拆包可视化的自建轻量样式。
-   不引用 knapsack-demo.css / fractional-demo.css；工具条沿用 demo-control__/stepper__ 视觉
-   但独立命名前缀 msp__，配色只用设计令牌。 */
+/* 多重揹包 · 二進位拆包視覺化的自建輕量樣式。
+   不引用 knapsack-demo.css / fractional-demo.css；工具條沿用 demo-control__/stepper__ 視覺
+   但獨立命名前綴 msp__，配色只用設計權杖。 */
 
 .msp__toolbar {
   display: flex;
@@ -33,7 +33,7 @@
   font-weight: 700;
 }
 
-/* ---------- ① 打包件条：各包画成宽度 ∝ 件数的色段 ---------- */
+/* ---------- ① 打包件條：各包畫成寬度 ∝ 件數的色段 ---------- */
 .msp__stage {
   margin-bottom: var(--sp-5);
 }
@@ -66,7 +66,7 @@
   padding: 8px 4px;
   border-radius: var(--r-1);
   border: 1px solid var(--border-strong);
-  /* 2 的幂包用蜜金强调；余数包用青色，视觉上把「补位的那一包」分出来 */
+  /* 2 的冪包用蜜金強調；餘數包用青色，視覺上把「補位的那一包」分出來 */
   background: color-mix(in srgb, var(--accent-1) 34%, var(--surface-1));
   transition: flex-grow var(--t-med, 0.3s) var(--ease, ease), background var(--t-fast, 0.18s);
 }
@@ -96,7 +96,7 @@
   color: var(--text-2);
 }
 
-/* ---------- ② 覆盖带：0…m 一行小格，示意子集和恰好覆盖每一件数 ---------- */
+/* ---------- ② 覆蓋帶：0…m 一行小格，示意子集和恰好覆蓋每一件數 ---------- */
 .msp__cover-label {
   display: flex;
   align-items: baseline;
@@ -126,19 +126,19 @@
   font-family: var(--font-mono);
   font-size: 12.5px;
   font-weight: 600;
-  /* 全部件数都可凑出 → 全部点亮为绿（chosen） */
+  /* 全部件數都可湊出 → 全部點亮為綠（chosen） */
   color: var(--text-on-accent);
   background: color-mix(in srgb, var(--viz-chosen) 74%, var(--surface-1));
   border: 1px solid color-mix(in srgb, var(--viz-chosen) 60%, transparent);
 }
 .msp__cell.zero {
-  /* 0 件 = 一个都不取，恒可达，弱化显示 */
+  /* 0 件 = 一個都不取，恆可達，弱化顯示 */
   color: var(--text-3);
   background: var(--surface-2);
   border: 1px dashed var(--border-strong);
 }
 
-/* ---------- ③ 读数：朴素 m 个 vs 二进制 log 个 ---------- */
+/* ---------- ③ 讀數：樸素 m 個 vs 二進位 log 個 ---------- */
 .msp__compare {
   display: grid;
   grid-template-columns: 1fr 1fr;

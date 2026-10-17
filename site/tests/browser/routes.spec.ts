@@ -89,7 +89,7 @@ async function assertRoute(
     'href',
     `${origin}${route.path}`,
   )
-  // 单域站点没有语言备选：一条 alternate 都不该出现。
+  // 單域站台沒有語言備選：一條 alternate 都不該出現。
   await expect(page.locator('link[rel="alternate"]')).toHaveCount(0)
   await expect(page.locator('meta[property="og:type"]')).toHaveAttribute(
     'content',
@@ -605,11 +605,11 @@ test('first client-side route change keeps the application shell mounted', async
 test('sidebar footer text stays inside the rail and centered at every sidebar width', async ({
   page,
 }) => {
-  // 回归防线：版权署名从「AzureL蔚澜算法」加长为「Round1 & AzureL蔚澜算法」后，
-  // 页脚的 white-space: nowrap 让文字撑破了侧栏。
-  // ★ 必须量文字行盒而不是元素盒：overflow-wrap: anywhere 会把 fit-content
-  // 收敛到轨道宽，元素盒看着没溢出，溢出的是里面的文字。
-  // ★ 也必须覆盖最窄的桌面宽度：宽视口下侧栏更宽，装得下就测不出来。
+  // 迴歸防線：版權署名從「AzureL蔚瀾演算法」加長為「Round1 & AzureL蔚瀾演算法」後，
+  // 頁腳的 white-space: nowrap 讓文字撐破了側欄。
+  // ★ 必須量文字行盒而不是元素盒：overflow-wrap: anywhere 會把 fit-content
+  // 收斂到軌道寬，元素盒看著沒溢出，溢出的是裡面的文字。
+  // ★ 也必須覆蓋最窄的桌面寬度：寬視口下側欄更寬，裝得下就測不出來。
   const measure = () =>
     page.evaluate(() => {
       const footer = document.querySelector('.sidebar-footer')

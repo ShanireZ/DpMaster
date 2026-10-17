@@ -14,7 +14,7 @@ function settled(values: (number | null)[][]): Record<string, CellState> {
   }
   return states
 }
-/** 区间合并结果的教学 Adapter：重放领域事件，生成三角表轨迹。 */
+/** 區間合併結果的教學 Adapter：重放領域事件，生成三角表軌跡。 */
 export function stoneMerge(a: number[], opt: Opt = 'min'): VizModel {
   const n = a.length
   const run = recordStoneMerge(a, opt)

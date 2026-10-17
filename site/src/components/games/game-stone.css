@@ -1,10 +1,10 @@
-/* 合并石子专属样式——复用 game.css 的外壳（game / game__head / game__panel /
-   game__value / game__feedback / game__compare / gbtn / game__stats 等），此处只补
-   石子卡片、原始条、选中/相邻高亮的自建视觉。配色只用设计令牌（C 区间在 <body data-part="c">
-   下 --accent-* 为陶红宝石色）；★不做 opacity:0 起步动画。前缀 gsm__，绝不改动 game.css。 */
+/* 合併石子專屬樣式——重複使用 game.css 的外殼（game / game__head / game__panel /
+   game__value / game__feedback / game__compare / gbtn / game__stats 等），此處只補
+   石子卡片、原始條、選中/相鄰高亮的自建視覺。配色只用設計權杖（C 區間在 <body data-part="c">
+   下 --accent-* 為陶紅寶石色）；★不做 opacity:0 起步動畫。前綴 gsm__，絕不改動 game.css。 */
 
 .gsm__body {
-  /* 石子较少但堆卡片略宽，左列比 LIS 宽松：面板 280 与 LIS 一致 */
+  /* 石子較少但堆卡片略寬，左列比 LIS 寬鬆：面板 280 與 LIS 一致 */
   grid-template-columns: 1fr 280px;
 }
 @media (max-width: 860px) {
@@ -13,7 +13,7 @@
   }
 }
 
-/* ---------- 石子一行：横排堆卡片 ---------- */
+/* ---------- 石子一行：橫排堆卡片 ---------- */
 .gsm__row {
   display: flex;
   flex-wrap: wrap;
@@ -45,18 +45,18 @@
 .gsm__stone:disabled {
   cursor: default;
 }
-/* 已由多颗合并而来的堆——蜜金/强调轻底，暗示「攒起来的代价」 */
+/* 已由多顆合併而來的堆——蜜金/強調輕底，暗示「攢起來的代價」 */
 .gsm__stone.merged {
   border-color: var(--accent-2);
   background: color-mix(in srgb, var(--accent-1) 12%, var(--surface-3));
 }
-/* 选中的第一堆——强调描边 + 轻辉光，等待选相邻堆 */
+/* 選中的第一堆——強調描邊 + 輕輝光，等待選相鄰堆 */
 .gsm__stone.sel {
   border-color: var(--accent-1);
   background: color-mix(in srgb, var(--accent-1) 18%, var(--surface-3));
   box-shadow: 0 2px 12px color-mix(in srgb, var(--accent-1) 30%, transparent);
 }
-/* 可与选中堆合并的相邻堆——绿色（可行/被选语义）虚框提示 */
+/* 可與選中堆合併的相鄰堆——綠色（可行/被選語義）虛框提示 */
 .gsm__stone.adj {
   border-color: var(--viz-chosen);
   border-style: dashed;
@@ -77,7 +77,7 @@
   color: var(--text-3);
 }
 
-/* ---------- 「原始」条：始终展示本局初始石子序列，方便对照 ---------- */
+/* ---------- 「原始」條：始終展示本局初始石子序列，方便對照 ---------- */
 .gsm__origin {
   display: flex;
   flex-wrap: wrap;

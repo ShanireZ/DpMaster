@@ -16,7 +16,7 @@ const PARENT = [-1, 0, 0, 0, 1, 1]
 
 export default function JointWeightDemo() {
   const [w, setW] = useState<number[]>([5, 3, 2, 4, 6, 1])
-  const [mid, setMid] = useState<number>(0) // 选中的中间点
+  const [mid, setMid] = useState<number>(0) // 選中的中間點
 
   const tree = useMemo(() => buildTree(PARENT, w), [w])
   const layout = useMemo(() => layoutTree(tree), [tree])
@@ -44,7 +44,7 @@ export default function JointWeightDemo() {
   const edgeActive = (a: number, b: number) =>
     (a === mid && nbSet.has(b)) || (b === mid && nbSet.has(a))
 
-  // 布局像素
+  // 佈局像素
   const width = 540
   const padX = 46
   const topY = 36

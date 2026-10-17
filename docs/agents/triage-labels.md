@@ -8,55 +8,55 @@ status: stable
 
 # Triage Labels
 
-技能用五个 canonical triage 角色说话。本文件回答的是：**技能说「打上那个标签」时，这里到底该做什么。**
+技能用五個 canonical triage 角色說話。本檔案回答的是：**技能說「打上那個標籤」時，這裡到底該做什麼。**
 
-## 映射：四个角色没有标签可打
+## 映射：四個角色沒有標籤可打
 
 | Label in mattpocock/skills | Label in our tracker | Meaning                                  |
 | -------------------------- | -------------------- | ---------------------------------------- |
-| `needs-triage`             | **（不发布）**       | Maintainer needs to evaluate this issue  |
-| `needs-info`               | **（不发布）**       | Waiting on reporter for more information |
-| `ready-for-agent`          | **（不发布）**       | Fully specified, ready for an AFK agent  |
-| `ready-for-human`          | **（不发布）**       | Requires human implementation            |
+| `needs-triage`             | **（不發佈）**       | Maintainer needs to evaluate this issue  |
+| `needs-info`               | **（不發佈）**       | Waiting on reporter for more information |
+| `ready-for-agent`          | **（不發佈）**       | Fully specified, ready for an AFK agent  |
+| `ready-for-human`          | **（不發佈）**       | Requires human implementation            |
 | `wontfix`                  | `wontfix`            | Will not be actioned                     |
 
-★ `wontfix` 能用，是因为它本来就是 GitHub 的默认标签之一 —— **不是有人为 triage 建的**。
+★ `wontfix` 能用，是因為它本來就是 GitHub 的預設標籤之一 —— **不是有人為 triage 建的**。
 
-## 技能提到某个 triage 角色时怎么办
+## 技能提到某個 triage 角色時怎麼辦
 
-**把那个判断写成 issue 正文或评论里的一句话**，连同判断的依据。
-读 issue 的人和下一个 agent 都读得到它，而一个没发布的标签他们读不到。
+**把那個判斷寫成 issue 正文或評論裡的一句話**，連同判斷的依據。
+讀 issue 的人和下一個 agent 都讀得到它，而一個沒發佈的標籤他們讀不到。
 
-⛔ **不要临时 `gh label create` 一个再打上去。** 那样每个仓会长出各自拼法的一套词汇
-（`ready-for-agent` / `ready_for_agent` / `agent-ready`），而**没有任何东西在对齐它们**。
-要发布，走下面「某个项目真要用标签时」。
+⛔ **不要臨時 `gh label create` 一個再打上去。** 那樣每個倉會長出各自拼法的一套詞彙
+（`ready-for-agent` / `ready_for_agent` / `agent-ready`），而**沒有任何東西在對齊它們**。
+要發佈，走下面「某個專案真要用標籤時」。
 
-## 2026-09-09 的实测读数（⛔ 别重跑这趟调查）
+## 2026-09-09 的實測讀數（⛔ 別重跑這趟調查）
 
-| 量的东西 | 结果 |
+| 量的東西 | 結果 |
 |---|---|
-| 18 个可达仓里这四个标签的数量 | **0**（`gh label list` 逐仓扫） |
-| 各仓实际标签 | 9 个 GitHub 默认；`Plumbline` / `RootPage` 另有 `accessibility` |
-| 本文件的副本份数 | **19**（每个项目 `docs/agents/` 各一份） |
-| 其中仍是模板原样的 | **18 份逐字节相同** |
-| 唯一改过的那份 | `Plumbline`，**只改了末句**、映射一个字没动 |
+| 18 個可達倉裡這四個標籤的數量 | **0**（`gh label list` 逐倉掃） |
+| 各儲存庫實際標籤 | 9 個 GitHub 預設；`Plumbline` / `RootPage` 另有 `accessibility` |
+| 本檔案的副本份數 | **19**（每個專案 `docs/agents/` 各一份） |
+| 其中仍是範本原樣的 | **18 份逐位元組相同** |
+| 唯一改過的那份 | `Plumbline`，**只改了末句**、映射一個字沒動 |
 
-★★★ **值得记的不是「没人建标签」，是这份模板 19/19 全没填过。**
-它原来的末句是「Edit the right-hand column to match whatever vocabulary you actually use」——
-一句从来没有人执行过的指令，读起来却完全像一条正常的约定。
+★★★ **值得記的不是「沒人建標籤」，是這份範本 19/19 全沒填過。**
+它原來的末句是「Edit the right-hand column to match whatever vocabulary you actually use」——
+一句從來沒有人執行過的指令，讀起來卻完全像一條正常的約定。
 
-⛔ **未采纳「把四个标签建到 19 个仓里让文档变真」**：找不到任何消费方。
-那正是本工作区栽过两次的形状 —— **声明了却没有人接**
-（BetaPass 的 prune 单测全绿只证明「调用它会删对行」，不证明「有人调用它」；betai 的 D133 同理）。
+⛔ **未採納「把四個標籤建到 19 個倉裡讓文件變真」**：找不到任何消費方。
+那正是本工作區栽過兩次的形狀 —— **宣告了卻沒有人接**
+（BetaPass 的 prune 單測全綠只證明「呼叫它會刪對行」，不證明「有人呼叫它」；betai 的 D133 同理）。
 
-## 某个项目真要用标签时
+## 某個專案真要用標籤時
 
-1. `gh label create` 真的建出来，**建完当场 `gh label list` 复核**；
-2. 改**那个项目自己的** `docs/agents/triage-labels.md` 右列；
-3. 在那份副本里写下**为什么它与本默认不同** —— 下一个接手的人只读得到副本。
+1. `gh label create` 真的建出來，**建完當場 `gh label list` 複核**；
+2. 改**那個專案自己的** `docs/agents/triage-labels.md` 右列；
+3. 在那份副本里寫下**為什麼它與本預設不同** —— 下一個接手的人只看得到副本。
 
-★ 本文件**有意不在副本一致性门里**（判据与理由见工作区根的
-`Docs/baseline-copies.manifest.mjs`「共享的 agent 约定」段 —— ⛔ 这里**有意不写成相对链接**：
-本文件会被复制进各项目 `docs/agents/`，那一层解不开这条路径）：
-它是**各项目可以分化的默认值**，不是强制抄件。
-⇒ 上面那张读数表描述的是 2026-09-09 那天的实况，**不是不变量**；⛔ 引用前现查。
+★ 本檔案**有意不在副本一致性門裡**（判據與理由見工作區根的
+`Docs/baseline-copies.manifest.mjs`「共享的 agent 約定」段 —— ⛔ 這裡**有意不寫成相對連結**：
+本檔案會被複製進各專案 `docs/agents/`，那一層解不開這條路徑）：
+它是**各專案可以分化的預設值**，不是強制抄件。
+⇒ 上面那張讀數表描述的是 2026-09-09 那天的實況，**不是不變數**；⛔ 引用前現查。

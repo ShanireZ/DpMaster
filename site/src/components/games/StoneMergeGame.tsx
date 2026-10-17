@@ -15,7 +15,7 @@ interface DiffSpec {
   label: string
   count: number
   vMin: number
-  vRange: number // 石子值随机上限（不含）：实际值 = vMin + floor(random * vRange)
+  vRange: number // 石子值隨機上限（不含）：實際值 = vMin + floor(random * vRange)
 }
 
 const DIFFS: Record<Difficulty, DiffSpec> = {
@@ -27,8 +27,8 @@ const DIFFS: Record<Difficulty, DiffSpec> = {
 const DIFF_ORDER: Difficulty[] = ['easy', 'medium', 'hard']
 
 /**
- * 贪心基线（相邻版哈夫曼）：反复挑「相邻两堆之和最小」的一对合并，累加代价。
- * 只受相邻约束——它常常不是最优，正好和 DP 拉开差距。返回贪心总代价。
+ * 貪心基線（相鄰版哈夫曼）：反覆挑「相鄰兩堆之和最小」的一對合並，累加代價。
+ * 只受相鄰約束——它常常不是最優，正好和 DP 拉開差距。回傳貪心總代價。
  */
 function solveGreedy(a: number[]): number {
   let heaps = a.slice()
@@ -55,30 +55,30 @@ export function buildStoneRound(difficulty: Difficulty, random: RandomSource): n
   return Array.from({ length: d.count }, () => randomInt(random, d.vMin, d.vMin + d.vRange - 1))
 }
 
-// 一堆石子：value=当前堆值；src=它由哪些原始下标合并而来（用于展示与「代价」溯源）
+// 一堆石子：value=當前堆值；src=它由哪些原始下標合併而來（用於展示與「代價」溯源）
 interface Heap {
   value: number
   src: number[]
 }
 
-// 一次合并操作的快照，用于「撤销上一步」逐步回退
+// 一次合併操作的快照，用於「撤銷上一步」逐步退回
 interface Step {
-  heaps: Heap[] // 合并「之前」的堆序列（撤销即恢复到此）
-  cost: number // 合并「之前」的累计代价
-  mergedValue: number // 这一步合并出的新堆值（=本步代价）
+  heaps: Heap[] // 合併「之前」的堆序列（撤銷即恢復到此）
+  cost: number // 合併「之前」的累計代價
+  mergedValue: number // 這一步合併出的新堆值（=本步代價）
 }
 
 export default function StoneMergeGame() {
   const [difficulty, setDifficulty] = useState<Difficulty>('medium')
   const roundSeed = useRoundSeed()
-  // 首帧只随机一次，stones（原始条/DP 求解）与 heaps（可玩堆）同源，避免两者数字不一致
+  // 首影格只隨機一次，stones（原始條/DP 求解）與 heaps（可玩堆）同源，避免兩者數字不一致
   const [init] = useState(() => buildStoneRound('medium', createSeededRandom(roundSeed.seed)))
   const [stones, setStones] = useState<number[]>(init)
-  // 当前堆序列（初始为每颗石子各自一堆）
+  // 當前堆序列（初始為每顆石子各自一堆）
   const [heaps, setHeaps] = useState<Heap[]>(() => init.map((v, i) => ({ value: v, src: [i] })))
   const [cost, setCost] = useState(0)
   const [history, setHistory] = useState<Step[]>([])
-  // 选中的第一堆（等待点相邻堆完成合并）；null 表示未选
+  // 選中的第一堆（等待點相鄰堆完成合並）；null 表示未選
   const [firstSel, setFirstSel] = useState<number | null>(null)
   const [revealed, setRevealed] = useState(false)
   const [muted, setMuted] = useState(false)
@@ -91,7 +91,7 @@ export default function StoneMergeGame() {
   const win = revealed && done && cost === dpMin
   const greedyWorse = greedy > dpMin
 
-  // 用一副新石子重置整局状态
+  // 用一副新石子重置整局狀態
   const resetWith = (arr: number[]) => {
     setStones(arr)
     setHeaps(arr.map((v, i) => ({ value: v, src: [i] })))
@@ -113,7 +113,7 @@ export default function StoneMergeGame() {
     }
   }, [difficulty, roundSeed, startRound])
 
-  // 点一堆：首点选中；再点相邻堆则合并；点非相邻堆则改选它；点自己则取消
+  // 點一堆：首點選中；再點相鄰堆則合併；點非相鄰堆則改選它；點自己則取消
   const clickHeap = (i: number) => {
     if (revealed || done) return
     if (firstSel === null) {
@@ -127,7 +127,7 @@ export default function StoneMergeGame() {
       return
     }
     if (Math.abs(i - firstSel) === 1) {
-      // 相邻——执行合并
+      // 相鄰——執行合併
       const lo = Math.min(i, firstSel)
       const a = heaps[lo]
       const b = heaps[lo + 1]
@@ -139,7 +139,7 @@ export default function StoneMergeGame() {
       setFirstSel(null)
       playGameTone({ frequency: 360 + Math.min(mergedValue * 4, 520), duration: 0.11 }, muted)
     } else {
-      // 不相邻——改选为新的第一堆
+      // 不相鄰——改選為新的第一堆
       setFirstSel(i)
       playGameTone({ frequency: 220, duration: 0.07, type: 'sine' }, muted)
     }
@@ -156,7 +156,7 @@ export default function StoneMergeGame() {
   }
 
   const restart = () => {
-    // 重来：同一副石子回到未合并起点
+    // 重來：同一副石子回到未合併起點
     resetWith(stones)
     round.start()
     playGameTone({ frequency: 320, duration: 0.06, type: 'sine' }, muted)

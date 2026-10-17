@@ -1,15 +1,15 @@
-// 最大子段和讲解用的插图（on-brand SVG，随强调色变色）。★不用外部图片、不做 opacity:0 起步动画。
+// 最大子段和講解用的插圖（on-brand SVG，隨強調色變色）。★不用外部圖片、不做 opacity:0 起步動畫。
 
-// 引入图：一排带正负的数（柱高=数值，正上负下），高亮一段「连续」的子段并标注其和。
-// 例子 a = [-2, 11, -4, 13, -5, -2]，最优子段 = 11,-4,13（下标 1..3），和 = 20。
+// 引入圖：一排帶正負的數（柱高=數值，正上負下），高亮一段「連續」的子段並標註其和。
+// 例子 a = [-2, 11, -4, 13, -5, -2]，最優子段 = 11,-4,13（下標 1..3），和 = 20。
 export function SetupFigure() {
   const a = [-2, 11, -4, 13, -5, -2]
-  const pick = new Set([1, 2, 3]) // 连续子段的下标区间
+  const pick = new Set([1, 2, 3]) // 連續子段的下標區間
   const x0 = 40
   const dx = 92
   const bw = 60
-  const mid = 96 // 零线的 y
-  const scale = 3.6 // 每单位数值的像素高度
+  const mid = 96 // 零線的 y
+  const scale = 3.6 // 每單位數值的像素高度
   const cx = (i: number) => x0 + i * dx + bw / 2
   return (
     <svg viewBox="0 0 620 210" role="img" aria-label="一排正负数与其中一段连续子段">
@@ -18,7 +18,7 @@ export function SetupFigure() {
           <path d="M0,0 L6,3 L0,6 Z" fill="var(--accent-2)" />
         </marker>
       </defs>
-      {/* 零线 */}
+      {/* 零線 */}
       <line x1="20" y1={mid} x2="600" y2={mid} stroke="var(--border-strong)" strokeWidth="1.2" strokeDasharray="4 4" />
       <text x="24" y={mid - 6} fontSize="10.5" className="mono" fill="var(--text-3)">
         0
@@ -67,7 +67,7 @@ export function SetupFigure() {
           </g>
         )
       })}
-      {/* 结论括注 */}
+      {/* 結論括注 */}
       <path d={`M ${cx(0)} 30 H ${cx(3)}`} stroke="var(--accent-2)" strokeWidth="2" markerEnd="url(#ms-br)" fill="none" />
       <text x={(cx(0) + cx(3)) / 2} y="16" textAnchor="middle" fontSize="12.5" fill="var(--accent-1)">
         连续一段：11 + (−4) + 13 = 20（最大）
@@ -76,7 +76,7 @@ export function SetupFigure() {
   )
 }
 
-// 转移决策图：dp[i] 的两条路——接续（dp[i-1]+a[i]）vs 另起（a[i]），取较大者。
+// 轉移決策圖：dp[i] 的兩條路——接續（dp[i-1]+a[i]）vs 另起（a[i]），取較大者。
 export function DecisionFigure() {
   return (
     <svg viewBox="0 0 620 292" role="img" aria-label="dp[i] 接续前一段或另起一段的决策分叉">
@@ -139,22 +139,22 @@ export function DecisionFigure() {
   )
 }
 
-// 环形补集图：一圈数首尾相接；最优段跨过首尾时，等于「总和 − 中间最小子段」。
-// 例子 a = [2,-1,2,-1,2]（环形）：总和 4，中间挖掉最小子段 −1，绕首尾的和 = 4 − (−1) = 5。
+// 環形補集圖：一圈數首尾相接；最優段跨過首尾時，等於「總和 − 中間最小子段」。
+// 例子 a = [2,-1,2,-1,2]（環形）：總和 4，中間挖掉最小子段 −1，繞首尾的和 = 4 − (−1) = 5。
 export function RingFigure() {
   const a = [2, -1, 2, -1, 2]
   const n = a.length
   const cx0 = 168
   const cy0 = 130
   const R = 96
-  // 被「挖掉」的最小子段（这里取下标 3 的 −1，仅示意其一）；其余组成绕首尾的最优段。
+  // 被「挖掉」的最小子段（這裡取下標 3 的 −1，僅示意其一）；其餘組成繞首尾的最優段。
   const holeIdx = 3
   const angle = (i: number) => (-90 + (360 / n) * i) * (Math.PI / 180)
   const px = (i: number) => cx0 + R * Math.cos(angle(i))
   const py = (i: number) => cy0 + R * Math.sin(angle(i))
   return (
     <svg viewBox="0 0 560 264" role="img" aria-label="环形数列：绕首尾的最优段等于总和减去最小子段">
-      {/* 圆环连线 */}
+      {/* 圓環連線 */}
       <circle cx={cx0} cy={cy0} r={R} fill="none" stroke="var(--border-strong)" strokeWidth="1.4" strokeDasharray="3 4" />
       {a.map((v, i) => {
         const hole = i === holeIdx
@@ -178,14 +178,14 @@ export function RingFigure() {
           </g>
         )
       })}
-      {/* 中心说明 */}
+      {/* 中心說明 */}
       <text x={cx0} y={cy0 - 4} textAnchor="middle" fontSize="12" fill="var(--text-2)">
         绕首尾取
       </text>
       <text x={cx0} y={cy0 + 15} textAnchor="middle" fontSize="11.5" fill="var(--text-3)">
         挖掉最小段
       </text>
-      {/* 右侧公式推导 */}
+      {/* 右側公式推導 */}
       <g transform="translate(320,52)">
         <rect width="222" height="160" rx="14" fill="var(--surface-2)" stroke="var(--border-strong)" strokeWidth="1.5" />
         <text x="20" y="34" fontSize="12.5" fill="var(--text-2)">

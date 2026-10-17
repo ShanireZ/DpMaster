@@ -1,6 +1,6 @@
-/* ============ G 部分（状压 DP）演示的局部样式 ============ */
+/* ============ G 部分（狀壓 DP）演示的局部樣式 ============ */
 
-/* 通用工具条 */
+/* 通用工具條 */
 .bm__toolbar {
   display: flex;
   flex-wrap: wrap;
@@ -18,7 +18,7 @@
   justify-content: space-between;
 }
 
-/* 通用解说 / 提示 / 读数 */
+/* 通用解說 / 提示 / 讀數 */
 .bm__caption {
   font-size: 14.5px;
   color: var(--text-2);
@@ -69,7 +69,7 @@
   background: color-mix(in srgb, var(--viz-invalid) 8%, var(--surface-2));
 }
 
-/* ---- TSP 小地图 + 移动盘 ---- */
+/* ---- TSP 小地圖 + 移動盤 ---- */
 .bm__map-wrap {
   flex: 0 0 auto;
 }
@@ -178,7 +178,7 @@
   border-color: var(--accent-2);
 }
 
-/* ---- 棋盘（互不侵犯）舞台 ---- */
+/* ---- 棋盤（互不侵犯）舞臺 ---- */
 .bm__steppers {
   display: flex;
   gap: var(--sp-5);
@@ -252,7 +252,7 @@
   font-size: 15px;
 }
 
-/* ---- 子集枚举 ---- */
+/* ---- 子集枚舉 ---- */
 .bm__toggle-row {
   display: flex;
   flex-wrap: wrap;
@@ -309,7 +309,7 @@
   height: auto;
 }
 
-/* ---- 覆盖 ---- */
+/* ---- 覆蓋 ---- */
 .bm__toolbar--cover {
   flex-direction: column;
   align-items: stretch;
@@ -383,7 +383,7 @@
   opacity: 0.35;
 }
 
-/* dp 数组条带：dp[S] over all subsets */
+/* dp 陣列條帶：dp[S] over all subsets */
 .bm__dp-strip {
   display: flex;
   flex-wrap: wrap;

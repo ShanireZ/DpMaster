@@ -263,10 +263,10 @@ a.nav-type.active::before { opacity: 1; transform: scaleY(1); }
   line-height: 1.4;
   text-align: center;
   overflow-wrap: anywhere;
-  /* 署名文案会变长（侧栏可用宽只有 188px）。这里不能用 nowrap：一旦子项
-     超出轨道，grid 的 justify-items: center 会退化成起始对齐，结果既撑破
-     侧栏又看着没居中。让它换行、交给 text-align 居中，并给不可断的长串
-     兜底。 */
+  /* 署名文案會變長（側欄可用寬只有 188px）。這裡不能用 nowrap：一旦子項
+     超出軌道，grid 的 justify-items: center 會退化成起始對齊，結果既撐破
+     側欄又看著沒居中。讓它換行、交給 text-align 居中，並給不可斷的長串
+     備援。 */
   opacity: 1;
   visibility: visible;
   transition:
@@ -278,7 +278,7 @@ a.nav-type.active::before { opacity: 1; transform: scaleY(1); }
   font-family: var(--font-display);
   font-size: 9px;
   letter-spacing: -0.02em;
-  /* 两行短文案，均分断行比默认的贪心断行整齐。 */
+  /* 兩行短文案，均分斷行比預設的貪心斷行整齊。 */
   text-wrap: balance;
 }
 
@@ -434,7 +434,7 @@ a.nav-type.active::before { opacity: 1; transform: scaleY(1); }
 .route-view-loading { min-height: 60vh; }
 .content--wide { max-width: none; }
 
-/* 汉堡按钮默认隐藏 */
+/* 漢堡按鈕預設隱藏 */
 .hamburger { display: none; }
 .sidebar__scrim {
   display: none;
@@ -554,7 +554,7 @@ a.nav-type.active::before { opacity: 1; transform: scaleY(1); }
   }
 }
 
-/* ---------------- 响应式 ---------------- */
+/* ---------------- 響應式 ---------------- */
 @media (max-width: 1024px) {
   .shell {
     --sidebar-current-w: 0px;

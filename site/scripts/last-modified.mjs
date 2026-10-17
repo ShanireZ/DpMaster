@@ -319,7 +319,7 @@ export function renderRouteLastModifiedModule(
   contentDigestVersion = ROUTE_CONTENT_DIGEST_VERSION,
 ) {
   return [
-    '// 由 scripts/generate-seo.mjs 从源码时间证据生成，请勿手改。',
+    '// 由 scripts/generate-seo.mjs 從原始碼時間證據生成，請勿手改。',
     `export const ROUTE_CONTENT_DIGEST_VERSION = ${contentDigestVersion}`,
     `export const ROUTE_LAST_MODIFIED: Readonly<Record<string, string>> = Object.freeze(${JSON.stringify(lastModified, null, 2)})`,
     `export const ROUTE_CONTENT_DIGESTS: Readonly<Record<string, string>> = Object.freeze(${JSON.stringify(contentDigests, null, 2)})`,
