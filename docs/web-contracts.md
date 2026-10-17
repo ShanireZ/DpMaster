@@ -1,62 +1,62 @@
 ---
 type: contract
-title: Sitemap / 同 URL Markdown 协商 / Accept 判据（工作区唯一权威）
-description: 三块跨项目通用的公共 HTTP 契约，dp.round1.cc 线上正按它们运行。
+title: Sitemap / 同 URL Markdown 協商 / Accept 判據（工作區唯一權威）
+description: 三塊跨專案通用的公共 HTTP 契約，dp.round1.cc 線上正按它們執行。
 tags: [sitemap, markdown, content-negotiation, accept, contract]
 status: stable
 ---
 
-# Sitemap · 同 URL Markdown 协商 · Accept 判据
+# Sitemap · 同 URL Markdown 協商 · Accept 判據
 
-> ⛔ **本文件正文不得出现相对链接**（外部 URL 可以）：它会被逐字节复制到各项目 `docs/` 的不同深度。
+> ⛔ **本檔案正文不得出現相對連結**（外部 URL 可以）：它會被逐位元組複製到各專案 `docs/` 的不同深度。
 >
-> ★★★ **本文件是唯一权威**，与 `web-baseline.md` 同一套 hash 门：
-> 启用这三块的项目在自己的 `docs/` 下持完整副本并钉住本文件的 sha256，不一致即红。
+> ★★★ **本檔案是唯一權威**，與 `web-baseline.md` 同一套 hash 門：
+> 啟用這三塊的專案在自己的 `docs/` 下持完整副本並釘住本檔案的 sha256，不一致即紅。
 >
-> 来源：原 `NxtAgents/modern-web-guidance-sitemap-markdown-negotiation-plan.md` 的 §3.3 / §3.4 / §6.1–6.3。
-> 该仓已移除，**这三块因为 `dp.round1.cc` 线上正按它们运行而必须留下**。
-> 原计划 §4 的八波实施包与 §5 的 PubEnv 搜索闭环**已作废**（N10）；§5.3 的上线预检 10 步
-> 因为是 DpMaster 退出门的验收依据，已内联进 [`ShanireZ/DpMaster#6`](https://github.com/ShanireZ/DpMaster/issues/6)。
+> 來源：原 `NxtAgents/modern-web-guidance-sitemap-markdown-negotiation-plan.md` 的 §3.3 / §3.4 / §6.1–6.3。
+> 該倉已移除，**這三塊因為 `dp.round1.cc` 線上正按它們執行而必須留下**。
+> 原計畫 §4 的八波實施包與 §5 的 PubEnv 搜索閉環**已作廢**（N10）；§5.3 的上線預檢 10 步
+> 因為是 DpMaster 退出門的驗收依據，已內聯進 [`ShanireZ/DpMaster#6`](https://github.com/ShanireZ/DpMaster/issues/6)。
 
-## 1. Sitemap 契约
+## 1. Sitemap 契約
 
-启用项目必须满足：
+啟用專案必須滿足：
 
-- 根路径固定为 `/sitemap.xml`。
-- UTF-8 XML，使用 sitemap 协议命名空间。
+- 根路徑固定為 `/sitemap.xml`。
+- UTF-8 XML，使用 sitemap 協定命名空間。
 - 只包含同一 canonical host 下的 HTTPS URL。
-- 每个 URL 必须直接返回 200、允许索引、无重定向、无 query、无 fragment。
-- 不包含登录、会话、管理、token、验证、错误、搜索结果或个性化 URL。
-- URL 来自一个项目内唯一路线/内容权威，不维护第二份手写列表。
-- 按 canonical URL 稳定排序。
-- 只有真实、可证明的正文更新时间才能生成 `lastmod`。
-- 不使用构建时间伪造 `lastmod`。
-- 不生成无依据的 `changefreq` 或 `priority`。
-- URL 集为空时 `/sitemap.xml` 返回 404 或不存在，`robots.txt` 不声明它；禁止发布空 `<urlset>`。
-- `robots.txt` 的最终线上版本由 Cloudflare 管理，项目仓保存期望契约和可验证源数据。
-- Sitemap 协议与 Google 的提交规范以 [sitemaps.org](https://www.sitemaps.org/protocol.html) 和 [Google Search Central](https://developers.google.com/search/docs/crawling-indexing/sitemaps/build-sitemap) 为准。
+- 每個 URL 必須直接回傳 200、允許索引、無重定向、無 query、無 fragment。
+- 不包含登入、工作階段、管理、token、驗證、錯誤、搜索結果或個性化 URL。
+- URL 來自一個專案內唯一路線/內容權威，不維護第二份手寫列表。
+- 按 canonical URL 穩定排序。
+- 只有真實、可證明的正文更新時間才能生成 `lastmod`。
+- 不使用建置時間偽造 `lastmod`。
+- 不生成無依據的 `changefreq` 或 `priority`。
+- URL 集為空時 `/sitemap.xml` 回傳 404 或不存在，`robots.txt` 不聲明它；禁止發佈空 `<urlset>`。
+- `robots.txt` 的最終線上版本由 Cloudflare 管理，專案倉保存期望契約和可驗證源資料。
+- Sitemap 協定與 Google 的提交規範以 [sitemaps.org](https://www.sitemaps.org/protocol.html) 和 [Google Search Central](https://developers.google.com/search/docs/crawling-indexing/sitemaps/build-sitemap) 為準。
 
-## 2. 同 URL Markdown 内容协商
+## 2. 同 URL Markdown 內容協商
 
-只对登记的公开内容页面启用，不新增 `.md` URL。
+只對登記的公開內容頁面啟用，不新增 `.md` URL。
 
-#### 请求选择规则
+#### 請求選擇規則
 
-对每个可协商页面分别计算 `text/html` 与 `text/markdown` 的有效匹配：
+對每個可協商頁面分別計算 `text/html` 與 `text/markdown` 的有效匹配：
 
 1. 先按 media range 的有效 q 值。
-2. q 值相同时，更具体的 media range 优先。
-3. 仍相同时 HTML 优先，保持现有浏览器兼容。
-4. 缺失 `Accept`、仅有 `text/*` 或 `*/*` 时默认 HTML。
-5. `q=0` 明确排除该表示。
-6. 无效成员忽略；没有任何有效且可接受的表示时返回 406。
-7. 只在已登记页面上执行该逻辑；API、静态资源、未知路由和 N/A 项目保持原行为。
+2. q 值相同時，更具體的 media range 優先。
+3. 仍相同時 HTML 優先，保持現有瀏覽器相容。
+4. 缺失 `Accept`、僅有 `text/*` 或 `*/*` 時預設 HTML。
+5. `q=0` 明確排除該表示。
+6. 無效成員忽略；沒有任何有效且可接受的表示時回傳 406。
+7. 只在已登記頁面上執行該邏輯；API、靜態資源、未知路由和 N/A 專案保持原行為。
 
-该行为遵循 [RFC 9110 内容协商语义](https://www.rfc-editor.org/info/rfc9110)。Markdown media type 采用 [RFC 7763](https://www.rfc-editor.org/info/rfc7763/) 注册的 `text/markdown`。
+該行為遵循 [RFC 9110 內容協商語義](https://www.rfc-editor.org/info/rfc9110)。Markdown media type 採用 [RFC 7763](https://www.rfc-editor.org/info/rfc7763/) 註冊的 `text/markdown`。
 
-#### 响应契约
+#### 回應契約
 
-Markdown 响应：
+Markdown 回應：
 
 ```http
 Content-Type: text/markdown; charset=utf-8
@@ -66,37 +66,37 @@ Vary: Accept
 X-Content-Type-Options: nosniff
 ```
 
-HTML 与 Markdown 均须：
+HTML 與 Markdown 均須：
 
-- 合并而不是覆盖已有 `Vary`，大小写不敏感去重 `Accept`。
-- 使用表示专属 ETag，避免 HTML 和 Markdown 共享验证器。
-- 使用隔离的 CDN/Worker 缓存键。
-- Markdown 的缓存范围和寿命不得比对应 HTML 更宽。
-- HTML 响应声明同 URL、`type="text/markdown"` 的 alternate。
-- Markdown 响应声明 canonical 以及同 URL、`type="text/html"` 的 alternate。
-- `HEAD` 与相应 `GET` 状态码、协商选择及响应头一致，但不返回正文。
-- 条件请求只命中相同表示的 ETag。
-- Content-Signal 只表达对**已批准公开内容**的使用许可，不替代认证、授权或 noindex。具体取值由各项目自己的权威声明，**本文件不规定**。
-- ★ Content-Signal 必须与该域边缘**实际下发**的 `robots.txt` 同向 —— 包括 CDN 托管块注入的 `Content-Signal` 与爬虫 `Disallow`。响应头与 `robots.txt` 各说各话，就是对外发出互相矛盾的声明，而**两边都不会因此变红**：仓内判据看不见边缘注入，边缘也不读仓内声明。同一个 user-agent 同时落进「托管块 Disallow」与「仓内 Allow」两个组时，各家抓取器的合并与优先级实现并不一致，靠「后面的 Allow 覆盖前面的 Disallow」不可靠。
+- 合併而不是覆蓋已有 `Vary`，大小寫不敏感去重 `Accept`。
+- 使用表示專屬 ETag，避免 HTML 和 Markdown 共享驗證器。
+- 使用隔離的 CDN/Worker 快取鍵。
+- Markdown 的快取範圍和壽命不得比對應 HTML 更寬。
+- HTML 回應聲明同 URL、`type="text/markdown"` 的 alternate。
+- Markdown 回應聲明 canonical 以及同 URL、`type="text/html"` 的 alternate。
+- `HEAD` 與相應 `GET` 狀態碼、協商選擇及回應頭一致，但不回傳正文。
+- 條件請求只命中相同表示的 ETag。
+- Content-Signal 只表達對**已批准公開內容**的使用授權，不替代認證、授權或 noindex。具體取值由各專案自己的權威聲明，**本檔案不規定**。
+- ★ Content-Signal 必須與該域邊緣**實際下發**的 `robots.txt` 同向 —— 包括 CDN 託管塊注入的 `Content-Signal` 與爬蟲 `Disallow`。回應頭與 `robots.txt` 各說各話，就是對外發出互相矛盾的聲明，而**兩邊都不會因此變紅**：倉內判據看不見邊緣注入，邊緣也不讀倉內聲明。同一個 user-agent 同時落進「託管塊 Disallow」與「倉內 Allow」兩個組時，各家抓取器的合併與優先級實作並不一致，靠「後面的 Allow 覆蓋前面的 Disallow」不可靠。
 
-项目主动生成的 Markdown 是权威实现。Cloudflare Markdown for Agents 只允许作为经批准的可关闭加速器，不能成为唯一内容源；其能力和 Content-Signal 语义参考 [Cloudflare 官方说明](https://developers.cloudflare.com/fundamentals/reference/markdown-for-agents/)。
+專案主動生成的 Markdown 是權威實作。Cloudflare Markdown for Agents 只允許作為經批准的可關閉加速器，不能成為唯一內容源；其能力和 Content-Signal 語義參考 [Cloudflare 官方說明](https://developers.cloudflare.com/fundamentals/reference/markdown-for-agents/)。
 
-#### Markdown 内容规则
+#### Markdown 內容規則
 
-- 与 HTML 使用同一内容模型或同一次本地语义构建输出。
-- 禁止远程抓取线上 HTML 再转换。
-- 禁止维护第二份手写正文。
-- 保留标题层级、段落、列表、表格、代码、公式、图片替代文本及公共链接。
-- 去掉脚本、样式、导航噪音、纯装饰、隐藏节点、表单控件、验证码和个性化状态。
-- 互动演示转换为静态说明、关键结论和原页面 canonical 链接。
-- 不包含认证页面、用户数据、课程私有内容、管理功能、token URL、错误页或调试信息。
-- 不强制新增 `llms.txt`；DpMaster 现有 `llms.txt` 保留并消除与新训练政策冲突的说明。
+- 與 HTML 使用同一內容模型或同一次本機語義建置輸出。
+- 禁止遠程抓取線上 HTML 再轉換。
+- 禁止維護第二份手寫正文。
+- 保留標題層級、段落、列表、表格、程式碼、公式、圖片替代文字及公共連結。
+- 去掉指令碼、樣式、導覽噪音、純裝飾、隱藏節點、表單控件、驗證碼和個性化狀態。
+- 互動演示轉換為靜態說明、關鍵結論和原頁面 canonical 連結。
+- 不包含認證頁面、使用者資料、課程私有內容、管理功能、token URL、錯誤頁或偵錯資訊。
+- 不強制新增 `llms.txt`；DpMaster 現有 `llms.txt` 保留並消除與新訓練政策衝突的說明。
 
-## 3. Accept 判据与测试向量
+## 3. Accept 判據與測試向量
 
-至少覆盖：
+至少覆蓋：
 
-| Accept | 预期 |
+| Accept | 預期 |
 |---|---|
 | 缺失 | HTML 200 |
 | `text/html` | HTML 200 |
@@ -109,31 +109,31 @@ HTML 与 Markdown 均须：
 | `text/html;q=0, text/markdown;q=0` | 406 |
 | `application/json` | 406 |
 | `text/markdown;q=0, */*;q=1` | HTML 200 |
-| 非法成员 + 有效 HTML | 忽略非法成员，返回 HTML |
-| 仅非法且无有效范围 | 406 |
+| 非法成員 + 有效 HTML | 忽略非法成員，回傳 HTML |
+| 僅非法且無有效範圍 | 406 |
 
-每个向量同时测试 GET、HEAD 和条件请求。
+每個向量同時測試 GET、HEAD 和條件請求。
 
-## 4. Sitemap 测试
+## 4. Sitemap 測試
 
 - XML schema/namespace。
-- UTF-8 与转义。
-- URL 去重和稳定排序。
-- canonical host、HTTPS、无 query/fragment。
-- 路线注册表、prerender、Markdown 和 sitemap 集合一致。
-- 每个 URL 线上 200 且无重定向。
-- noindex 与 sitemap 互斥。
-- 空集合时 404 且 robots 无声明。
-- 正文摘要变化与真实 `lastmod` 联动。
-- `.cc`、token 和内部表示路径永不出现。
+- UTF-8 與轉義。
+- URL 去重和穩定排序。
+- canonical host、HTTPS、無 query/fragment。
+- 路線註冊表、prerender、Markdown 和 sitemap 集合一致。
+- 每個 URL 線上 200 且無重定向。
+- noindex 與 sitemap 互斥。
+- 空集合時 404 且 robots 無聲明。
+- 正文摘要變化與真實 `lastmod` 聯動。
+- `.cc`、token 和內部表示路徑永不出現。
 
-## 5. Markdown 内容测试
+## 5. Markdown 內容測試
 
-- 标题、摘要、主要正文与 HTML 同源。
-- 标题层级合法。
-- 代码围栏、表格、数学公式和链接可读。
-- 互动组件有静态说明和 canonical 链接。
-- 不含 `<script>`、样式、事件处理器、表单值、验证码、用户数据或内部路径。
-- 所有公共链接可解析。
-- 输出确定性：相同源数据连续构建字节一致。
-- HTML 正文改变但 Markdown 未变时 CI 失败，反之亦然。
+- 標題、摘要、主要正文與 HTML 同源。
+- 標題層級合法。
+- 程式碼圍欄、表格、數學公式和連結可讀。
+- 互動元件有靜態說明和 canonical 連結。
+- 不含 `<script>`、樣式、事件處理器、表單值、驗證碼、使用者資料或內部路徑。
+- 所有公共連結可解析。
+- 輸出確定性：相同源資料連續建置位元組一致。
+- HTML 正文改變但 Markdown 未變時 CI 失敗，反之亦然。
