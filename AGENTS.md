@@ -22,12 +22,12 @@
 | 何時 | 命令與前置 | 能證明什麼 / 邊界 |
 |---|---|---|
 | 首次準備或鎖定檔變化 | `pnpm install --frozen-lockfile`；執行環境匹配 | 鎖定檔可安裝；不是品質驗收 |
-| 頁面開發 | `pnpm dev`；依賴已裝 | 本機開發服務；不是驗收 |
+| 頁面開發 | `pnpm dev`；相依已裝 | 本機開發服務；不是驗收 |
 | 指令碼、Worker、內容合同變化 | `pnpm test` | Node 指令碼測試；不含元件/瀏覽器 |
 | React 元件變化 | `pnpm test:unit` | Vitest 元件/單元測試；不代替實機 |
 | 程式碼診斷 | `pnpm lint` | 零 warning lint；不證明執行行為 |
-| 需要產物 | `pnpm build` | 先生成內容/SEO，再類型檢查與建置；會寫生成物，不是完整 gate |
-| 完整本機交付 | `pnpm verify`；依賴和 Playwright 瀏覽器已準備 | Baseline、內容/SEO、兩類單測、lint、建置、HTML、瀏覽器路由、資產預算；不能證明生產設定或真實 Edge/Safari |
+| 需要產物 | `pnpm build` | 先生成內容/SEO，再型別檢查與建置；會寫生成物，不是完整 gate |
+| 完整本機交付 | `pnpm verify`；相依和 Playwright 瀏覽器已準備 | Baseline、內容/SEO、兩類單測、lint、建置、HTML、瀏覽器路由、資產預算；不能證明生產設定或真實 Edge/Safari |
 
 `verify` 的順序以 `package.json` 為準，CI 在 `site/` 調同一入口。Chromium 跑全量、Firefox/WebKit 跑關鍵冒煙；瀏覽器合同為四大引擎當前穩定版及上一主版本，真實 Edge/Safari 發佈前人工抽檢。報告實際結果、skip、未覆蓋項。
 
@@ -49,7 +49,7 @@
 - 字色 token 須登記並在兩個主題實際表面滿足 AA 4.5:1。債務數量鎖定，不得加債務消紅；細節看測試。門不覆蓋非 token 的硬編碼色。
 - `site/scripts/lint-type-aware-coverage.test.mjs` 鎖 oxlint 檔案集屬於各 TS Program；Node 指令碼進 `tsconfig.scripts.json`，Playwright 進 `tsconfig.browser-tests.json`。紅時補 project，不改 ignorePatterns；lint/tsconfig 改動須用 `typescript/no-deprecated` 臨時探針驗活。
 - Baseline：`runtime: public-web`、`featureTarget: newly`；`site/baseline-targets.ts` 顯式凍結 Vite 8 Widely 目標，`widely available with downstream` 僅能力審查，不得讓 Vite 自動消費。六欄位及 Web 宣告只維護在 `site/baseline.config.json`；`pnpm baseline:check` 是 verify 首門。
-- 直接依賴用獲准穩定主線的 `^`，lockfile 是 CI 精確解析合同。`site/pnpm-workspace.yaml` 強制 24 小時隔離、Node 引擎、建置指令碼白名單、依賴狀態檢查，禁止排除/寬鬆模式/換包管理器繞過；版本升級獨立 task、完整驗證、一個 commit。
+- 直接相依用獲準穩定主線的 `^`，lockfile 是 CI 精確解析合同。`site/pnpm-workspace.yaml` 強制 24 小時隔離、Node 引擎、建置指令碼白名單、相依狀態檢查，禁止排除/寬鬆模式/換包管理器繞過；版本升級獨立 task、完整驗證、一個 commit。
 - 禁廢棄 API、CommonJS 相容層、舊瀏覽器 polyfill、棄用 CLI、過渡選擇器、lint 豁免；無現代替代時停手彈出視窗。
 
 ## 交付與授權

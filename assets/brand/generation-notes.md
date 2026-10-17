@@ -6,8 +6,8 @@
 # DpMaster 原生候選圖生成記錄
 
 - 日期：2026-08-20（Asia/Shanghai）
-- 工具：Codex 內置 `image_gen`
-- 執行方式：三個資產分別獨立呼叫一次內置生成工具；未合成五件套
+- 工具：Codex 內建 `image_gen`
+- 執行方式：三個資產分別獨立呼叫一次內建生成工具；未合成五件套
 
 ## Logo
 
@@ -26,7 +26,7 @@ Constraints: one uniform backdrop with no shadow, gradient, texture, floor or re
 Avoid: rainbow saturation, candy colors, flower or petal look, pinwheel toy, loading spinner, sparkle burst, neon, glassmorphism, 3D chrome, six or eight shards, a rounded square plate behind the mark
 ```
 
-- 內置生成路徑：`C:\Users\SkySa\.codex\generated_images\01a01cb2-f669-7023-a3f9-d66659d9078a\exec-9e77107d-1e30-4fe9-905f-2ec454e8d78a.png`
+- 內建生成路徑：`C:\Users\SkySa\.codex\generated_images\01a01cb2-f669-7023-a3f9-d66659d9078a\exec-9e77107d-1e30-4fe9-905f-2ec454e8d78a.png`
 - 候選路徑：`D:\Workspace\BetaPass\std\candidates\dpmaster\logo-source.png`
 
 ## 3:1 徽章背景
@@ -47,7 +47,7 @@ Constraints: no text, no letters, no numbers, no logo, no watermark, no frame, n
 Avoid: rainbow gradient, candy colors, neon cyberpunk, blue-purple tech grid, glassmorphism cards, spreadsheet screenshot, circuit board, evenly lit flat grid with no focal point, cluttered left side
 ```
 
-- 內置生成路徑：`C:\Users\SkySa\.codex\generated_images\01a01cb2-f669-7023-a3f9-d66659d9078a\exec-b4c4faa9-b6f5-4f98-a3ad-e9a86ceb7086.png`
+- 內建生成路徑：`C:\Users\SkySa\.codex\generated_images\01a01cb2-f669-7023-a3f9-d66659d9078a\exec-b4c4faa9-b6f5-4f98-a3ad-e9a86ceb7086.png`
 - 候選路徑：`D:\Workspace\BetaPass\std\candidates\dpmaster\badge-bg-source.png`
 
 ## 4:5 豎版背景
@@ -68,5 +68,5 @@ Constraints: no text, no letters, no numbers, no logo, no watermark, no frame, n
 Avoid: rainbow gradient, candy colors, neon, blue-purple tech grid, glassmorphism, spreadsheet screenshot, circuit board, a small logo floating in an empty box
 ```
 
-- 內置生成路徑：`C:\Users\SkySa\.codex\generated_images\01a01cb2-f669-7023-a3f9-d66659d9078a\exec-52430613-f97b-4414-853b-6fe980ae0084.png`
+- 內建生成路徑：`C:\Users\SkySa\.codex\generated_images\01a01cb2-f669-7023-a3f9-d66659d9078a\exec-52430613-f97b-4414-853b-6fe980ae0084.png`
 - 候選路徑：`D:\Workspace\BetaPass\std\candidates\dpmaster\stage-bg-source.png`

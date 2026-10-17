@@ -108,7 +108,7 @@ export default function ShaderField() {
     let running = true
     let start = performance.now()
     const frame = () => {
-      // 每影格內聯自愈：顯示尺寸與當前緩衝不符就重建（不依賴 RO/resize 事件時序）
+      // 每影格內聯自愈：顯示尺寸與當前緩衝不符就重建（不仰賴 RO/resize 事件時序）
       const rect = canvas.getBoundingClientRect()
       const rw = Math.round(rect.width * dpr), rh = Math.round(rect.height * dpr)
       if (rw >= 2 && (Math.abs(rw - canvas.width) > 1 || Math.abs(rh - canvas.height) > 1)) resize()

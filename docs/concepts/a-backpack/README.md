@@ -21,7 +21,7 @@ generated: { by: openai/codex, at: 2026-07-31T15:32:38+08:00 }
 | `lesson-body-light.png` | 子頁正文 | 紙面推演、物品圖解、頁邊標註 |
 | `lesson-demo-light.png` | 子頁實驗與題目 | DP 表格劇場、例題檔案、練習路徑 |
 | `lesson-atoms-core-light.png` | 完全、多重、分組、混合 | 正序、拆分、互斥、排程四類原子 |
-| `lesson-atoms-advanced-light.png` | 二維、依賴、綜合、分數 | 雙費用、依賴樹、聚合器、比例填充原子 |
+| `lesson-atoms-advanced-light.png` | 二維、相依、綜合、分數 | 雙費用、相依樹、聚合器、比例填充原子 |
 
 ## 保真度紀錄表
 

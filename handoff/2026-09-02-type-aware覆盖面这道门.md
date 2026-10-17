@@ -8,7 +8,7 @@
 ## 1. 要擋的是什麼
 
 `.oxlintrc.json` 裡 `"options": { "typeAware": true }` —— **本儲存庫開著 type-aware**
-（不是靠命令行旗標，`lint` 指令碼只是 `oxlint --deny-warnings`）。
+（不是靠命令列旗標，`lint` 指令碼只是 `oxlint --deny-warnings`）。
 
 ★★★ oxlint 走查到一個**不在任何 TS 處理程序裡**的檔案時，type-aware 那一趟會**整趟靜默放棄**：
 表現是 **0 條錯、stderr 全空、結束代碼 0** —— 與「全綠」在任何觀察點上都一模一樣。
@@ -107,25 +107,25 @@ oxlint --type-aware --ignore-pattern '.storybook/**'   → 442 文件 / 75 错 /
 `verify` → `build` → 自動觸發 `prebuild` → `content:generate --write` 與 `seo:generate --write`
 ⇒ 重寫 `public/llms.txt`、`public/sitemap.xml`、`public/route-summaries.json`、
 `src/data/routeLastModified.ts`、`index.html`。
-★★★ **「我只是取個基線」不等於「我什麼都沒動」** —— 前置鉤子在命令行上完全看不見。
+★★★ **「我只是取個基線」不等於「我什麼都沒動」** —— 前置鉤子在命令列上完全看不見。
 取基線前先確認這幾個檔案的歸屬。
 
 **② 本儲存庫 2026-09-02 下午有並行作業。**
-16:49–16:54 之間實測到：一次 `pnpm install`（oxlint 1.79→1.80 的依賴 `oxc-parser@0.148.0`）、
+16:49–16:54 之間實測到：一次 `pnpm install`（oxlint 1.79→1.80 的相依 `oxc-parser@0.148.0`）、
 一次建置（`dist/` 423 個檔案）、以及 `test-results/.last-run.json` 被寫
 —— 即**當時另有一條 verify/test:browser 在同一棵樹上跑**。開工前先確認沒有第二條門在跑。
 
 **③ 註解裡不要寫 glob 的字面形態。**
 `/* */` 塊註解裡出現**星號加斜槓**會當場閉合註解 ⇒ 整個檔案 `PARSE_ERROR`。
-★★ 失效形態是測試報 **「no tests」**，而**「no tests」與「測試全過」在 CI 摘要里長得很像**
-—— 尤其那個檔案是新增的、沒人知道它本該有幾個用例時。
+★★ 失效形態是測試報 **「no tests」**，而**「no tests」與「測試全過」在 CI 摘要裡長得很像**
+—— 尤其那個檔案是新增的、沒人知道它本該有幾個案例時。
 
 ## 7. 2026-09-02 測量工作階段沒做什麼
 
 - ⛔ **未改本儲存庫任何設定或程式碼**（本檔案除外）。`tsconfig` 三份、`.oxlintrc.json` 一字未動。
 - 未提交、未推送本儲存庫其它任何改動；工作樹上那 7 個檔案不是 workspace-e2 的。
 - 停手理由：本儲存庫當時有另一個（Codex）agent 在作業，它不在 Claude 的工作階段清單裡
-  ⇒ **既發不出訊息，也收不到它的「我正在寫」**。★ 協調不了的並行，唯一安全的操作是隻讀。
+  ⇒ **既發不出訊息，也收不到它的「我正在寫」**。★ 協調不了的並行，唯一安全的操作是只讀。
 
 ## 8. 2026-09-04 執行證據與後續邊界
 

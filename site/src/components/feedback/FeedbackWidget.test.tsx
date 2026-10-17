@@ -122,7 +122,7 @@ describe('platformLabel', () => {
   })
 
   it('详表未列出的 11 / 12 跟随官方示例归入 Windows 10', () => {
-    // 微軟的示例程式碼是 >=13 → Win11，>0 → Win10；詳表裡 11、12 沒列，
+    // 微軟的範例程式碼是 >=13 → Win11，>0 → Win10；詳表裡 11、12 沒列，
     // 但不能因此自創第三種判法。
     expect(platformLabel('Windows', '11.0.0')).toBe('Windows 10')
     expect(platformLabel('Windows', '12.0.0')).toBe('Windows 10')

@@ -48,10 +48,10 @@ status: stable
 | `featureTarget` | `newly`、`widely`、固定年份、`not-applicable` | 開發時允許採用的 Web 能力上限 |
 | `buildTarget` | `newly`、`widely`、固定年份、顯式瀏覽器列表、`not-applicable` | 建置產物實際承諾的相容目標 |
 | `downstream` | `true` / `false`，並附理由 | 是否納入下游瀏覽器 |
-| `criticalFallback` | 專案自定義 | 關鍵能力不可用時的特性檢測、降級或阻斷策略 |
-| `verification` | 專案自定義 | 建置、靜態檢查、瀏覽器自動化、實機驗證和 RUM 要求 |
+| `criticalFallback` | 專案自訂 | 關鍵能力不可用時的特性檢測、降級或阻斷策略 |
+| `verification` | 專案自訂 | 建置、靜態檢查、瀏覽器自動化、實機驗證和 RUM 要求 |
 
-推薦的專案內聲明示例：
+推薦的專案內聲明範例：
 
 ```yaml
 runtime: public-web
@@ -72,19 +72,19 @@ verification: 构建检查 + Chromium/Firefox/WebKit 自动化 + RUM 复核
 ### Next.js
 
 - 通過專案的 Browserslist 設定表達目標。
-- 同時解析專案聲明與 Next.js 內置 Browserslist 消費器的實際結果；不得以專案直接依賴的 Browserslist 結果代替 Next.js 內置資料。
+- 同時解析專案聲明與 Next.js 內建 Browserslist 消費器的實際結果；不得以專案直接相依的 Browserslist 結果代替 Next.js 內建資料。
 - 確認 Next.js 的用戶端 JavaScript 與 CSS 編譯實際消費該設定，並在守衛中對實際消費結果執行引擎完整性與最低版本檢查。
 - 將語法轉換與執行環境 Web API 支援分開處理；執行環境 API 缺失仍需特性檢測、polyfill 或降級。
 
 ### Vite
 
-- 在 Vite 設定中顯式設置 `build.target`，並單獨核實 CSS 目標。
+- 在 Vite 設定中顯式設定 `build.target`，並單獨核實 CSS 目標。
 - 不假設根目錄或專案內的 Browserslist 會自動控制 Vite 建置目標。
 - 若同時保留 Browserslist，必須說明它由哪些檢查器、CSS 工具或其他建置環節消費。
 
 ### esbuild
 
-- 顯式設置 `target`，避免依賴工具預設輸出級別。
+- 顯式設定 `target`，避免仰賴工具預設輸出級別。
 - 對需要長期重現的使用者指令碼或發佈物固定具體目標，並記錄 esbuild 與瀏覽器資料版本。
 
 ### 原生 HTML、CSS、JavaScript

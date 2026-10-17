@@ -7,7 +7,7 @@
 [![Deploy: Cloudflare Workers](https://img.shields.io/badge/deploy-Cloudflare%20Workers-success.svg?style=flat-square)](https://dp.round1.cc)
 ![Lessons: 37/37 ready](https://img.shields.io/badge/lessons-37%2F37%20ready-success.svg?style=flat-square)
 
-DP大師是面向 C++ 演算法學習者的動態規劃交互式學習網站，將課程講解、可編輯演示、小遊戲、程式碼示例和練習題整合在同一套學習體驗中。
+DP大師是面向 C++ 演算法學習者的動態規劃交互式學習網站，將課程講解、可編輯演示、小遊戲、程式碼範例和練習題整合在同一套學習體驗中。
 
 [dp.round1.cc](https://dp.round1.cc)
 

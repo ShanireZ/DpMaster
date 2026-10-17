@@ -322,7 +322,7 @@ export default function FeedbackWidget() {
       setCopied(true)
       setTimeout(() => setCopied(false), 1800)
     } catch {
-      /* 剪貼板不可用則忽略 */
+      /* 剪貼簿不可用則忽略 */
     }
   }
 

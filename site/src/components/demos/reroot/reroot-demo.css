@@ -1,5 +1,5 @@
 /* 換根 DP 演示專屬樣式（E 換根在 <html data-part="e"> 下 --accent-* 為灰紫寶石色）。
-   自定義 SVG 畫樹：節點=圓、邊=線；配色只用設計權杖；★不做 opacity:0 起步動畫
+   自訂 SVG 畫樹：節點=圓、邊=線；配色只用設計權杖；★不做 opacity:0 起步動畫
    （逐影格動畫由 useStepPlayer 的 index 驅動重繪製，不靠 CSS opacity 過渡）。前綴 rr__。 */
 
 .rr__toolbar {

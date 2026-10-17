@@ -31,7 +31,7 @@ function settled(vals: (number | null)[][]): Record<string, CellState> {
  *   「價值恆 1 = 數個數」這一變形（如 P1855 求最多願望數）。
  *
  * 視覺化：DPViz 網格的「行 r = 費用2 y（0..B）」「列 c = 費用1 x（0..A）」。
- * 逐件更新整張表，每處理完一件推一影格（整錶快照 + 本件改寫的格高亮）。
+ * 逐件更新整張表，每處理完一件推一影格（整表快照 + 本件改寫的格高亮）。
  */
 export function cost2D(items: C2Item[], A: number, B: number, mode: C2Mode = 'value'): VizModel {
   // count 模式：價值恆 1，每裝一件 +1；value 模式：補該件的 v。

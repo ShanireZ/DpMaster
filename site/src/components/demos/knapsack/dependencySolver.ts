@@ -23,16 +23,16 @@ function settled(vals: (number | null)[][]): Record<string, CellState> {
 }
 
 /**
- * 依賴歸約的核心：把「主件 + 它的附件的任一子集」枚舉成若干**合法組合**。
+ * 相依歸約的核心：把「主件 + 它的附件的任一子集」枚舉成若干**合法組合**。
  * 附件必須依主件而選，所以每個組合都**含主件**，再疊加附件的一個子集（2^附件數 個）。
- * 於是「有依賴的揹包」= 這些組合構成**同一組**、組內至多選一個的**分組揹包**。
+ * 於是「有相依的揹包」= 這些組合構成**同一組**、組內至多選一個的**分組揹包**。
  */
 export function enumCombos(master: Master, acc: Accessory[]): Combo[] {
   return enumerateDependencyCombos(master, acc)
 }
 
 /**
- * 有依賴的揹包演示（單主件 + 若干附件）：
+ * 有相依的揹包演示（單主件 + 若干附件）：
  *   第 1 階段，枚舉出所有合法組合（每個組合含主件 + 一個附件子集）；
  *   第 2 階段，把這些組合當作**同一組**，做一維 f[j] 的分組揹包（組內至多選一個）。
  * 網格用二維原型 f[組][j]：第 0 行是空組的地基，第 1 行 = 處理「這一組組合」後的結果，
@@ -48,7 +48,7 @@ export function dependencyKnapsack(master: Master, acc: Accessory[], W: number):
 
   const combosStr = combos.map((c) => `${c.label}(${c.w},${c.v})`).join('，')
 
-  // 影格 0：亮出 4 個組合的 (費用, 價值)，講清依賴→枚舉組合這一步。
+  // 影格 0：亮出 4 個組合的 (費用, 價值)，講清相依→枚舉組合這一步。
   frames.push({
     values: snap(),
     states: settled(f),

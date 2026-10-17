@@ -195,7 +195,7 @@ export async function runEgressProbe(targets = DEFAULT_TARGETS, runtime = {}) {
   return { schema: 1, timeoutMs, results }
 }
 
-/** 只跑 POST 往返驗證。目標固定，不接受自定義主機：這條路徑會真的發請求體。 */
+/** 只跑 POST 往返驗證。目標固定，不接受自訂主機：這條路徑會真的發請求體。 */
 export async function runPostRoundTrip(runtime = {}) {
   const now = runtime.now || Date.now
   const timeoutMs = runtime.timeoutMs || DEFAULT_TIMEOUT_MS

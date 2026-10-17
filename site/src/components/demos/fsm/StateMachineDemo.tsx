@@ -7,7 +7,7 @@ import { solveLinearFsm } from '../../../algorithms/linear-fsm/index.ts'
 import { fsmPickTable } from './fsmSolver'
 import '../shared/demo-workbench.css'
 
-// 三組預設：預設打家劫舍經典樣例 [1,2,3,1] → 最大不相鄰和 4（選 a1+a3）；
+// 三組預設：預設打家劫舍經典範例 [1,2,3,1] → 最大不相鄰和 4（選 a1+a3）；
 // 「間隔明顯」凸顯跳選；「遞增」看它權衡相鄰大值。
 const PRESETS: { label: string; a: number[] }[] = [
   { label: '经典样例', a: [1, 2, 3, 1] },

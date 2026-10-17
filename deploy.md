@@ -125,7 +125,7 @@ pnpm preview
 
 | 檔案                               | 作用                                                             |
 | ---------------------------------- | ---------------------------------------------------------------- |
-| `site/wrangler.jsonc`             | Worker 名稱、入口、自定義網域路由、靜態資源目錄與 404 設定。 |
+| `site/wrangler.jsonc`             | Worker 名稱、入口、自訂網域路由、靜態資源目錄與 404 設定。 |
 | `site/worker.js`                  | 在公開頁面上協商 HTML/Markdown，並接住回饋、統計與診斷 API。 |
 | `site/worker/content-negotiation.js` | 解析 `Accept` 並在 HTML、Markdown、406 之間作確定性選擇。 |
 | `site/worker/feedback-core.js`    | 回饋處理核心，同時是外部 relay 主機的參考實作。 |
@@ -184,7 +184,7 @@ pnpm deploy:cf
 3. 進入 **Settings**。
 4. 確認 Worker 已部署，靜態資源綁定來自 `./dist/`，入口指令碼是 `worker.js`。
 
-自定義網域 `dp.round1.cc` 已綁定到該 Worker。`wrangler.jsonc` 裡的 `routes` 條目宣告的是同一個綁定，`wrangler deploy` 會與現狀對齊而不是重複建立。換網域時同步改 `pattern`、`zone_name` 和 `site/src/config/site.ts` 的 `SITE`，然後重跑 `pnpm verify`——SEO 合同測試會拒絕殘留的舊網域。
+自訂網域 `dp.round1.cc` 已綁定到該 Worker。`wrangler.jsonc` 裡的 `routes` 條目宣告的是同一個綁定，`wrangler deploy` 會與現狀對齊而不是重複建立。換網域時同步改 `pattern`、`zone_name` 和 `site/src/config/site.ts` 的 `SITE`，然後重跑 `pnpm verify`——SEO 合同測試會拒絕殘留的舊網域。
 
 ### Cloudflare 設定回饋變數
 
@@ -334,13 +334,13 @@ Invoke-WebRequest `
 
 ## 回饋與告警送達
 
-★ **方案已定並完成實作：Worker 內經 raw socket 直髮釘釘。**
+★ **方案已定並完成實作：Worker 內經 raw socket 直發釘釘。**
 
 Cloudflare 資料中心出口到釘釘 `oapi.dingtalk.com` 的 TLS 握手被系統性打斷，穩定 525（2026-08 多輪實測重現；普通海外節點到釘釘正常）。舊架構靠「瀏覽器跨域直連國內站 → 國內站轉發進釘釘」繞開，國內站退役後這條路沒了。
 
 ### 2026-08-22 出口探針實測結論
 
-★ **`connect()` 能到釘釘，`fetch()` 不能。方案已定：Worker 內直髮，不需要 relay 主機、不需要換渠道、不需要 Tunnel。**
+★ **`connect()` 能到釘釘，`fetch()` 不能。方案已定：Worker 內直發，不需要 relay 主機、不需要換渠道、不需要 Tunnel。**
 
 | 目標 | `fetch()` | `connect()` |
 | --- | --- | --- |
@@ -401,7 +401,7 @@ curl.exe -s -X POST https://dp.round1.cc/api/_diag/egress -H "x-dp-diag-secret: 
 
 ### 當前支援方式
 
-當前程式碼支援的是**群自定義機器人 / 群 Webhook 機器人**。它的設定模型是一個 webhook URL，加簽時再加一個 secret。這正好對應當前的：
+當前程式碼支援的是**群自訂機器人 / 群 Webhook 機器人**。它的設定模型是一個 webhook URL，加簽時再加一個 secret。這正好對應當前的：
 
 - `FEEDBACK_WEBHOOK_URL`
 - `FEEDBACK_WEBHOOK_KIND=dingtalk`
@@ -409,16 +409,18 @@ curl.exe -s -X POST https://dp.round1.cc/api/_diag/egress -H "x-dp-diag-secret: 
 
 釘釘官方說明裡，群 Webhook 機器人只能往群裡發訊息，不支援單聊，也不支援接收訊息。它還被標為不推薦長期新增的方向。因此，當前實作適合“把使用者回饋推送到一個維護者群”。
 
-### 建立群自定義機器人
+<a id="建立群自定義機器人"></a>
+
+### 建立群自訂機器人
 
 1. 在釘釘用戶端進入接收回饋的群。
 2. 打開群設定。
 3. 找到 **機器人** 或 **智能群助手**。
-4. 添加 **自定義機器人**。
+4. 添加 **自訂機器人**。
 5. 命名，例如 `DP大师反馈`。
 6. 選擇安全設定：
    - 推薦 **加簽**：複製 `SEC...` 金鑰，填入 `FEEDBACK_WEBHOOK_SECRET`。
-   - 簡單測試可用 **自定義關鍵詞**：關鍵詞填 `反馈` 或 `DP大师`，此時不要設定 `FEEDBACK_WEBHOOK_SECRET`。
+   - 簡單測試可用 **自訂關鍵詞**：關鍵詞填 `反馈` 或 `DP大师`，此時不要設定 `FEEDBACK_WEBHOOK_SECRET`。
 7. 複製 webhook URL，填入 Worker 的 `FEEDBACK_WEBHOOK_URL`。
 8. 在 Worker 上設定 `FEEDBACK_WEBHOOK_KIND=dingtalk`。
 
@@ -464,7 +466,7 @@ curl.exe -s -X POST https://dp.round1.cc/api/_diag/egress -H "x-dp-diag-secret: 
 
 ### 限流邊界
 
-程式碼內置“同一來源捲動 30 分鐘最多 10 條”限流，但狀態保存在單個邊緣執行個體記憶體中，只是低成本保護，不是跨執行個體強一致安全邊界。如果需要全域嚴格限制，在 Cloudflare WAF / Rate Limiting 中為 `/api/feedback` 設定每來源 30 分鐘 10 次。
+程式碼內建“同一來源捲動 30 分鐘最多 10 條”限流，但狀態保存在單個邊緣執行個體記憶體中，只是低成本保護，不是跨執行個體強一致安全邊界。如果需要全域嚴格限制，在 Cloudflare WAF / Rate Limiting 中為 `/api/feedback` 設定每來源 30 分鐘 10 次。
 
 ## 常見問題
 
@@ -501,5 +503,5 @@ curl.exe -s -X POST https://dp.round1.cc/api/_diag/egress -H "x-dp-diag-secret: 
 - [Cloudflare Workers TCP sockets (`connect()`)](https://developers.cloudflare.com/workers/runtime-apis/tcp-sockets/)
 - [Cloudflare Workers VPC](https://developers.cloudflare.com/workers-vpc/)
 - [釘釘聊天機器人概述](https://open-dingtalk.github.io/developerpedia/docs/learn/bot/overview/)
-- [釘釘群自定義機器人](https://open-dingtalk.github.io/developerpedia/docs/learn/bot/webhook/overview/)
+- [釘釘群自訂機器人](https://open-dingtalk.github.io/developerpedia/docs/learn/bot/webhook/overview/)
 - [釘釘應用機器人](https://open-dingtalk.github.io/developerpedia/docs/learn/bot/appbot/overview/)

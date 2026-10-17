@@ -5,12 +5,12 @@
  * `Windows.Foundation.UniversalApiContract` 的版本 —— 所以 Windows 11 會報
  * 「15.0」這種看不出所以然的數字，維護者拿到回饋也認不出是什麼系統。
  *
- * 分檔照抄微軟官方示例程式碼
+ * 分檔照抄微軟官方範例程式碼
  * （learn.microsoft.com/microsoft-edge/web-platform/how-to-detect-win11，
  * 2026-06 版）：`>= 13` → Windows 11，`> 0` → Windows 10，`0` → Win7/8/8.1。
- * 詳表裡 11 與 12 沒有列出，但官方示例把 0 與 13 之間的值統一歸到 Windows 10，
+ * 詳表裡 11 與 12 沒有列出，但官方範例把 0 與 13 之間的值統一歸到 Windows 10，
  * 這裡跟著官方走，不另立第三種判法。
- * 官方示例把 `>= 13` 表述為「Windows 11 or later」；日後若有更新的 Windows
+ * 官方範例把 `>= 13` 表述為「Windows 11 or later」；日後若有更新的 Windows
  * 發佈，需要回該文件核對是否新增了區間。
  *
  * 其他平台（macOS / Android / iOS）的 platformVersion 本身就是真實系統版本，

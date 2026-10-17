@@ -29,7 +29,7 @@ The live taxonomy and route order are `site/src/data/catalog.ts`. Older planning
 
 ## A 揹包 DP
 
-01 揹包; 完全揹包; 多重揹包; 分組揹包; 混合揹包; 二維費用揹包; 有依賴的揹包; 揹包綜合變形; 辨析：分數揹包=貪心.
+01 揹包; 完全揹包; 多重揹包; 分組揹包; 混合揹包; 二維費用揹包; 有相依的揹包; 揹包綜合變形; 辨析：分數揹包=貪心.
 
 ## B 線性 DP
 
