@@ -1,6 +1,6 @@
-/* 换根 DP 演示专属样式（E 换根在 <html data-part="e"> 下 --accent-* 为灰紫宝石色）。
-   自定义 SVG 画树：节点=圆、边=线；配色只用设计令牌；★不做 opacity:0 起步动画
-   （逐帧动画由 useStepPlayer 的 index 驱动重渲染，不靠 CSS opacity 过渡）。前缀 rr__。 */
+/* 換根 DP 演示專屬樣式（E 換根在 <html data-part="e"> 下 --accent-* 為灰紫寶石色）。
+   自定義 SVG 畫樹：節點=圓、邊=線；配色只用設計權杖；★不做 opacity:0 起步動畫
+   （逐影格動畫由 useStepPlayer 的 index 驅動重繪製，不靠 CSS opacity 過渡）。前綴 rr__。 */
 
 .rr__toolbar {
   display: flex;
@@ -82,7 +82,7 @@
   border-color: color-mix(in srgb, var(--accent-1) 45%, transparent);
 }
 
-/* ---------- 树画布 ---------- */
+/* ---------- 樹畫布 ---------- */
 .rr__stage {
   padding: var(--sp-4) var(--sp-3);
   border-radius: var(--r-2);
@@ -96,7 +96,7 @@
   min-width: 460px;
   height: auto;
 }
-/* 节点圆过渡（换输入/换帧时的柔和变化，仅 fill/stroke，非 opacity 起步） */
+/* 節點圓過渡（換輸入/換影格時的柔和變化，僅 fill/stroke，非 opacity 起步） */
 .rr__stage circle,
 .rr__stage line {
   transition:
@@ -108,7 +108,7 @@
   cursor: pointer;
 }
 
-/* ---------- 解说 / 读数 ---------- */
+/* ---------- 解說 / 讀數 ---------- */
 .rr__caption {
   margin-top: var(--sp-4);
   font-size: 14px;
@@ -133,7 +133,7 @@
   overflow-x: auto;
 }
 
-/* ---------- 对照读数（O(n²) vs O(n)） ---------- */
+/* ---------- 對照讀數（O(n²) vs O(n)） ---------- */
 .rr__cmp {
   display: flex;
   flex-wrap: wrap;
@@ -168,7 +168,7 @@
   color: var(--viz-chosen);
 }
 
-/* ---------- 距离和读数条（distsum 演示：点节点看它作根的距离和） ---------- */
+/* ---------- 距離和讀數條（distsum 演示：點節點看它作根的距離和） ---------- */
 .rr__dist-legend {
   display: flex;
   flex-wrap: wrap;
@@ -200,7 +200,7 @@
   color: var(--accent-1);
 }
 
-/* inout：距离分层小表 */
+/* inout：距離分層小表 */
 .rr__layer-tags {
   display: flex;
   flex-wrap: wrap;

@@ -1,8 +1,8 @@
 import heroArt from '../../../assets/demo-art/lcs-instrument-v1.avif'
 
 /**
- * LCS 的纯装饰 Hero：保持两条序列与有序匹配桥的课程气质，
- * 但不映射当前字符串、DP 格子、回溯路径或播放状态。
+ * LCS 的純裝飾 Hero：保持兩條序列與有序匹配橋的課程氣質，
+ * 但不映射當前字串、DP 格子、回溯路徑或播放狀態。
  */
 export function LCSHero() {
   return (

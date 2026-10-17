@@ -1,6 +1,6 @@
-// 二维费用背包讲解用的插图（on-brand SVG，随强调色变色）
+// 二維費用揹包講解用的插圖（on-brand SVG，隨強調色變色）
 
-// 每件物品挂两个费用标签 (a=费用1, b=费用2) 与价值 v；背包有两条独立的容量约束。
+// 每件物品掛兩個費用標籤 (a=費用1, b=費用2) 與價值 v；揹包有兩條獨立的容量約束。
 export function Cost2DSetupFigure() {
   const items = [
     { a: 1, b: 2, v: 3 },
@@ -39,7 +39,7 @@ export function Cost2DSetupFigure() {
   )
 }
 
-// 从「一个费用标签」到「两个费用标签」：约束从一条线变成一片平面，DP 维度随之 +1。
+// 從「一個費用標籤」到「兩個費用標籤」：約束從一條線變成一片平面，DP 維度隨之 +1。
 export function Cost2DDimensionFigure() {
   return (
     <svg viewBox="0 0 640 226" role="img" aria-label="从一维费用到二维费用，DP 维度加一">
@@ -49,7 +49,7 @@ export function Cost2DDimensionFigure() {
         </marker>
       </defs>
 
-      {/* 左：一维费用，dp[j] 是一条数轴 */}
+      {/* 左：一維費用，dp[j] 是一條數軸 */}
       <text x="118" y="22" textAnchor="middle" fontSize="12.5" fontWeight="600" fill="var(--text-2)">一维费用 · dp[j]</text>
       {Array.from({ length: 5 }, (_, j) => (
         <g key={`o${j}`} transform={`translate(${34 + j * 42},44)`}>
@@ -62,7 +62,7 @@ export function Cost2DDimensionFigure() {
       <path d="M258 66 H322" stroke="var(--text-3)" strokeWidth="2" markerEnd="url(#c2d-ar)" />
       <text x="290" y="56" textAnchor="middle" fontSize="11.5" fill="var(--accent-1)">+1 维</text>
 
-      {/* 右：二维费用，dp[x][y] 是一张平面 */}
+      {/* 右：二維費用，dp[x][y] 是一張平面 */}
       <text x="470" y="22" textAnchor="middle" fontSize="12.5" fontWeight="600" fill="var(--accent-1)">二维费用 · dp[x][y]</text>
       {Array.from({ length: 4 }, (_, y) =>
         Array.from({ length: 4 }, (_, x) => (
@@ -83,7 +83,7 @@ export function Cost2DDimensionFigure() {
   )
 }
 
-// 转移分叉：dp[x][y] 不取继承原值，取则同时扣两种费用 (x−a, y−b) 再补 v。
+// 轉移分叉：dp[x][y] 不取繼承原值，取則同時扣兩種費用 (x−a, y−b) 再補 v。
 export function Cost2DDecisionFigure() {
   return (
     <svg viewBox="0 0 640 292" role="img" aria-label="二维费用下第 i 件取或不取的决策分叉">

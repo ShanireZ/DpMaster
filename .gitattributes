@@ -1,30 +1,30 @@
-# 跨平台一致：仓库内与工作区均为 LF。
+# 跨平台一致：儲存庫內與工作區均為 LF。
 #
-# ★★ 2026-09-02 工作区统一加上这条。没有它时，检出行尾由每台机器的
-#   `core.autocrlf` 决定（Git for Windows 装机默认在 system 层是 true），
-#   于是**同一个 blob 在不同机器上被检出成不同字节**。
-# ★★★ 而这件事几乎不可见：`git status` 干净（索引里仍是 LF），
-#   Linux CI 全绿 —— 只有当某处判据拿**工作树字节**做逐字节/哈希比对时
-#   才会突然变红，而且看上去像是别的问题（“资产版本对不上”之类）。
-# ★ 钉在这里而不是靠每台机器自己设 `core.autocrlf`：后者带不过机器。
+# ★★ 2026-09-02 工作區統一加上這條。沒有它時，檢出行尾由每臺機器的
+#   `core.autocrlf` 決定（Git for Windows 裝機預設在 system 層是 true），
+#   於是**同一個 blob 在不同機器上被檢出成不同位元組**。
+# ★★★ 而這件事幾乎不可見：`git status` 乾淨（索引裡仍是 LF），
+#   Linux CI 全綠 —— 只有當某處判據拿**工作樹位元組**做逐位元組/雜湊比對時
+#   才會突然變紅，而且看上去像是別的問題（“資產版本對不上”之類）。
+# ★ 釘在這裡而不是靠每臺機器自己設 `core.autocrlf`：後者帶不過機器。
 * text=auto eol=lf
 
-# 生成物与测试规范文件强制 LF 行尾。
-# 修复 Windows(autocrlf) 上 npm run verify 误报 stale / 测试挂红的问题：
-# generate-*.mjs 用 \n(LF) 拼字符串做逐字节比对，而 Windows 检出的文件是 CRLF，
-# 导致 check:content / check:seo 永远报 stale、accessibility-contract 测试 #4/#69 失败。
+# 生成物與測試規範檔案強制 LF 行尾。
+# 修復 Windows(autocrlf) 上 npm run verify 誤報 stale / 測試掛紅的問題：
+# generate-*.mjs 用 \n(LF) 拼字串做逐位元組比對，而 Windows 檢出的檔案是 CRLF，
+# 導致 check:content / check:seo 永遠報 stale、accessibility-contract 測試 #4/#69 失敗。
 site/src/data/problems.ts text eol=lf
 site/public/sitemap.xml text eol=lf
 site/public/robots.txt text eol=lf
 site/tests/browser/routes.spec.ts text eol=lf
 
-# ★ 工作区级门 `node Docs/check-baseline-copies.mjs` 拿这份 wrapper 与
-#   `Docs/baseline-copy-check.template.mjs` **逐字节**比对（这一项不做行尾归一）。
-#   2026-09-02 实测：7 个仓的副本是**同一个 blob（纯 LF）**，而没钉 eol 的三个仓
-#   在 `core.autocrlf=true` 的机器上被检出成 CRLF ⇒ 那道门恒红。
-#   ★★ 而它在开发机上几乎看不见：`git status` 干净（索引里仍是 LF），
-#   Linux CI 也全绿 —— 只有在 Windows 上跑那条工作区级命令才看得见。
-# ★ 钉在这里而不是靠每台机器自己设 `core.autocrlf`：后者带不过机器。
-# ⚠ 只点名这一个文件：`site/scripts/` 下另外 53 个 .mjs 现在工作树多是 CRLF，
-#   用 glob 会一次改动四十来个文件 —— 那是另一件事，别顺手干。
+# ★ 工作區級門 `node Docs/check-baseline-copies.mjs` 拿這份 wrapper 與
+#   `Docs/baseline-copy-check.template.mjs` **逐位元組**比對（這一項不做行尾歸一）。
+#   2026-09-02 實測：7 個倉的副本是**同一個 blob（純 LF）**，而沒釘 eol 的三個倉
+#   在 `core.autocrlf=true` 的機器上被檢出成 CRLF ⇒ 那道門恆紅。
+#   ★★ 而它在開發機上幾乎看不見：`git status` 乾淨（索引裡仍是 LF），
+#   Linux CI 也全綠 —— 只有在 Windows 上跑那條工作區級命令才看得見。
+# ★ 釘在這裡而不是靠每臺機器自己設 `core.autocrlf`：後者帶不過機器。
+# ⚠ 只點名這一個檔案：`site/scripts/` 下另外 53 個 .mjs 現在工作樹多是 CRLF，
+#   用 glob 會一次改動四十來個檔案 —— 那是另一件事，別順手幹。
 site/scripts/check-baseline-copy.mjs text eol=lf

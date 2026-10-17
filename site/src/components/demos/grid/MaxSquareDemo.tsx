@@ -35,7 +35,7 @@ function Stepper({
   )
 }
 
-// 默认 4 行 × 5 列，内含一个 3×3 全 1 块 → 最大正方形边长 3、面积 9。
+// 預設 4 行 × 5 列，內含一個 3×3 全 1 塊 → 最大正方形邊長 3、面積 9。
 const DEFAULT_GRID: number[][] = [
   [1, 0, 1, 1, 0],
   [1, 1, 1, 1, 0],
@@ -48,13 +48,13 @@ function resizeGrid(g: number[][], rows: number, cols: number): number[][] {
   for (let i = 0; i < rows; i++) {
     const src = g[i] ?? []
     const row: number[] = []
-    for (let j = 0; j < cols; j++) row.push(src[j] ?? 1) // 新格默认 1
+    for (let j = 0; j < cols; j++) row.push(src[j] ?? 1) // 新格預設 1
     out.push(row)
   }
   return out
 }
 
-/** 最大正方形演示：可编辑 0/1 矩阵（点格子翻 0↔1），逐格填 dp[i][j]=以(i,j)为右下角的最大全 1 正方形边长。 */
+/** 最大正方形演示：可編輯 0/1 矩陣（點格子翻 0↔1），逐格填 dp[i][j]=以(i,j)為右下角的最大全 1 正方形邊長。 */
 export default function MaxSquareDemo() {
   const [rows, setRows] = useState(4)
   const [cols, setCols] = useState(5)

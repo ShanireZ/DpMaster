@@ -16,7 +16,7 @@ interface DiffSpec {
   nMax: number
 }
 
-// 目标幂次范围：简单 ~n≤16、中等 ~n≤50、困难 ~n≤200
+// 目標冪次範圍：簡單 ~n≤16、中等 ~n≤50、困難 ~n≤200
 const DIFFS: Record<Difficulty, DiffSpec> = {
   easy: { label: '简单', nMin: 6, nMax: 16 },
   medium: { label: '中等', nMin: 18, nMax: 50 },
@@ -25,7 +25,7 @@ const DIFFS: Record<Difficulty, DiffSpec> = {
 
 const DIFF_ORDER: Difficulty[] = ['easy', 'medium', 'hard']
 
-// 快速幂（二进制）步数：⌊log2 n⌋ + popcount(n) − 1
+// 快速冪（二進位）步數：⌊log2 n⌋ + popcount(n) − 1
 function fastPowSteps(n: number): number {
   if (n <= 1) return 0
   const log2 = Math.floor(Math.log2(n))
@@ -38,16 +38,16 @@ function fastPowSteps(n: number): number {
   return log2 + pc - 1
 }
 
-// 暴力（逐个乘）步数：n − 1
+// 暴力（逐個乘）步數：n − 1
 function bruteSteps(n: number): number {
   return Math.max(0, n - 1)
 }
 
-// 一条“加法链”步骤：由哪两个已有指数合成（翻倍时 a===b）
+// 一條“加法鏈”步驟：由哪兩個已有指數合成（翻倍時 a===b）
 interface ChainStep {
-  a: number // 参与合成的指数之一
-  b: number // 另一个（翻倍时与 a 相同）
-  r: number // 得到的新指数 = a + b
+  a: number // 參與合成的指數之一
+  b: number // 另一個（翻倍時與 a 相同）
+  r: number // 得到的新指數 = a + b
   kind: 'double' | 'add'
 }
 
@@ -63,9 +63,9 @@ export default function PowerAccelGame() {
   const [target, setTarget] = useState(() =>
     buildExponentRound('medium', createSeededRandom(roundSeed.seed)),
   )
-  // 已合成的步骤链（初始集合恒为 {1}，不计入步骤）
+  // 已合成的步驟鏈（初始集合恆為 {1}，不計入步驟）
   const [steps, setSteps] = useState<ChainStep[]>([])
-  // 当前选中的两个待合成指数（栈式：最多 2 个）
+  // 當前選中的兩個待合成指數（棧式：最多 2 個）
   const [picks, setPicks] = useState<number[]>([])
   const [revealed, setRevealed] = useState(false)
   const [muted, setMuted] = useState(false)
@@ -87,7 +87,7 @@ export default function PowerAccelGame() {
     }
   }, [difficulty, roundSeed, startRound])
 
-  // 当前已达指数集合：{1} ∪ 每步的结果
+  // 當前已達指數集合：{1} ∪ 每步的結果
   const reachedList = useMemo(() => {
     const seen = new Set<number>([1])
     const out: number[] = [1]
@@ -105,11 +105,11 @@ export default function PowerAccelGame() {
   const brute = bruteSteps(target)
   const used = steps.length
   const done = reachedSet.has(target)
-  const atOrBeatFast = done && used <= fast // 过关：追平或超越快速幂都算
-  const beatFast = done && used < fast // 严格少于基线 = 超越
-  const tieFast = done && used === fast // 恰好等于基线 = 追平
+  const atOrBeatFast = done && used <= fast // 過關：追平或超越快速冪都算
+  const beatFast = done && used < fast // 嚴格少於基線 = 超越
+  const tieFast = done && used === fast // 恰好等於基線 = 追平
 
-  // 选中一个指数（用于合成）；已选满 2 个则忽略；点已选的取消
+  // 選中一個指數（用於合成）；已選滿 2 個則忽略；點已選的取消
   const pick = (e: number) => {
     if (done) return
     setRevealed(false)
@@ -125,7 +125,7 @@ export default function PowerAccelGame() {
     })
   }
 
-  // 翻倍：把选中的单个指数 ×2（对应“平方”）
+  // 翻倍：把選中的單個指數 ×2（對應“平方”）
   const doDouble = () => {
     if (done || picks.length !== 1) return
     const a = picks[0]
@@ -136,7 +136,7 @@ export default function PowerAccelGame() {
     setRevealed(false)
   }
 
-  // 相乘：把选中的两个指数相加（对应“两个已算幂相乘”）
+  // 相乘：把選中的兩個指數相加（對應“兩個已算冪相乘”）
   const doAdd = () => {
     if (done || picks.length !== 2) return
     const [a, b] = picks

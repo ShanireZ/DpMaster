@@ -247,8 +247,8 @@ function main() {
     return
   }
   if (mode === '--check') {
-    // 归一化行尾：生成器用 \n(LF) 拼字符串，而 Windows 检出的文件是 CRLF，
-    // 直接逐字节比对会永远报 stale。统一剥掉 \r 后再比。
+    // 歸一化行尾：生成器用 \n(LF) 拼字串，而 Windows 檢出的檔案是 CRLF，
+    // 直接逐位元組比對會永遠報 stale。統一剝掉 \r 後再比。
     const current = readFileSync(outputPath, 'utf8').replace(/\r\n/g, '\n')
     if (current !== rendered) {
       console.error('[content] src/data/problems.ts is stale; run pnpm content:generate')

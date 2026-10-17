@@ -7,7 +7,7 @@ import { lisNaive } from './lisSolver'
 import { solveLis } from '../../../algorithms/lis/index.ts'
 import '../shared/demo-workbench.css'
 
-// 三组预设：默认题最优 LIS=5；「已排好序」全升 → LIS=n；「递减」→ LIS=1。
+// 三組預設：預設題最優 LIS=5；「已排好序」全升 → LIS=n；「遞減」→ LIS=1。
 const PRESETS: { label: string; a: number[] }[] = [
   { label: '经典乱序', a: [2, 1, 5, 3, 6, 4, 8, 9, 7] },
   { label: '已升序', a: [1, 2, 3, 4, 5, 6] },
@@ -53,8 +53,8 @@ function NumStepper({
 }
 
 /**
- * O(n²) LIS 主演示：一维 dp[i]「以 a[i] 结尾的最长上升子序列长度」，逐格填表。
- * 数组可编辑（改每个值 / 加删元素 / 一键换预设），实时重算并重播动画。
+ * O(n²) LIS 主演示：一維 dp[i]「以 a[i] 結尾的最長上升子序列長度」，逐格填表。
+ * 陣列可編輯（改每個值 / 加刪元素 / 一鍵換預設），即時重算並重播動畫。
  */
 export default function LISDemo() {
   const [a, setA] = useState<number[]>(PRESETS[0].a)
@@ -62,7 +62,7 @@ export default function LISDemo() {
   const model = useMemo(() => lisNaive(a), [a])
   const ans = useMemo(() => solveLis(a).length, [a])
 
-  // key 变 → DPViz remount 重播。
+  // key 變 → DPViz remount 重播。
   const modelKey = `lis-${a.join('_')}`
 
   const setAt = (i: number, v: number) => setA((arr) => arr.map((x, k) => (k === i ? v : x)))
@@ -122,7 +122,7 @@ export default function LISDemo() {
   )
 }
 
-// 简单洗牌（Fisher–Yates），保证与原数组不同（长度≥2 时）。
+// 簡單洗牌（Fisher–Yates），保證與原陣列不同（長度≥2 時）。
 function shuffle(src: number[]): number[] {
   const a = src.slice()
   for (let i = a.length - 1; i > 0; i--) {

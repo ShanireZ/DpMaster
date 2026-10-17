@@ -3,23 +3,23 @@ import type { StepPlayer } from '../../dp-engine/playback/types'
 import { InstrumentRail, VizStateKey } from '../shared'
 import type { TreeLayout } from './treedpSolver'
 
-// —— 一个节点的视觉描述（由各演示按当前帧算出） ——
+// —— 一個節點的視覺描述（由各演示按當前影格算出） ——
 export interface NodePaint {
   fill: string
   stroke: string
   strokeWidth?: number
   textColor?: string
-  /** 节点圆下方最多两行小标签（如 dp0/dp1 值） */
+  /** 節點圓下方最多兩行小標籤（如 dp0/dp1 值） */
   sub?: string[]
-  /** 节点圆内主标签，缺省用编号 */
+  /** 節點圓內主標籤，預設用編號 */
   label?: string
-  dim?: boolean // 尚未处理：淡出
+  dim?: boolean // 尚未處理：淡出
 }
 
 interface TreeCanvasProps {
   layout: TreeLayout
   paintNode: (id: number) => NodePaint
-  /** 需要加粗高亮的边（如直径链、被选子树）：返回 true 则强调 */
+  /** 需要加粗高亮的邊（如直徑鏈、被選子樹）：回傳 true 則強調 */
   edgeActive?: (a: number, b: number) => boolean
   width?: number
   rowH?: number
@@ -27,7 +27,7 @@ interface TreeCanvasProps {
   ariaLabel?: string
 }
 
-/** 纯展示：把一棵有根树画成 SVG。x 用布局归一坐标铺开、y 按深度分层。 */
+/** 純展示：把一棵有根樹畫成 SVG。x 用佈局歸一座標鋪開、y 按深度分層。 */
 export function TreeCanvas({
   layout,
   paintNode,
@@ -45,7 +45,7 @@ export function TreeCanvas({
 
   return (
     <svg viewBox={`0 0 ${width} ${H}`} role="img" aria-label={ariaLabel}>
-      {/* 连边 */}
+      {/* 連邊 */}
       {layout.edges.map((e, i) => {
         const a = layout.byId.get(e.a)!
         const b = layout.byId.get(e.b)!
@@ -62,7 +62,7 @@ export function TreeCanvas({
           />
         )
       })}
-      {/* 节点 */}
+      {/* 節點 */}
       {layout.nodes.map((nd) => {
         const p = paintNode(nd.id)
         return (
@@ -106,7 +106,7 @@ export function TreeCanvas({
   )
 }
 
-// —— 逐帧播放控制条（后序动画共用） ——
+// —— 逐影格播放控制條（後序動畫共用） ——
 export function StepBar({ player }: { player: StepPlayer }) {
   return (
     <InstrumentRail

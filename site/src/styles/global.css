@@ -49,7 +49,7 @@ ul, ol { padding-left: 1.4em; }
 
 ::selection { background: color-mix(in srgb, var(--accent-2) 40%, transparent); color: #fff; }
 
-/* 细滚动条 */
+/* 細捲軸 */
 * { scrollbar-width: thin; scrollbar-color: var(--border-strong) transparent; }
 *::-webkit-scrollbar { width: 10px; height: 10px; }
 *::-webkit-scrollbar-thumb {
@@ -60,14 +60,14 @@ ul, ol { padding-left: 1.4em; }
 }
 *::-webkit-scrollbar-thumb:hover { background: var(--text-3); background-clip: content-box; }
 
-/* 焦点可见 */
+/* 焦點可見 */
 :focus-visible {
   outline: 2px solid var(--accent-2);
   outline-offset: 2px;
   border-radius: 4px;
 }
 
-/* ---------- 通用工具类 ---------- */
+/* ---------- 通用工具類 ---------- */
 .grad-text {
   background: var(--grad-accent);
   -webkit-background-clip: text;
@@ -83,29 +83,29 @@ ul, ol { padding-left: 1.4em; }
   -webkit-text-fill-color: transparent;
 }
 
-/* 正文阅读容器：约束行宽，提升可读 */
+/* 正文閱讀容器：約束行寬，提升可讀 */
 .prose { max-width: var(--measure); }
 .prose p { color: var(--text-1); margin: 0 0 var(--sp-4); }
 .prose p + p { margin-top: 0; }
 
-/* 卡片/面板通用（内容层：高对比、稳定底） */
+/* 卡片/面板通用（內容層：高對比、穩定底） */
 .panel {
   background: var(--surface-2);
   border: 1px solid var(--border);
   border-radius: var(--r-3);
 }
 
-/* KaTeX 尺寸微调 */
+/* KaTeX 尺寸微調 */
 .katex { font-size: 1.05em; }
 .katex-display { margin: var(--sp-4) 0; overflow-x: auto; overflow-y: hidden; padding: 2px 0; }
 
-/* 图标：细描边，去掉 Lucide 默认过粗的线 */
+/* 圖標：細描邊，去掉 Lucide 預設過粗的線 */
 svg.lucide { stroke-width: 1.7; }
 
-/* 说明：不做从 opacity:0 起步的淡入进场——无头/后台标签页会暂停 CSS 动画，
-   使内容停留在隐藏态。高级感由配色 / 阴影 / 字体 / hover 微交互承载，内容始终可见。 */
+/* 說明：不做從 opacity:0 起步的淡入進場——無頭/後台標籤頁會暫停 CSS 動畫，
+   使內容停留在隱藏態。高級感由配色 / 陰影 / 字體 / hover 微交互承載，內容始終可見。 */
 
-/* ---------- 动效降级 ---------- */
+/* ---------- 動畫效果降級 ---------- */
 @media (prefers-reduced-motion: reduce) {
   html { scroll-behavior: auto; }
   *, *::before, *::after {

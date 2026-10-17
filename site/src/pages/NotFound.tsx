@@ -5,9 +5,9 @@ import GridSolver from '../components/notfound/GridSolver'
 import './notfound.css'
 
 /**
- * 404 · 越界的状态。
- * 把「页面不存在」双关成 DP 的「状态不可达」。
- * 背景 WebGL 流场 + Canvas DP 填表与断裂路径（往返播放：正放填表→断裂→倒放收回）。
+ * 404 · 越界的狀態。
+ * 把「頁面不存在」雙關成 DP 的「狀態不可達」。
+ * 背景 WebGL 流場 + Canvas DP 填表與斷裂路徑（往返播放：正放填表→斷裂→倒放收回）。
  */
 export default function NotFound() {
   return (

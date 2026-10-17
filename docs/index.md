@@ -2,9 +2,9 @@
 okf_version: "0.2"
 ---
 
-# DP大师 Documentation Bundle
+# DP大師 Documentation Bundle
 
-This directory is the canonical, current-truth OKF bundle for DP大师. It contains durable product, design, engineering, and operations knowledge only. Git history carries change history; active task plans and review checklists live separately in `handoff/`.
+This directory is the canonical, current-truth OKF bundle for DP大師. It contains durable product, design, engineering, and operations knowledge only. Git history carries change history; active task plans and review checklists live separately in `handoff/`.
 
 # Project
 
@@ -44,5 +44,5 @@ This directory is the canonical, current-truth OKF bundle for DP大师. It conta
 
 # Web 治理
 
-* [Web Platform Baseline 治理（工作区唯一权威）](./web-baseline.md) - 工作区权威的逐字节副本，由 `node Docs/check-baseline-copies.mjs` 守着。**不要就地改**：改工作区权威再同步全部副本。
-* [sitemap / Markdown 内容协商 / Accept 判据（工作区唯一权威）](./web-contracts.md) - 同上，同一道门。
+* [Web Platform Baseline 治理（工作區唯一權威）](./web-baseline.md) - 工作區權威的逐位元組副本，由 `node Docs/check-baseline-copies.mjs` 守著。**不要就地改**：改工作區權威再同步全部副本。
+* [sitemap / Markdown 內容協商 / Accept 判據（工作區唯一權威）](./web-contracts.md) - 同上，同一道門。

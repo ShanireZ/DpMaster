@@ -7,7 +7,7 @@ import { edit2D } from './editSolver'
 import '../shared/demo-workbench.css'
 import './edit-traceback.css'
 
-// 只保留字母，转小写，并截到 6 个字符以内——网格 (m+1)×(n+1) 才不至于过大。
+// 只保留字母，轉小寫，並截到 6 個字元以內——網格 (m+1)×(n+1) 才不至於過大。
 function sanitize(s: string): string {
   return s
     .replace(/[^A-Za-z]/g, '')
@@ -16,13 +16,13 @@ function sanitize(s: string): string {
 }
 
 const PRESETS: Array<[string, string]> = [
-  ['horse', 'ros'], // 距离 3
-  ['kitten', 'sitten'], // kitten→sitten 距离 1（仅首字母 k→s）
-  ['abc', 'abc'], // 距离 0，全走对角线
-  ['flaw', 'lawn'], // 距离 2
+  ['horse', 'ros'], // 距離 3
+  ['kitten', 'sitten'], // kitten→sitten 距離 1（僅首字母 k→s）
+  ['abc', 'abc'], // 距離 0，全走對角線
+  ['flaw', 'lawn'], // 距離 2
 ]
 
-/** 编辑距离主演示：两串可编辑（≤6），二维填表 + 三向转移逐格取 min。 */
+/** 編輯距離主演示：兩串可編輯（≤6），二維填表 + 三向轉移逐格取 min。 */
 export default function EditDistanceDemo() {
   const [a, setA] = useState('horse')
   const [b, setB] = useState('ros')

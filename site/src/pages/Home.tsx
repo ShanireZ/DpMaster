@@ -31,13 +31,13 @@ function useHeroTheme() {
 }
 
 /**
- * 首屏 hero 底图。它是 LCP 元素，所以刻意用 `<picture>` 而不是 CSS 背景 ——
- * `image-set()` 引用的图片不会被预加载扫描器发现，用在 LCP 候选上反而会拖慢
- * 加载。格式按「最优先在前」排：AVIF → WebP → JPEG，浏览器命中第一个支持的。
+ * 首屏 hero 底圖。它是 LCP 元素，所以刻意用 `<picture>` 而不是 CSS 背景 ——
+ * `image-set()` 引用的圖片不會被預載入掃描器發現，用在 LCP 候選上反而會拖慢
+ * 載入。格式按「最優先在前」排：AVIF → WebP → JPEG，瀏覽器命中第一個支援的。
  *
- * ★ 两套主题是两份不同的美术处理（RMSE 0.87），不能靠滤镜合并成一张。
- * 预渲染产物固定输出 dark 版；light 主题的访客水合后会换成 light 版，
- * 但 index.html 的内联主题脚本已经按真实主题注入了 preload，届时直接命中缓存。
+ * ★ 兩套主題是兩份不同的美術處理（RMSE 0.87），不能靠濾鏡合併成一張。
+ * 預繪製產物固定輸出 dark 版；light 主題的訪客水合後會換成 light 版，
+ * 但 index.html 的內聯主題指令碼已經按真實主題注入了 preload，屆時直接命中快取。
  */
 function HeroImage({ theme }: { theme: HeroTheme }) {
   const base = theme === 'light' ? '/og/dpmaster-social-light' : '/og/dpmaster-social'

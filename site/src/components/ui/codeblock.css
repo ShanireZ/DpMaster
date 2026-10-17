@@ -57,7 +57,7 @@
 }
 .codeblock__fallback code { color: var(--text-2); white-space: pre; }
 
-/* Shiki 双主题：跟随 [data-theme] 切换 */
+/* Shiki 雙主題：跟隨 [data-theme] 切換 */
 .codeblock__code .shiki,
 .codeblock__code .shiki span {
   color: var(--shiki-dark);

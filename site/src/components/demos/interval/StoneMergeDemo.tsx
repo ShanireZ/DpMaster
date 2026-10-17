@@ -35,7 +35,7 @@ function Stepper({
   )
 }
 
-/** 石子合并区间 DP 三角表演示：dp[l][r] 按区间长度递推，高亮当前格与被选分割点的两个子区间来源。 */
+/** 石子合併區間 DP 三角表演示：dp[l][r] 按區間長度遞推，高亮當前格與被選分割點的兩個子區間來源。 */
 export default function StoneMergeDemo() {
   const [stones, setStones] = useState<number[]>([7, 6, 5, 4])
 

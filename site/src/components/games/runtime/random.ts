@@ -15,7 +15,7 @@ export function createRandomSeed(random: RandomSource): number {
   return randomInt(random, 0, UINT32_RANGE - 1)
 }
 
-/** Mulberry32：只用于可复现的教学局面，不用于密码学。 */
+/** Mulberry32：只用於可重現的教學局面，不用於密碼學。 */
 export function createSeededRandom(seed: number): RandomSource {
   let state = Number.isFinite(seed) ? Math.trunc(seed) >>> 0 : 0
   return () => {

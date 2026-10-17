@@ -1,11 +1,11 @@
 import { useEffect, useRef } from 'react'
 
 /**
- * 404 中景层 · Canvas 2D 的 DP 叙事。
- * 一张 DP 表：填表波沿对角线（无后效性顺序）逐格点亮，一条「最优路径」抢先冲向
- * 画面中央的断层；越过断层边缘时路径断裂、红叉标记、碎片四散——隐喻「无法到达的状态」。
- * 指针经过会激起青色涟漪（重新计算的转移）。配色全部取自 tokens 的 --viz-* 语义色。
- * prefers-reduced-motion 只渲一帧静止残局；离屏暂停。replayKey 变化即重挂载重播。
+ * 404 中景層 · Canvas 2D 的 DP 敘事。
+ * 一張 DP 表：填表波沿對角線（無後效性順序）逐格點亮，一條「最優路徑」搶先衝向
+ * 畫面中央的斷層；越過斷層邊緣時路徑斷裂、紅叉標記、碎片四散——隱喻「無法到達的狀態」。
+ * 指針經過會激起青色漣漪（重新計算的轉移）。配色全部取自 tokens 的 --viz-* 語義色。
+ * prefers-reduced-motion 只渲一影格靜止殘局；離屏暫停。replayKey 變化即重掛載重播。
  */
 export default function GridSolver() {
   const ref = useRef<HTMLCanvasElement>(null)
@@ -101,14 +101,14 @@ export default function GridSolver() {
       ctx.globalAlpha = 1
     }
 
-    // 往返（yoyo）：正放填表 FORWARD → 断裂停顿 HOLD → 倒放收回 BACK，来回而非硬重置
+    // 往返（yoyo）：正放填表 FORWARD → 斷裂停頓 HOLD → 倒放收回 BACK，來回而非硬重置
     const FORWARD = 3.6, HOLD = 0.9, BACK = 3.0
     const PERIOD = FORWARD + HOLD + BACK
     let start = performance.now(), last = start, raf = 0, running = true
     let lastPhase = 0, burst = false
 
     const render = (now: number) => {
-      // 每帧内联自愈：显示尺寸与当前缓冲不符就重建（不依赖 RO/resize 事件时序）
+      // 每影格內聯自愈：顯示尺寸與當前緩衝不符就重建（不依賴 RO/resize 事件時序）
       const rect = canvas.getBoundingClientRect()
       const rw = Math.round(rect.width), rh = Math.round(rect.height)
       if (rw >= 2 && rh >= 2 && (Math.abs(rw - W) > 1 || Math.abs(rh - H) > 1)) build()
@@ -183,7 +183,7 @@ export default function GridSolver() {
         }
       }
 
-      // 最优路径（chosen 绿）
+      // 最優路徑（chosen 綠）
       const shown = Math.max(1, Math.min(pathLen, Math.floor(front)))
       ctx.strokeStyle = C.chosen
       ctx.lineWidth = 3
@@ -199,13 +199,13 @@ export default function GridSolver() {
       ctx.stroke()
       ctx.globalAlpha = 1
 
-      // 转移箭头（source 青）
+      // 轉移箭頭（source 青）
       for (let k = 2; k < shown - 1; k += 3) {
         const a = path[k], b = path[k + 1]
         arrow(a.x * cell + cell / 2, a.y * cell + cell / 2, b.x * cell + cell / 2, b.y * cell + cell / 2, C.source, 0.5)
       }
 
-      // 路径头（current 珊瑚辉光）
+      // 路徑頭（current 珊瑚輝光）
       if (shown >= 1 && front < pathLen) {
         const hd = path[shown - 1]
         const hx = hd.x * cell + cell / 2, hy = hd.y * cell + cell / 2
@@ -218,7 +218,7 @@ export default function GridSolver() {
         ctx.shadowBlur = 0
       }
 
-      // 断层处断裂：红叉 + 碎片
+      // 斷層處斷裂：紅叉 + 碎片
       const end = path[pathLen - 1]
       const ex = end.x * cell + cell / 2, ey = end.y * cell + cell / 2
       if (front >= pathLen && !burst && !reduce) {

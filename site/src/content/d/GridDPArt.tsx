@@ -1,6 +1,6 @@
-// 网格 / 矩阵 DP 讲解用插图（on-brand SVG，随部分强调色变色；不做 opacity:0 起步动画）
+// 網格 / 矩陣 DP 講解用插圖（on-brand SVG，隨部分強調色變色；不做 opacity:0 起步動畫）
 
-// 引入图：一张 0/1 矩阵，高亮其中最大的全 1 正方形（3×3）。
+// 引入圖：一張 0/1 矩陣，高亮其中最大的全 1 正方形（3×3）。
 export function GridSetupFigure() {
   const g = [
     [1, 0, 1, 1, 0],
@@ -49,7 +49,7 @@ export function GridSetupFigure() {
           )
         }),
       )}
-      {/* 高亮最大正方形边框 */}
+      {/* 高亮最大正方形邊框 */}
       <rect
         x={x0 + sqC0 * (S + gap) - 3}
         y={y0 + sqR0 * (S + gap) - 3}
@@ -76,7 +76,7 @@ export function GridSetupFigure() {
   )
 }
 
-// 转移图：dp[i][j] 由上 / 左 / 左上三格取 min 再 +1；短板决定能扩多大。
+// 轉移圖：dp[i][j] 由上 / 左 / 左上三格取 min 再 +1；短板決定能擴多大。
 export function SquareTransitionFigure() {
   const CW = 92
   const CH = 52
@@ -122,7 +122,7 @@ export function SquareTransitionFigure() {
           </g>
         )
       })}
-      {/* 三来源箭头指向当前格 */}
+      {/* 三來源箭頭指向當前格 */}
       <line x1={cxp(0)} y1={gy(0) + CH} x2={cxp(1) - 24} y2={gy(1) + 6} stroke="var(--viz-source)" strokeWidth="2" markerEnd="url(#sq-ar)" />
       <line x1={cxp(1)} y1={gy(0) + CH} x2={cxp(1)} y2={gy(1)} stroke="var(--viz-source)" strokeWidth="2" markerEnd="url(#sq-ar)" />
       <line x1={gx(0) + CW} y1={cyp(1)} x2={gx(1)} y2={cyp(1)} stroke="var(--viz-source)" strokeWidth="2" markerEnd="url(#sq-ar)" />
@@ -158,7 +158,7 @@ export function SquareTransitionFigure() {
   )
 }
 
-// 双线程图：两条路径同步右/下推进，走了 k 步一定落在反对角线 x+y=k 上。
+// 雙執行緒圖：兩條路徑同步右/下推進，走了 k 步一定落在反對角線 x+y=k 上。
 export function TwoPathFigure() {
   const N = 4
   const S = 30
@@ -167,7 +167,7 @@ export function TwoPathFigure() {
   const y0 = 22
   const cx = (c: number) => x0 + c * (S + gap) + S / 2
   const cy = (r: number) => y0 + r * (S + gap) + S / 2
-  // 两条路径（右/下），示意用：路1 偏下，路2 偏上
+  // 兩條路徑（右/下），示意用：路1 偏下，路2 偏上
   const path1 = [
     [0, 0],
     [1, 0],
@@ -189,7 +189,7 @@ export function TwoPathFigure() {
   const line = (pts: number[][]) => pts.map(([r, c]) => `${cx(c)},${cy(r)}`).join(' ')
   return (
     <svg viewBox="0 0 560 200" role="img" aria-label="两条路径同步推进，走 k 步都落在反对角线上">
-      {/* 网格 */}
+      {/* 網格 */}
       {Array.from({ length: N }).map((_, i) =>
         Array.from({ length: N }).map((_, j) => (
           <rect
@@ -205,18 +205,18 @@ export function TwoPathFigure() {
           />
         )),
       )}
-      {/* 反对角线 x+y=3 的示意（连接落在同一条线上的格子中心） */}
+      {/* 反對角線 x+y=3 的示意（連接落在同一條線上的格子中心） */}
       <line x1={cx(3)} y1={cy(0)} x2={cx(0)} y2={cy(3)} stroke="var(--text-3)" strokeWidth="1.4" strokeDasharray="4 4" />
       <text x={cx(0) - 4} y={cy(3) + 22} textAnchor="middle" fontSize="11" className="mono" fill="var(--text-3)">
         x+y=3
       </text>
-      {/* 两条路径 */}
+      {/* 兩條路徑 */}
       <polyline points={line(path1)} fill="none" stroke="var(--accent-1)" strokeWidth="3" strokeLinejoin="round" strokeLinecap="round" opacity="0.9" />
       <polyline points={line(path2)} fill="none" stroke="var(--accent-2)" strokeWidth="3" strokeLinejoin="round" strokeLinecap="round" opacity="0.9" />
-      {/* 起点 / 终点 */}
+      {/* 起點 / 終點 */}
       <circle cx={cx(0)} cy={cy(0)} r="7" fill="var(--viz-current)" />
       <circle cx={cx(3)} cy={cy(3)} r="7" fill="var(--viz-chosen)" />
-      {/* 图右侧说明 */}
+      {/* 圖右側說明 */}
       <g transform="translate(360,30)">
         <rect width="14" height="14" rx="4" fill="var(--accent-1)" />
         <text x="22" y="12" fontSize="12.5" fill="var(--text-2)">

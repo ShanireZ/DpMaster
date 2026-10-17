@@ -1,6 +1,6 @@
-// 背包综合变形（方案数 / 布尔可行 / 撤销）讲解用插图（on-brand SVG，随强调色变色）
+// 揹包綜合變形（方案數 / 布爾可行 / 撤銷）講解用插圖（on-brand SVG，隨強調色變色）
 
-// 引入图：容量骨架不变，只把中间的「聚合算子」换掉，max→最优、+→方案数、||→可行。
+// 引入圖：容量骨架不變，只把中間的「聚合算子」換掉，max→最優、+→方案數、||→可行。
 export function OperatorSwapFigure() {
   const ops = [
     { sym: 'max', out: '最优价值', tint: 'var(--accent-1)' },
@@ -14,7 +14,7 @@ export function OperatorSwapFigure() {
           <path d="M0,0 L6,3 L0,6 Z" fill="var(--text-3)" />
         </marker>
       </defs>
-      {/* 左侧：不变的转移骨架 */}
+      {/* 左側：不變的轉移骨架 */}
       <g transform="translate(20,66)">
         <rect width="150" height="78" rx="14" fill="var(--surface-3)" stroke="var(--border-strong)" strokeWidth="1.5" />
         <text x="75" y="26" textAnchor="middle" fontSize="12.5" fill="var(--text-2)">容量骨架（不变）</text>
@@ -23,7 +23,7 @@ export function OperatorSwapFigure() {
       </g>
       <path d="M170 105 H214" stroke="var(--text-3)" strokeWidth="2" markerEnd="url(#ov-ar)" />
       <text x="192" y="96" textAnchor="middle" fontSize="12.5" fill="var(--text-2)">换 ⊕</text>
-      {/* 右侧：三种算子分叉出三类问题 */}
+      {/* 右側：三種算子分叉出三類問題 */}
       {ops.map((o, i) => (
         <g key={i} transform={`translate(230,${18 + i * 62})`}>
           <rect
@@ -46,10 +46,10 @@ export function OperatorSwapFigure() {
   )
 }
 
-// 计数累加图：物品 w=[2,3,5]、目标容量 5，f[5] 由 {2,3} 与 {5} 两条路各贡献 1 → 方案数 2。
+// 計數累加圖：物品 w=[2,3,5]、目標容量 5，f[5] 由 {2,3} 與 {5} 兩條路各貢獻 1 → 方案數 2。
 export function CountBuildFigure() {
   const cells = [0, 1, 2, 3, 4, 5]
-  const vals = [1, 0, 1, 1, 0, 2] // 三件全部做完后 f[0..5]
+  const vals = [1, 0, 1, 1, 0, 2] // 三件全部做完後 f[0..5]
   const x0 = 40
   const dx = 96
   const cw = 66
@@ -93,7 +93,7 @@ export function CountBuildFigure() {
           </g>
         )
       })}
-      {/* 两条贡献路径汇入 f[5] */}
+      {/* 兩條貢獻路徑匯入 f[5] */}
       <text x={cx(5) + cw / 2} y="98" textAnchor="middle" fontSize="12" fill="var(--text-2)">f[5] = 2</text>
       <g fontSize="12.5" fill="var(--text-1)">
         <rect x="150" y="120" width="150" height="50" rx="10" fill="var(--surface-2)" stroke="var(--accent-2)" strokeWidth="1.3" />
@@ -109,8 +109,8 @@ export function CountBuildFigure() {
   )
 }
 
-// 撤销图（P4141 消失之物）：先算含全部物品的方案数 g[j]，再对某件做逆操作
-// g[j] -= g[j-w]（正序）退掉它的贡献，得到「缺这件」的方案数。方向与加时相反。
+// 撤銷圖（P4141 消失之物）：先算含全部物品的方案數 g[j]，再對某件做逆操作
+// g[j] -= g[j-w]（正序）退掉它的貢獻，得到「缺這件」的方案數。方向與加時相反。
 export function UndoFigure() {
   return (
     <svg viewBox="0 0 640 214" role="img" aria-label="从全集方案数撤销某一物品的贡献">
@@ -122,7 +122,7 @@ export function UndoFigure() {
           <path d="M0,0 L6,3 L0,6 Z" fill="var(--viz-invalid)" />
         </marker>
       </defs>
-      {/* 上：含全部物品的方案数 g */}
+      {/* 上：含全部物品的方案數 g */}
       <g transform="translate(200,10)">
         <rect width="240" height="56" rx="14" fill="color-mix(in srgb, var(--accent-1) 12%, var(--surface-3))" stroke="var(--accent-2)" strokeWidth="1.8" />
         <text x="120" y="24" textAnchor="middle" fontSize="12.5" fill="var(--text-2)">先算「含全部物品」</text>
@@ -137,12 +137,12 @@ export function UndoFigure() {
         <text x="170" y="43" textAnchor="middle" fontSize="14" className="mono" fill="var(--text-1)">g[j] −= g[j − w]</text>
       </g>
       <path d="M320 152 L320 180" stroke="var(--text-3)" strokeWidth="2" markerEnd="url(#un-ar)" />
-      {/* 下：结果 */}
+      {/* 下：結果 */}
       <g transform="translate(190,182)">
         <rect width="260" height="30" rx="10" fill="var(--surface-3)" stroke="var(--border-strong)" strokeWidth="1.5" />
         <text x="130" y="20" textAnchor="middle" fontSize="13" className="mono" fill="var(--accent-1)">缺第 k 件时的方案数</text>
       </g>
-      {/* 侧注：加是倒序、退是正序 */}
+      {/* 側注：加是倒序、退是正序 */}
       <g transform="translate(20,104)">
         <text x="0" y="0" fontSize="11.5" fill="var(--text-3)">加它：</text>
         <path d="M52 -4 L4 -4" stroke="var(--accent-2)" strokeWidth="1.6" markerEnd="url(#un-ar)" />

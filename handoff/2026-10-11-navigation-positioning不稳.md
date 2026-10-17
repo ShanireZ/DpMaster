@@ -1,35 +1,35 @@
-# 2026-10-11 · chromium 的 navigation-positioning 用例不稳
+# 2026-10-11 · chromium 的 navigation-positioning 用例不穩
 
-> 交接给下一位接手者。本文写于修复 webkit-smoke 超时（`063893b`）的过程中，**只记录了现象和线索，还没有开始修复**。
-> 修复、验证完成后按清单勾选，然后删除本文件。
+> 交接給下一位接手者。本文寫於修復 webkit-smoke 超時（`063893b`）的過程中，**只記錄了現象和線索，還沒有開始修復**。
+> 修復、驗證完成後按清單勾選，然後刪除本檔案。
 
-## 1. 现象
+## 1. 現象
 
-`site/tests/browser/navigation-positioning.spec.ts` 跑在 chromium 项目上，本地 Windows、4 个 worker、完整浏览器套件。
-2026-10-11 共跑了 24 轮，其中两条**不同的**用例各挂了 1 次，都是 `expect.poll` 等满 5 秒超时：
+`site/tests/browser/navigation-positioning.spec.ts` 跑在 chromium 專案上，本機 Windows、4 個 worker、完整瀏覽器套件。
+2026-10-11 共跑了 24 輪，其中兩條**不同的**用例各掛了 1 次，都是 `expect.poll` 等滿 5 秒超時：
 
-| 用例（行号） | 失败的断言 | 实际得到的值 |
+| 用例（行號） | 失敗的斷言 | 實際得到的值 |
 |---|---|---|
-| `mobile outline and ordinary page fragments use the same sticky-header offset`（59） | 第 66 行：点开 `.lesson-outline--mobile` 的 `summary` 后，`links.count()` 应 `> 3` | 一直是 `0` |
-| `cross-page navigation resets scroll immediately instead of animating from the old page`（76） | 第 84 行：点 `.type-nav a` 跳到 `/part/a/complete` 后，`scrollY` 应 `<= 1` | 停在 `72` |
+| `mobile outline and ordinary page fragments use the same sticky-header offset`（59） | 第 66 行：點開 `.lesson-outline--mobile` 的 `summary` 後，`links.count()` 應 `> 3` | 一直是 `0` |
+| `cross-page navigation resets scroll immediately instead of animating from the old page`（76） | 第 84 行：點 `.type-nav a` 跳到 `/part/a/complete` 後，`scrollY` 應 `<= 1` | 停在 `72` |
 
-- 两次失败都发生在 webkit/firefox 冒烟开跑之前，和 `063893b` 的 WebKit 超时改动无关。
-- 失败当时的 trace 没有保留：那次实验 worktree 已经删了。
+- 兩次失敗都發生在 webkit/firefox 冒煙開跑之前，和 `063893b` 的 WebKit 超時改動無關。
+- 失敗當時的 trace 沒有保留：那次實驗 worktree 已經刪了。
 
-## 2. 线索（都还没验证，不能当结论）
+## 2. 線索（都還沒驗證，不能當結論）
 
-- 第 59 行：`TypePage.tsx` 里的 `<details className="lesson-outline lesson-outline--mobile">` 没有受控的 `open`，外面还包着一层 `AnimatedContent`。如果点击发生在水合完成之前，或者这个子树之后被重新挂载，`details` 会回到关闭状态，`getByRole('link')` 也就数到 0。
-- 第 76 行：`Shell.tsx` 的 `useLayoutEffect` 在路径变化时会 `scrollTo({ top: 0, behavior: 'instant' })`，并且用 `focus({ preventScroll: true })`。最后停在 72 px，说明置顶之后还有别的东西又滚了一下，候选是 Suspense 正文晚到之后的布局变化，或者别处的滚动逻辑。先用 trace 确认 72 px 是谁滚出来的。
+- 第 59 行：`TypePage.tsx` 裡的 `<details className="lesson-outline lesson-outline--mobile">` 沒有受控的 `open`，外面還包著一層 `AnimatedContent`。如果點擊發生在水合完成之前，或者這個子樹之後被重新掛載，`details` 會回到關閉狀態，`getByRole('link')` 也就數到 0。
+- 第 76 行：`Shell.tsx` 的 `useLayoutEffect` 在路徑變化時會 `scrollTo({ top: 0, behavior: 'instant' })`，並且用 `focus({ preventScroll: true })`。最後停在 72 px，說明置頂之後還有別的東西又滾了一下，候選是 Suspense 正文晚到之後的佈局變化，或者別處的捲動邏輯。先用 trace 確認 72 px 是誰滾出來的。
 
-## 3. 复现的约束
+## 3. 重現的約束
 
-- `playwright.config.ts` 的端口写死在 4173（strictPort），并且被 `scripts/accessibility-contract.test.mjs:41` 锁住。主 checkout 可能有别的会话正在用它，owner 也会在那里跑 `pnpm release`。
-- 所以要在 DpMaster 外另建 git worktree，只在 worktree 里临时改端口，并且**绝不提交这个改动**。verify 分两段跑：浏览器门之前的各门用原样内容，浏览器门单独换端口。
-- 机器负载大时才容易复现。可以用 `--project=chromium -g "navigation-positioning" --repeat-each=N`，同时并行压上其他测试，或者直接重复跑完整套件，记下失败率。
+- `playwright.config.ts` 的連接埠寫死在 4173（strictPort），並且被 `scripts/accessibility-contract.test.mjs:41` 鎖住。主 checkout 可能有別的工作階段正在用它，owner 也會在那裡跑 `pnpm release`。
+- 所以要在 DpMaster 外另建 git worktree，只在 worktree 裡臨時改連接埠，並且**絕不提交這個改動**。verify 分兩段跑：瀏覽器門之前的各門用原樣內容，瀏覽器門單獨換連接埠。
+- 機器負載大時才容易重現。可以用 `--project=chromium -g "navigation-positioning" --repeat-each=N`，同時並行壓上其他測試，或者直接重複跑完整套件，記下失敗率。
 
-## 4. 清单
+## 4. 清單
 
-- [ ] 复现，记下各用例的失败率和对应 trace
-- [ ] 定位根因，修复方案经 owner 弹窗确认（不删断言、不加 lint 豁免、不靠单纯调大超时消红）
-- [ ] 同样负载下重复跑稳定通过；`pnpm verify` 全绿
-- [ ] 在本地 main 上做一个聚焦的 commit，并删除本文件
+- [ ] 重現，記下各用例的失敗率和對應 trace
+- [ ] 定位根因，修復方案經 owner 彈出視窗確認（不刪斷言、不加 lint 豁免、不靠單純調大超時消紅）
+- [ ] 同樣負載下重複跑穩定通過；`pnpm verify` 全綠
+- [ ] 在本機 main 上做一個聚焦的 commit，並刪除本檔案

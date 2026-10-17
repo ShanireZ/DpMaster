@@ -19,7 +19,7 @@ interface DiffSpec {
   label: string
   count: number
   wMin: number
-  wRange: number // 重量随机上限（不含），实际重量 = wMin + floor(random * wRange)
+  wRange: number // 重量隨機上限（不含），實際重量 = wMin + floor(random * wRange)
   vMin: number
   vRange: number
   capRatio: number
@@ -33,7 +33,7 @@ const DIFFS: Record<Difficulty, DiffSpec> = {
 
 const DIFF_ORDER: Difficulty[] = ['easy', 'medium', 'hard']
 
-// 贪心基线：按性价比 v/w 降序依次尝试装入（装得下就装）
+// 貪心基線：按性價比 v/w 降序依次嘗試裝入（裝得下就裝）
 function solveGreedy(items: GItem[], cap: number): { value: number; pick: boolean[] } {
   const order = items.map((_, i) => i).sort((a, b) => items[b].v / items[b].w - items[a].v / items[a].w)
   const pick = Array<boolean>(items.length).fill(false)

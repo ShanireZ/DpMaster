@@ -12,7 +12,7 @@ function settled(vals: (number | null)[][]): Record<string, CellState> {
   return s
 }
 
-/** 二维原型 01 背包：f[i][j] = max(f[i-1][j], f[i-1][j-w]+v) */
+/** 二維原型 01 揹包：f[i][j] = max(f[i-1][j], f[i-1][j-w]+v) */
 export function knapsack2D(items: Item[], W: number): VizModel {
   const n = items.length
   const run = recordZeroOneKnapsack(items, W)
@@ -75,7 +75,7 @@ export function knapsack2D(items: Item[], W: number): VizModel {
 
 export type Mode1D = 'reverse' | 'forward' | 'complete'
 
-/** 一维滚动数组。reverse=01逆推(正确) · forward=01顺推(制造重复取的 bug) · complete=完全背包正推(正确) */
+/** 一維捲動陣列。reverse=01逆推(正確) · forward=01順推(製造重複取的 bug) · complete=完全揹包正推(正確) */
 export function knapsack1D(items: Item[], W: number, mode: Mode1D): VizModel {
   const f: (number | null)[] = Array<number | null>(W + 1).fill(0)
   const snap = (): (number | null)[][] => [f.slice()]
@@ -91,7 +91,7 @@ export function knapsack1D(items: Item[], W: number, mode: Mode1D): VizModel {
 
   for (let i = 1; i <= items.length; i++) {
     const { w, v } = items[i - 1]
-    const updated = new Set<number>() // 本轮已被更新的下标（用于揭示顺推 bug）
+    const updated = new Set<number>() // 本輪已被更新的下標（用於揭示順推 bug）
     const range: number[] = []
     if (forward) for (let j = w; j <= W; j++) range.push(j)
     else for (let j = W; j >= w; j--) range.push(j)

@@ -28,19 +28,19 @@ export default function Shell() {
       const collapsed = window.localStorage.getItem(SIDEBAR_STORAGE_KEY) === 'true'
       queueMicrotask(() => setSidebarCollapsed(collapsed))
     } catch {
-      // 隐私模式或禁用存储时仍保留当前会话内的侧栏状态。
+      // 隱私模式或禁用儲存時仍保留當前工作階段內的側欄狀態。
     }
   }, [])
 
-  // 当前部分决定强调色/渐变作用域
+  // 當前部分決定強調色/漸變作用域
   useEffect(() => {
     if (pid) document.documentElement.dataset.part = pid
     else delete document.documentElement.dataset.part
   }, [pid])
 
-  // 路由变化：关闭移动抽屉 + 恢复正确位置 + 将键盘焦点移到新页面正文。
-  // 普通路由必须立即置顶，不能继承全局 smooth（新旧页面高度变化会让动画中途偏移）。
-  // 带 hash 的首屏/跨页导航则等 DOM 稳定两帧后精确定位；课程动态标题由 TypePage 补做。
+  // 路由變化：關閉移動抽屜 + 恢復正確位置 + 將鍵盤焦點移到新頁面正文。
+  // 普通路由必須立即置頂，不能繼承全域 smooth（新舊頁面高度變化會讓動畫中途偏移）。
+  // 帶 hash 的首屏/跨頁導覽則等 DOM 穩定兩影格後精確定位；課程動態標題由 TypePage 補做。
   useLayoutEffect(() => {
     const initial = previousPath.current === undefined
     const changed = !initial && previousPath.current !== location.pathname
@@ -65,7 +65,7 @@ export default function Shell() {
       try {
         window.localStorage.setItem(SIDEBAR_STORAGE_KEY, String(next))
       } catch {
-        // 本地存储不可用时不阻断侧栏交互。
+        // 本機儲存不可用時不阻斷側欄交互。
       }
       return next
     })

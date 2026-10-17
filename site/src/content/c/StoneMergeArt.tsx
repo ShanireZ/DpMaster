@@ -1,6 +1,6 @@
-// 石子合并（区间 DP）讲解用插图（on-brand SVG，随部分强调色变色）。
+// 石子合併（區間 DP）講解用插圖（on-brand SVG，隨部分強調色變色）。
 
-// 一排 4 堆石子，相邻两堆合并，代价 = 两堆之和。
+// 一排 4 堆石子，相鄰兩堆合併，代價 = 兩堆之和。
 export function MergeSetupFigure() {
   const piles = [7, 6, 5, 4]
   const x0 = 40
@@ -31,7 +31,7 @@ export function MergeSetupFigure() {
           </text>
         </g>
       ))}
-      {/* 合并第 1、2 堆：花括号 + 代价标注 */}
+      {/* 合併第 1、2 堆：花括號 + 代價標註 */}
       <path
         d={`M ${x0 + dx} 108 Q ${x0 + dx} 120 ${x0 + dx + 12} 120 L ${x0 + 2 * dx + bw - 12} 120 Q ${x0 + 2 * dx + bw} 120 ${x0 + 2 * dx + bw} 108`}
         fill="none"
@@ -46,7 +46,7 @@ export function MergeSetupFigure() {
   )
 }
 
-// dp[l][r] 的决策分叉：在分割点 k 处断开成 [l,k] 与 [k+1,r] 两个已解子区间，再加区间和。
+// dp[l][r] 的決策分叉：在分割點 k 處斷開成 [l,k] 與 [k+1,r] 兩個已解子區間，再加區間和。
 export function IntervalSplitFigure() {
   return (
     <svg viewBox="0 0 620 262" role="img" aria-label="区间在分割点 k 处断成两个子区间">
@@ -55,7 +55,7 @@ export function IntervalSplitFigure() {
           <path d="M0,0 L6,3 L0,6 Z" fill="var(--text-3)" />
         </marker>
       </defs>
-      {/* 顶：整个区间 [l,r] */}
+      {/* 頂：整個區間 [l,r] */}
       <g transform="translate(210,8)">
         <rect width="200" height="46" rx="12" fill="var(--surface-3)" stroke="var(--border-strong)" strokeWidth="1.5" />
         <text x="100" y="20" textAnchor="middle" fontSize="12.5" fill="var(--text-2)">
@@ -70,7 +70,7 @@ export function IntervalSplitFigure() {
       </text>
       <path d="M280 84 L180 118" stroke="var(--text-3)" strokeWidth="2" markerEnd="url(#is-ar)" />
       <path d="M340 84 L452 118" stroke="var(--text-3)" strokeWidth="2" markerEnd="url(#is-ar)" />
-      {/* 左子区间 [l,k] */}
+      {/* 左子區間 [l,k] */}
       <g transform="translate(52,120)">
         <rect
           width="224"
@@ -87,7 +87,7 @@ export function IntervalSplitFigure() {
           dp[l][k]
         </text>
       </g>
-      {/* 右子区间 [k+1,r] */}
+      {/* 右子區間 [k+1,r] */}
       <g transform="translate(344,120)">
         <rect
           width="224"
@@ -106,7 +106,7 @@ export function IntervalSplitFigure() {
       </g>
       <path d="M180 178 L300 214" stroke="var(--text-3)" strokeWidth="2" markerEnd="url(#is-ar)" />
       <path d="M456 178 L340 214" stroke="var(--text-3)" strokeWidth="2" markerEnd="url(#is-ar)" />
-      {/* 底：合起来 + 区间和 */}
+      {/* 底：合起來 + 區間和 */}
       <g transform="translate(150,216)">
         <rect
           width="320"
@@ -124,13 +124,13 @@ export function IntervalSplitFigure() {
   )
 }
 
-// 三角表按区间长度（对角线）填：长度 1 在主对角线，长度越大越靠右上。
+// 三角表按區間長度（對角線）填：長度 1 在主對角線，長度越大越靠右上。
 export function LengthOrderFigure() {
   const n = 4
   const CELL = 46
   const ox = 60
   const oy = 30
-  // 每格所属「长度层」= r - l + 1；用不同底色区分层，箭头示意由短到长。
+  // 每格所屬「長度層」= r - l + 1；用不同底色區分層，箭頭示意由短到長。
   const lenColor = (len: number) => {
     if (len === 1) return { fill: 'var(--surface-3)', stroke: 'var(--border-strong)' }
     const pct = [0, 10, 16, 24][len - 1]
@@ -146,7 +146,7 @@ export function LengthOrderFigure() {
           <path d="M0,0 L6,3 L0,6 Z" fill="var(--accent-2)" />
         </marker>
       </defs>
-      {/* 列头 r、行头 l */}
+      {/* 列頭 r、行頭 l */}
       {Array.from({ length: n }, (_, c) => (
         <text key={`c${c}`} x={ox + c * CELL + CELL / 2} y={oy - 8} textAnchor="middle" fontSize="12" className="mono" fill="var(--accent-2)">
           r={c}
@@ -162,7 +162,7 @@ export function LengthOrderFigure() {
           const x = ox + r * CELL
           const y = oy + l * CELL
           if (r < l) {
-            // 下三角：非法区间，空白
+            // 下三角：非法區間，空白
             return (
               <rect
                 key={`${l}-${r}`}
@@ -191,7 +191,7 @@ export function LengthOrderFigure() {
           )
         }),
       )}
-      {/* 填充顺序箭头：对角线 → 右上 */}
+      {/* 填充順序箭頭：對角線 → 右上 */}
       <path
         d={`M ${ox + CELL / 2} ${oy + (n - 1) * CELL + CELL / 2} L ${ox + (n - 1) * CELL + CELL / 2} ${oy + CELL / 2}`}
         fill="none"

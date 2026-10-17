@@ -1,5 +1,5 @@
-/* 分数背包（辨析课）自建轻量可视化的样式。
-   不引用 knapsack-demo.css；工具条沿用 demo-control__/stepper__ 视觉但独立命名前缀 frd__。 */
+/* 分數揹包（辨析課）自建輕量視覺化的樣式。
+   不引用 knapsack-demo.css；工具條沿用 demo-control__/stepper__ 視覺但獨立命名前綴 frd__。 */
 
 .frd__toolbar {
   display: flex;
@@ -92,7 +92,7 @@
   opacity: 0.4;
 }
 
-/* 贪心装填容量条 */
+/* 貪心裝填容量條 */
 .frd__stage {
   margin-bottom: var(--sp-5);
 }
@@ -134,7 +134,7 @@
   background: color-mix(in srgb, var(--accent-1) 42%, var(--surface-1));
 }
 .frd__seg.cut {
-  /* 斜纹＝只取一部分 */
+  /* 斜紋＝只取一部分 */
   background: repeating-linear-gradient(
     45deg,
     color-mix(in srgb, var(--accent-1) 22%, var(--surface-1)) 0,
@@ -188,7 +188,7 @@
   color: var(--text-3);
 }
 
-/* 两数对照读数 */
+/* 兩數對照讀數 */
 .frd__compare {
   display: grid;
   grid-template-columns: 1fr 1fr;

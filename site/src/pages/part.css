@@ -6,7 +6,7 @@
   overflow: clip;
 }
 
-/* ---------------- 家族封面：算法展览式首屏 ---------------- */
+/* ---------------- 家族封面：演算法展覽式首屏 ---------------- */
 .partcover {
   position: relative;
   min-height: clamp(520px, 68dvh, 700px);
@@ -172,7 +172,7 @@
   height: auto;
 }
 
-/* ---------------- 课程路径：双栏状态轨迹 ---------------- */
+/* ---------------- 課程路徑：雙欄狀態軌跡 ---------------- */
 .partjourney {
   position: relative;
   padding: clamp(var(--sp-9), 10vw, 148px) var(--content-px);
@@ -350,7 +350,7 @@
   font-size: 12px;
 }
 
-/* ---------------- 状态实验室：把游戏纳入叙事 ---------------- */
+/* ---------------- 狀態實驗室：把遊戲納入敘事 ---------------- */
 .partlab {
   position: relative;
   padding: clamp(var(--sp-8), 8vw, var(--sp-10)) var(--content-px) var(--sp-10);
@@ -554,7 +554,7 @@
   }
 }
 
-/* ---------------- A 背包 DP：polygon 图谱 ---------------- */
+/* ---------------- A 揹包 DP：polygon 圖譜 ---------------- */
 .partpage[data-part-id='a'] .partcover {
   min-height: clamp(600px, 72dvh, 760px);
   background:
@@ -951,7 +951,7 @@
   }
 }
 
-/* ---------------- B 线性 DP：索引轨道图谱 ---------------- */
+/* ---------------- B 線性 DP：索引軌道圖譜 ---------------- */
 .partpage[data-part-id='b'] .partcover {
   min-height: clamp(590px, 70dvh, 740px);
   background:
@@ -1282,7 +1282,7 @@
   }
 }
 
-/* ---------------- C–G：同一工坊、不同状态空间 ---------------- */
+/* ---------------- C–G：同一工坊、不同狀態空間 ---------------- */
 .partpage:is([data-part-id='c'], [data-part-id='d'], [data-part-id='e'], [data-part-id='f'], [data-part-id='g']) .partcover {
   min-height: clamp(600px, 72dvh, 760px);
   background:
@@ -1380,7 +1380,7 @@
   font-size: clamp(19px, 1.65vw, 25px);
 }
 
-/* C：课程链接成为嵌套区间的端点站。 */
+/* C：課程連結成為嵌套區間的端點站。 */
 .partjourney--c .typewaypoint {
   width: min(38%, 410px);
 }
@@ -1391,7 +1391,7 @@
 .partjourney--c .typewaypoint--pos-4 { top: 410px; right: 14%; }
 .partjourney--c .typewaypoint--pos-5 { top: 516px; left: 31%; }
 
-/* D：两课使用紧凑双平面，不制造虚假的长路径。 */
+/* D：兩課使用緊湊雙平面，不製造虛假的長路徑。 */
 .partjourney--d .partjourney__body,
 .partjourney--d .typepath {
   min-height: 520px;
@@ -1407,7 +1407,7 @@
 .partjourney--d .typewaypoint--pos-2 { right: 3%; }
 .partjourney--d .typewaypoint__link { min-height: 150px; }
 
-/* E：四课围绕同一棵树的巡根轨道。 */
+/* E：四課圍繞同一棵樹的巡根軌道。 */
 .partjourney--e .typewaypoint {
   width: min(34%, 360px);
 }
@@ -1417,7 +1417,7 @@
 .partjourney--e .typewaypoint--pos-3 { top: 470px; right: 7%; }
 .partjourney--e .typewaypoint--pos-4 { top: 470px; left: 7%; }
 
-/* F：固定根、两层子树，路径视觉从叶向根汇聚。 */
+/* F：固定根、兩層子樹，路徑視覺從葉向根匯聚。 */
 .partjourney--f .typewaypoint {
   width: min(31%, 330px);
 }
@@ -1428,7 +1428,7 @@
 .partjourney--f .typewaypoint--pos-4 { top: 480px; left: 12%; }
 .partjourney--f .typewaypoint--pos-5 { top: 480px; right: 12%; }
 
-/* G：五课成为稀疏状态星座中的可访问状态。 */
+/* G：五課成為稀疏狀態星座中的可訪問狀態。 */
 .partjourney--g .typewaypoint {
   width: min(30%, 320px);
 }

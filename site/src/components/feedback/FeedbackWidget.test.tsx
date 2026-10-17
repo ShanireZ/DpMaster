@@ -110,9 +110,9 @@ describe('<FeedbackWidget>', () => {
 })
 
 describe('platformLabel', () => {
-  // 映射表出处：learn.microsoft.com/microsoft-edge/web-platform/how-to-detect-win11
+  // 映射表出處：learn.microsoft.com/microsoft-edge/web-platform/how-to-detect-win11
   // （2026-06 版）—— Windows 的 platformVersion 是 UniversalApiContract 版本，
-  // 不是营销版本号，所以 Windows 11 会报「15.0」这种数字。
+  // 不是營銷版本號，所以 Windows 11 會報「15.0」這種數字。
   it('把 Windows 的 UniversalApiContract 版本翻成营销版本名', () => {
     expect(platformLabel('Windows', '15.0.0')).toBe('Windows 11')
     expect(platformLabel('Windows', '13.0.0')).toBe('Windows 11')
@@ -122,8 +122,8 @@ describe('platformLabel', () => {
   })
 
   it('详表未列出的 11 / 12 跟随官方示例归入 Windows 10', () => {
-    // 微软的示例代码是 >=13 → Win11，>0 → Win10；详表里 11、12 没列，
-    // 但不能因此自创第三种判法。
+    // 微軟的示例程式碼是 >=13 → Win11，>0 → Win10；詳表裡 11、12 沒列，
+    // 但不能因此自創第三種判法。
     expect(platformLabel('Windows', '11.0.0')).toBe('Windows 10')
     expect(platformLabel('Windows', '12.0.0')).toBe('Windows 10')
   })

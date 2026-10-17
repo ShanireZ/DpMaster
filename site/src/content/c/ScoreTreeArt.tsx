@@ -1,12 +1,12 @@
-// 加分二叉树（区间 DP）讲解用插图（on-brand SVG，随部分强调色变色）。
+// 加分二叉樹（區間 DP）講解用插圖（on-brand SVG，隨部分強調色變色）。
 
-// 引入图：中序序列 1..n 固定，选某个节点 k 作根，把序列劈成「左半 + 右半」。
+// 引入圖：中序序列 1..n 固定，選某個節點 k 作根，把序列劈成「左半 + 右半」。
 export function InorderRootFigure() {
   const vals = [5, 7, 1, 2, 10]
   const x0 = 46
   const dx = 92
   const bw = 66
-  const kRoot = 2 // 选第 3 个（下标 2）作根
+  const kRoot = 2 // 選第 3 個（下標 2）作根
   return (
     <svg viewBox="0 0 560 208" role="img" aria-label="中序序列固定，选一个节点作根，序列劈成左右两半">
       <defs>
@@ -38,12 +38,12 @@ export function InorderRootFigure() {
       <text x={x0 + 2.5 * dx - dx / 2} y="20" textAnchor="middle" fontSize="12" fill="var(--text-3)">
         中序遍历固定为 1 … 5（左根右）
       </text>
-      {/* 选中根 → 指出「根」 */}
+      {/* 選中根 → 指出「根」 */}
       <path d={`M ${x0 + kRoot * dx + bw / 2} 104 V 122`} stroke="var(--accent-2)" strokeWidth="2" markerEnd="url(#ir-ar)" />
       <text x={x0 + kRoot * dx + bw / 2} y="140" textAnchor="middle" fontSize="12.5" fill="var(--accent-1)">
         选它作根
       </text>
-      {/* 左半括号 */}
+      {/* 左半括號 */}
       <path
         d={`M ${x0} 158 Q ${x0} 168 ${x0 + 10} 168 L ${x0 + kRoot * dx - 14} 168 Q ${x0 + kRoot * dx - 4} 168 ${x0 + kRoot * dx - 4} 158`}
         fill="none"
@@ -53,7 +53,7 @@ export function InorderRootFigure() {
       <text x={x0 + (kRoot * dx) / 2} y="192" textAnchor="middle" fontSize="12" fill="var(--viz-chosen)">
         左半 → 左子树
       </text>
-      {/* 右半括号 */}
+      {/* 右半括號 */}
       <path
         d={`M ${x0 + (kRoot + 1) * dx + 4} 158 Q ${x0 + (kRoot + 1) * dx + 4} 168 ${x0 + (kRoot + 1) * dx + 14} 168 L ${x0 + vals.length * dx - 26 - 10} 168 Q ${x0 + vals.length * dx - 26} 168 ${x0 + vals.length * dx - 26} 158`}
         fill="none"
@@ -67,13 +67,13 @@ export function InorderRootFigure() {
   )
 }
 
-// ★区间↔子树：一段连续中序区间 [i,j] 恰好是二叉树的一棵子树。
+// ★區間↔子樹：一段連續中序區間 [i,j] 恰好是二叉樹的一棵子樹。
 export function IntervalSubtreeFigure() {
   const x0 = 32
   const dx = 60
   const bw = 44
   const n = 5
-  // 左：中序刻度条，高亮 [2,4]；右：对应子树（节点 4 为根，覆盖 2..5 里的 [2,4] 演示为 [2,4]）
+  // 左：中序刻度條，高亮 [2,4]；右：對應子樹（節點 4 為根，覆蓋 2..5 裡的 [2,4] 演示為 [2,4]）
   const lo = 2
   const hi = 4
   return (
@@ -86,7 +86,7 @@ export function IntervalSubtreeFigure() {
       <text x="150" y="20" textAnchor="middle" fontSize="12.5" fill="var(--text-2)">
         中序序列上一段连续区间
       </text>
-      {/* 中序刻度条 1..5，高亮 [2,4] */}
+      {/* 中序刻度條 1..5，高亮 [2,4] */}
       {Array.from({ length: n }, (_, k) => {
         const inSel = k + 1 >= lo && k + 1 <= hi
         return (
@@ -115,7 +115,7 @@ export function IntervalSubtreeFigure() {
         区间 [2, 4]
       </text>
 
-      {/* 中间：等价箭头 */}
+      {/* 中間：等價箭頭 */}
       <text x="150" y="168" textAnchor="middle" fontSize="26" fill="var(--accent-2)">
         ⇕
       </text>
@@ -123,12 +123,12 @@ export function IntervalSubtreeFigure() {
         就是这一棵子树
       </text>
 
-      {/* 右：对应子树（节点 3 为根，2 左、4 右——纯示意结构） */}
+      {/* 右：對應子樹（節點 3 為根，2 左、4 右——純示意結構） */}
       <g transform="translate(360,0)">
         <text x="110" y="20" textAnchor="middle" fontSize="12.5" fill="var(--text-2)">
           [2,4] 的一种二叉子树
         </text>
-        {/* 边 */}
+        {/* 邊 */}
         <line x1="110" y1="58" x2="60" y2="112" stroke="var(--accent-2)" strokeWidth="2" />
         <line x1="110" y1="58" x2="160" y2="112" stroke="var(--accent-2)" strokeWidth="2" />
         <line x1="160" y1="130" x2="200" y2="176" stroke="var(--accent-2)" strokeWidth="2" />
@@ -154,7 +154,7 @@ export function IntervalSubtreeFigure() {
   )
 }
 
-// 转移图：dp[i][j] 枚举根 k → 左子树 dp[i][k-1] × 右子树 dp[k+1][j] + score[k]；空子树 = 1。
+// 轉移圖：dp[i][j] 枚舉根 k → 左子樹 dp[i][k-1] × 右子樹 dp[k+1][j] + score[k]；空子樹 = 1。
 export function ScoreTransFigure() {
   return (
     <svg viewBox="0 0 620 260" role="img" aria-label="枚举根的转移：左子树乘右子树加根分数，空子树记 1">
@@ -163,7 +163,7 @@ export function ScoreTransFigure() {
           <path d="M0,0 L6,3 L0,6 Z" fill="var(--text-3)" />
         </marker>
       </defs>
-      {/* 顶：区间 [i,j] */}
+      {/* 頂：區間 [i,j] */}
       <g transform="translate(210,8)">
         <rect width="200" height="46" rx="12" fill="var(--surface-3)" stroke="var(--border-strong)" strokeWidth="1.5" />
         <text x="100" y="20" textAnchor="middle" fontSize="12.5" fill="var(--text-2)">
@@ -178,7 +178,7 @@ export function ScoreTransFigure() {
       </text>
       <path d="M280 84 L180 118" stroke="var(--text-3)" strokeWidth="2" markerEnd="url(#sc-ar)" />
       <path d="M340 84 L452 118" stroke="var(--text-3)" strokeWidth="2" markerEnd="url(#sc-ar)" />
-      {/* 左子树 */}
+      {/* 左子樹 */}
       <g transform="translate(52,120)">
         <rect width="224" height="58" rx="12" fill="color-mix(in srgb, var(--viz-chosen) 12%, var(--surface-2))" stroke="var(--viz-chosen)" strokeWidth="1.5" />
         <text x="112" y="24" textAnchor="middle" fontSize="12.5" fill="var(--text-1)">
@@ -188,7 +188,7 @@ export function ScoreTransFigure() {
           dp[i][k−1]（空则记 1）
         </text>
       </g>
-      {/* 右子树 */}
+      {/* 右子樹 */}
       <g transform="translate(344,120)">
         <rect width="224" height="58" rx="12" fill="color-mix(in srgb, var(--viz-chosen) 12%, var(--surface-2))" stroke="var(--viz-chosen)" strokeWidth="1.5" />
         <text x="112" y="24" textAnchor="middle" fontSize="12.5" fill="var(--text-1)">

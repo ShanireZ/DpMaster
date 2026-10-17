@@ -1,6 +1,6 @@
 /* ============================================================
-   404 · 越界的状态 —— DP 主题沉浸页
-   突破 Shell 内容区 padding 铺满，三层：shader 背景 / DP 网格 / 文案
+   404 · 越界的狀態 —— DP 主題沉浸頁
+   突破 Shell 內容區 padding 鋪滿，三層：shader 背景 / DP 網格 / 文案
    ============================================================ */
 
 .nf {
@@ -14,7 +14,7 @@
   border-radius: 0;
 }
 
-/* --- 背景层 --- */
+/* --- 背景層 --- */
 .nf__shader,
 .nf__grid,
 .nf__bg-fallback {
@@ -32,7 +32,7 @@
     radial-gradient(90% 80% at 12% 92%, color-mix(in srgb, var(--c-1) 22%, transparent), transparent 62%),
     var(--canvas);
 }
-/* 文案下方的暖墨渐隐，保证文字对比 */
+/* 文案下方的暖墨漸隱，保證文字對比 */
 .nf::after {
   content: '';
   position: absolute;
@@ -42,7 +42,7 @@
   background: radial-gradient(72% 60% at 50% 46%, color-mix(in srgb, var(--canvas) 78%, transparent), transparent 78%);
 }
 
-/* --- 文案层 --- */
+/* --- 文案層 --- */
 .nf__stage {
   position: relative;
   z-index: 3;

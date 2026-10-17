@@ -1,7 +1,7 @@
-// E 换根 DP 讲解用插图（on-brand SVG，随 [data-part='e'] 的灰紫强调色变色）。
-// 画法仿 KnapsackArt：节点=circle、边=line，颜色只用设计令牌。
+// E 換根 DP 講解用插圖（on-brand SVG，隨 [data-part='e'] 的灰紫強調色變色）。
+// 畫法仿 KnapsackArt：節點=circle、邊=line，顏色只用設計權杖。
 
-// —— 小工具：一个树节点圆 ——
+// —— 小工具：一個樹節點圓 ——
 function Node({
   x,
   y,
@@ -68,9 +68,9 @@ function Edge({ x1, y1, x2, y2, on = false }: { x1: number; y1: number; x2: numb
   )
 }
 
-// ============ 图 1：为什么暴力 O(n²)——每个点各跑一遍 BFS ============
+// ============ 圖 1：為什麼暴力 O(n²)——每個點各跑一遍 BFS ============
 export function BruteFigure() {
-  // 三份「同一棵小树、不同根」的缩略图，示意「每个点都从头算一遍」
+  // 三份「同一棵小樹、不同根」的縮略圖，示意「每個點都從頭算一遍」
   const mini = (ox: number, rootIdx: number, label: string) => {
     const pos = [
       { x: 40, y: 16 },
@@ -112,9 +112,9 @@ export function BruteFigure() {
   )
 }
 
-// ============ 图 2：两遍扫描骨架（Pass1 后序求 sz、Pass2 前序换根） ============
+// ============ 圖 2：兩遍掃描骨架（Pass1 後序求 sz、Pass2 前序換根） ============
 export function TwoPassFigure() {
-  // 一棵 7 点树的坐标（根在上）
+  // 一棵 7 點樹的座標（根在上）
   const pos = [
     { x: 210, y: 30 }, // 1 (root)
     { x: 120, y: 96 }, // 2
@@ -148,7 +148,7 @@ export function TwoPassFigure() {
       {pos.map((p, i) => (
         <Node key={i} x={p.x} y={p.y} label={`${i + 1}`} variant={i === 0 ? 'root' : 'plain'} />
       ))}
-      {/* Pass1 上行箭头（叶→根） */}
+      {/* Pass1 上行箭頭（葉→根） */}
       <path d="M92 150 Q60 124 108 104" fill="none" stroke="var(--viz-source)" strokeWidth="2" markerEnd="url(#rr-up)" />
       <text x="44" y="128" fontSize="11" fill="var(--viz-source)">
         第一遍
@@ -156,7 +156,7 @@ export function TwoPassFigure() {
       <text x="44" y="142" fontSize="10" fill="var(--viz-source)">
         后序求 sz
       </text>
-      {/* Pass2 下行箭头（根→子换根） */}
+      {/* Pass2 下行箭頭（根→子換根） */}
       <path d="M300 116 Q340 138 322 150" fill="none" stroke="var(--accent-1)" strokeWidth="2" markerEnd="url(#rr-dn)" />
       <text x="470" y="80" fontSize="11" fill="var(--accent-1)">
         第二遍
@@ -171,7 +171,7 @@ export function TwoPassFigure() {
   )
 }
 
-// ============ 图 3：换根系数 = n − 2·sz（子树内近 1、子树外远 1） ============
+// ============ 圖 3：換根系數 = n − 2·sz（子樹內近 1、子樹外遠 1） ============
 export function CoefFigure() {
   return (
     <svg viewBox="0 0 620 220" role="img" aria-label="根从 u 挪到子 v：子树内每点近 1，子树外每点远 1">
@@ -180,7 +180,7 @@ export function CoefFigure() {
           <path d="M0,0 L7,3.2 L0,6.4 Z" fill="var(--accent-1)" />
         </marker>
       </defs>
-      {/* u 与 v 两点 + 边 */}
+      {/* u 與 v 兩點 + 邊 */}
       <Edge x1={200} y1={60} x2={200} y2={140} on />
       <Node x={200} y={60} label="u" variant="plain" r={22} />
       <Node x={200} y={140} label="v" variant="root" r={22} />
@@ -189,7 +189,7 @@ export function CoefFigure() {
         根 u→v
       </text>
 
-      {/* 子树内（v 一侧）气泡：近 1 */}
+      {/* 子樹內（v 一側）氣泡：近 1 */}
       <g transform="translate(120,150)">
         <ellipse
           cx="80"
@@ -209,7 +209,7 @@ export function CoefFigure() {
         </text>
       </g>
 
-      {/* 子树外（u 一侧）气泡：远 1 */}
+      {/* 子樹外（u 一側）氣泡：遠 1 */}
       <g transform="translate(330,20)">
         <ellipse
           cx="120"
@@ -229,7 +229,7 @@ export function CoefFigure() {
         </text>
       </g>
 
-      {/* 结论条 */}
+      {/* 結論條 */}
       <g transform="translate(96,196)">
         <rect
           width="428"
@@ -247,7 +247,7 @@ export function CoefFigure() {
   )
 }
 
-// ============ 图 4：距离和场景（带权，会议/奶牛聚会） ============
+// ============ 圖 4：距離和場景（帶權，會議/奶牛聚會） ============
 export function DistSetupFigure() {
   const pos = [
     { x: 100, y: 40, w: 2 },
@@ -283,23 +283,23 @@ export function DistSetupFigure() {
   )
 }
 
-// ============ 图 5：子树内 down + 子树外 up ============
+// ============ 圖 5：子樹內 down + 子樹外 up ============
 export function InOutFigure() {
   return (
     <svg viewBox="0 0 560 210" role="img" aria-label="每点距离和 = 子树内 down 加子树外 up">
-      {/* 中心点 u */}
+      {/* 中心點 u */}
       <Node x={280} y={104} label="u" variant="root" r={24} />
-      {/* 向下（子树内）三叉 */}
+      {/* 向下（子樹內）三叉 */}
       <Edge x1={280} y1={104} x2={210} y2={170} on />
       <Edge x1={280} y1={104} x2={280} y2={178} on />
       <Edge x1={280} y1={104} x2={350} y2={170} on />
       <Node x={210} y={176} label="" variant="in" r={12} />
       <Node x={280} y={184} label="" variant="in" r={12} />
       <Node x={350} y={176} label="" variant="in" r={12} />
-      {/* 向上（子树外）父方向 */}
+      {/* 向上（子樹外）父方向 */}
       <Edge x1={280} y1={104} x2={280} y2={40} />
       <Node x={280} y={32} label="p" variant="out" r={16} />
-      {/* down 气泡 */}
+      {/* down 氣泡 */}
       <g transform="translate(150,150)">
         <ellipse
           cx="130"
@@ -315,7 +315,7 @@ export function InOutFigure() {
           子树内 down[u]：第一遍后序备好
         </text>
       </g>
-      {/* up 标注 */}
+      {/* up 標註 */}
       <g transform="translate(300,20)">
         <text x="0" y="10" fontSize="12" fill="var(--accent-1)">
           子树外 up[u]（父方向）
@@ -327,7 +327,7 @@ export function InOutFigure() {
           第二遍前序由父传子
         </text>
       </g>
-      {/* 合并条 */}
+      {/* 合併條 */}
       <g transform="translate(70,2)">
         <rect
           width="200"
@@ -345,9 +345,9 @@ export function InOutFigure() {
   )
 }
 
-// ============ 图 6：偏心距 / 树的中心（每点到最远点） ============
+// ============ 圖 6：偏心距 / 樹的中心（每點到最遠點） ============
 export function EccentricityFigure() {
-  // 一条主链 + 一个分支，标出每点「到最远点距离」= 偏心距
+  // 一條主鏈 + 一個分支，標出每點「到最遠點距離」= 偏心距
   const pos = [
     { x: 60, y: 100 },
     { x: 160, y: 100 },
@@ -363,7 +363,7 @@ export function EccentricityFigure() {
     [3, 4],
     [2, 5],
   ]
-  const ecc = [4, 3, 2, 3, 4, 3] // 每点偏心距（到最远点边数）
+  const ecc = [4, 3, 2, 3, 4, 3] // 每點偏心距（到最遠點邊數）
   return (
     <svg viewBox="0 0 540 170" role="img" aria-label="每个点的偏心距=它到最远点的距离，最小者是树的中心">
       {edges.map(([a, b], i) => (
@@ -386,7 +386,7 @@ export function EccentricityFigure() {
       <text x="470" y="150" fontSize="10.5" className="mono" fill="var(--text-3)">
         e = 偏心距
       </text>
-      {/* 直径标注：1↔5 长度 4 */}
+      {/* 直徑標註：1↔5 長度 4 */}
       <path
         d="M60 128 Q260 152 460 128"
         fill="none"

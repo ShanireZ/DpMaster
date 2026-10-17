@@ -25,7 +25,7 @@ export default function BoardDemo() {
   const p = useStepPlayer(frames.length)
   const frame = frames.length ? frames[Math.min(p.index, frames.length - 1)] : null
 
-  // 改 N/K 时重置播放与计数
+  // 改 N/K 時重置播放與計數
   const resetAll = (nextN = N, nextK = K) => {
     setShowCount(false)
     p.reset()
@@ -44,7 +44,7 @@ export default function BoardDemo() {
   const CELL = 44
   const boardPx = N * CELL
 
-  // 当前应显示的各行 mask（已确定的行）
+  // 當前應顯示的各行 mask（已確定的行）
   const rows = frame?.rows ?? []
 
   return (

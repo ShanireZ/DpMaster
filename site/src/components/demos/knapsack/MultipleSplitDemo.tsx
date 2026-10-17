@@ -35,23 +35,23 @@ function Stepper({
 }
 
 /**
- * 多重背包 · 二进制拆包可视化（自建轻量，非 DPViz）。
- * 拖动件数上限 m：实时看它拆成 1,2,4,…,余r 这些「打包件」，
- * 段宽 ∝ 该包件数；下方 0…m 覆盖带示意任选若干包相加恰好覆盖每一个件数；
- * 读数条对比「朴素需 m 个 vs 二进制需 ⌈log⌉ 个」。
- * binarySplit / packCounts 复用自 multipleSolver（只读，不改）。
+ * 多重揹包 · 二進位拆包視覺化（自建輕量，非 DPViz）。
+ * 拖動件數上限 m：即時看它拆成 1,2,4,…,餘r 這些「打包件」，
+ * 段寬 ∝ 該包件數；下方 0…m 覆蓋帶示意任選若干包相加恰好覆蓋每一個件數；
+ * 讀數條對比「樸素需 m 個 vs 二進位需 ⌈log⌉ 個」。
+ * binarySplit / packCounts 重複使用自 multipleSolver（唯讀，不改）。
  */
 export default function MultipleSplitDemo() {
   const [m, setM] = useState(13)
 
-  // 复用纯函数：单个物品（w=1,v=1 仅用于取包的件数拆分，件数才是重点）。
+  // 重複使用純函式：單個物品（w=1,v=1 僅用於取包的件數拆分，件數才是重點）。
   const packs = useMemo(() => binarySplit([{ w: 1, v: 1, m }]), [m])
   const counts = useMemo(() => packCounts([{ w: 1, v: 1, m }]), [m])
 
-  // 覆盖带 0…m 全部件数（子集和可凑出其中每一个）。
+  // 覆蓋帶 0…m 全部件數（子集和可湊出其中每一個）。
   const covered = Array.from({ length: m + 1 }, (_, k) => k)
 
-  // 拆分算式文本：1 + 2 + 4 + 余r = m
+  // 拆分算式文字：1 + 2 + 4 + 餘r = m
   const sumExpr = packs.map((p) => p.cnt).join(' + ') + ` = ${m}`
   const powCount = packs.filter((p) => !p.label.startsWith('×余')).length
   const hasRem = packs.some((p) => p.label.startsWith('×余'))
@@ -78,7 +78,7 @@ export default function MultipleSplitDemo() {
         </div>
       </div>
 
-      {/* ① 打包件条：段宽 ∝ 件数 */}
+      {/* ① 打包件條：段寬 ∝ 件數 */}
       <div className="msp__stage">
         <div className="msp__stage-label">
           <span>
@@ -104,7 +104,7 @@ export default function MultipleSplitDemo() {
         </div>
       </div>
 
-      {/* ② 覆盖带：0…m 每一件数都能被某个子集和凑出 */}
+      {/* ② 覆蓋帶：0…m 每一件數都能被某個子集和湊出 */}
       <div>
         <div className="msp__cover-label">
           <span>
@@ -123,7 +123,7 @@ export default function MultipleSplitDemo() {
         </div>
       </div>
 
-      {/* ③ 读数：朴素 m 个 vs 二进制 log 个 */}
+      {/* ③ 讀數：樸素 m 個 vs 二進位 log 個 */}
       <div className="msp__compare" style={{ marginTop: 'var(--sp-5)' }}>
         <div className="msp__card">
           <div className="msp__card-head">

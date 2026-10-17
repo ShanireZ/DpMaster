@@ -12,7 +12,7 @@ interface Pt {
   y: number
 }
 
-// 初始点：点 0 固定为起点，其余散开。坐标用小整数便于手算距离。
+// 初始點：點 0 固定為起點，其餘散開。座標用小整數便於手算距離。
 const INIT: Pt[] = [
   { x: 1, y: 1 },
   { x: 5, y: 2 },
@@ -20,7 +20,7 @@ const INIT: Pt[] = [
   { x: 1, y: 5 },
 ]
 
-// 曼哈顿距离——整数、可心算，契合「跟着算一遍」。
+// 曼哈頓距離——整數、可心算，契合「跟著算一遍」。
 function distMat(pts: Pt[]): number[][] {
   const n = pts.length
   const d = Array.from({ length: n }, () => Array<number>(n).fill(0))
@@ -46,7 +46,7 @@ export default function TspDemo() {
   const addPt = () => setPts((arr) => (arr.length < 5 ? [...arr, { x: 3, y: 3 }] : arr))
   const removePt = () => setPts((arr) => (arr.length > 3 ? arr.slice(0, -1) : arr))
 
-  // 小地图布局
+  // 小地圖佈局
   const S = 30
   const pad = 18
   const mapW = 7 * S + pad * 2

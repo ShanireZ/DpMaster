@@ -1,15 +1,15 @@
 import { expect, test, type Page } from '@playwright/test'
 
 /**
- * Core Web Vitals 回归门禁。
+ * Core Web Vitals 迴歸門禁。
  *
- * 线上 Cloudflare Web Analytics 暴露过两处真实问题：首页 hero 直接用 1200×630
- * 的社交分享图导致 LCP 长尾（P99 5.8s），以及 `section.state-atlas`（GSAP pin）
- * 与 `div.lesson-flow`（Suspense fallback 高度不足）两处布局偏移。这套断言
- * 把修好之后的形态锁住。
+ * 線上 Cloudflare Web Analytics 暴露過兩處真實問題：首頁 hero 直接用 1200×630
+ * 的社交分享圖導致 LCP 長尾（P99 5.8s），以及 `section.state-atlas`（GSAP pin）
+ * 與 `div.lesson-flow`（Suspense fallback 高度不足）兩處佈局偏移。這套斷言
+ * 把修好之後的形態鎖住。
  *
- * ★ 量的是真实渲染指标，不是源码形状 —— 只有会合成帧的浏览器才测得到，
- * 所以这套只能跑在 Playwright 里，不能挪进 jsdom 单测。
+ * ★ 量的是真實繪製指標，不是原始碼形狀 —— 只有會合成影格的瀏覽器才測得到，
+ * 所以這套只能跑在 Playwright 裡，不能挪進 jsdom 單測。
  */
 
 interface ShiftRecord {
@@ -25,7 +25,7 @@ interface ShiftReport {
   worst: ShiftRecord[]
 }
 
-/** 安装 layout-shift 观察器；返回一个取当前累计值的函数。 */
+/** 安裝 layout-shift 觀察器；回傳一個取當前累計值的函式。 */
 async function trackLayoutShift(page: Page) {
   await page.evaluate(() => {
     const w = window as unknown as { __dpShifts?: ShiftRecord[] }
@@ -45,7 +45,7 @@ async function trackLayoutShift(page: Page) {
           hadRecentInput: boolean
           sources?: Array<{ node: Node | null }>
         }
-        // hadRecentInput 的偏移是用户交互引起的，CWV 本身就不计入。
+        // hadRecentInput 的偏移是使用者交互引起的，CWV 本身就不計入。
         if (shift.hadRecentInput) continue
         w.__dpShifts!.push({
           value: shift.value,
@@ -81,8 +81,8 @@ test('the home page stays below the CLS "good" threshold while the atlas pins', 
   await trackLayoutShift(page)
   await expect(page.locator('.home-hero')).toBeVisible()
 
-  // 滚到状态图谱附近，触发 GSAP ScrollTrigger 的 pin —— pin-spacer 是 JS 之后
-  // 才插进 DOM 的，历史上就是在这一步把下方内容整体顶开。
+  // 滾到狀態圖譜附近，觸發 GSAP ScrollTrigger 的 pin —— pin-spacer 是 JS 之後
+  // 才插進 DOM 的，歷史上就是在這一步把下方內容整體頂開。
   await page.evaluate(() => window.scrollTo({ top: 0, behavior: 'instant' }))
   for (let step = 0; step < 12; step += 1) {
     await page.evaluate(() => window.scrollBy({ top: window.innerHeight * 0.8, behavior: 'instant' }))
@@ -104,9 +104,9 @@ test('scrolling through a lesson does not shift the article body', async ({ page
   await expect(page.locator('.lesson-flow')).toBeVisible()
   await trackLayoutShift(page)
 
-  // ★ 关键在滚动，不在跳转。`.lesson` 用了 content-visibility: auto 加
-  // contain-intrinsic-size 估值；估值与真实高度不符时，每滚过一节就会修正一次
-  // 高度，把下方内容顶动 —— 线上把这些偏移都归到了父容器 div.lesson-flow。
+  // ★ 關鍵在捲動，不在跳轉。`.lesson` 用了 content-visibility: auto 加
+  // contain-intrinsic-size 估值；估值與真實高度不符時，每滾過一節就會修正一次
+  // 高度，把下方內容頂動 —— 線上把這些偏移都歸到了父容器 div.lesson-flow。
   const height = await page.evaluate(() => document.documentElement.scrollHeight)
   for (let y = 0; y < height; y += 600) {
     await page.evaluate((top) => window.scrollTo({ top, behavior: 'instant' }), y)
@@ -121,11 +121,11 @@ test('scrolling through a lesson does not shift the article body', async ({ page
 test('the hero image is served in a modern format and stays small', async ({ page }) => {
   const heroResponses: Array<{ url: string; type: string; bytes: number }> = []
   page.on('response', async (response) => {
-    // ★ 按 URL 过滤，不按 content-type —— 本地预览服务器曾经把 avif/webp
-    // 当二进制流发，用 content-type 过滤会把要测的东西全漏掉。
+    // ★ 按 URL 過濾，不按 content-type —— 本機預覽伺服器曾經把 avif/webp
+    // 當二進位流發，用 content-type 過濾會把要測的東西全漏掉。
     if (!/\.(avif|webp|jpe?g|png)(\?|$)/i.test(response.url())) return
-    // ★ 字节数必须读真实响应体。预览服务器不发 content-length，用响应头会拿到
-    // 0，于是「小于 40KB」变成恒真的空断言 —— 这条断言就白写了。
+    // ★ 位元組數必須讀真實回應體。預覽伺服器不發 content-length，用回應頭會拿到
+    // 0，於是「小於 40KB」變成恆真的空斷言 —— 這條斷言就白寫了。
     let bytes = 0
     try {
       bytes = (await response.body()).length
@@ -142,10 +142,10 @@ test('the hero image is served in a modern format and stays small', async ({ pag
   const hero = heroResponses.filter((r) => /dpmaster-social|hero/.test(r.url))
   expect(hero.length, `抓到的图片：${JSON.stringify(heroResponses, null, 2)}`).toBeGreaterThan(0)
 
-  // ★ 只应下载一张 hero：历史上主题不匹配会让 dark/light 两张都被拉下来。
+  // ★ 只應下載一張 hero：歷史上主題不匹配會讓 dark/light 兩張都被拉下來。
   expect(hero.length, `hero 请求：${hero.map((h) => h.url).join(', ')}`).toBe(1)
   expect(hero[0].type, `hero 格式：${hero[0].type}`).toMatch(/avif|webp/)
   expect(hero[0].bytes, `hero 字节：${hero[0].bytes}`).toBeGreaterThan(0)
-  // 原来是两张 JPEG 共约 150KB；现在一张 AVIF 约 24KB。留一倍余量防回归。
+  // 原來是兩張 JPEG 共約 150KB；現在一張 AVIF 約 24KB。留一倍餘量防迴歸。
   expect(hero[0].bytes, `hero 字节：${hero[0].bytes}`).toBeLessThan(40_000)
 })

@@ -7,10 +7,10 @@ import type { NodePaint } from './TreeCanvas'
 import '../shared/demo-workbench.css'
 import './treedp-demo.css'
 
-// 一棵二叉苹果树：5 个节点、4 条边。父亲数组 + 每条「连父亲」的边权。
+// 一棵二叉蘋果樹：5 個節點、4 條邊。父親陣列 + 每條「連父親」的邊權。
 //         1
 //       /   \
-//     (e2)  (e3)     ← 边权画在边中点
+//     (e2)  (e3)     ← 邊權畫在邊中點
 //     /       \
 //    2         3
 //   / \
@@ -22,7 +22,7 @@ const EDGE0 = [0, 2, 5, 3, 4] // parentEdge[i]，根 = 0
 export default function TreeKnapsackDemo() {
   const [edge, setEdge] = useState<number[]>(EDGE0)
   const [K, setK] = useState(3)
-  const [focus, setFocus] = useState<number>(0) // 高亮某节点的 dp 表（默认根）
+  const [focus, setFocus] = useState<number>(0) // 高亮某節點的 dp 表（預設根）
 
   const tree = useMemo(() => buildTree(PARENT, Array(PARENT.length).fill(0)), [])
   const layout = useMemo(() => layoutTree(tree), [tree])
@@ -45,7 +45,7 @@ export default function TreeKnapsackDemo() {
     return { fill, stroke, strokeWidth: isFocus ? 2.6 : 1.8, textColor }
   }
 
-  // 布局像素
+  // 佈局像素
   const width = 540
   const padX = 46
   const topY = 36

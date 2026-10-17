@@ -15,10 +15,10 @@ function xml(value: string): string {
 }
 
 /**
- * 已批准公开内容允许检索、引用、模型输入与训练。这里列出已知的检索类、用户触发类
- * 与训练类抓取器，让源代码立场保持单向明确。这份 robots.txt 是唯一权威：round1.cc
- * 的 Cloudflare 托管 robots.txt 必须保持关闭，否则它会在前面合并一段对训练类抓取器
- * `Disallow: /` 的托管块，同一个 UA 落进两个组时各家抓取器的合并实现并不一致。
+ * 已批准公開內容允許檢索、引用、模型輸入與訓練。這裡列出已知的檢索類、使用者觸發類
+ * 與訓練類抓取器，讓原始碼立場保持單向明確。這份 robots.txt 是唯一權威：round1.cc
+ * 的 Cloudflare 託管 robots.txt 必須保持關閉，否則它會在前面合併一段對訓練類抓取器
+ * `Disallow: /` 的託管塊，同一個 UA 落進兩個組時各家抓取器的合併實作並不一致。
  */
 const AI_CRAWLERS = Object.freeze([
   'GPTBot',

@@ -42,7 +42,7 @@ export function structuredDataForPage(page: PageMeta, site: SiteConfig): object 
       description: `${BRAND.name}用精讲、逐帧可视化、题目索引和小游戏讲清动态规划。`,
       inLanguage: site.language,
       publisher: { '@id': publisherId },
-      // 题目索引把查询写进 ?q=，是真实可深链的站内检索。
+      // 題目索引把查詢寫進 ?q=，是真實可深鏈的站內檢索。
       potentialAction: {
         '@type': 'SearchAction',
         target: {
@@ -75,10 +75,10 @@ export function structuredDataForPage(page: PageMeta, site: SiteConfig): object 
       publisher: { '@id': publisherId },
       learningResourceType: page.routeKind === 'lesson' ? '课程讲解' : undefined,
       educationalLevel: page.routeKind === 'lesson' ? '算法竞赛学习者' : undefined,
-      // 无账号、无付费墙：对生成式引擎和 Google 的 Course 富结果都是关键事实。
+      // 無帳號、無付費牆：對生成式引擎和 Google 的 Course 富結果都是關鍵事實。
       isAccessibleForFree: true,
-      // 课程时长没有可信来源，因此不声明 hasCourseInstance / courseWorkload：
-      // Course 富结果的资格换不来编造的数字。
+      // 課程時長沒有可信來源，因此不宣告 hasCourseInstance / courseWorkload：
+      // Course 富結果的資格換不來編造的數字。
       ...(page.routeKind === 'lesson'
         ? {
             educationalUse: '自学',

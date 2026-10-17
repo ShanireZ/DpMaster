@@ -1,11 +1,11 @@
 /* ============================================================
    Design Tokens · Warm Ink
-   暖中性近黑底 · 蜜金主色 · 精选低饱和宝石色 · 发丝描边 · 弥散软阴影
-   深色为默认，[data-theme="light"] 为暖奶油阅读模式
+   暖中性近黑底 · 蜜金主色 · 精選低飽和寶石色 · 髮絲描邊 · 彌散軟陰影
+   深色為預設，[data-theme="light"] 為暖奶油閱讀模式
    ============================================================ */
 
 :root {
-  /* ---------- 基底与表面（暖墨） ---------- */
+  /* ---------- 基底與表面（暖墨） ---------- */
   --canvas: #0b0a09;
   --surface-1: #121010;
   --surface-2: #1a1614;
@@ -19,12 +19,12 @@
   --text-3: #8c8479;
   --text-on-accent: #221708;
 
-  /* ---------- 品牌主色：蜜金（默认强调 / 首页 / 全局） ---------- */
+  /* ---------- 品牌主色：蜜金（預設強調 / 首頁 / 全域） ---------- */
   --grad-brand: linear-gradient(115deg, #f0cd83, #e0a24c);
   --grad-brand-soft: linear-gradient(115deg, rgba(240, 205, 131, 0.2), rgba(224, 162, 76, 0.12));
 
-  /* ---------- 七部分：暖矿·低饱和宝石（暖为重心，整体压低饱和；B 灰青 / E 灰紫作分隔，
-     七部分可辨却是矿物/颜料感而非糖果彩虹——不再横跨色轮）·A 背包=蜜金、B 线性=灰青 ---------- */
+  /* ---------- 七部分：暖礦·低飽和寶石（暖為重心，整體壓低飽和；B 灰青 / E 灰紫作分隔，
+     七部分可辨卻是礦物/顏料感而非糖果彩虹——不再橫跨色輪）·A 揹包=蜜金、B 線性=灰青 ---------- */
   --grad-a: linear-gradient(120deg, #e0a24c, #c8863a);
   --grad-b: linear-gradient(120deg, #82ab9f, #5f8b7e);
   --grad-c: linear-gradient(120deg, #d2896a, #b56a4b);
@@ -41,35 +41,35 @@
   --f-1: #c9a659; --f-2: #ab8841;
   --g-1: #c0899a; --g-2: #a26b7d;
 
-  /* 当前活跃强调（默认蜜金；<html data-part> 覆盖为该部分宝石色） */
+  /* 當前活躍強調（預設蜜金；<html data-part> 覆蓋為該部分寶石色） */
   --accent-1: #e6b45c;
   --accent-2: #d5983f;
   --grad-accent: var(--grad-brand);
 
-  /* ---------- 语义可视化色（DP 演示专用，克制、可辨、跨部分一致） ---------- */
-  --viz-current: #ef9f5e;   /* 当前计算 · 暖珊瑚 */
-  --viz-source: #6fb6c6;    /* 依赖来源 · 青 */
-  --viz-chosen: #93c06b;    /* 被选/最优 · 绿 */
-  --viz-settled: #57524b;   /* 已确定 */
-  --viz-invalid: #e07e7e;   /* 非法/越界 · 陶红 */
+  /* ---------- 語義視覺化色（DP 演示專用，剋制、可辨、跨部分一致） ---------- */
+  --viz-current: #ef9f5e;   /* 當前計算 · 暖珊瑚 */
+  --viz-source: #6fb6c6;    /* 依賴來源 · 青 */
+  --viz-chosen: #93c06b;    /* 被選/最優 · 綠 */
+  --viz-settled: #57524b;   /* 已確定 */
+  --viz-invalid: #e07e7e;   /* 非法/越界 · 陶紅 */
   --viz-chosen-border: rgba(147, 192, 107, 0.4);
   --viz-invalid-border: rgba(224, 126, 126, 0.4);
   --viz-cell: #171310;
   --viz-cell-2: #201b17;
 
-  /* ---------- 字体 ---------- */
+  /* ---------- 字體 ---------- */
   --font-display: 'Space Grotesk', 'Noto Sans SC', ui-sans-serif, system-ui, sans-serif;
   --font-body: 'Noto Sans SC', 'Microsoft YaHei', ui-sans-serif, system-ui, sans-serif;
   --font-mono: 'JetBrains Mono', ui-monospace, 'Cascadia Code', 'Consolas', monospace;
 
-  /* ---------- 间距刻度 ---------- */
+  /* ---------- 間距刻度 ---------- */
   --sp-1: 4px;  --sp-2: 8px;  --sp-3: 12px; --sp-4: 16px;
   --sp-5: 24px; --sp-6: 32px; --sp-7: 48px; --sp-8: 64px; --sp-9: 96px; --sp-10: 128px;
 
-  /* ---------- 圆角（更大的 squircle） ---------- */
+  /* ---------- 圓角（更大的 squircle） ---------- */
   --r-1: 6px; --r-2: 11px; --r-3: 16px; --r-4: 22px; --r-5: 28px; --r-full: 999px;
 
-  /* ---------- 阴影 / 辉光（柔和、弥散、暖调） ---------- */
+  /* ---------- 陰影 / 輝光（柔和、彌散、暖調） ---------- */
   --shadow-1: 0 1px 2px rgba(0, 0, 0, 0.28);
   --shadow-2: 0 18px 44px -22px rgba(0, 0, 0, 0.55);
   --shadow-3: 0 36px 90px -30px rgba(0, 0, 0, 0.62);
@@ -77,15 +77,15 @@
   --glow-accent: 0 0 0 1px color-mix(in srgb, var(--accent-1) 26%, transparent),
                  0 16px 44px -16px color-mix(in srgb, var(--accent-1) 40%, transparent);
 
-  /* ---------- 布局 ---------- */
+  /* ---------- 佈局 ---------- */
   --sidebar-w: 232px;
   --topbar-h: 62px;
-  /* 正文阅读行宽：★用 em/rem 而非 ch——ch 按拉丁 "0" 字宽(≈0.55em)标定，
-     66ch 在中文正文里只有 ~36 汉字/行，偏窄；46rem≈45 汉字/行，舒展且守易读上限。 */
+  /* 正文閱讀行寬：★用 em/rem 而非 ch——ch 按拉丁 "0" 字寬(≈0.55em)標定，
+     66ch 在中文正文裡只有 ~36 漢字/行，偏窄；46rem≈45 漢字/行，舒展且守易讀上限。 */
   --measure: 46rem;
   --content-max: 1240px;
 
-  /* ---------- 过渡（自定义缓动，无 linear/ease-in-out） ---------- */
+  /* ---------- 過渡（自定義緩動，無 linear/ease-in-out） ---------- */
   --ease: cubic-bezier(0.22, 0.61, 0.36, 1);
   --ease-spring: cubic-bezier(0.34, 1.4, 0.5, 1);
   --ease-out: cubic-bezier(0.16, 1, 0.3, 1);
@@ -94,7 +94,7 @@
   --z-nav: 40; --z-overlay: 60; --z-modal: 80;
 }
 
-/* ================= 浅色阅读模式（暖奶油） ================= */
+/* ================= 淺色閱讀模式（暖奶油） ================= */
 [data-theme='light'] {
   --canvas: #f4f1ea;
   --surface-1: #fffdf8;
@@ -112,10 +112,10 @@
   --viz-cell-2: #e7e0d3;
   --viz-settled: #a79e90;
 
-  /* 四个状态色同样要加深。它们既做 fill/stroke 也做 color（bitmask-demo.css、
-     plug-contour-demo.css），按最严的用途算门槛就是上面那句的 4.5:1；
-     深色原值直接落在奶油底上只有 1.75~2.35:1。取法与蜜金一致——只压明度，
-     色相与饱和度不动，状态语义（珊瑚/青/绿/陶红）因此保住。 */
+  /* 四個狀態色同樣要加深。它們既做 fill/stroke 也做 color（bitmask-demo.css、
+     plug-contour-demo.css），按最嚴的用途算門檻就是上面那句的 4.5:1；
+     深色原值直接落在奶油底上只有 1.75~2.35:1。取法與蜜金一致——只壓明度，
+     色相與飽和度不動，狀態語義（珊瑚/青/綠/陶紅）因此保住。 */
   --viz-current: #a45210;
   --viz-source: #337280;
   --viz-chosen: #507331;
@@ -127,15 +127,15 @@
   --shadow-3: 0 36px 90px -30px rgba(70, 52, 22, 0.18);
   --inset-hi: inset 0 1px 0 rgba(255, 255, 255, 0.6);
 
-  /* 浅色模式：蜜金与七部分色整体加深，保证暖奶油底上文字/描边的对比（≥4.5:1） */
+  /* 淺色模式：蜜金與七部分色整體加深，保證暖奶油底上文字/描邊的對比（≥4.5:1） */
   --grad-brand: linear-gradient(115deg, #9c6a1a, #7a5210);
   --grad-brand-soft: linear-gradient(115deg, rgba(156, 106, 26, 0.16), rgba(122, 82, 16, 0.1));
   --accent-1: #8f6015;
   --accent-2: #7a5210;
-  /* 浅色下强调色已加深→其上文字改暖近白（暗色下仍是暖黑） */
+  /* 淺色下強調色已加深→其上文字改暖近白（暗色下仍是暖黑） */
   --text-on-accent: #fbf7ef;
 
-  /* 浅色下暖矿七色整体加深，保证暖奶油底上文字/描边对比（≥4.5:1），身份与深色同族 */
+  /* 淺色下暖礦七色整體加深，保證暖奶油底上文字/描邊對比（≥4.5:1），身分與深色同族 */
   --grad-a: linear-gradient(120deg, #9a6716, #785110);
   --grad-b: linear-gradient(120deg, #37796a, #2b6153);
   --grad-c: linear-gradient(120deg, #b25a3c, #934428);
@@ -153,7 +153,7 @@
   --g-1: #9c5069; --g-2: #7d3e54;
 }
 
-/* 各部分作用域：<body data-part="b"> 切换活跃强调色与渐变 */
+/* 各部分作用域：<body data-part="b"> 切換活躍強調色與漸變 */
 [data-part='a'] { --accent-1: var(--a-1); --accent-2: var(--a-2); --grad-accent: var(--grad-a); }
 [data-part='b'] { --accent-1: var(--b-1); --accent-2: var(--b-2); --grad-accent: var(--grad-b); }
 [data-part='c'] { --accent-1: var(--c-1); --accent-2: var(--c-2); --grad-accent: var(--grad-c); }

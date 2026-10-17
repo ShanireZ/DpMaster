@@ -49,12 +49,12 @@ export default function DiameterDemo() {
   const settledSet = useMemo(() => new Set(step.settled), [step])
   const justDone = step.u
 
-  // 计算「过 argThrough 的那条链」用哪些边，末帧高亮
+  // 計算「過 argThrough 的那條鏈」用哪些邊，末影格高亮
   const throughEdges = useMemo(() => {
     if (!isLastFrame) return new Set<string>()
     const u = res.argThrough
     const s = new Set<string>()
-    // 从 u 出发，沿 down 值最大的孩子走两条最深链
+    // 從 u 出發，沿 down 值最大的孩子走兩條最深鏈
     const kids = tree.children[u]
       .map((c) => ({ c, g: Math.max(0, res.down[c]) }))
       .filter((x) => x.g > 0)

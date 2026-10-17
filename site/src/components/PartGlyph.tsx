@@ -1,6 +1,6 @@
 import type { PartId } from '../data/catalog'
 
-/** 每个部分的几何母题字形——映射该 DP 的结构（容器/线/弧/网格/放射树/树/比特）。 */
+/** 每個部分的幾何母題字形——映射該 DP 的結構（容器/線/弧/網格/放射樹/樹/位元）。 */
 export default function PartGlyph({ id, size = 120 }: { id: PartId; size?: number }) {
   const common = {
     width: size,
@@ -35,7 +35,7 @@ export default function PartGlyph({ id, size = 120 }: { id: PartId; size?: numbe
           )}
         </svg>
       )
-    case 'b': // 递增刻度序列
+    case 'b': // 遞增刻度序列
       return (
         <svg {...common}>
           <path d="M12 82 H88" strokeOpacity={0.5} />
@@ -54,7 +54,7 @@ export default function PartGlyph({ id, size = 120 }: { id: PartId; size?: numbe
           <line x1={14} y1={74} x2={86} y2={74} strokeOpacity={0.4} />
         </svg>
       )
-    case 'd': // 网格矩阵
+    case 'd': // 網格矩陣
       return (
         <svg {...common} strokeWidth={2.4}>
           <rect x={20} y={20} width={60} height={60} rx={4} />
@@ -67,7 +67,7 @@ export default function PartGlyph({ id, size = 120 }: { id: PartId; size?: numbe
           <path d="M20 20 L35 35 L50 50 L65 65 L80 80" strokeWidth={3} />
         </svg>
       )
-    case 'e': // 放射树（换根）
+    case 'e': // 放射樹（換根）
       return (
         <svg {...common}>
           <circle cx={50} cy={50} r={8} fill="currentColor" fillOpacity={0.5} />
@@ -81,7 +81,7 @@ export default function PartGlyph({ id, size = 120 }: { id: PartId; size?: numbe
           ))}
         </svg>
       )
-    case 'f': // 分叉树冠
+    case 'f': // 分叉樹冠
       return (
         <svg {...common}>
           <circle cx={50} cy={18} r={7} />
@@ -94,7 +94,7 @@ export default function PartGlyph({ id, size = 120 }: { id: PartId; size?: numbe
           <path d="M50 25 L28 46 M50 25 L72 46 M28 59 L16 78 M28 59 L40 78 M72 59 L62 78 M72 59 L84 78" strokeOpacity={0.7} />
         </svg>
       )
-    case 'g': // 比特点阵 / 立方
+    case 'g': // 位元點陣 / 立方
       return (
         <svg {...common} strokeWidth={2.6}>
           <path d="M30 34 L30 66 L58 82 L58 50 Z" strokeOpacity={0.85} />

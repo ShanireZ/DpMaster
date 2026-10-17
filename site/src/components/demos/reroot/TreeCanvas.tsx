@@ -1,8 +1,8 @@
 import type { ReactNode } from 'react'
 import type { TreeNodeLayout } from './rerootSolver'
 
-// 自定义 SVG 画树的共享外壳：节点=圆（可点）、边=线，布局用 layoutTree 的 x/y。
-// 各演示传入「每个节点/每条边如何着色」的回调，以及节点上要显示的副标签。
+// 自定義 SVG 畫樹的共享外殼：節點=圓（可點）、邊=線，佈局用 layoutTree 的 x/y。
+// 各演示傳入「每個節點/每條邊如何著色」的回呼，以及節點上要顯示的副標籤。
 
 export interface NodeStyle {
   fill: string
@@ -49,7 +49,7 @@ export function TreeCanvas({
   const byId = new Map<number, TreeNodeLayout>()
   nodes.forEach((nd) => byId.set(nd.id, nd))
 
-  // 边：child → parent
+  // 邊：child → parent
   const edges: { c: number; p: number; cx: number; cy: number; px2: number; py2: number }[] = []
   nodes.forEach((nd) => {
     if (nd.parent >= 0) {
@@ -70,7 +70,7 @@ export function TreeCanvas({
 
   return (
     <svg viewBox={`0 0 ${W} ${H}`} role="img" aria-label={ariaLabel}>
-      {/* 连边 */}
+      {/* 連邊 */}
       {edges.map((e, i) => {
         const st = edgeStyle(e.c, e.p)
         return (
@@ -86,7 +86,7 @@ export function TreeCanvas({
           />
         )
       })}
-      {/* 边标签（如边权 w） */}
+      {/* 邊標籤（如邊權 w） */}
       {edgeLabel &&
         edges.map((e, i) => {
           const lab = edgeLabel(e.c, e.p)
@@ -104,7 +104,7 @@ export function TreeCanvas({
             </text>
           )
         })}
-      {/* 节点 */}
+      {/* 節點 */}
       {nodes.map((nd) => {
         const st = nodeStyle(nd.id)
         const sub = subLabel ? subLabel(nd.id) : null

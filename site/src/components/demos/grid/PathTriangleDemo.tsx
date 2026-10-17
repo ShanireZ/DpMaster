@@ -35,7 +35,7 @@ function Stepper({
   )
 }
 
-// 默认 4 行三角（答案 24，最优路径 3→6→8→7）。改行数时按此模板裁剪 / 补行。
+// 預設 4 行三角（答案 24，最優路徑 3→6→8→7）。改行數時按此範本裁剪 / 補行。
 const DEFAULT_TRI: number[][] = [[3], [6, 5], [3, 8, 2], [2, 7, 4, 5]]
 
 function resizeTri(tri: number[][], rows: number): number[][] {
@@ -43,13 +43,13 @@ function resizeTri(tri: number[][], rows: number): number[][] {
   for (let i = 0; i < rows; i++) {
     const src = tri[i] ?? []
     const row: number[] = []
-    for (let j = 0; j <= i; j++) row.push(src[j] ?? ((i + j) % 9) + 1) // 缺格补个 1..9 的值
+    for (let j = 0; j <= i; j++) row.push(src[j] ?? ((i + j) % 9) + 1) // 缺格補個 1..9 的值
     out.push(row)
   }
   return out
 }
 
-/** 数字三角形二维演示：自底向上填表，每格从「正下方 / 右下方」取 max。可改每格数字与行数。 */
+/** 數字三角形二維演示：自底向上填表，每格從「正下方 / 右下方」取 max。可改每格數字與行數。 */
 export default function PathTriangleDemo() {
   const [rows, setRows] = useState(4)
   const [tri, setTri] = useState<number[][]>(DEFAULT_TRI)

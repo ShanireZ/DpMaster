@@ -1,4 +1,4 @@
-// 由 scripts/generate-seo.mjs 从源码时间证据生成，请勿手改。
+// 由 scripts/generate-seo.mjs 從原始碼時間證據生成，請勿手改。
 export const ROUTE_CONTENT_DIGEST_VERSION = 19
 export const ROUTE_LAST_MODIFIED: Readonly<Record<string, string>> = Object.freeze({
   "/": "2026-10-11T08:42:32.510Z",

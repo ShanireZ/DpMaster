@@ -1,6 +1,6 @@
-// 多重背包讲解用的插图（on-brand SVG，随强调色变色）
+// 多重揹包講解用的插圖（on-brand SVG，隨強調色變色）
 
-// 引入场景：每种物品带 ×m 徽标，不是 01 的「至多一件」，也不是完全的「无限件」，而是恰好 m 件。
+// 引入場景：每種物品帶 ×m 徽標，不是 01 的「至多一件」，也不是完全的「無限件」，而是恰好 m 件。
 export function MultipleSetupFigure() {
   const items = [
     { w: 2, v: 3, m: 3 },
@@ -41,10 +41,10 @@ export function MultipleSetupFigure() {
   )
 }
 
-// 二进制拆分核心图：把 m=13 件拆成 1,2,4 三个 2 的幂 + 余数 6，共 4 个打包件。
-// 下方标注：这 4 个包能凑出 0…13 的任意件数（1,2,4 凑 0…7，再加 6 平移覆盖到 13）。
+// 二進位拆分核心圖：把 m=13 件拆成 1,2,4 三個 2 的冪 + 餘數 6，共 4 個打包件。
+// 下方標註：這 4 個包能湊出 0…13 的任意件數（1,2,4 湊 0…7，再加 6 平移覆蓋到 13）。
 export function BinarySplitFigure() {
-  // 每个包：cnt 件、对应宽度按件数比例。1+2+4+6 = 13。
+  // 每個包：cnt 件、對應寬度按件數比例。1+2+4+6 = 13。
   const packs = [
     { label: '×1', cnt: 1 },
     { label: '×2', cnt: 2 },
@@ -52,7 +52,7 @@ export function BinarySplitFigure() {
     { label: '×余6', cnt: 6, rest: true },
   ]
   const x0 = 24
-  const unit = 40 // 每件原物的像素宽
+  const unit = 40 // 每件原物的像素寬
   const gap = 10
   const y = 44
   const h = 46
@@ -101,9 +101,9 @@ export function BinarySplitFigure() {
   )
 }
 
-// 复杂度对比图：朴素枚举每件一根「格子」(Σm 根) vs 二进制打包 (Σlog 根)，直观看差距。
+// 複雜度對比圖：樸素枚舉每件一根「格子」(Σm 根) vs 二進位打包 (Σlog 根)，直觀看差距。
 export function NaiveVsBinaryFigure() {
-  // 两种物品 m=7、m=15：朴素 7+15=22 根；二进制 3+4=7 根。
+  // 兩種物品 m=7、m=15：樸素 7+15=22 根；二進位 3+4=7 根。
   const naive = 22
   const binary = 7
   const bx = 150

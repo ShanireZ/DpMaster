@@ -1,11 +1,11 @@
-// LCS 讲解用的插图（on-brand SVG，随强调色变色）。★不用外部图片、不做 opacity:0 起步动画。
+// LCS 講解用的插圖（on-brand SVG，隨強調色變色）。★不用外部圖片、不做 opacity:0 起步動畫。
 
-// 引入图：两串字符上下排开，把它们的一条公共子序列（保持各自次序）用连线勾出。
-// A = A B C B D A B，B = B D C A B；公共子序列 B C A B（长度 4）。
+// 引入圖：兩串字元上下排開，把它們的一條公共子序列（保持各自次序）用連線勾出。
+// A = A B C B D A B，B = B D C A B；公共子序列 B C A B（長度 4）。
 export function SetupFigure() {
   const top = ['A', 'B', 'C', 'B', 'D', 'A', 'B'] // 串 A
   const bot = ['B', 'D', 'C', 'A', 'B'] // 串 B
-  // 一条公共子序列 B C A B 在两串中的下标（各自保持递增）：
+  // 一條公共子序列 B C A B 在兩串中的下標（各自保持遞增）：
   // A: B@1 C@2 A@5 B@6 ；B: B@0 C@2 A@3 B@4
   const pairs = [
     [1, 0],
@@ -25,7 +25,7 @@ export function SetupFigure() {
   const pickB = new Set(pairs.map((p) => p[1]))
   return (
     <svg viewBox="0 0 620 210" role="img" aria-label="两串字符与它们的一条最长公共子序列">
-      {/* 连线：公共子序列的匹配对（不交叉，天然保持两串各自的先后次序） */}
+      {/* 連線：公共子序列的匹配對（不交叉，天然保持兩串各自的先後次序） */}
       {pairs.map(([i, j]) => (
         <line
           key={`ln${i}-${j}`}
@@ -85,7 +85,7 @@ export function SetupFigure() {
   )
 }
 
-// 转移决策图：算 dp[i][j] 看两串「当前末位」是否相等，分两条路。
+// 轉移決策圖：算 dp[i][j] 看兩串「當前末位」是否相等，分兩條路。
 export function DecisionFigure() {
   return (
     <svg viewBox="0 0 620 250" role="img" aria-label="LCS 转移：末位相等取左上加一，否则取上、左的较大者">
@@ -94,7 +94,7 @@ export function DecisionFigure() {
           <path d="M0,0 L6,3 L0,6 Z" fill="var(--text-3)" />
         </marker>
       </defs>
-      {/* 顶部：当前子问题 */}
+      {/* 頂部：當前子問題 */}
       <g transform="translate(232,8)">
         <rect width="156" height="48" rx="12" fill="var(--surface-3)" stroke="var(--border-strong)" strokeWidth="1.5" />
         <text x="78" y="20" textAnchor="middle" fontSize="12" fill="var(--text-2)">看 A 的前 i 位、B 的前 j 位</text>
@@ -125,7 +125,7 @@ export function DecisionFigure() {
         <text x="120" y="48" textAnchor="middle" fontSize="14" className="mono" fill="var(--text-1)">= max(dp[i−1][j], dp[i][j−1])</text>
         <text x="120" y="66" textAnchor="middle" fontSize="11" fill="var(--text-3)">要么丢 A 末位，要么丢 B 末位</text>
       </g>
-      {/* 汇合 */}
+      {/* 匯合 */}
       <path d="M150 174 L296 222" stroke="var(--text-3)" strokeWidth="2" markerEnd="url(#lcs-ar)" />
       <path d="M480 174 L344 222" stroke="var(--text-3)" strokeWidth="2" markerEnd="url(#lcs-ar)" />
       <g transform="translate(212,224)">
@@ -143,9 +143,9 @@ export function DecisionFigure() {
   )
 }
 
-// 回溯图：填完的表里，从右下角沿转移来路走回左上，斜向那一步就摘一个公共字符。
+// 回溯圖：填完的表裡，從右下角沿轉移來路走回左上，斜向那一步就摘一個公共字元。
 export function BacktrackFigure() {
-  // 用 A="ABCB", B="BDCB" 的一张 5×5 小表意示（值只作示意，重在路径形状）。
+  // 用 A="ABCB", B="BDCB" 的一張 5×5 小表意示（值只作示意，重在路徑形狀）。
   const A = ['A', 'B', 'C', 'B']
   const B = ['B', 'D', 'C', 'B']
   const dp = [
@@ -155,21 +155,21 @@ export function BacktrackFigure() {
     [0, 1, 1, 2, 2],
     [0, 1, 1, 2, 3],
   ]
-  // 回溯路径经过的格 (r,c)：(4,4)→(3,3)→(2,2)→(2,1)→(1,1)→(0,0)，与真实转移来路一致。
+  // 回溯路徑經過的格 (r,c)：(4,4)→(3,3)→(2,2)→(2,1)→(1,1)→(0,0)，與真實轉移來路一致。
   const path = new Set(['4,4', '3,3', '2,2', '2,1', '1,1', '0,0'])
-  const diag = new Set(['4,4', '3,3', '2,1']) // 相等时斜向、摘字符（摘下 B / C / B）
+  const diag = new Set(['4,4', '3,3', '2,1']) // 相等時斜向、摘字元（摘下 B / C / B）
   const CW = 40
   const gx = (c: number) => 96 + c * CW
   const gy = (r: number) => 34 + r * CW
   return (
     <svg viewBox="0 0 400 270" role="img" aria-label="沿转移来路从右下角回溯，斜向一步摘一个公共字符">
-      {/* 列头 = 串 B */}
+      {/* 列頭 = 串 B */}
       {['∅', ...B].map((ch, c) => (
         <text key={`ch${c}`} x={gx(c) + CW / 2} y="26" textAnchor="middle" fontSize="13" className="mono" fill="var(--text-3)">
           {ch}
         </text>
       ))}
-      {/* 行头 = 串 A */}
+      {/* 行頭 = 串 A */}
       {['∅', ...A].map((ch, r) => (
         <text key={`rh${r}`} x="80" y={gy(r) + CW / 2 + 5} textAnchor="end" fontSize="13" className="mono" fill="var(--text-3)">
           {ch}
@@ -202,7 +202,7 @@ export function BacktrackFigure() {
           )
         }),
       )}
-      {/* 回溯箭头串（右下 → 左上）：(4,4)→(3,3)→(2,2)→(2,1)→(1,1)→(0,0)。点 = (gx(c), gy(r))。 */}
+      {/* 回溯箭頭串（右下 → 左上）：(4,4)→(3,3)→(2,2)→(2,1)→(1,1)→(0,0)。點 = (gx(c), gy(r))。 */}
       <path
         d={`M ${gx(4) + CW / 2 - 2} ${gy(4) + CW / 2 - 2}
             L ${gx(3) + CW / 2 - 2} ${gy(3) + CW / 2 - 2}
@@ -223,15 +223,15 @@ export function BacktrackFigure() {
   )
 }
 
-// 深化图：排列 LCS → LIS。把 B 的每个值换成它在 A 里的位置，得一串位置序列，其 LIS 即 LCS。
+// 深化圖：排列 LCS → LIS。把 B 的每個值換成它在 A 裡的位置，得一串位置序列，其 LIS 即 LCS。
 export function PermToLisFigure() {
-  // A = 1 2 3 4 5（这里取恒等排列，位置即数值本身，映射最直观）
-  // B = 2 4 1 5 3 → 映射后位置序列 = 2 4 1 5 3，其一条 LIS = 2 4 5（长度 3）
+  // A = 1 2 3 4 5（這裡取恆等排列，位置即數值本身，映射最直觀）
+  // B = 2 4 1 5 3 → 映射後位置序列 = 2 4 1 5 3，其一條 LIS = 2 4 5（長度 3）
   const A = [1, 2, 3, 4, 5]
   const B = [2, 4, 1, 5, 3]
   const posInA = new Map(A.map((v, i) => [v, i + 1])) // 值 → 在 A 中的位置(1-based)
   const mapped = B.map((v) => posInA.get(v)!)
-  const lisPick = new Set([0, 1, 3]) // 位置序列里一条 LIS：2,4,5（下标 0,1,3）
+  const lisPick = new Set([0, 1, 3]) // 位置序列裡一條 LIS：2,4,5（下標 0,1,3）
   const x0 = 96
   const dx = 84
   const bw = 52
@@ -256,14 +256,14 @@ export function PermToLisFigure() {
         </g>
       ))}
       <text x="16" y="44" fontSize="12.5" fontWeight="600" fill="var(--text-3)">B 的值</text>
-      {/* 向下映射箭头 */}
+      {/* 向下映射箭頭 */}
       {B.map((_, i) => (
         <path key={`ar${i}`} d={`M ${cx(i)} 60 L ${cx(i)} 96`} stroke="var(--text-3)" strokeWidth="1.6" markerEnd="url(#p2l-dn)" />
       ))}
       <text x="16" y="122" fontSize="12" fill="var(--text-3)">换成</text>
       <text x="16" y="138" fontSize="12" fill="var(--text-3)">它在 A</text>
       <text x="16" y="154" fontSize="12" fill="var(--text-3)">的位置</text>
-      {/* 第二行：映射后的位置序列，高亮一条 LIS */}
+      {/* 第二行：映射後的位置序列，高亮一條 LIS */}
       {mapped.map((p, i) => {
         const on = lisPick.has(i)
         return (
@@ -282,7 +282,7 @@ export function PermToLisFigure() {
           </g>
         )
       })}
-      {/* LIS 连线（上升） */}
+      {/* LIS 連線（上升） */}
       {[0, 1].map((k) => {
         const arr = [0, 1, 3]
         const i = arr[k]

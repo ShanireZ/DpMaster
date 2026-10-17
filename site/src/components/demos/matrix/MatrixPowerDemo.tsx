@@ -4,14 +4,14 @@ import matrixPowerHeroArt from '../../../assets/demo-art/matrix-power-instrument
 import { DemoSculptureHero } from '../shared'
 import './matrix-power.css'
 
-// 2×2 矩阵（斐波那契转移 M = [[1,1],[1,0]]）。所有运算取模，避免大数溢出。
+// 2×2 矩陣（斐波那契轉移 M = [[1,1],[1,0]]）。所有運算取模，避免大數溢出。
 type Mat = [number, number, number, number] // [a,b,c,d] = [[a,b],[c,d]]
 
 const MOD = 1_000_000_007
 const FIB_M: Mat = [1, 1, 1, 0]
 const IDENT: Mat = [1, 0, 0, 1]
 
-// 模乘：Number 在此规模（<1e9）相乘不超过 2^53，安全。
+// 模乘：Number 在此規模（<1e9）相乘不超過 2^53，安全。
 function mul(x: Mat, y: Mat): Mat {
   return [
     (x[0] * y[0] + x[1] * y[2]) % MOD,
@@ -21,21 +21,21 @@ function mul(x: Mat, y: Mat): Mat {
   ]
 }
 
-// 一步二进制快速幂的记录：这一位对应的倍增幂 pow=M^(2^bit)，
-// 是否因为 n 的该位为 1 而被「累乘」进结果；acc 是累乘后的 Mⁿ 阶段值。
+// 一步二進位快速冪的記錄：這一位對應的倍增冪 pow=M^(2^bit)，
+// 是否因為 n 的該位為 1 而被「累乘」進結果；acc 是累乘後的 Mⁿ 階段值。
 interface Step {
-  bit: number // 二进制位下标（0=最低位）
-  bitVal: 0 | 1 // n 的该位
-  pow: Mat // 当前倍增出的 M^(2^bit)
-  used: boolean // 该位为 1 → 累乘进 acc
-  acc: Mat // 处理完该位后的累积结果
+  bit: number // 二進位位下標（0=最低位）
+  bitVal: 0 | 1 // n 的該位
+  pow: Mat // 當前倍增出的 M^(2^bit)
+  used: boolean // 該位為 1 → 累乘進 acc
+  acc: Mat // 處理完該位後的累積結果
 }
 
-// 生成完整倍增序列与累乘轨迹。核对：M^5 左上=F(6)=8，M^10 左上=F(11)=89。
+// 生成完整倍增序列與累乘軌跡。核對：M^5 左上=F(6)=8，M^10 左上=F(11)=89。
 function fastPowTrace(n: number): { steps: Step[]; result: Mat; bits: number } {
   const steps: Step[] = []
   let pow: Mat = FIB_M // M^(2^0) = M
-  let acc: Mat = IDENT // 单位阵起步
+  let acc: Mat = IDENT // 單位陣起步
   let k = n
   let bit = 0
   if (n === 0) {
@@ -47,7 +47,7 @@ function fastPowTrace(n: number): { steps: Step[]; result: Mat; bits: number } {
     if (used) acc = mul(acc, pow)
     steps.push({ bit, bitVal, pow, used, acc })
     k >>= 1
-    if (k > 0) pow = mul(pow, pow) // 平方 → 下一个倍增幂
+    if (k > 0) pow = mul(pow, pow) // 平方 → 下一個倍增冪
     bit++
   }
   return { steps, result: acc, bits: steps.length }
@@ -82,7 +82,7 @@ function Stepper({
   )
 }
 
-// 一个 2×2 矩阵的小网格。highlight 决定描边强调色。
+// 一個 2×2 矩陣的小網格。highlight 決定描邊強調色。
 function MatCell({ m, tone, cap }: { m: Mat; tone: 'idle' | 'pow' | 'acc'; cap?: string }) {
   return (
     <div className={`mpw__mat mpw__mat--${tone}`}>
@@ -99,27 +99,27 @@ function MatCell({ m, tone, cap }: { m: Mat; tone: 'idle' | 'pow' | 'acc'; cap?:
 }
 
 /**
- * 斐波那契矩阵快速幂 · 二进制倍增可视化（自建轻量，非 DPViz）。
- * 用户改指数 n：把 n 写成二进制，展示倍增平方序列 M, M², M⁴, M⁸ …，
- * 并按 n 的每个为 1 的二进制位把对应幂次「累乘」成 Mⁿ；
- * 每步显示 2×2 数值、当前操作（平方 / 累乘）、以及步数对比（暴力 n 次 vs 快速幂 ~2·⌊log₂n⌋ 次）。
- * 核对：M^5 左上 = F(6) = 8；M^10 左上 = F(11) = 89（F(1)=F(2)=1）。
+ * 斐波那契矩陣快速冪 · 二進位倍增視覺化（自建輕量，非 DPViz）。
+ * 使用者改指數 n：把 n 寫成二進位，展示倍增平方序列 M, M², M⁴, M⁸ …，
+ * 並按 n 的每個為 1 的二進位位把對應冪次「累乘」成 Mⁿ；
+ * 每步顯示 2×2 數值、當前操作（平方 / 累乘）、以及步數對比（暴力 n 次 vs 快速冪 ~2·⌊log₂n⌋ 次）。
+ * 核對：M^5 左上 = F(6) = 8；M^10 左上 = F(11) = 89（F(1)=F(2)=1）。
  */
 export default function MatrixPowerDemo() {
   const [n, setN] = useState(5)
 
   const { steps, result, bits } = useMemo(() => fastPowTrace(n), [n])
 
-  // n 的二进制串（高位在左）。
+  // n 的二進位串（高位在左）。
   const binStr = n.toString(2)
-  // 快速幂真实乘法次数：平方 (bits-1) 次 + 累乘（为 1 的位数）次。
+  // 快速冪真實乘法次數：平方 (bits-1) 次 + 累乘（為 1 的位數）次。
   const squarings = Math.max(0, bits - 1)
   const accMuls = steps.filter((s) => s.used).length
   const fastMuls = squarings + accMuls
-  // 暴力：连乘 n-1 次（M¹→Mⁿ）。
+  // 暴力：連乘 n-1 次（M¹→Mⁿ）。
   const naiveMuls = Math.max(1, n - 1)
 
-  // 结果左上角 = F(n+1)。
+  // 結果左上角 = F(n+1)。
   const fibNext = result[0]
 
   return (
@@ -145,7 +145,7 @@ export default function MatrixPowerDemo() {
         </div>
       </div>
 
-      {/* 倍增 + 累乘轨迹：一行一位，从最低位到最高位 */}
+      {/* 倍增 + 累乘軌跡：一行一位，從最低位到最高位 */}
       <div className="mpw__trace">
         <div className="mpw__trace-head">
           <span>
@@ -182,7 +182,7 @@ export default function MatrixPowerDemo() {
         ))}
       </div>
 
-      {/* 结果 + 读数 */}
+      {/* 結果 + 讀數 */}
       <div className="mpw__result">
         <div className="mpw__result-mat">
           <MatCell m={result} tone="acc" cap={`Mⁿ = M^${n}`} />

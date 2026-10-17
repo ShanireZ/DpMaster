@@ -7,8 +7,8 @@ import { solveLinearFsm } from '../../../algorithms/linear-fsm/index.ts'
 import { fsmPickTable } from './fsmSolver'
 import '../shared/demo-workbench.css'
 
-// 三组预设：默认打家劫舍经典样例 [1,2,3,1] → 最大不相邻和 4（选 a1+a3）；
-// 「间隔明显」凸显跳选；「递增」看它权衡相邻大值。
+// 三組預設：預設打家劫舍經典樣例 [1,2,3,1] → 最大不相鄰和 4（選 a1+a3）；
+// 「間隔明顯」凸顯跳選；「遞增」看它權衡相鄰大值。
 const PRESETS: { label: string; a: number[] }[] = [
   { label: '经典样例', a: [1, 2, 3, 1] },
   { label: '大谷两侧', a: [2, 7, 9, 3, 1] },
@@ -54,9 +54,9 @@ function NumStepper({
 }
 
 /**
- * 主演示 · 选 / 不选两状态填表（打家劫舍 / 选不相邻式）。
- * 二维 dp[状态][位置]：行 0=不选、行 1=选，逐位置逐状态填，
- * 高亮每格在上一位置的两个来源。数组可编辑，实时重算并重播。
+ * 主演示 · 選 / 不選兩狀態填表（打家劫舍 / 選不相鄰式）。
+ * 二維 dp[狀態][位置]：行 0=不選、行 1=選，逐位置逐狀態填，
+ * 高亮每格在上一位置的兩個來源。陣列可編輯，即時重算並重播。
  */
 export default function StateMachineDemo() {
   const [a, setA] = useState<number[]>(PRESETS[0].a)
@@ -123,7 +123,7 @@ export default function StateMachineDemo() {
   )
 }
 
-// 简单洗牌（Fisher–Yates），保证与原数组不同（长度≥2 时）。
+// 簡單洗牌（Fisher–Yates），保證與原陣列不同（長度≥2 時）。
 function shuffle(src: number[]): number[] {
   const a = src.slice()
   for (let i = a.length - 1; i > 0; i--) {

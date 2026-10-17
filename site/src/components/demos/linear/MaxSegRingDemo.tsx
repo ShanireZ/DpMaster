@@ -35,9 +35,9 @@ const PRESETS: { label: string; a: number[] }[] = [
 ]
 
 /**
- * 环形最大子段：普通 Kadane vs 环形（总和 − 最小子段）并排对照。
- * 左：不跨首尾的最大子段和；右：把 max 换成 min 求最小子段，total − minSeg = 绕首尾的最大段。
- * 最终答案 = max(两者)。当最优段跨越首尾时，右边的补集技巧胜出。
+ * 環形最大子段：普通 Kadane vs 環形（總和 − 最小子段）並排對照。
+ * 左：不跨首尾的最大子段和；右：把 max 換成 min 求最小子段，total − minSeg = 繞首尾的最大段。
+ * 最終答案 = max(兩者)。當最優段跨越首尾時，右邊的補集技巧勝出。
  */
 export default function MaxSegRingDemo() {
   const [a, setA] = useState<number[]>([2, -1, 2, -1, 2])
@@ -47,7 +47,7 @@ export default function MaxSegRingDemo() {
   const normal = useMemo(() => kadaneAnswer(a), [a])
   const total = useMemo(() => a.reduce((s, x) => s + x, 0), [a])
   const minSeg = useMemo(() => minSegAnswer(a), [a])
-  // 若全为正，最小子段 = 最小单元素，total−minSeg 会「绕整圈重复计入」；此时环形退化为普通。
+  // 若全為正，最小子段 = 最小單元素，total−minSeg 會「繞整圈重複計入」；此時環形退化為普通。
   const allPos = a.every((x) => x > 0)
   const wrap = allPos ? -Infinity : total - minSeg
   const ans = Math.max(normal, wrap)

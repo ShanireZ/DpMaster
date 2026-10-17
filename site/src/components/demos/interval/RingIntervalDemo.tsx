@@ -36,7 +36,7 @@ function Stepper({
   )
 }
 
-/** 环形石子合并（断环为链）演示：环上 n 堆复制成 2n 链，在链上跑区间三角表，取长度 n 窗口最优。可改环上数值。 */
+/** 環形石子合併（斷環為鏈）演示：環上 n 堆複製成 2n 鏈，在鏈上跑區間三角表，取長度 n 視窗最優。可改環上數值。 */
 export default function RingIntervalDemo() {
   const [stones, setStones] = useState<number[]>([3, 9, 3, 4])
 

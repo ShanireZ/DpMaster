@@ -1,10 +1,10 @@
 import { useEffect, useRef, useState } from 'react'
 
 /**
- * 404 背景层 · WebGL 暖调流场。
- * 手写 GLSL：双重 domain-warp fbm 噪声，映射到 Warm Ink 暖墨→琥珀→蜜金调色，
- * 极慢流动、指针微辉光、边缘压暗。WebGL 不可用时降级为 CSS 渐变；
- * prefers-reduced-motion 只渲一帧静止；离屏（切后台）暂停 rAF。
+ * 404 背景層 · WebGL 暖調流場。
+ * 手寫 GLSL：雙重 domain-warp fbm 噪聲，映射到 Warm Ink 暖墨→琥珀→蜜金調色，
+ * 極慢流動、指針微輝光、邊緣壓暗。WebGL 不可用時降級為 CSS 漸變；
+ * prefers-reduced-motion 只渲一影格靜止；離屏（切後台）暫停 rAF。
  */
 
 const VERT = `attribute vec2 a;void main(){gl_Position=vec4(a,0.0,1.0);}`
@@ -108,7 +108,7 @@ export default function ShaderField() {
     let running = true
     let start = performance.now()
     const frame = () => {
-      // 每帧内联自愈：显示尺寸与当前缓冲不符就重建（不依赖 RO/resize 事件时序）
+      // 每影格內聯自愈：顯示尺寸與當前緩衝不符就重建（不依賴 RO/resize 事件時序）
       const rect = canvas.getBoundingClientRect()
       const rw = Math.round(rect.width * dpr), rh = Math.round(rect.height * dpr)
       if (rw >= 2 && (Math.abs(rw - canvas.width) > 1 || Math.abs(rh - canvas.height) > 1)) resize()

@@ -1,10 +1,10 @@
-// 线性状态机 DP 讲解用的插图（on-brand SVG，随强调色变色）。
-// ★不用外部图片、不做 opacity:0 起步动画。节点+边风格仿 KnapsackArt / LISArt。
+// 線性狀態機 DP 講解用的插圖（on-brand SVG，隨強調色變色）。
+// ★不用外部圖片、不做 opacity:0 起步動畫。節點+邊風格仿 KnapsackArt / LISArt。
 
-// 引入图：一排数，被选中的两两不相邻——相邻两数之间画「禁选」链，直观呈现约束。
+// 引入圖：一排數，被選中的兩兩不相鄰——相鄰兩數之間畫「禁選」鏈，直觀呈現約束。
 export function SetupFigure() {
   const a = [1, 2, 3, 1]
-  const pick = new Set([0, 2]) // 选 a1、a3（不相邻），和 = 4
+  const pick = new Set([0, 2]) // 選 a1、a3（不相鄰），和 = 4
   const x0 = 60
   const dx = 108
   const bw = 74
@@ -19,7 +19,7 @@ export function SetupFigure() {
       <text x="30" y="20" fontSize="13" fill="var(--text-2)">
         选一批数使和最大，但<tspan fill="var(--viz-invalid)">相邻两个不能同时选</tspan>
       </text>
-      {/* 相邻禁选链：每对相邻数之间一条红色虚线，示意互斥 */}
+      {/* 相鄰禁選鏈：每對相鄰數之間一條紅色虛線，示意互斥 */}
       {a.slice(0, -1).map((_, i) => (
         <line
           key={`ban${i}`}
@@ -65,12 +65,12 @@ export function SetupFigure() {
   )
 }
 
-// 状态转移图：每个位置引入「不选 / 选」两离散状态，dp[i][·] 从上一位置转来。
-// 不选 ← 上一位置两状态取 max；选 ← 只能接上一位置的「不选」（相邻互斥）。
+// 狀態轉移圖：每個位置引入「不選 / 選」兩離散狀態，dp[i][·] 從上一位置轉來。
+// 不選 ← 上一位置兩狀態取 max；選 ← 只能接上一位置的「不選」（相鄰互斥）。
 export function TransitionFigure() {
-  // 三列：位置 i-1 的两状态、位置 i 的两状态。
+  // 三列：位置 i-1 的兩狀態、位置 i 的兩狀態。
   const colX = [70, 360]
-  const rowY = [56, 150] // 行 0 = 不选，行 1 = 选
+  const rowY = [56, 150] // 行 0 = 不選，行 1 = 選
   const bw = 150
   const bh = 58
   const cx = (c: number) => colX[c] + bw / 2
@@ -109,7 +109,7 @@ export function TransitionFigure() {
       <text x={cx(1)} y="28" textAnchor="middle" fontSize="12" fontWeight="600" fill="var(--accent-1)">
         位置 i（a[i]）
       </text>
-      {/* 边：不选[i] ← 不选[i-1] 与 选[i-1] 各一条（取 max） */}
+      {/* 邊：不選[i] ← 不選[i-1] 與 選[i-1] 各一條（取 max） */}
       <line x1={colX[0] + bw} y1={cy(0)} x2={colX[1]} y2={cy(0)} stroke="var(--viz-source)" strokeWidth="2" markerEnd="url(#sm-src)" />
       <path
         d={`M ${colX[0] + bw} ${cy(1)} C ${(colX[0] + bw + colX[1]) / 2} ${cy(1)}, ${(colX[0] + bw + colX[1]) / 2} ${cy(0)}, ${colX[1]} ${cy(0) + 8}`}
@@ -118,7 +118,7 @@ export function TransitionFigure() {
         strokeWidth="2"
         markerEnd="url(#sm-src)"
       />
-      {/* 边：选[i] ← 只能来自 不选[i-1]（chosen 强调） */}
+      {/* 邊：選[i] ← 只能來自 不選[i-1]（chosen 強調） */}
       <path
         d={`M ${colX[0] + bw} ${cy(0) + 10} C ${(colX[0] + bw + colX[1]) / 2} ${cy(0) + 10}, ${(colX[0] + bw + colX[1]) / 2} ${cy(1)}, ${colX[1]} ${cy(1)}`}
         fill="none"
@@ -137,7 +137,7 @@ export function TransitionFigure() {
   )
 }
 
-// 股票买卖状态机图：持有 / 未持有 两状态节点 + 买入 / 卖出 / 不动（+冷却）转移边。
+// 股票買賣狀態機圖：持有 / 未持有 兩狀態節點 + 買入 / 賣出 / 不動（+冷卻）轉移邊。
 export function StockFigure() {
   const hold = { x: 96, y: 88, r: 52 }
   const cash = { x: 384, y: 88, r: 52 }
@@ -154,7 +154,7 @@ export function StockFigure() {
           <path d="M0,0 L6,3 L0,6 Z" fill="var(--text-3)" />
         </marker>
       </defs>
-      {/* 买入：未持有 → 持有（上弧） */}
+      {/* 買入：未持有 → 持有（上弧） */}
       <path
         d={`M ${cash.x - cash.r} ${cash.y - 16} C 300 8, 180 8, ${hold.x + hold.r} ${hold.y - 16}`}
         fill="none"
@@ -165,7 +165,7 @@ export function StockFigure() {
       <text x="240" y="20" textAnchor="middle" fontSize="12.5" fill="var(--viz-chosen)">
         买入（现金 − price）
       </text>
-      {/* 卖出：持有 → 未持有（下弧） */}
+      {/* 賣出：持有 → 未持有（下弧） */}
       <path
         d={`M ${hold.x + hold.r} ${hold.y + 16} C 180 172, 300 172, ${cash.x - cash.r} ${cash.y + 16}`}
         fill="none"
@@ -176,12 +176,12 @@ export function StockFigure() {
       <text x="240" y="168" textAnchor="middle" fontSize="12.5" fill="var(--viz-current)">
         卖出（现金 + price）
       </text>
-      {/* 自环：不动 */}
+      {/* 自環：不動 */}
       <path d={`M ${hold.x - 20} ${hold.y - hold.r} A 22 22 0 1 1 ${hold.x + 20} ${hold.y - hold.r}`} fill="none" stroke="var(--text-3)" strokeWidth="1.8" markerEnd="url(#sm-loop)" />
       <path d={`M ${cash.x - 20} ${cash.y - cash.r} A 22 22 0 1 1 ${cash.x + 20} ${cash.y - cash.r}`} fill="none" stroke="var(--text-3)" strokeWidth="1.8" markerEnd="url(#sm-loop)" />
       <text x={hold.x} y={hold.y - hold.r - 20} textAnchor="middle" fontSize="11" fill="var(--text-3)">继续持有</text>
       <text x={cash.x} y={cash.y - cash.r - 20} textAnchor="middle" fontSize="11" fill="var(--text-3)">继续空仓（冷却停这）</text>
-      {/* 两状态节点 */}
+      {/* 兩狀態節點 */}
       <circle cx={hold.x} cy={hold.y} r={hold.r} fill="color-mix(in srgb, var(--accent-1) 14%, var(--surface-3))" stroke="var(--accent-2)" strokeWidth="2.2" />
       <text x={hold.x} y={hold.y - 6} textAnchor="middle" fontSize="14" fill="var(--text-1)">持有</text>
       <text x={hold.x} y={hold.y + 14} textAnchor="middle" fontSize="11.5" className="mono" fill="var(--text-2)">hold</text>

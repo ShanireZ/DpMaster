@@ -7,12 +7,12 @@ import type {
   DependencyAccessory, DependencyCombo, DependencyMaster,
 } from '../../../algorithms/knapsack-dependency/index.ts'
 
-/** 一个主件（附件依它而选）。 */
+/** 一個主件（附件依它而選）。 */
 export type Master = DependencyMaster
-/** 主件的一个附件（合法与否取决于主件是否被选）。 */
+/** 主件的一個附件（合法與否取決於主件是否被選）。 */
 export type Accessory = DependencyAccessory
 
-/** 由「主件 + 所选附件子集」枚举出的一个合法组合，当作一件“分组物品”。 */
+/** 由「主件 + 所選附件子集」枚舉出的一個合法組合，當作一件“分組物品”。 */
 export type Combo = DependencyCombo
 
 function settled(vals: (number | null)[][]): Record<string, CellState> {
@@ -23,32 +23,32 @@ function settled(vals: (number | null)[][]): Record<string, CellState> {
 }
 
 /**
- * 依赖归约的核心：把「主件 + 它的附件的任一子集」枚举成若干**合法组合**。
- * 附件必须依主件而选，所以每个组合都**含主件**，再叠加附件的一个子集（2^附件数 个）。
- * 于是「有依赖的背包」= 这些组合构成**同一组**、组内至多选一个的**分组背包**。
+ * 依賴歸約的核心：把「主件 + 它的附件的任一子集」枚舉成若干**合法組合**。
+ * 附件必須依主件而選，所以每個組合都**含主件**，再疊加附件的一個子集（2^附件數 個）。
+ * 於是「有依賴的揹包」= 這些組合構成**同一組**、組內至多選一個的**分組揹包**。
  */
 export function enumCombos(master: Master, acc: Accessory[]): Combo[] {
   return enumerateDependencyCombos(master, acc)
 }
 
 /**
- * 有依赖的背包演示（单主件 + 若干附件）：
- *   第 1 阶段，枚举出所有合法组合（每个组合含主件 + 一个附件子集）；
- *   第 2 阶段，把这些组合当作**同一组**，做一维 f[j] 的分组背包（组内至多选一个）。
- * 网格用二维原型 f[组][j]：第 0 行是空组的地基，第 1 行 = 处理「这一组组合」后的结果，
- * 逐格取「不选本组」与「选组内某个组合」的较大者，恰好复用分组背包的转移。
+ * 有依賴的揹包演示（單主件 + 若干附件）：
+ *   第 1 階段，枚舉出所有合法組合（每個組合含主件 + 一個附件子集）；
+ *   第 2 階段，把這些組合當作**同一組**，做一維 f[j] 的分組揹包（組內至多選一個）。
+ * 網格用二維原型 f[組][j]：第 0 行是空組的地基，第 1 行 = 處理「這一組組合」後的結果，
+ * 逐格取「不選本組」與「選組內某個組合」的較大者，恰好重複使用分組揹包的轉移。
  */
 export function dependencyKnapsack(master: Master, acc: Accessory[], W: number): VizModel {
   const run = recordDependencyKnapsack(master, acc, W)
   const combos = run.result.combos
-  // 二维：第 0 行（空组）+ 第 1 行（这一组组合处理后）。
+  // 二維：第 0 行（空組）+ 第 1 行（這一組組合處理後）。
   const f: (number | null)[][] = [Array<number | null>(W + 1).fill(0), Array<number | null>(W + 1).fill(null)]
   const snap = () => f.map((row) => row.slice())
   const frames: Frame[] = []
 
   const combosStr = combos.map((c) => `${c.label}(${c.w},${c.v})`).join('，')
 
-  // 帧 0：亮出 4 个组合的 (费用, 价值)，讲清依赖→枚举组合这一步。
+  // 影格 0：亮出 4 個組合的 (費用, 價值)，講清依賴→枚舉組合這一步。
   frames.push({
     values: snap(),
     states: settled(f),
@@ -58,7 +58,7 @@ export function dependencyKnapsack(master: Master, acc: Accessory[], W: number):
     formula: `2^{${acc.length}} = ${combos.length}`,
   })
 
-  // 帧 1：第 0 行地基。
+  // 影格 1：第 0 行地基。
   frames.push({
     values: snap(),
     states: settled(f),
@@ -66,7 +66,7 @@ export function dependencyKnapsack(master: Master, acc: Accessory[], W: number):
     formula: 'f[0][j] = 0',
   })
 
-  // 第 1 行：逐格做「这一组组合」的分组转移。
+  // 第 1 行：逐格做「這一組組合」的分組轉移。
   for (const event of run.events) {
     const { capacity: j, skip, bestTake, takeIndex: takeIdx, best, takeWins } = event
     f[1][j] = best
@@ -101,7 +101,7 @@ export function dependencyKnapsack(master: Master, acc: Accessory[], W: number):
 
   const fin = settled(f)
   fin[key(1, W)] = 'chosen'
-  // 找出最优组合（用于结论解说）。
+  // 找出最優組合（用於結論解說）。
   const bestCombo = run.result.bestCombo
   const tail =
     bestCombo && bestCombo.v === run.result.value

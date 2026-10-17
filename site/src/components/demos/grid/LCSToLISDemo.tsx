@@ -3,7 +3,7 @@ import { useStepPlayer } from '../../dp-engine/playback/useStepPlayer'
 import { InstrumentRail, VizStateKey } from '../shared'
 import './lcs-lis.css'
 
-// 两个都是 1..n 的排列。第一组取恒等排列 A，映射最直观（值即位置）；第二组 A 打乱，见一般映射。
+// 兩個都是 1..n 的排列。第一組取恆等排列 A，映射最直觀（值即位置）；第二組 A 打亂，見一般映射。
 const PRESETS: { label: string; a: number[]; b: number[] }[] = [
   { label: 'A 已排序 1 2 3 4 5', a: [1, 2, 3, 4, 5], b: [2, 4, 1, 5, 3] },
   { label: 'A 乱序 2 5 3 1 4', a: [2, 5, 3, 1, 4], b: [3, 5, 1, 4, 2] },
@@ -16,14 +16,14 @@ function posMap(a: number[]): Map<number, number> {
   return m
 }
 
-// 求一条 LIS：返回被选中的下标集合（贪心 + 记录前驱重构，取字典序靠前的一条即可）。
+// 求一條 LIS：回傳被選中的下標集合（貪心 + 記錄前驅重構，取字典序靠前的一條即可）。
 function lisIndices(seq: number[]): Set<number> {
   const n = seq.length
   if (n === 0) return new Set()
-  const tails: number[] = [] // tails[k] = 长度 k+1 的上升子序列的最小结尾（存下标）
+  const tails: number[] = [] // tails[k] = 長度 k+1 的上升子序列的最小結尾（存下標）
   const prev = new Array<number>(n).fill(-1)
   for (let i = 0; i < n; i++) {
-    // lower_bound：第一个结尾值 >= seq[i] 的位置
+    // lower_bound：第一個結尾值 >= seq[i] 的位置
     let lo = 0
     let hi = tails.length
     while (lo < hi) {
@@ -45,10 +45,10 @@ function lisIndices(seq: number[]): Set<number> {
 }
 
 /**
- * 排列 LCS → LIS 转化（自建可视化，非 DPViz）。
- * 当 A、B 是同一集合的两个排列时：把 B 的每个值换成「它在 A 里的位置」，得一串位置序列；
- * 这串序列的 LIS 长度 = LCS(A,B) 长度——于是用 O(n log n) 的 LIS 二分即可解决 LCS。
- * 步进：先逐个把 B[i] 映射成位置，映完再点亮位置序列里的一条 LIS。
+ * 排列 LCS → LIS 轉化（自建視覺化，非 DPViz）。
+ * 當 A、B 是同一集合的兩個排列時：把 B 的每個值換成「它在 A 裡的位置」，得一串位置序列；
+ * 這串序列的 LIS 長度 = LCS(A,B) 長度——於是用 O(n log n) 的 LIS 二分即可解決 LCS。
+ * 步進：先逐個把 B[i] 映射成位置，映完再點亮位置序列裡的一條 LIS。
  */
 export default function LCSToLISDemo() {
   const [a, setA] = useState<number[]>(PRESETS[0].a)
@@ -59,12 +59,12 @@ export default function LCSToLISDemo() {
   const lisPick = useMemo(() => lisIndices(mapped), [mapped])
   const lisLen = lisPick.size
 
-  // 算法帧 0..b.length-1 是逐项映射；b.length 是映射完成、点亮 LIS。
+  // 演算法影格 0..b.length-1 是逐項映射；b.length 是映射完成、點亮 LIS。
   const total = b.length + 1 // 映射 n 步 + 收尾 1 步
   const player = useStepPlayer(total + 1)
-  const idx = player.index - 1 // player 0 是显式初始帧。
-  const mappedCount = Math.min(idx + 1, b.length) // 已映射的个数
-  const done = idx >= b.length // 是否进入「点亮 LIS」阶段
+  const idx = player.index - 1 // player 0 是顯式初始影格。
+  const mappedCount = Math.min(idx + 1, b.length) // 已映射的個數
+  const done = idx >= b.length // 是否進入「點亮 LIS」階段
   const curCol = idx >= 0 && idx < b.length ? idx : -1 // 正在映射的列
 
   const setPreset = (p: { a: number[]; b: number[] }) => {
@@ -129,7 +129,7 @@ export default function LCSToLISDemo() {
         </div>
       </div>
 
-      {/* 映射后的位置序列，逐列出现；完成后点亮 LIS */}
+      {/* 映射後的位置序列，逐列出現；完成後點亮 LIS */}
       <div className="ll__block">
         <div className="ll__block-head">
           <span>换成位置后的<b>位置序列</b>——对它求最长上升子序列</span>
@@ -149,7 +149,7 @@ export default function LCSToLISDemo() {
         </div>
       </div>
 
-      {/* 读数 */}
+      {/* 讀數 */}
       <div className="ll__readout">
         {idx < 0 ? (
           <>

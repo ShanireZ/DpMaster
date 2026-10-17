@@ -34,7 +34,7 @@ function Stepper({
   )
 }
 
-/** 248（P3146）合并可视化：相邻相等的数并成 +1，dp[l][r] 记该区间可合成的单一值（0=不可）。 */
+/** 248（P3146）合併視覺化：相鄰相等的數併成 +1，dp[l][r] 記該區間可合成的單一值（0=不可）。 */
 export default function TwoFourEightDemo() {
   const [nums, setNums] = useState<number[]>([1, 1, 2, 2])
 

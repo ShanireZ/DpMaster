@@ -2,7 +2,7 @@
 //
 // Every lesson that renders `<CodeBlock code={CODE_X} />` must also define a
 // non-empty C++ `const CODE_X = `...`` in the same file. This catches the
-// "题解被清空 / 引用了不存在的常量" regressions flagged in the staleness
+// "題解被清空 / 引用了不存在的常數" regressions flagged in the staleness
 // register without having to boot the whole SPA.
 import { test, describe } from 'node:test'
 import assert from 'node:assert/strict'

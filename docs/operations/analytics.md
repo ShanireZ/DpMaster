@@ -1,7 +1,7 @@
 ---
 type: Runbook
 title: Analytics and Alerting Runbook
-description: Privacy-bounded RUM, event dashboards, feedback delivery, and error-alert operations for the DP大师 Cloudflare Worker.
+description: Privacy-bounded RUM, event dashboards, feedback delivery, and error-alert operations for the DP大師 Cloudflare Worker.
 tags: [operations, analytics, rum, alerting]
 status: stable
 generated: { by: openai/codex, at: 2026-07-31T15:32:38+08:00 }

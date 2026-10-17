@@ -13,15 +13,15 @@ const NEG = -1e9
 const fmt = (v: number) => (v <= -1e8 ? '−∞' : String(v))
 
 /**
- * 第二演示 · 股票买卖状态机（自建可视化，非 DPViz）。
- * 两状态节点「持有 / 空仓」逐日更新最优现金，价格时间轴上逐日点亮
- * 买 / 卖 / 持有 / 空仓（可选冷却期）四种动作。价格序列可编辑、可勾选冷却。
- * 递推来自 stockStates；无冷却时最终「空仓」值 = 无限次交易最优利润（stockBestProfit 核对）。
+ * 第二演示 · 股票買賣狀態機（自建視覺化，非 DPViz）。
+ * 兩狀態節點「持有 / 空倉」逐日更新最優現金，價格時間軸上逐日點亮
+ * 買 / 賣 / 持有 / 空倉（可選冷卻期）四種動作。價格序列可編輯、可勾選冷卻。
+ * 遞推來自 stockStates；無冷卻時最終「空倉」值 = 無限次交易最優利潤（stockBestProfit 核對）。
  */
 export default function StockStateDemo() {
   const [prices, setPrices] = useState<number[]>(PRESETS[0].p)
   const [cooldown, setCooldown] = useState(false)
-  const [day, setDay] = useState(prices.length) // 当前走到第几天（1..n）
+  const [day, setDay] = useState(prices.length) // 當前走到第幾天（1..n）
 
   const days = useMemo(() => stockStates(prices, cooldown), [prices, cooldown])
   const naiveBest = useMemo(() => stockBestProfit(prices), [prices])
@@ -52,7 +52,7 @@ export default function StockStateDemo() {
 
   return (
     <div>
-      {/* 预设 + 冷却开关 */}
+      {/* 預設 + 冷卻開關 */}
       <div className="demo-control__modes">
         {PRESETS.map((pr) => (
           <button type="button"
@@ -65,7 +65,7 @@ export default function StockStateDemo() {
         ))}
       </div>
 
-      {/* 价格编辑器 + 冷却 */}
+      {/* 價格編輯器 + 冷卻 */}
       <div className="stk__toolbar">
         <div>
           <div className="stk__group-label">价格序列 price[]（每天一个，可增减 / 加删）</div>
@@ -107,7 +107,7 @@ export default function StockStateDemo() {
         </label>
       </div>
 
-      {/* ① 价格时间轴：逐日柱 + 当日动作徽标 */}
+      {/* ① 價格時間軸：逐日柱 + 當日動作徽標 */}
       <div className="stk__timeline-label">
         <span>
           逐日推演：点某天或用下方按钮走到第 <b className="mono">{clampDay(day)}</b> 天
@@ -137,7 +137,7 @@ export default function StockStateDemo() {
         })}
       </div>
 
-      {/* ② 两状态节点：持有 / 空仓，及当日转移来源 */}
+      {/* ② 兩狀態節點：持有 / 空倉，及當日轉移來源 */}
       <div className="stk__machine">
         <div className="stk__machine-label">
           第 <b>{clampDay(day)}</b> 天（价 <b>{cur.price}</b>）结束时，两状态的最优现金：
@@ -170,7 +170,7 @@ export default function StockStateDemo() {
         </div>
       </div>
 
-      {/* ③ 读数 + 步进 */}
+      {/* ③ 讀數 + 步進 */}
       <div className="stk__readout">
         走到第 {clampDay(day)} 天，空仓最优现金 = <b>{fmt(cur.cash)}</b>。
         {clampDay(day) === prices.length ? (

@@ -6,7 +6,7 @@ import { DemoSculptureHero } from '../shared'
 import { kadane, kadaneAnswer } from './maxsegSolver'
 import '../shared/demo-workbench.css'
 
-/** 单个数值的增减控件（允许负数）。 */
+/** 單個數值的增減控件（允許負數）。 */
 function NumStepper({
   value,
   min,
@@ -38,8 +38,8 @@ const PRESETS: { label: string; a: number[] }[] = [
 ]
 
 /**
- * Kadane 主演示：一维 dp[i]=max(dp[i-1]+a[i], a[i])，逐帧高亮「接续 vs 另起」并追踪全局最大。
- * 上行 a[]（可编辑，含负数），下行 dp[]。数组长度 3–8，元素范围 −9..14。
+ * Kadane 主演示：一維 dp[i]=max(dp[i-1]+a[i], a[i])，逐影格高亮「接續 vs 另起」並追蹤全域最大。
+ * 上行 a[]（可編輯，含負數），下行 dp[]。陣列長度 3–8，元素範圍 −9..14。
  */
 export default function MaxSubarrayDemo() {
   const [a, setA] = useState<number[]>([-2, 11, -4, 13, -5, -2])

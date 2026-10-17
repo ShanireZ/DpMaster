@@ -4,8 +4,8 @@ interface Props {
   variant?: 'hero' | 'section'
 }
 
-/** 几何动态渐变背景：随当前部分强调色变色的漂移光斑 + 网格 + 颗粒。
- *  纯 CSS 动画（transform/opacity），笔记本友好；prefers-reduced-motion 全局降级。 */
+/** 幾何動態漸變背景：隨當前部分強調色變色的漂移光斑 + 網格 + 顆粒。
+ *  純 CSS 動畫（transform/opacity），筆記本友好；prefers-reduced-motion 全域降級。 */
 export default function GeometryBackdrop({ variant = 'section' }: Props) {
   return (
     <div className={`backdrop backdrop--${variant}`} aria-hidden="true">

@@ -1,6 +1,6 @@
-// 分组背包讲解用的插图（on-brand SVG，随强调色变色）
+// 分組揹包講解用的插圖（on-brand SVG，隨強調色變色）
 
-// 引入图：物品被划成若干组，每组内至多挑一件（组内互斥）。
+// 引入圖：物品被劃成若干組，每組內至多挑一件（組內互斥）。
 export function GroupSetupFigure() {
   const groups = [
     { name: '组 1', items: [{ w: 2, v: 3 }, { w: 3, v: 4 }] },
@@ -48,7 +48,7 @@ export function GroupSetupFigure() {
   )
 }
 
-// 转移决策图：f[g][j] 两条路，跳过本组(继承上一行)，或选组内某一件(枚举取 max)。
+// 轉移決策圖：f[g][j] 兩條路，跳過本組(繼承上一行)，或選組內某一件(枚舉取 max)。
 export function GroupTransitionFigure() {
   return (
     <svg viewBox="0 0 640 300" role="img" aria-label="分组背包一格 f[g][j] 的两条转移路径">
@@ -96,7 +96,7 @@ export function GroupTransitionFigure() {
   )
 }
 
-// 循环顺序图：容量 j 在外(✓ 每组至多一件) vs 组内物品在外(✗ 一组可多选，退化)。
+// 循環順序圖：容量 j 在外(✓ 每組至多一件) vs 組內物品在外(✗ 一組可多選，退化)。
 export function GroupLoopOrderFigure() {
   const panel = (
     dx: number,

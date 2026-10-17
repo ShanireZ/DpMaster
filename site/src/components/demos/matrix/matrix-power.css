@@ -1,7 +1,7 @@
-/* 矩阵快速幂 · 两个自建轻量演示的样式（MatrixPowerDemo=mpw__，MatrixBuildDemo=mbd__）。
-   不引用 knapsack-demo.css / dp-viz.css；工具条沿用 stepper__ 视觉，配色只用设计令牌。 */
+/* 矩陣快速冪 · 兩個自建輕量演示的樣式（MatrixPowerDemo=mpw__，MatrixBuildDemo=mbd__）。
+   不引用 knapsack-demo.css / dp-viz.css；工具條沿用 stepper__ 視覺，配色只用設計權杖。 */
 
-/* ---------- 共用步进器（与 knapsack 样板同构，独立于 DPViz） ---------- */
+/* ---------- 共用步進器（與 knapsack 樣板同構，獨立於 DPViz） ---------- */
 .stepper__lab {
   font-size: 11px;
   letter-spacing: 0.1em;
@@ -45,7 +45,7 @@
 }
 
 /* ===================================================================== */
-/*  MatrixPowerDemo · 斐波那契矩阵快速幂                                   */
+/*  MatrixPowerDemo · 斐波那契矩陣快速冪                                   */
 /* ===================================================================== */
 .mpw__toolbar {
   display: flex;
@@ -97,7 +97,7 @@
   margin-left: 4px;
 }
 
-/* 小矩阵网格 */
+/* 小矩陣網格 */
 .mpw__mat {
   display: inline-flex;
   flex-direction: column;
@@ -141,7 +141,7 @@
   border-radius: 4px;
 }
 
-/* 倍增 + 累乘轨迹 */
+/* 倍增 + 累乘軌跡 */
 .mpw__trace {
   --mpw-spine: clamp(22px, 4vw, 42px);
   position: relative;
@@ -249,7 +249,7 @@
   font-weight: 400;
 }
 
-/* 结果条 */
+/* 結果條 */
 .mpw__result {
   margin-bottom: var(--sp-5);
   padding: var(--sp-5) 0;
@@ -281,7 +281,7 @@
   line-height: 1.5;
 }
 
-/* 读数卡（暴力 vs 快速幂） */
+/* 讀數卡（暴力 vs 快速冪） */
 .mpw__compare {
   display: grid;
   grid-template-columns: 1fr 1fr;
@@ -359,7 +359,7 @@
 }
 
 /* ===================================================================== */
-/*  MatrixBuildDemo · 递推 → 构造转移矩阵                                  */
+/*  MatrixBuildDemo · 遞推 → 建構轉移矩陣                                  */
 /* ===================================================================== */
 .mbd__toolbar {
   display: flex;
@@ -423,7 +423,7 @@
   font-weight: 700;
 }
 
-/* 约定说明条：列向量左乘 M·old（与正文行向量右乘转置等价） */
+/* 約定說明條：列向量左乘 M·old（與正文行向量右乘轉置等價） */
 .mbd__convention {
   font-size: 12.5px;
   line-height: 1.6;
@@ -442,7 +442,7 @@
   color: var(--accent-1);
 }
 
-/* M × 旧状态(列) = 新状态(列) */
+/* M × 舊狀態(列) = 新狀態(列) */
 .mbd__equation {
   display: flex;
   align-items: center;
@@ -539,7 +539,7 @@
   border-color: var(--accent-2);
 }
 
-/* 当前行解释 */
+/* 當前行解釋 */
 .mbd__explain {
   padding: var(--sp-3) var(--sp-4);
   border-radius: var(--r-2);
@@ -573,7 +573,7 @@
   margin: 0;
 }
 
-/* 图例 */
+/* 圖例 */
 .mbd__legend {
   display: flex;
   align-items: center;

@@ -19,8 +19,8 @@ const actions = [
   ['pnpm/action-setup', 'v6'],
 ]
 
-// Shiki 4.4.3 把按需 C++ grammar chunk 从约 733 KB 推到 869 KB，突破已验证的
-// 单文件与总资源预算。保留这个可见、可巡检的固定点，直到上游体积回落或拆包方案通过门禁。
+// Shiki 4.4.3 把按需 C++ grammar chunk 從約 733 KB 推到 869 KB，突破已驗證的
+// 單檔案與總資源預算。保留這個可見、可巡檢的固定點，直到上游體積回落或拆包方案通過門禁。
 const approvedPackagePins = {
   shiki: '4.3.1',
 }
@@ -29,7 +29,7 @@ const packageEntries = [
   ...Object.entries(packageJson.dependencies ?? {}),
   ...Object.entries(packageJson.devDependencies ?? {}),
 ]
-// wrangler 由发布机全局安装，基线声明在 deploy.md 的「全局 CLI 基线」表格。
+// wrangler 由發佈機全域安裝，基線宣告在 deploy.md 的「全域 CLI 基線」表格。
 const globalCliBaselines = Object.fromEntries(
   [...deployDoc.matchAll(/^\| (wrangler) \| (\d+\.\d+\.\d+) \|$/gm)].map(
     (match) => [match[1], match[2]],
@@ -86,9 +86,9 @@ async function latestPackageVersion(name) {
     .at(-1)
 }
 
-// 跟随 `.node-version` 声明的**那条大版本线**取最新补丁，而不是把某个大版本写死 ——
-// 写死的话每次抬大版本都要记得回来改这里，而漏改的表现是「巡检一直报已对齐」，
-// 一道永远红不了的门。2026-08-15 从 24 抬到 26 时就是这么发现的。
+// 跟隨 `.node-version` 宣告的**那條大版本線**取最新補丁，而不是把某個大版本寫死 ——
+// 寫死的話每次抬大版本都要記得回來改這裡，而漏改的表現是「巡檢一直報已對齊」，
+// 一道永遠紅不了的門。2026-08-15 從 24 抬到 26 時就是這麼發現的。
 const nodeMajor = nodeVersion.split('.')[0]
 
 async function latestNodeInLine() {

@@ -40,7 +40,7 @@ const finalCap = (m: VizModel, cap: number): number => {
   return x == null ? 0 : x
 }
 
-/** 同一组物品：01(逆推，每种至多 1 件) vs 完全(正推，每种可多件)并排，直观看出完全 ≥ 01。 */
+/** 同一組物品：01(逆推，每種至多 1 件) vs 完全(正推，每種可多件)並排，直觀看出完全 ≥ 01。 */
 export default function CompleteContrastDemo() {
   const [items, setItems] = useState<Item[]>([
     { w: 2, v: 3 },

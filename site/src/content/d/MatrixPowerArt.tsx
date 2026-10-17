@@ -1,6 +1,6 @@
-// 矩阵快速幂讲解用的插图（on-brand SVG，随 D 部分强调色变色，勿用外部图片）。
+// 矩陣快速冪講解用的插圖（on-brand SVG，隨 D 部分強調色變色，勿用外部圖片）。
 
-// 引入图：线性递推 f[i]=f[i-1]+f[i-2]，n 极大时逐项递推 O(n) 爆炸。
+// 引入圖：線性遞推 f[i]=f[i-1]+f[i-2]，n 極大時逐項遞推 O(n) 爆炸。
 export function RecurExplodeFigure() {
   const cells = [
     { i: 0, v: '1' },
@@ -31,7 +31,7 @@ export function RecurExplodeFigure() {
           </text>
         </g>
       ))}
-      {/* 相邻两格相加的弧线 */}
+      {/* 相鄰兩格相加的弧線 */}
       {[0, 1, 2, 3].map((i) => (
         <path
           key={`a${i}`}
@@ -43,7 +43,7 @@ export function RecurExplodeFigure() {
           opacity="0.85"
         />
       ))}
-      {/* 省略号 + 远端天文数字项 */}
+      {/* 省略號 + 遠端天文數字項 */}
       <text x={x0 + 6 * dx - 8} y="76" fontSize="20" className="mono" fill="var(--text-3)">
         · · ·
       </text>
@@ -63,7 +63,7 @@ export function RecurExplodeFigure() {
   )
 }
 
-// 推导图：状态向量 × 转移矩阵 = 位移后的向量。[F(n), F(n-1)] = [F(n-1), F(n-2)] · M。
+// 推導圖：狀態向量 × 轉移矩陣 = 位移後的向量。[F(n), F(n-1)] = [F(n-1), F(n-2)] · M。
 export function VecMatFigure() {
   return (
     <svg viewBox="0 0 640 210" role="img" aria-label="状态向量乘以转移矩阵得到下一状态向量">
@@ -72,7 +72,7 @@ export function VecMatFigure() {
           <path d="M0,0 L6,3 L0,6 Z" fill="var(--accent-1)" />
         </marker>
       </defs>
-      {/* 旧向量 */}
+      {/* 舊向量 */}
       <g transform="translate(24,58)">
         <text x="76" y="-14" textAnchor="middle" fontSize="11.5" fill="var(--text-3)">旧状态（行向量）</text>
         <rect width="152" height="42" rx="10" fill="var(--surface-3)" stroke="var(--viz-source)" strokeWidth="1.6" />
@@ -81,7 +81,7 @@ export function VecMatFigure() {
         </text>
       </g>
       <text x="192" y="86" fontSize="20" className="mono" fill="var(--text-3)">×</text>
-      {/* 转移矩阵 */}
+      {/* 轉移矩陣 */}
       <g transform="translate(214,40)">
         <text x="60" y="-4" textAnchor="middle" fontSize="11.5" fill="var(--text-3)">转移矩阵 M</text>
         <rect width="120" height="78" rx="10" fill="color-mix(in srgb, var(--accent-1) 10%, var(--surface-3))" stroke="var(--accent-2)" strokeWidth="1.8" />
@@ -106,7 +106,7 @@ export function VecMatFigure() {
           [ F(n)  F(n−1) ]
         </text>
       </g>
-      {/* 说明两行 */}
+      {/* 說明兩行 */}
       <path d="M100 130 Q 260 168 300 132" fill="none" stroke="var(--accent-1)" strokeWidth="1.5" markerEnd="url(#mp-vm)" opacity="0.8" />
       <text x="320" y="176" textAnchor="middle" fontSize="12.5" fill="var(--text-2)">
         第一列做 <tspan className="mono">F(n−1)+F(n−2)=F(n)</tspan>；第二列把 F(n−1) 原样移下来
@@ -118,7 +118,7 @@ export function VecMatFigure() {
   )
 }
 
-// 快速幂图：Mⁿ 用二进制倍增。上排 M, M², M⁴, M⁸ 平方链；n 的二进制位选中若干相乘。
+// 快速冪圖：Mⁿ 用二進位倍增。上排 M, M², M⁴, M⁸ 平方鏈；n 的二進位位選中若干相乘。
 export function FastPowFigure() {
   const powers = ['M', 'M²', 'M⁴', 'M⁸']
   const bits = [1, 0, 1, 1] // 13 = 1101₂ 的低→高位（示意 n=13）
@@ -138,7 +138,7 @@ export function FastPowFigure() {
       <text x="24" y="20" fontSize="12.5" fill="var(--text-2)">
         n = 13 = <tspan className="mono" fill="var(--accent-1)">1101</tspan>₂ → 平方倍增，再挑「位为 1」的幂相乘
       </text>
-      {/* 平方链 */}
+      {/* 平方鏈 */}
       {powers.map((p, i) => {
         const on = bits[i] === 1
         return (
@@ -154,7 +154,7 @@ export function FastPowFigure() {
             <text x={bw / 2} y="29" textAnchor="middle" fontSize="17" className="mono" fill="var(--text-1)">
               {p}
             </text>
-            {/* 该位标记 */}
+            {/* 該位標記 */}
             <g transform={`translate(${bw / 2 - 20},58)`}>
               <rect width="40" height="20" rx="10" fill={on ? 'color-mix(in srgb, var(--accent-1) 60%, var(--surface-1))' : 'var(--surface-2)'} stroke={on ? 'var(--accent-2)' : 'var(--border-strong)'} strokeWidth="1" />
               <text x="20" y="14" textAnchor="middle" fontSize="11" className="mono" fill={on ? 'var(--text-on-accent)' : 'var(--text-3)'}>
@@ -164,7 +164,7 @@ export function FastPowFigure() {
           </g>
         )
       })}
-      {/* 平方箭头（相邻幂之间 ²） */}
+      {/* 平方箭頭（相鄰冪之間 ²） */}
       {[0, 1, 2].map((i) => (
         <g key={`s${i}`}>
           <path d={`M ${x0 + i * dx + bw} 67 H ${x0 + (i + 1) * dx - 2}`} stroke="var(--viz-source)" strokeWidth="1.8" markerEnd="url(#mp-sq)" fill="none" />
@@ -173,7 +173,7 @@ export function FastPowFigure() {
           </text>
         </g>
       ))}
-      {/* 选中的幂向下汇聚相乘 */}
+      {/* 選中的冪向下匯聚相乘 */}
       {powers.map((_, i) =>
         bits[i] === 1 ? (
           <path
@@ -197,7 +197,7 @@ export function FastPowFigure() {
   )
 }
 
-// 深化图：非标准递推 a[x]=a[x-1]+a[x-3] 如何构造转移矩阵（首行系数行 + 其余位移行）。
+// 深化圖：非標準遞推 a[x]=a[x-1]+a[x-3] 如何建構轉移矩陣（首行係數行 + 其餘位移行）。
 export function BuildRowsFigure() {
   const rows = [
     { cells: [1, 0, 1], kind: 'coef', out: 'a[x]', note: '递推系数：1·a[x-1] + 0·a[x-2] + 1·a[x-3]' },
@@ -212,7 +212,7 @@ export function BuildRowsFigure() {
       <text x="24" y="20" fontSize="12.5" fill="var(--text-2)">
         <tspan className="mono" fill="var(--accent-1)">a[x] = a[x-1] + a[x-3]</tspan> → 状态 3 维 → 3×3 矩阵，逐行填
       </text>
-      {/* 旧向量（左，列向量示意） */}
+      {/* 舊向量（左，列向量示意） */}
       <g transform="translate(28,30)">
         <text x="52" y="-2" textAnchor="middle" fontSize="10.5" fill="var(--text-3)">旧状态</text>
         {['a[x-1]', 'a[x-2]', 'a[x-3]'].map((l, i) => (
@@ -222,7 +222,7 @@ export function BuildRowsFigure() {
           </g>
         ))}
       </g>
-      {/* 矩阵行 */}
+      {/* 矩陣行 */}
       {rows.map((row, ri) => {
         const isCoef = row.kind === 'coef'
         return (
@@ -258,7 +258,7 @@ export function BuildRowsFigure() {
                 </g>
               )
             })}
-            {/* 输出分量 + 注解 */}
+            {/* 輸出分量 + 註解 */}
             <text x={gx0 + 3 * (cw + 4) + 14} y={gy(ri) + 15} fontSize="12.5" className="mono" fill={isCoef ? 'var(--accent-1)' : 'var(--text-2)'}>
               → {row.out}
             </text>

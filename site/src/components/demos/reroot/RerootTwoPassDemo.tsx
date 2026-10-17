@@ -10,7 +10,7 @@ import { TreeCanvas } from './TreeCanvas'
 import type { NodeStyle, EdgeStyle } from './TreeCanvas'
 import './reroot-demo.css'
 
-// 三棵预置小树（0-based 边）。故意选形状不同，让「换根系数」的正负对比明显。
+// 三棵預置小樹（0-based 邊）。故意選形狀不同，讓「換根系數」的正負對比明顯。
 const TREES: { key: string; label: string; n: number; edges: Edge[] }[] = [
   {
     key: 'chain',
@@ -67,7 +67,7 @@ export default function RerootTwoPassDemo() {
   const player = useStepPlayer(frames.length)
   const f = frames[Math.min(player.index, frames.length - 1)]
 
-  // 换树时重置播放（key 变→组件 remount，见下方 wrapper）
+  // 換樹時重置播放（key 變→元件 remount，見下方 wrapper）
   const nodeStyle = (id: number): NodeStyle => {
     const isActive = f.active === id
     const isRoot = f.rootHighlight === id
@@ -83,7 +83,7 @@ export default function RerootTwoPassDemo() {
       }
     }
     if (f.phase === 'pass1' || f.phase === 'pass1done') {
-      // 第一遍：已算 sz 的点用青色（source）描边
+      // 第一遍：已算 sz 的點用青色（source）描邊
       return szOn
         ? {
             fill: 'color-mix(in srgb, var(--viz-source) 16%, var(--surface-3))',
@@ -93,7 +93,7 @@ export default function RerootTwoPassDemo() {
           }
         : { fill: 'var(--surface-3)', stroke: 'var(--border-strong)', strokeWidth: 1.5, textFill: 'var(--text-2)' }
     }
-    // 第二遍 / done：已算 dist 的点用绿色（chosen）描边；当前根另有高亮
+    // 第二遍 / done：已算 dist 的點用綠色（chosen）描邊；當前根另有高亮
     if (isRoot) {
       return {
         fill: 'color-mix(in srgb, var(--accent-1) 22%, var(--surface-3))',
@@ -113,14 +113,14 @@ export default function RerootTwoPassDemo() {
   }
 
   const edgeStyle = (child: number, parent: number): EdgeStyle => {
-    // pass2 当前换根的那条边高亮
+    // pass2 當前換根的那條邊高亮
     if (f.phase === 'pass2' && f.active === child && f.fromParent === parent) {
       return { stroke: 'var(--accent-1)', strokeWidth: 3.5 }
     }
     return { stroke: 'var(--border-strong)', strokeWidth: 1.8 }
   }
 
-  // 节点副标签：pass1 显示已知的 sz，pass2/done 显示已知的 dist
+  // 節點副標籤：pass1 顯示已知的 sz，pass2/done 顯示已知的 dist
   const subLabel = (id: number): string | null => {
     if (f.phase === 'intro') return null
     if (f.phase === 'pass1' || f.phase === 'pass1done') {
@@ -140,7 +140,7 @@ export default function RerootTwoPassDemo() {
       <span className="rr__phase">准备</span>
     )
 
-  // 对照读数：暴力 BFS 的访问次数 vs 换根的一遍规模
+  // 對照讀數：暴力 BFS 的訪問次數 vs 換根的一遍規模
   const n = spec.n
 
   return (

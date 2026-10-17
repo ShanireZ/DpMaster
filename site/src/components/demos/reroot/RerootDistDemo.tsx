@@ -8,8 +8,8 @@ import { TreeCanvas } from './TreeCanvas'
 import type { NodeStyle, EdgeStyle } from './TreeCanvas'
 import './reroot-demo.css'
 
-// 两种模式：无权（每点权 1）与点权（点上带「奶牛数」）。用同一棵 7 点树，直观看
-// 「换根系数 = W − 2·sz[子树]」如何随子树内/外的点权配比变正负。
+// 兩種模式：無權（每點權 1）與點權（點上帶「奶牛數」）。用同一棵 7 點樹，直觀看
+// 「換根系數 = W − 2·sz[子樹]」如何隨子樹內/外的點權配比變正負。
 const N = 7
 const EDGES: Edge[] = [
   { u: 0, v: 1 },
@@ -19,27 +19,27 @@ const EDGES: Edge[] = [
   { u: 2, v: 5 },
   { u: 2, v: 6 },
 ]
-// 点权（模式 2 用）：故意让某些点权重，凸显重心偏移
+// 點權（模式 2 用）：故意讓某些點權重，凸顯重心偏移
 const WEIGHT = [1, 3, 1, 2, 1, 4, 1]
 
 export default function RerootDistDemo() {
   const [mode, setMode] = useState<'unweighted' | 'nodeWeighted'>('unweighted')
-  const [rootSel, setRootSel] = useState(0) // 用户点选「以谁为根」
+  const [rootSel, setRootSel] = useState(0) // 使用者點選「以誰為根」
 
   const wt = mode === 'nodeWeighted' ? WEIGHT : new Array<number>(N).fill(1)
 
-  // 以 rootSel 建树 → 求该根下的距离和；同时用固定根算全体（供最优点标注）
+  // 以 rootSel 建樹 → 求該根下的距離和；同時用固定根算全體（供最優點標註）
   const { nodes, maxDepth, distAll, best, bestNode, W, treeRooted, resRooted } = useMemo(() => {
     const t0 = buildTree(N, EDGES, 0, wt)
     const res0 = rerootDistSum(t0, mode)
-    // 以 rootSel 重新建树，得到「rootSel 视角」的子树大小/系数（用于讲解展示）
+    // 以 rootSel 重新建樹，得到「rootSel 視角」的子樹大小/係數（用於講解展示）
     const tR = buildTree(N, EDGES, rootSel, wt)
     const resR = rerootDistSum(tR, mode)
     const { nodes, maxDepth } = layoutTree(tR)
     return {
       nodes,
       maxDepth,
-      distAll: res0.dist, // 每点作根的距离和（与视角无关，客观值）
+      distAll: res0.dist, // 每點作根的距離和（與視角無關，客觀值）
       best: res0.best,
       bestNode: res0.bestNode,
       W: res0.totalW,
@@ -75,13 +75,13 @@ export default function RerootDistDemo() {
 
   const edgeStyle = (): EdgeStyle => ({ stroke: 'var(--border-strong)', strokeWidth: 1.8 })
 
-  // 副标签：无权显示该点作根的距离和；点权模式额外把点权显示在边标签处不便，故副标签给距离和
+  // 副標籤：無權顯示該點作根的距離和；點權模式額外把點權顯示在邊標籤處不便，故副標籤給距離和
   const subLabel = (id: number): string | null => {
     if (mode === 'nodeWeighted') return `w${wt[id]}·d${distAll[id]}`
     return `d${distAll[id]}`
   }
 
-  // 讲解：把 rootSel 的每个孩子子树的换根系数摊出来
+  // 講解：把 rootSel 的每個孩子子樹的換根系數攤出來
   const childRows = treeRooted.children[rootSel].map((c) => ({
     c,
     sz: resRooted.sz[c],

@@ -11,7 +11,7 @@ const Ctx = createContext<ThemeCtx>({ theme: 'dark', toggle: () => {} })
 const KEY = 'dp-master-theme'
 
 export function ThemeProvider({ children }: { children: ReactNode }) {
-  // 服务端和客户端首次渲染都固定为 dark，保证预渲染 HTML 可无差异水合。
+  // 伺服器端和用戶端首次繪製都固定為 dark，保證預繪製 HTML 可無差異水合。
   const [theme, setTheme] = useState<Theme>('dark')
   const hydrated = useRef(false)
 

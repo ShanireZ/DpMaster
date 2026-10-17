@@ -1,8 +1,8 @@
-/* 回文区间 DP 两个演示（最长回文子序列三角表 / 最少插入构回文）的自建样式。
-   前缀 pal__，配色只用设计令牌；控制条 ll__ctl 在此自带一份，无需外部依赖。
-   ★不做 opacity:0 起步动画——内容默认可见（无头/后台标签页不会卡隐藏态）。 */
+/* 迴文區間 DP 兩個演示（最長迴文子序列三角表 / 最少插入構迴文）的自建樣式。
+   前綴 pal__，配色只用設計權杖；控制條 ll__ctl 在此自帶一份，無需外部依賴。
+   ★不做 opacity:0 起步動畫——內容預設可見（無頭/後台標籤頁不會卡隱藏態）。 */
 
-/* ---------- 工具条 / 输入 ---------- */
+/* ---------- 工具條 / 輸入 ---------- */
 .pal__toolbar {
   display: flex;
   flex-wrap: wrap;
@@ -81,7 +81,7 @@
   border-color: transparent;
 }
 
-/* ---------- 舞台（原串行 / 外壳） ---------- */
+/* ---------- 舞臺（原串行 / 外殼） ---------- */
 .pal__stage {
   padding: var(--sp-5) var(--sp-4);
   border-radius: var(--r-2);
@@ -113,7 +113,7 @@
   color: var(--text-3);
 }
 
-/* 原串一行字符 */
+/* 原串一行字元 */
 .pal__strip {
   display: flex;
   flex-wrap: wrap;
@@ -126,7 +126,7 @@
   flex-direction: column;
   align-items: center;
   gap: 5px;
-  padding-top: 18px; /* 给指针标签留位 */
+  padding-top: 18px; /* 給指針標籤留位 */
 }
 .pal__ch-idx {
   font-family: var(--font-mono);
@@ -190,7 +190,7 @@
   background: var(--accent-2);
 }
 
-/* 正在生长的回文外壳 */
+/* 正在生長的迴文外殼 */
 .pal__shell {
   display: flex;
   align-items: center;
@@ -215,7 +215,7 @@
   color: var(--viz-chosen);
 }
 
-/* ---------- 读数条 ---------- */
+/* ---------- 讀數條 ---------- */
 .pal__readout {
   font-size: 14.5px;
   line-height: 1.6;
@@ -237,7 +237,7 @@
   color: var(--accent-1);
 }
 
-/* ---------- 步进控制（自带一份，仿 dpctl / ll__ctl） ---------- */
+/* ---------- 步進控制（自帶一份，仿 dpctl / ll__ctl） ---------- */
 .ll__ctl {
   display: flex;
   align-items: center;

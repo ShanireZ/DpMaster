@@ -1,9 +1,9 @@
-// 构建产物的 HTML 合同门禁。
+// 建置產物的 HTML 合同門禁。
 //
-// 1. 每条预渲染路由都要落成 `<route>.html` 与 `<route>/index.html` 两份，加上
-//    首页的 index.html 和真实 404.html —— Worker 的静态资源绑定按这两种形态命中。
-// 2. 任何 HTML 都不得包含手工注入的 Cloudflare Web Analytics beacon：
-//    Cloudflare 代理会自动注入，手工再来一份就是重复统计。
+// 1. 每條預繪製路由都要落成 `<route>.html` 與 `<route>/index.html` 兩份，加上
+//    首頁的 index.html 和真實 404.html —— Worker 的靜態資源綁定按這兩種形態命中。
+// 2. 任何 HTML 都不得包含手動注入的 Cloudflare Web Analytics beacon：
+//    Cloudflare 代理會自動注入，手動再來一份就是重複統計。
 
 import { existsSync, readFileSync, readdirSync } from 'node:fs'
 import { extname, join, relative, resolve } from 'node:path'
@@ -69,7 +69,7 @@ function markdownLinkTargets(markdown) {
 }
 
 export function expectedHtmlCount(paths = PRERENDER_PATHS) {
-  // 首页只有 index.html，其余每条路由两份，再加一个 404.html。
+  // 首頁只有 index.html，其餘每條路由兩份，再加一個 404.html。
   return 1 + (paths.length - 1) * 2 + 1
 }
 

@@ -1,6 +1,6 @@
-/* 树形 DP 系列演示的局部样式（自绘 SVG 有根树 + 后序逐帧动画） */
+/* 樹形 DP 系列演示的局部樣式（自繪 SVG 有根樹 + 後序逐影格動畫） */
 
-/* —— 工具条：编辑树的点权 / 结构（复用共享 workbench 的 .demo-control__* 骨架，这里补树专属） */
+/* —— 工具條：編輯樹的點權 / 結構（重複使用共享 workbench 的 .demo-control__* 骨架，這裡補樹專屬） */
 .td__toolbar {
   display: flex;
   flex-wrap: wrap;
@@ -67,7 +67,7 @@
   color: var(--viz-chosen);
 }
 
-/* —— 舞台：SVG 树 —— */
+/* —— 舞臺：SVG 樹 —— */
 .td__stage {
   padding: var(--sp-4) var(--sp-3);
   border-radius: var(--r-2);
@@ -91,7 +91,7 @@
   margin-top: var(--sp-4);
 }
 
-/* —— 逐帧解说面板 —— */
+/* —— 逐影格解說面板 —— */
 .td__panel {
   margin-top: var(--sp-4);
   font-size: 14px;
@@ -110,7 +110,7 @@
   font-family: var(--font-mono);
 }
 
-/* —— 图例 —— */
+/* —— 圖例 —— */
 .td__legend {
   display: flex;
   flex-wrap: wrap;
@@ -132,7 +132,7 @@
   display: inline-block;
 }
 
-/* —— 节点上/旁的 dp 值标签盒（HTML 覆盖在 SVG 外时用；此处主要在 SVG 内画） —— */
+/* —— 節點上/旁的 dp 值標籤盒（HTML 覆蓋在 SVG 外時用；此處主要在 SVG 內畫） —— */
 .td__readout {
   margin-top: var(--sp-4);
   font-size: 14px;
@@ -151,7 +151,7 @@
   color: var(--viz-chosen);
 }
 
-/* 树上背包：每节点旁的小 dp 表 */
+/* 樹上揹包：每節點旁的小 dp 表 */
 .tk__tables {
   display: flex;
   flex-wrap: wrap;

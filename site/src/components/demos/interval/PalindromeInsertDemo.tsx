@@ -8,13 +8,13 @@ import './palindrome-demo.css'
 
 const PRESETS = ['google', 'abcda', 'raceca', 'aebcbda']
 
-// 某一步之后，原串每个下标处于什么状态（用于给字符上色）。
+// 某一步之後，原串每個下標處於什麼狀態（用於給字元上色）。
 type Role = 'idle' | 'matched' | 'active' | 'inserted-src'
 
 /**
- * 最少插入构回文（自建可视化，非 DPViz）。
- * 双指针 i、j 从两端向内收缩：s[i]==s[j] 直接内缩（0 插入）；否则在较省一侧插入对端字符（+1）。
- * 插入总数 = len − 最长回文子序列——与主演示同源。逐步把非回文串补成回文。
+ * 最少插入構迴文（自建視覺化，非 DPViz）。
+ * 雙指針 i、j 從兩端向內收縮：s[i]==s[j] 直接內縮（0 插入）；否則在較省一側插入對端字元（+1）。
+ * 插入總數 = len − 最長迴文子序列——與主演示同源。逐步把非迴文串補成迴文。
  */
 export default function PalindromeInsertDemo() {
   const [text, setText] = useState('google')
@@ -23,14 +23,14 @@ export default function PalindromeInsertDemo() {
   const s = res.chars
   const n = s.length
 
-  // 算法帧 0..steps.length-1 逐步收缩/插入；steps.length = 完成。
+  // 演算法影格 0..steps.length-1 逐步收縮/插入；steps.length = 完成。
   const total = res.steps.length + 1
   const player = useStepPlayer(total + 1)
-  const idx = player.index - 1 // player 0 是显式初始帧。
+  const idx = player.index - 1 // player 0 是顯式初始影格。
   const done = idx >= res.steps.length
   const curStep = idx >= 0 && idx < res.steps.length ? res.steps[idx] : null
 
-  // 已处理到第几对：done → 全部；否则处理了 0..idx。计算每个原串下标的角色。
+  // 已處理到第幾對：done → 全部；否則處理了 0..idx。計算每個原串下標的角色。
   const roles: Role[] = new Array(n).fill('idle')
   const processedUpto = done ? res.steps.length : Math.max(0, idx + 1)
   for (let t = 0; t < processedUpto; t++) {
@@ -39,7 +39,7 @@ export default function PalindromeInsertDemo() {
       roles[st.i] = 'matched'
       roles[st.j] = 'matched'
     } else {
-      // 插入步：被「配对补齐」的那一端（对端字符来源）标记
+      // 插入步：被「配對補齊」的那一端（對端字元來源）標記
       roles[st.i] = st.insertSide === 'right' ? 'inserted-src' : roles[st.i]
       roles[st.j] = st.insertSide === 'left' ? 'inserted-src' : roles[st.j]
     }
@@ -48,7 +48,7 @@ export default function PalindromeInsertDemo() {
     roles[curStep.i] = 'active'
     roles[curStep.j] = 'active'
   }
-  // 中心残留字符（奇数收尾）
+  // 中心殘留字元（奇數收尾）
   const centerIdx = done && n > 0 ? (() => {
     let i = 0
     let j = n - 1
@@ -60,7 +60,7 @@ export default function PalindromeInsertDemo() {
     return i === j ? i : -1
   })() : -1
 
-  // 已插入的字符个数（到当前步）
+  // 已插入的字元個數（到當前步）
   const insertedSoFar = (() => {
     let c = 0
     for (let t = 0; t < processedUpto; t++) if (!res.steps[t].matched) c++
@@ -123,7 +123,7 @@ export default function PalindromeInsertDemo() {
         <b className="you">"{res.palindrome}"</b>。
       </div>
 
-      {/* 原串：双指针从两端收缩，相等变绿、不等处插入对端字符 */}
+      {/* 原串：雙指針從兩端收縮，相等變綠、不等處插入對端字元 */}
       <div className="pal__stage">
         <div className="pal__stage-head">
           <span>
@@ -145,7 +145,7 @@ export default function PalindromeInsertDemo() {
         </div>
       </div>
 
-      {/* 正在生长的回文外壳 */}
+      {/* 正在生長的迴文外殼 */}
       <div className="pal__stage">
         <div className="pal__stage-head">
           <span>逐步锁定的<b>回文外壳</b>（从两端向内长；<span className="pal__mid">…</span> 为待定中段）</span>
@@ -160,7 +160,7 @@ export default function PalindromeInsertDemo() {
         </div>
       </div>
 
-      {/* 读数 */}
+      {/* 讀數 */}
       <div className="pal__readout">
         {idx < 0 ? (
           <>

@@ -1,7 +1,7 @@
 /**
- * 已批准公开内容允许检索、模型输入与训练。权威在仓内：round1.cc 的 Cloudflare
- * 托管 robots.txt 必须保持关闭，否则它会在边缘注入 `ai-train=no` 与训练类
- * `Disallow`，与这里冲突。字段顺序即 header 顺序。
+ * 已批准公開內容允許檢索、模型輸入與訓練。權威在倉內：round1.cc 的 Cloudflare
+ * 託管 robots.txt 必須保持關閉，否則它會在邊緣注入 `ai-train=no` 與訓練類
+ * `Disallow`，與這裡衝突。欄位順序即 header 順序。
  */
 export const PUBLIC_CONTENT_SIGNAL = Object.freeze({
   search: 'yes',

@@ -42,7 +42,7 @@ const KINDS: { k: MixKind; label: string }[] = [
   { k: 'multiple', label: '多重' },
 ]
 
-/** 混合背包演示：每件可切「件数属性」，三类物品落在同一维 f[j] 上，各按 01 倒序 / 完全正序 / 多重拆包处理。 */
+/** 混合揹包演示：每件可切「件數屬性」，三類物品落在同一維 f[j] 上，各按 01 倒序 / 完全正序 / 多重拆包處理。 */
 export default function KnapsackMixedDemo() {
   const [items, setItems] = useState<MixItem[]>([
     { kind: '01', w: 2, v: 3 },

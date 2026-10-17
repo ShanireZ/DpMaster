@@ -5,7 +5,7 @@ import { decodeChunked, parseHttpResponse, postOverSocket } from '../worker/sock
 
 const WEBHOOK = 'https://oapi.dingtalk.com/robot/send?access_token=fake'
 
-/** 构造一个 connect() 替身，记录写出的字节并回放一段响应。 */
+/** 建構一個 connect() 替身，記錄寫出的位元組並重播一段回應。 */
 function fakeConnect(responseText, { onWrite, failOpen } = {}) {
   return () => {
     if (failOpen) throw new Error(failOpen)
@@ -66,7 +66,7 @@ test('postOverSocket refuses plaintext http and missing runtime support', async 
 
 test('postOverSocket sends path, query, host and a byte-accurate Content-Length', async () => {
   let sent = ''
-  // 请求体带多字节字符：Content-Length 必须是字节数而不是字符数。
+  // 請求體帶多位元組字元：Content-Length 必須是位元組數而不是字元數。
   const body = JSON.stringify({ msgtype: 'text', text: { content: '状态转移' } })
   await postOverSocket({
     url: 'https://oapi.dingtalk.com/robot/send?access_token=abc&sign=x%2By',
@@ -129,8 +129,8 @@ test('the socket transport surfaces DingTalk business errors like fetch does', a
 })
 
 test('★ an ordinary origin error is NOT retried over the socket', async () => {
-  // 503 是对端应用层的回复，不是 CF 到源站那一跳失败。换出口重试没有意义，
-  // 而且对托管在 Cloudflare 后面的 webhook（Discord / Slack）必然失败。
+  // 503 是對端應用層的回覆，不是 CF 到源站那一跳失敗。換出口重試沒有意義，
+  // 而且對託管在 Cloudflare 後面的 webhook（Discord / Slack）必然失敗。
   let socketUsed = false
   const result = await forwardWebhook({
     baseUrl: 'https://discord.example/api/webhooks/x',
@@ -154,8 +154,8 @@ test('★ a successful fetch never touches the socket transport', async () => {
     baseUrl: 'https://discord.example/api/webhooks/x',
     kind: 'discord',
     text: 'hello',
-    // ★ 204 是 null-body 状态，new Response('', {status:204}) 会抛 —— 那样测的
-    // 就是「fetch 抛异常」而不是「fetch 成功」，必须传 null。
+    // ★ 204 是 null-body 狀態，new Response('', {status:204}) 會拋 —— 那樣測的
+    // 就是「fetch 拋異常」而不是「fetch 成功」，必須傳 null。
     fetchImpl: async () => new Response(null, { status: 204 }),
     connectImpl: () => {
       socketUsed = true
@@ -191,7 +191,7 @@ test('the socket fallback keeps the DingTalk signature that fetch would have use
     fetchImpl: async () => new Response('', { status: 525 }),
     connectImpl: fakeConnect(okResponse, { onWrite: (chunk) => { sent = chunk } }),
   })
-  // 加签是在选出口之前算的，所以降级后 timestamp/sign 必须原样带上。
+  // 加簽是在選出口之前算的，所以降級後 timestamp/sign 必須原樣帶上。
   assert.match(sent, /timestamp=1700000000000/)
   assert.match(sent, /&sign=/)
 })

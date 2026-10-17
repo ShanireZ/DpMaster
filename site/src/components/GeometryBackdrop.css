@@ -17,7 +17,7 @@
 }
 [data-theme='light'] .backdrop__blob { mix-blend-mode: multiply; opacity: 0.22; }
 
-/* 单色调：三团都取当前强调色（<body data-part> 决定），暖而克制，不再彩虹 */
+/* 單色調：三團都取當前強調色（<body data-part> 決定），暖而剋制，不再彩虹 */
 .backdrop__blob.b1 {
   width: 44vw; height: 44vw;
   left: -6vw; top: -10vw;
@@ -38,7 +38,7 @@
   animation: drift3 42s var(--ease) infinite alternate;
 }
 
-/* 细网格：呼应 DP 表格，极淡 */
+/* 細網格：呼應 DP 表格，極淡 */
 .backdrop__grid {
   position: absolute; inset: 0;
   background-image:
@@ -50,7 +50,7 @@
   mask-image: radial-gradient(ellipse 88% 66% at 50% 26%, #000 18%, transparent 76%);
 }
 
-/* 颗粒噪声：防渐变断层，物理胶片感 */
+/* 顆粒噪聲：防漸變斷層，物理膠片感 */
 .backdrop__grain {
   position: absolute; inset: 0;
   opacity: 0.04;

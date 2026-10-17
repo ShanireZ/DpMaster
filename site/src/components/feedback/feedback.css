@@ -1,4 +1,4 @@
-/* ============ 反馈悬浮按钮 + 表单弹窗 ============ */
+/* ============ 回饋懸浮按鈕 + 表單彈出視窗 ============ */
 
 .fbw__fab {
   position: fixed;
@@ -29,7 +29,7 @@
   font-family: var(--font-body);
 }
 
-/* 遮罩 + 弹窗 */
+/* 遮罩 + 彈出視窗 */
 .fbw__overlay {
   position: fixed;
   inset: 0;
@@ -242,7 +242,7 @@
   }
 }
 
-/* 成功态 */
+/* 成功態 */
 .fbw__done {
   padding: var(--sp-6) var(--sp-5) var(--sp-7);
   text-align: center;
@@ -284,7 +284,7 @@
   margin-top: var(--sp-3);
 }
 
-/* 移动端：按钮收成圆形图标、弹窗更贴边 */
+/* 行動裝置端：按鈕收成圓形圖標、彈出視窗更貼邊 */
 @media (max-width: 560px) {
   .fbw__fab {
     right: 16px;

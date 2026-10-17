@@ -16,35 +16,35 @@ function sanitize(s: string): string {
 const OP_LABEL: Record<Op, string> = { keep: '保留', del: '删', ins: '插', sub: '改' }
 
 /**
- * 编辑距离 · 回溯操作序列（自建轻量可视化，非 DPViz）。
- * 从 dp[m][n] 回溯出把 A 对齐到 B 的一串操作；A 在上、操作徽标在中、B 在下逐列排开，
- * 步进条控制「已揭示到第几步」。★不从 opacity:0 起步：未揭示的步用低不透明度静态弱化，
- * 起点即可见（无头 / 后台标签页不会把内容永久卡隐藏）。
+ * 編輯距離 · 回溯操作序列（自建輕量視覺化，非 DPViz）。
+ * 從 dp[m][n] 回溯出把 A 對齊到 B 的一串操作；A 在上、操作徽標在中、B 在下逐列排開，
+ * 步進條控制「已揭示到第幾步」。★不從 opacity:0 起步：未揭示的步用低不透明度靜態弱化，
+ * 起點即可見（無頭 / 後台標籤頁不會把內容永久卡隱藏）。
  */
 export default function EditTracebackDemo() {
   const [a, setA] = useState('horse')
   const [b, setB] = useState('ros')
 
   const { dist, steps } = useMemo(() => editTrace(a || '', b || ''), [a, b])
-  // 步进：0 = 还没走任何一步；steps.length = 全部揭示。
+  // 步進：0 = 還沒走任何一步；steps.length = 全部揭示。
   const player = useStepPlayer(steps.length + 1)
   const shown = player.index
   const pause = player.pause
   const setPlaybackIndex = player.setIndex
 
-  // 换串后把步进拉满，直接展示最终对齐。
+  // 換串後把步進拉滿，直接展示最終對齊。
   useEffect(() => {
     pause()
     setPlaybackIndex(steps.length)
   }, [a, b, pause, setPlaybackIndex, steps.length])
 
-  // 落地结果：把 keep/sub 的目标字符、ins 的插入字符拼起来（del 不产出字符），
-  // 只统计已揭示到的步。等于「A 应用前 shown 步操作后的样子」。
+  // 完成實作結果：把 keep/sub 的目標字元、ins 的插入字元拼起來（del 不產出字元），
+  // 只統計已揭示到的步。等於「A 應用前 shown 步操作後的樣子」。
   const resultChars: string[] = []
   steps.slice(0, shown).forEach((s: Step) => {
     if (s.op === 'keep' || s.op === 'sub') resultChars.push(s.b!)
     else if (s.op === 'ins') resultChars.push(s.b!)
-    // del：不产出
+    // del：不產出
   })
 
   const counts = useMemo(() => {
@@ -103,7 +103,7 @@ export default function EditTracebackDemo() {
         </div>
       </div>
 
-      {/* 操作序列条：每步一列，A 上 / 徽标中 / B 下 */}
+      {/* 操作序列條：每步一列，A 上 / 徽標中 / B 下 */}
       <div className="etb__stage">
         <div className="etb__track">
           {steps.map((s, idx) => {

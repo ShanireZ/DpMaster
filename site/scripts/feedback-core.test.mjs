@@ -177,7 +177,7 @@ test('the IP line is annotated with the Cloudflare-derived region', async () => 
     },
   })
   const req = request()
-  // request.cf 由 Cloudflare 边缘填充，客户端伪造不了。
+  // request.cf 由 Cloudflare 邊緣填充，用戶端偽造不了。
   req.cf = { country: 'BR', region: 'Sao Paulo', city: 'Sao Paulo', timezone: 'America/Sao_Paulo' }
 
   const response = await feedback.handleFeedback(
@@ -186,7 +186,7 @@ test('the IP line is annotated with the Cloudflare-derived region', async () => 
     value,
   )
   assert.equal(response.status, 200)
-  // 国家码转中文；region 与 city 重复时只保留一份。
+  // 國家碼轉中文；region 與 city 重複時只保留一份。
   assert.match(forwarded, /IP：203\.0\.113\.42（巴西 · Sao Paulo）/)
 })
 
@@ -233,7 +233,7 @@ test('★ a relayed submission drops the region: request.cf describes the relay 
     'X-Dp-Relay-Secret': 'relay-secret-123',
     'X-Dp-Client-Ip': '198.51.100.9',
   })
-  // 这个 cf 描述的是 relay 主机所在地，不是访客的 —— 标上去就是错的。
+  // 這個 cf 描述的是 relay 主機所在地，不是訪客的 —— 標上去就是錯的。
   req.cf = { country: 'SG', region: 'Singapore', city: 'Singapore' }
 
   await feedback.handleFeedback(
@@ -252,13 +252,13 @@ test('a submission without opt-in diagnostics carries no empty label rows', asyn
   let forwarded
   const { value: capturing } = runtime({
     fetch: async (_url, init) => {
-      // ★ 钉钉/企微的 body 形状是 {msgtype, text:{content}} —— .text 是对象不是字符串。
+      // ★ 釘釘/企微的 body 形狀是 {msgtype, text:{content}} —— .text 是物件不是字串。
       forwarded = JSON.parse(init.body).text.content
       return new Response('{}', { status: 200 })
     },
   })
 
-  // 诊断信息（浏览器 / 设备 / 视口 / 区域 / UA）默认不勾选，请求里根本没有这些字段。
+  // 診斷資訊（瀏覽器 / 設備 / 視口 / 區域 / UA）預設不勾選，請求里根本沒有這些欄位。
   const minimal = {
     kind: '其他建议',
     page: '首页',
@@ -273,11 +273,11 @@ test('a submission without opt-in diagnostics carries no empty label rows', asyn
   )
   assert.equal(response.status, 200)
 
-  // ★ 缺省项必须整行省略，而不是留下「浏览器：」这种空标签。
+  // ★ 預設項必須整行省略，而不是留下「瀏覽器：」這種空標籤。
   for (const label of ['浏览器', '设备', '视口', '区域', 'UA', '联系', '网址']) {
     assert.doesNotMatch(forwarded, new RegExp(`${label}：`), label)
   }
-  // 恒有的字段仍要在。
+  // 恆有的欄位仍要在。
   assert.match(forwarded, /编号：/)
   assert.match(forwarded, /类型：其他建议/)
   assert.match(forwarded, /描述：这一条不带任何诊断信息/)
@@ -291,8 +291,8 @@ test('derives IP from CF-Connecting-IP, ignoring forgeable headers and body fiel
   const { value, logs } = runtime({
     fetch: async () => new Response('{}', { status: 200 }),
   })
-  // Cloudflare 保证注入并覆盖 cf-connecting-ip。客户端伪造的 x-real-ip /
-  // x-forwarded-for 和请求体里的 ip 都不得影响展示 IP 与限流键。
+  // Cloudflare 保證注入並覆蓋 cf-connecting-ip。用戶端偽造的 x-real-ip /
+  // x-forwarded-for 和請求體裡的 ip 都不得影響展示 IP 與限流鍵。
   const response = await feedback.handleFeedback(
     request(
       { ...VALID, ip: '198.51.100.8' },
@@ -326,11 +326,11 @@ test('falls back to anonymous when no platform IP header is present', async () =
 
 test('rate-limits submitters by the platform IP, not a shared anonymous bucket', async () => {
   const limiter = feedback.createFeedbackLimiter({ limit: 1, windowMs: 1_800_000 })
-  // 不注入 sourceKey：生产路径的限流键就是推导出的 IP。
+  // 不注入 sourceKey：生產路徑的限流鍵就是推匯出的 IP。
   const { value } = runtime({ limiter, sourceKey: undefined })
   const fromIp = (clientIp) => request(VALID, { 'CF-Connecting-IP': clientIp })
 
-  // 无 webhook 配置时，限流通过后才会走到 503 delivery_unavailable。
+  // 無 webhook 設定時，限流通過後才會走到 503 delivery_unavailable。
   const first = await feedback.handleFeedback(fromIp('203.0.113.1'), {}, value)
   assert.equal(first.status, 503)
 
@@ -338,7 +338,7 @@ test('rate-limits submitters by the platform IP, not a shared anonymous bucket',
   const second = await feedback.handleFeedback(fromIp('203.0.113.1'), {}, value)
   assert.equal(second.status, 429)
 
-  // 不同 IP 拥有独立限流桶，不受影响。
+  // 不同 IP 擁有獨立限流桶，不受影響。
   const other = await feedback.handleFeedback(fromIp('203.0.113.2'), {}, value)
   assert.equal(other.status, 503)
 })
@@ -360,8 +360,8 @@ test('accepts a trusted relay request and uses the forwarded client IP', async (
   const { value, logs } = runtime({
     fetch: async () => new Response('{}', { status: 200 }),
   })
-  // relay 主机侧收到上游 Worker 的可信转发：密钥匹配时必须用转发头里的
-  // 原始客户端 IP 作为展示 IP 与限流键，而不是平台看到的上游出口 IP。
+  // relay 主機側收到上游 Worker 的可信轉發：金鑰匹配時必須用轉發頭裡的
+  // 原始用戶端 IP 作為展示 IP 與限流鍵，而不是平台看到的上游出口 IP。
   const response = await feedback.handleFeedback(
     request(
       VALID,
@@ -494,7 +494,7 @@ test('rejects a non-literal client IP from a trusted relay', async () => {
   )
 
   assert.equal(response.status, 200)
-  // 转发头不是合法 IP 字面量，整条丢弃并回退平台 IP。
+  // 轉發頭不是合法 IP 字面值，整條丟棄並退回平台 IP。
   assert.equal(logs[0].feedback.ip, '203.0.113.42')
 })
 
@@ -506,8 +506,8 @@ test('never forwards a trusted relay request again, even when relay is misconfig
       return new Response('{}', { status: 200 })
     },
   })
-  // 模拟 .cn 被误配了 FEEDBACK_RELAY_URL：已命中可信转发的请求必须走 webhook 直达，
-  // 而不是再次被转发出去（防止转发循环）。
+  // 模擬 .cn 被誤配了 FEEDBACK_RELAY_URL：已命中可信轉發的請求必須走 webhook 直達，
+  // 而不是再次被轉發出去（防止轉發循環）。
   const response = await feedback.handleFeedback(
     request(
       VALID,
@@ -534,7 +534,7 @@ test('returns 502 and relays the failure alert through the relay channel', async
       fetches.push({ url, init })
       if (url === 'https://relay.example.test/api/feedback') {
         relayCalls++
-        // 第一次调用是反馈 relay（失败），第二次是告警 relay（成功）。
+        // 第一次呼叫是回饋 relay（失敗），第二次是告警 relay（成功）。
         return relayCalls === 1
           ? new Response(JSON.stringify({ ok: false, error: 'delivery_failed' }), { status: 502 })
           : new Response(JSON.stringify({ ok: true, status: 'alerted' }), { status: 200 })
@@ -604,7 +604,7 @@ test('a forged relay IP cannot shift the limiter bucket without the secret', asy
   )
   assert.equal(first.status, 200)
 
-  // 换一个伪造 IP 再提交：限流键必须仍是平台 IP（9.9.9.9），而不是伪造值。
+  // 換一個偽造 IP 再提交：限流鍵必須仍是平台 IP（9.9.9.9），而不是偽造值。
   const second = await feedback.handleFeedback(
     forged('203.0.113.78'),
     { FEEDBACK_WEBHOOK_URL: 'https://hooks.example.test', FEEDBACK_RELAY_SECRET: 'right-secret' },
@@ -621,7 +621,7 @@ test('forwards a trusted alert relay to the local ALERT_WEBHOOK_URL', async () =
       return new Response('{}', { status: 200 })
     },
   })
-  // .cn 收到 .cc 的告警 relay：密钥匹配 + kind=alert + body{text} → 转发到本地告警机器人。
+  // .cn 收到 .cc 的告警 relay：金鑰匹配 + kind=alert + body{text} → 轉發到本機告警機器人。
   const response = await feedback.handleFeedback(
     request(
       { text: 'DP大师反馈通道异常\n编号：abc' },
@@ -679,7 +679,7 @@ test('falls through to feedback validation when the alert relay secret is wrong'
     value,
   )
 
-  // 告警 body 不是反馈格式，密钥又不匹配：必须走正常反馈校验并拒绝。
+  // 告警 body 不是回饋格式，金鑰又不匹配：必須走正常回饋檢核並拒絕。
   assert.equal(response.status, 422)
   assert.equal((await response.json()).error, 'invalid_kind')
 })
@@ -692,7 +692,7 @@ test('never forwards an alert relay again, even when relay is misconfigured', as
       return new Response('{}', { status: 200 })
     },
   })
-  // .cn 被误配 FEEDBACK_RELAY_URL 时，告警 relay 必须直接送本地告警机器人，绝不二次转发。
+  // .cn 被誤配 FEEDBACK_RELAY_URL 時，告警 relay 必須直接送本機告警機器人，絕不二次轉發。
   const response = await feedback.handleFeedback(
     request(
       { text: 'DP大师前端告警' },

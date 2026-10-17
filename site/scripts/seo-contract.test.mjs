@@ -54,7 +54,7 @@ test('the single origin owns every canonical and emits no hreflang alternates', 
   assert.equal(SITE.origin, 'https://dp.round1.cc')
   assert.equal(CLIENT_RUNTIME.productionHostname, 'dp.round1.cc')
   assert.equal(SITE.language, 'zh-Hans')
-  // API 一律同源：没有跨域端点，也就没有跨站 CORS 面。
+  // API 一律同源：沒有跨域端點，也就沒有跨站 CORS 面。
   assert.equal(CLIENT_RUNTIME.analyticsEndpoint, '/api/analytics')
   assert.equal(CLIENT_RUNTIME.feedbackEndpoint, '/api/feedback')
 
@@ -148,7 +148,7 @@ test('RouteMeta owns every dynamic SEO tag including JSON-LD and noindex', async
   }
   assert.match(adapter, /structuredDataForPage/)
   assert.match(adapter, /application\/ld\+json/)
-  // 单域站点没有 alternate：RouteMeta 不得再往 head 里塞 hreflang。
+  // 單域站台沒有 alternate：RouteMeta 不得再往 head 裡塞 hreflang。
   assert.doesNotMatch(adapter, /hreflang/)
   assert.match(adapter, /rel\s*=\s*['"]canonical['"]/)
   assert.match(appContent, /<RouteMeta \/>/)
@@ -171,7 +171,7 @@ test('discovery files expose the 47 approved URLs and real summaries', async () 
   const actual = [...sitemap.matchAll(/<loc>([^<]+)<\/loc>/g)].map((match) => match[1])
 
   assert.deepEqual(actual, expected)
-  // 单域站点的 sitemap 不带 xhtml alternate，连命名空间都不该出现。
+  // 單域站台的 sitemap 不帶 xhtml alternate，連命名空間都不該出現。
   assert.equal((sitemap.match(/<xhtml:link /g) || []).length, 0)
   assert.doesNotMatch(sitemap, /xmlns:xhtml/)
   assert.equal((sitemap.match(/<lastmod>/g) || []).length, 47)
@@ -179,8 +179,8 @@ test('discovery files expose the 47 approved URLs and real summaries', async () 
   assert.match(robots, /User-agent:\s*\*/)
   assert.match(robots, /Allow:\s*\//)
   assert.match(robots, /Sitemap: https:\/\/dp\.round1\.cc\/sitemap\.xml/)
-  // GEO：已批准公开内容允许检索、引用、模型输入与训练。检索类、用户触发类与训练类
-  // 抓取器都显式放行，仓内 robots.txt 是唯一权威，不得出现任何 Disallow。
+  // GEO：已批准公開內容允許檢索、引用、模型輸入與訓練。檢索類、使用者觸發類與訓練類
+  // 抓取器都顯式放行，倉內 robots.txt 是唯一權威，不得出現任何 Disallow。
   for (const agent of [
     'OAI-SearchBot',
     'ChatGPT-User',
@@ -212,7 +212,7 @@ test('discovery files expose the 47 approved URLs and real summaries', async () 
     (llms.match(/^- \[[^\]]+\]\(https:\/\/dp\.round1\.cc/gm) || []).length,
     47,
   )
-  // llms.txt 按家族分节，比一张 47 条的平表更好被生成式引擎消化。
+  // llms.txt 按家族分節，比一張 47 條的平表更好被生成式引擎消化。
   assert.match(llms, /^## 入口$/m)
   assert.match(llms, /^## 使用说明$/m)
   assert.equal((llms.match(/^## /gm) || []).length, 2 + PARTS.length)
@@ -223,7 +223,7 @@ test('discovery files expose the 47 approved URLs and real summaries', async () 
   assert.match(generator, /\.\.\/src\/lib\/publicRoutes\.ts/)
   assert.match(generator, /generateDiscoveryFiles/)
   assert.match(generator, /collectRouteContentEvidence/)
-  // index.html 的 head 也由生成器产出，手工维护会和 SITE.origin 漂移。
+  // index.html 的 head 也由生成器產出，手動維護會和 SITE.origin 漂移。
   assert.match(generator, /replaceRouteHead/)
   assert.match(lastModified, /gitNames\(\['diff', '--name-only', '-z', 'HEAD'/)
   assert.match(lastModified, /gitNames\(\['ls-files', '--others', '--exclude-standard', '-z'/)
@@ -259,7 +259,7 @@ test('static HTML gives crawlers complete homepage metadata before React runs', 
   assert.match(html, /"@type":\s*"WebSite"/)
   assert.match(html, /"url":\s*"https:\/\/dp\.round1\.cc\/"/)
   assert.match(html, /og\/dpmaster-social\.jpg/)
-  // GEO：站内检索是真实可深链的，声明成 SearchAction 才对生成式引擎有意义。
+  // GEO：站內檢索是真實可深鏈的，宣告成 SearchAction 才對生成式引擎有意義。
   assert.match(html, /"@type":\s*"SearchAction"/)
   assert.match(html, /problems\?q=\{search_term_string\}/)
   assert.match(html, /"isAccessibleForFree":\s*true/)
@@ -276,7 +276,7 @@ test('build contracts provide one Cloudflare output, SSR prerendering, hydration
       siteSource('package.json').then(JSON.parse),
     ])
 
-  // 只有一个产物目录，也只有一个发布目标。
+  // 只有一個產物目錄，也只有一個發佈目標。
   assert.match(buildScript, /const outDir = resolve\('dist'\)/)
   assert.doesNotMatch(buildScript, /regions/)
   assert.match(prerender, /PRERENDER_PATHS/)

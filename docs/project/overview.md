@@ -1,7 +1,7 @@
 ---
 type: Project
-title: DP大师 Project Overview
-description: DP大师 is an independent interactive dynamic-programming teaching site built as a React and Vite static app.
+title: DP大師 Project Overview
+description: DP大師 is an independent interactive dynamic-programming teaching site built as a React and Vite static app.
 tags: [project, identity, status]
 status: stable
 generated: { by: openai/codex, at: 2026-07-31T15:32:38+08:00 }
@@ -13,11 +13,11 @@ sources:
 
 # Identity
 
-DP大师 is an independent Chinese interactive teaching site for dynamic programming. It targets C++ algorithm learners around NOIP, CSP, and provincial-selection preparation, and uses a normal teaching voice rather than a fantasy or 修真 narrative.
+DP大師 is an independent Chinese interactive teaching site for dynamic programming. It targets C++ algorithm learners around NOIP, CSP, and provincial-selection preparation, and uses a normal teaching voice rather than a fantasy or 修真 narrative.
 
 The current local project root is `D:\Workspace\DpMaster`. The public remote is `https://github.com/ShanireZ/DpMaster.git`.
 
-DP大师 is not part of `WenTian` or any earlier `wentian-animation-lab` work. Treat paths that mention `D:\Workspace\dp` as stale historical text.
+DP大師 is not part of `WenTian` or any earlier `wentian-animation-lab` work. Treat paths that mention `D:\Workspace\dp` as stale historical text.
 
 # Current Status
 

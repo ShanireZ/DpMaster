@@ -8,9 +8,9 @@ import { TreeCanvas } from './TreeCanvas'
 import type { NodeStyle, EdgeStyle } from './TreeCanvas'
 import './reroot-demo.css'
 
-// 固定根 0，把每个点的距离和拆成「子树内 down」+「子树外 up」两块。
-// 点一个点：树上按「在它子树内 / 外」分色，右侧读数给出 down+up=dist，
-// 并点破 up[u] = dist[父] − (父方向里被自己子树占掉的那部分) 的换根回推。
+// 固定根 0，把每個點的距離和拆成「子樹內 down」+「子樹外 up」兩塊。
+// 點一個點：樹上按「在它子樹內 / 外」分色，右側讀數給出 down+up=dist，
+// 並點破 up[u] = dist[父] − (父方向裡被自己子樹佔掉的那部分) 的換根回推。
 const N = 8
 const EDGES: Edge[] = [
   { u: 0, v: 1 },
@@ -29,7 +29,7 @@ export default function RerootInOutDemo() {
     const tree = buildTree(N, EDGES, 0)
     const { nodes, maxDepth } = layoutTree(tree)
     const io = inOutDecompose(tree)
-    // 计算 sel 的子树集合（用于分色）
+    // 計算 sel 的子樹集合（用於分色）
     const inSub = new Array<boolean>(N).fill(false)
     const stack = [sel]
     while (stack.length) {
@@ -50,7 +50,7 @@ export default function RerootInOutDemo() {
         r: 23,
       }
     }
-    // 在 sel 子树内 = 青（down 方向）；子树外 = 灰紫强调浅底（up 方向）
+    // 在 sel 子樹內 = 青（down 方向）；子樹外 = 灰紫強調淺底（up 方向）
     return inSub[id]
       ? {
           fill: 'color-mix(in srgb, var(--viz-source) 16%, var(--surface-3))',
@@ -67,7 +67,7 @@ export default function RerootInOutDemo() {
   }
 
   const edgeStyle = (child: number): EdgeStyle => {
-    // 连向 sel 子树内的边高亮青，其余灰
+    // 連向 sel 子樹內的邊高亮青，其餘灰
     return inSub[child]
       ? { stroke: 'var(--viz-source)', strokeWidth: 2.4 }
       : { stroke: 'var(--border-strong)', strokeWidth: 1.6 }

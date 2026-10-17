@@ -13,14 +13,14 @@ function settled(vals: (number | null)[][]): Record<string, CellState> {
 }
 
 /**
- * 计数型 01 背包 · 一维 f[j]「恰好装满容量 j 的方案数」。
- * 初值 f[0]=1（凑 0 有 1 种空方案，其余 0），对每件倒序 f[j] += f[j-w]。
- * 把最值 max 换成累加 +，就把「求最优」变成了「数方案」。网格为一维（1 行 W+1 列）。
+ * 計數型 01 揹包 · 一維 f[j]「恰好裝滿容量 j 的方案數」。
+ * 初值 f[0]=1（湊 0 有 1 種空方案，其餘 0），對每件倒序 f[j] += f[j-w]。
+ * 把最值 max 換成累加 +，就把「求最優」變成了「數方案」。網格為一維（1 行 W+1 列）。
  */
 export function countKnapsack(items: CountItem[], W: number): VizModel {
   const run = recordCountKnapsack(items, W)
   const f: (number | null)[] = Array<number | null>(W + 1).fill(0)
-  f[0] = 1 // ★计数地基：凑出 0 有且只有 1 种方案（什么都不装）
+  f[0] = 1 // ★計數地基：湊出 0 有且只有 1 種方案（什麼都不裝）
   const snap = (): (number | null)[][] => [f.slice()]
   const frames: Frame[] = []
 
@@ -50,7 +50,7 @@ export function countKnapsack(items: CountItem[], W: number): VizModel {
         `物品 <b>${i + 1}</b>（w=${w}）· <b>倒序</b> j=${j}：把「不含它、凑出 ${j - w} 的方案」接上它，` +
         `f[${j}] <b>+=</b> f[${j - w}]=<b>${add}</b> → f[${j}] 从 <b>${old}</b> 变为 <b>${now}</b>` +
         `${grew ? '' : '（f[' + (j - w) + ']=0，暂无新方案，保持不变）'}。`
-      // ★formula 内禁中文，纯符号表达「+=」这一步
+      // ★formula 內禁中文，純符號表達「+=」這一步
       const formula = `f[${j}]\\mathrel{+}=f[${j - w}]=${old}+${add}=${now}`
       frames.push({ values: snap(), states, active: { r: 0, c: j }, arrows, caption, formula })
   }

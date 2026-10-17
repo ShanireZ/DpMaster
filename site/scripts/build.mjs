@@ -1,5 +1,5 @@
-// 单一构建目标：Cloudflare Worker 静态资源（dist/）。
-// 先出客户端产物，再出 SSR 入口，最后预渲染全部路由与真实 404，并清掉 SSR 中间产物。
+// 單一建置目標：Cloudflare Worker 靜態資源（dist/）。
+// 先出用戶端產物，再出 SSR 入口，最後預繪製全部路由與真實 404，並清掉 SSR 中間產物。
 
 import { existsSync, rmSync } from 'node:fs'
 import { join, resolve } from 'node:path'

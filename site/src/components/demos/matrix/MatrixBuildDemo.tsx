@@ -3,44 +3,44 @@ import { ArrowRight } from 'lucide-react'
 import './matrix-power.css'
 
 /**
- * 一个线性递推预设：a[x] = Σ coef[t] · a[x-1-t]（t 从 0 起，对应 a[x-1], a[x-2], …）。
- * order = 阶数 = 状态向量维度。
+ * 一個線性遞推預設：a[x] = Σ coef[t] · a[x-1-t]（t 從 0 起，對應 a[x-1], a[x-2], …）。
+ * order = 階數 = 狀態向量維度。
  */
 interface Recur {
   key: string
-  label: string // 人类可读的递推式
-  coef: number[] // 顶行系数，长度 = order，coef[t] 是 a[x-1-t] 的系数
+  label: string // 人類可讀的遞推式
+  coef: number[] // 頂行係數，長度 = order，coef[t] 是 a[x-1-t] 的係數
 }
 
 const PRESETS: Recur[] = [
-  { key: 'f13', label: 'a[x] = a[x-1] + a[x-3]', coef: [1, 0, 1] }, // 3 阶（P1939 模型）
-  { key: 'fib', label: 'a[x] = a[x-1] + a[x-2]', coef: [1, 1] }, // 2 阶（斐波那契，热身）
+  { key: 'f13', label: 'a[x] = a[x-1] + a[x-3]', coef: [1, 0, 1] }, // 3 階（P1939 模型）
+  { key: 'fib', label: 'a[x] = a[x-1] + a[x-2]', coef: [1, 1] }, // 2 階（斐波那契，熱身）
 ]
 
-// 状态向量下标标签：[a[x-1], a[x-2], …, a[x-order]]
+// 狀態向量下標標籤：[a[x-1], a[x-2], …, a[x-order]]
 const prevLabels = (order: number) => Array.from({ length: order }, (_, i) => `a[x-${i + 1}]`)
-// 输出向量标签：[a[x], a[x-1], …, a[x-order+1]]
+// 輸出向量標籤：[a[x], a[x-1], …, a[x-order+1]]
 const nextLabels = (order: number) =>
   Array.from({ length: order }, (_, i) => (i === 0 ? 'a[x]' : `a[x-${i}]`))
 
 /**
- * 由递推构造转移矩阵：第 0 行是递推系数；其余每行是「位移」——
- * 新状态里的 a[x-i]（i≥1）恰好等于旧状态里的 a[x-i]，即单位位移。
- * 对 a[x]=a[x-1]+a[x-3]：矩阵 = [[1,0,1],[1,0,0],[0,1,0]]，核对无误。
+ * 由遞推建構轉移矩陣：第 0 行是遞推係數；其餘每行是「位移」——
+ * 新狀態裡的 a[x-i]（i≥1）恰好等於舊狀態裡的 a[x-i]，即單位位移。
+ * 對 a[x]=a[x-1]+a[x-3]：矩陣 = [[1,0,1],[1,0,0],[0,1,0]]，核對無誤。
  */
 function buildMatrix(coef: number[]): number[][] {
   const order = coef.length
   const M: number[][] = []
-  M.push([...coef]) // 第 0 行：递推系数
+  M.push([...coef]) // 第 0 行：遞推係數
   for (let r = 1; r < order; r++) {
     const row = new Array(order).fill(0)
-    row[r - 1] = 1 // 位移：新 a[x-r] = 旧 a[x-(r-1)-... ] 对应列 r-1
+    row[r - 1] = 1 // 位移：新 a[x-r] = 舊 a[x-(r-1)-... ] 對應列 r-1
     M.push(row)
   }
   return M
 }
 
-// 每行的中文解释（这一行系数从哪来）。
+// 每行的中文解釋（這一行係數從哪來）。
 function rowExplain(order: number, r: number, coef: number[]): string {
   const nl = nextLabels(order)
   const pl = prevLabels(order)
@@ -55,9 +55,9 @@ function rowExplain(order: number, r: number, coef: number[]): string {
 }
 
 /**
- * 递推 → 构造转移矩阵（自建轻量可视化，非 DPViz）。
- * 切换 1~2 个递推预设；把状态向量 [a[x-1],a[x-2],…] 与输出向量 [a[x],a[x-1],…] 并排，
- * 逐行点亮矩阵：hover / 选中某一行时，高亮它对应的输出分量，并解释系数来源。
+ * 遞推 → 建構轉移矩陣（自建輕量視覺化，非 DPViz）。
+ * 切換 1~2 個遞推預設；把狀態向量 [a[x-1],a[x-2],…] 與輸出向量 [a[x],a[x-1],…] 並排，
+ * 逐行點亮矩陣：hover / 選中某一行時，高亮它對應的輸出分量，並解釋係數來源。
  */
 export default function MatrixBuildDemo() {
   const [key, setKey] = useState(PRESETS[0].key)
@@ -69,7 +69,7 @@ export default function MatrixBuildDemo() {
   const pl = prevLabels(order)
   const nl = nextLabels(order)
 
-  // 选中行落在合法范围内。
+  // 選中行落在合法範圍內。
   const row = Math.min(activeRow, order - 1)
 
   return (
@@ -105,9 +105,9 @@ export default function MatrixBuildDemo() {
         <span className="mono">[…]·M</span> 只是转置写法，结果等价。
       </div>
 
-      {/* M × 旧状态(列) = 新状态(列) 的可视化：矩阵在左、列向量，字面顺序与 M·old 一致 */}
+      {/* M × 舊狀態(列) = 新狀態(列) 的視覺化：矩陣在左、列向量，字面順序與 M·old 一致 */}
       <div className="mbd__equation">
-        {/* 转移矩阵 */}
+        {/* 轉移矩陣 */}
         <div className="mbd__mat">
           <div className="mbd__vec-cap">转移矩阵 M</div>
           <div
@@ -137,7 +137,7 @@ export default function MatrixBuildDemo() {
 
         <span className="mbd__times">×</span>
 
-        {/* 旧状态向量（列向量） */}
+        {/* 舊狀態向量（列向量） */}
         <div className="mbd__vec">
           <div className="mbd__vec-cap">旧状态</div>
           <div className="mbd__vec-body">
@@ -155,7 +155,7 @@ export default function MatrixBuildDemo() {
 
         <span className="mbd__eq">=</span>
 
-        {/* 新状态向量（列向量） */}
+        {/* 新狀態向量（列向量） */}
         <div className="mbd__vec">
           <div className="mbd__vec-cap">新状态</div>
           <div className="mbd__vec-body">
@@ -172,7 +172,7 @@ export default function MatrixBuildDemo() {
         </div>
       </div>
 
-      {/* 当前行解释 */}
+      {/* 當前行解釋 */}
       <div className="mbd__explain">
         <div className="mbd__explain-head">
           <span className="mbd__explain-tag mono">第 {row} 行</span>

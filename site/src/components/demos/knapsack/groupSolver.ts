@@ -14,10 +14,10 @@ function settled(vals: (number | null)[][]): Record<string, CellState> {
 }
 
 /**
- * 二维原型分组背包：f[g][j] = max( f[g-1][j]（本组一件都不选）,
- *   max_{组内第 k 件}( f[g-1][j-w_k] + v_k )（本组只选这一件） )
- * 关键：转移一律只从上一行 f[g-1][·] 取值，绝不从本行已更新的值来，
- * 这样每组至多贡献一件。第 g 行 = 前 g 组的最优。
+ * 二維原型分組揹包：f[g][j] = max( f[g-1][j]（本組一件都不選）,
+ *   max_{組內第 k 件}( f[g-1][j-w_k] + v_k )（本組只選這一件） )
+ * 關鍵：轉移一律只從上一行 f[g-1][·] 取值，絕不從本行已更新的值來，
+ * 這樣每組至多貢獻一件。第 g 行 = 前 g 組的最優。
  */
 export function group2D(groups: Group[], W: number): VizModel {
   const G = groups.length
@@ -41,10 +41,10 @@ export function group2D(groups: Group[], W: number): VizModel {
 
       const states = settled(f)
       const arrows: Arrow[] = []
-      // 「跳过本组」的来源：上一行同列
+      // 「跳過本組」的來源：上一行同列
       states[key(g - 1, j)] = 'source'
       arrows.push({ from: { r: g - 1, c: j }, to: { r: g, c: j }, kind: takeWins ? 'source' : 'chosen' })
-      // 「选本组某件」的来源：上一行 j-w 列
+      // 「選本組某件」的來源：上一行 j-w 列
       if (takeIdx >= 0) {
         const w = items[takeIdx].w
         states[key(g - 1, j - w)] = 'source'

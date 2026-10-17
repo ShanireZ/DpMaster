@@ -36,9 +36,9 @@ function Stepper({
 }
 
 /**
- * 加分二叉树区间 DP 三角表演示：dp[i][j] 按区间长度递推，
- * 逐格高亮被选中的根 k 与它的左、右子树来源 dp[i][k-1]、dp[k+1][j]。
- * 与石子合并同结构，区别只在转移是「左×右 + score[根]」。
+ * 加分二叉樹區間 DP 三角表演示：dp[i][j] 按區間長度遞推，
+ * 逐格高亮被選中的根 k 與它的左、右子樹來源 dp[i][k-1]、dp[k+1][j]。
+ * 與石子合併同結構，區別只在轉移是「左×右 + score[根]」。
  */
 export default function ScoreTreeDemo() {
   const [scores, setScores] = useState<number[]>([5, 7, 1, 2, 10])

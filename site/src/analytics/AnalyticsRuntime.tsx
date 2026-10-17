@@ -76,7 +76,7 @@ function startRuntime(): void {
     onLCP(report)
     onTTFB(report)
   }).catch(() => {
-    // RUM 模块加载失败不影响课程正文。
+    // RUM 模組載入失敗不影響課程正文。
   })
 }
 

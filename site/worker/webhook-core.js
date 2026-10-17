@@ -1,9 +1,9 @@
 import { loadConnect, postOverSocket } from './socket-fetch.js'
 
 /**
- * Cloudflare 反代「连不上源站」这一类状态码。它们不是对端应用层的拒绝，
- * 而是 CF 到源站那一跳失败 —— 钉钉稳定命中 525。碰到这些才值得换出口重试；
- * 普通 4xx/5xx 是对端自己的回复，重试没有意义。
+ * Cloudflare 反代「連不上源站」這一類狀態碼。它們不是對端應用層的拒絕，
+ * 而是 CF 到源站那一跳失敗 —— 釘釘穩定命中 525。碰到這些才值得換出口重試；
+ * 普通 4xx/5xx 是對端自己的回覆，重試沒有意義。
  */
 const CLOUDFLARE_ORIGIN_ERRORS = new Set([520, 521, 522, 523, 524, 525, 526, 527, 530])
 
@@ -13,15 +13,15 @@ export function clip(value, maxLength) {
 }
 
 /**
- * 跨站直连白名单。站点收敛成单域单 Worker 后，浏览器请求一律同源，
- * 白名单为空 —— 任何带 Origin 且非同源的请求都会被拒绝。
+ * 跨站直連白名單。站台收斂成單域單 Worker 後，瀏覽器請求一律同源，
+ * 白名單為空 —— 任何帶 Origin 且非同源的請求都會被拒絕。
  *
- * 保留这个机制而不是删掉：如果告警链路日后改成「另一台主机跑 relay」，
- * relay 侧复用本模块时需要放行 dp.round1.cc 的 origin。
+ * 保留這個機制而不是刪掉：如果告警連線路徑日後改成「另一臺主機跑 relay」，
+ * relay 側重複使用本模組時需要放行 dp.round1.cc 的 origin。
  */
 export const CROSS_ORIGIN_ALLOWLIST = new Set()
 
-/** 判定请求的 CORS 决策：{ origin, allowed, cross }。 */
+/** 判定請求的 CORS 決策：{ origin, allowed, cross }。 */
 export function corsDecision(request) {
   const originHeader = request.headers.get('origin')
   if (!originHeader) return { origin: null, allowed: true, cross: false }
@@ -31,12 +31,12 @@ export function corsDecision(request) {
     if (value === own) return { origin: value, allowed: true, cross: false }
     if (CROSS_ORIGIN_ALLOWLIST.has(value)) return { origin: value, allowed: true, cross: true }
   } catch {
-    // 非法 origin 落到拒绝分支。
+    // 非法 origin 落到拒絕分支。
   }
   return { origin: originHeader, allowed: false, cross: false }
 }
 
-/** 给跨域白名单响应补 CORS 头；同源/无 origin 响应原样返回。 */
+/** 給跨域白名單回應補 CORS 頭；同源/無 origin 回應原樣回傳。 */
 export function applyCors(response, cors) {
   if (!cors?.cross) return response
   const headers = new Headers(response.headers)
@@ -49,7 +49,7 @@ export function applyCors(response, cors) {
   })
 }
 
-/** 跨域白名单的 OPTIONS preflight 响应（204 + CORS 头）。 */
+/** 跨域白名單的 OPTIONS preflight 回應（204 + CORS 頭）。 */
 export function preflightResponse(cors) {
   if (!cors?.cross) return new Response(null, { status: 204 })
   return new Response(null, {
@@ -100,17 +100,17 @@ async function dingtalkSignedUrl(baseUrl, secret, now) {
   return `${baseUrl}${separator}timestamp=${timestamp}&sign=${encodeURIComponent(btoa(binary))}`
 }
 
-/** 统一 fetch 与 raw socket 两条出口的结果形状。 */
+/** 統一 fetch 與 raw socket 兩條出口的結果形狀。 */
 function outcomeFromResponse(transport, status, text) {
   return { transport, status, ok: status >= 200 && status < 300, text }
 }
 
 /**
- * 投递一次 webhook。**fetch 优先，只有在 CF 到源站那一跳失败时才降级到 raw socket。**
+ * 投遞一次 webhook。**fetch 優先，只有在 CF 到源站那一跳失敗時才降級到 raw socket。**
  *
- * ★ 顺序不能反：`connect()` 被禁止连 Cloudflare 自己的 IP 段，而 Discord / Slack
- * 这类 webhook 常托管在 Cloudflare 后面 —— socket 优先会把它们全打死。反过来，
- * 钉钉这类拒绝 CF 反代出口的对端，fetch 会稳定拿到 525，正好触发降级。
+ * ★ 順序不能反：`connect()` 被禁止連 Cloudflare 自己的 IP 段，而 Discord / Slack
+ * 這類 webhook 常託管在 Cloudflare 後面 —— socket 優先會把它們全打死。反過來，
+ * 釘釘這類拒絕 CF 反代出口的對端，fetch 會穩定拿到 525，正好觸發降級。
  */
 async function deliver({ url, payload, fetchImpl, connectImpl, timeoutMs }) {
   let outcome
@@ -134,8 +134,8 @@ async function deliver({ url, payload, fetchImpl, connectImpl, timeoutMs }) {
     const viaSocket = await postOverSocket({ url, body: payload, connect, timeoutMs })
     return outcomeFromResponse('socket', viaSocket.status, viaSocket.body)
   } catch (error) {
-    // 降级也失败：保留 fetch 那次的结论，并把 socket 的失败原因附上，
-    // 否则运维只能看到一个 525，不知道第二条出口也试过了。
+    // 降級也失敗：保留 fetch 那次的結論，並把 socket 的失敗原因附上，
+    // 否則維運只能看到一個 525，不知道第二條出口也試過了。
     return outcome.failure
       ? { transport: 'fetch+socket', failure: outcome.failure, socketError: error }
       : { ...outcome, transport: 'fetch+socket', socketError: error }
@@ -191,7 +191,7 @@ export async function forwardWebhook({
         }
       }
     } catch {
-      // 非 JSON 的 2xx 响应仍视为转发成功。
+      // 非 JSON 的 2xx 回應仍視為轉發成功。
     }
     return { status: 'forwarded', code: outcome.status, transport: outcome.transport }
   } catch (error) {
@@ -200,10 +200,10 @@ export async function forwardWebhook({
 }
 
 /**
- * 向 relay 主机的 /api/feedback 端点做可信转发（relay 协议）。
- * 共享密钥 x-dp-relay-secret 由接收侧恒定时间校验；x-dp-relay-kind 区分
- * 反馈（省略）与告警（alert）；x-dp-client-ip 携带原始客户端 IP。
- * body 是已序列化的字符串，由调用方负责。
+ * 向 relay 主機的 /api/feedback 端點做可信轉發（relay 協定）。
+ * 共享金鑰 x-dp-relay-secret 由接收側恆定時間檢核；x-dp-relay-kind 區分
+ * 回饋（省略）與告警（alert）；x-dp-client-ip 攜帶原始用戶端 IP。
+ * body 是已序列化的字串，由呼叫方負責。
  */
 export async function forwardRelay({
   relayUrl,
@@ -226,7 +226,7 @@ export async function forwardRelay({
   try {
     payload = await response.json()
   } catch {
-    // 非 JSON 响应视为转发失败。
+    // 非 JSON 回應視為轉發失敗。
   }
   return { status: response.status, body: payload }
 }

@@ -10,7 +10,7 @@ import './palindrome-demo.css'
 
 const PRESETS = ['bcabb', 'google', 'character', 'aebcbda']
 
-/** 最长回文子序列区间 DP 三角表演示：dp[i][j] 按区间长度递推，相等收缩（左下）/不等取大（下·左）。 */
+/** 最長迴文子序列區間 DP 三角表演示：dp[i][j] 按區間長度遞推，相等收縮（左下）/不等取大（下·左）。 */
 export default function PalindromeDemo() {
   const [text, setText] = useState('bcabb')
 

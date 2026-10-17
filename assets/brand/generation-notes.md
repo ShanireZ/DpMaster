@@ -1,17 +1,17 @@
 <!-- source: BetaPass\std\candidates\dpmaster\notes.md -->
 
-> 归档说明（2026-08-20）：以下路径是生成当时的历史记录；当前采用源统一为本目录下
+> 歸檔說明（2026-08-20）：以下路徑是生成當時的歷史記錄；當前採用源統一為本目錄下
 > `dpmaster-logo-source.png`、`dpmaster-badge-bg-source.png`、`dpmaster-stage-bg-source.png`。
 
-# DpMaster 原生候选图生成记录
+# DpMaster 原生候選圖生成記錄
 
 - 日期：2026-08-20（Asia/Shanghai）
-- 工具：Codex 内置 `image_gen`
-- 执行方式：三个资产分别独立调用一次内置生成工具；未合成五件套
+- 工具：Codex 內置 `image_gen`
+- 執行方式：三個資產分別獨立呼叫一次內置生成工具；未合成五件套
 
 ## Logo
 
-最终 prompt：
+最終 prompt：
 
 ```text
 Use case: logo-brand
@@ -26,12 +26,12 @@ Constraints: one uniform backdrop with no shadow, gradient, texture, floor or re
 Avoid: rainbow saturation, candy colors, flower or petal look, pinwheel toy, loading spinner, sparkle burst, neon, glassmorphism, 3D chrome, six or eight shards, a rounded square plate behind the mark
 ```
 
-- 内置生成路径：`C:\Users\SkySa\.codex\generated_images\01a01cb2-f669-7023-a3f9-d66659d9078a\exec-9e77107d-1e30-4fe9-905f-2ec454e8d78a.png`
-- 候选路径：`D:\Workspace\BetaPass\std\candidates\dpmaster\logo-source.png`
+- 內置生成路徑：`C:\Users\SkySa\.codex\generated_images\01a01cb2-f669-7023-a3f9-d66659d9078a\exec-9e77107d-1e30-4fe9-905f-2ec454e8d78a.png`
+- 候選路徑：`D:\Workspace\BetaPass\std\candidates\dpmaster\logo-source.png`
 
 ## 3:1 徽章背景
 
-最终 prompt：
+最終 prompt：
 
 ```text
 Use case: stylized-concept
@@ -47,12 +47,12 @@ Constraints: no text, no letters, no numbers, no logo, no watermark, no frame, n
 Avoid: rainbow gradient, candy colors, neon cyberpunk, blue-purple tech grid, glassmorphism cards, spreadsheet screenshot, circuit board, evenly lit flat grid with no focal point, cluttered left side
 ```
 
-- 内置生成路径：`C:\Users\SkySa\.codex\generated_images\01a01cb2-f669-7023-a3f9-d66659d9078a\exec-b4c4faa9-b6f5-4f98-a3ad-e9a86ceb7086.png`
-- 候选路径：`D:\Workspace\BetaPass\std\candidates\dpmaster\badge-bg-source.png`
+- 內置生成路徑：`C:\Users\SkySa\.codex\generated_images\01a01cb2-f669-7023-a3f9-d66659d9078a\exec-b4c4faa9-b6f5-4f98-a3ad-e9a86ceb7086.png`
+- 候選路徑：`D:\Workspace\BetaPass\std\candidates\dpmaster\badge-bg-source.png`
 
-## 4:5 竖版背景
+## 4:5 豎版背景
 
-最终 prompt：
+最終 prompt：
 
 ```text
 Use case: stylized-concept
@@ -68,5 +68,5 @@ Constraints: no text, no letters, no numbers, no logo, no watermark, no frame, n
 Avoid: rainbow gradient, candy colors, neon, blue-purple tech grid, glassmorphism, spreadsheet screenshot, circuit board, a small logo floating in an empty box
 ```
 
-- 内置生成路径：`C:\Users\SkySa\.codex\generated_images\01a01cb2-f669-7023-a3f9-d66659d9078a\exec-52430613-f97b-4414-853b-6fe980ae0084.png`
-- 候选路径：`D:\Workspace\BetaPass\std\candidates\dpmaster\stage-bg-source.png`
+- 內置生成路徑：`C:\Users\SkySa\.codex\generated_images\01a01cb2-f669-7023-a3f9-d66659d9078a\exec-52430613-f97b-4414-853b-6fe980ae0084.png`
+- 候選路徑：`D:\Workspace\BetaPass\std\candidates\dpmaster\stage-bg-source.png`

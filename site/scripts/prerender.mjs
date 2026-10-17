@@ -66,8 +66,8 @@ function documentForRoute(template, routeMarkup, routeHead, routeCss) {
   const withCss = missingAssets
     ? withHead.replace('</head>', `${missingAssets}\n  </head>`)
     : withHead
-  // 产物里不注入任何统计 beacon：Cloudflare Web Analytics / RUM 由 Cloudflare
-  // 代理自动注入，手工再加一份会让同一次浏览重复计数。scripts/check-html.mjs 锁死这条。
+  // 產物裡不注入任何統計 beacon：Cloudflare Web Analytics / RUM 由 Cloudflare
+  // 代理自動注入，手動再加一份會讓同一次瀏覽重複計數。scripts/check-html.mjs 鎖死這條。
   return withCss.replace(root, `<div id="root">${routeMarkup}</div>`)
 }
 

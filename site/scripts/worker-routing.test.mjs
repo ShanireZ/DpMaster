@@ -335,7 +335,7 @@ test('the egress probe does not exist until EGRESS_DIAG_SECRET is configured', a
     }),
     assetsEnv(),
   )
-  // 落回静态资源 —— 与任何其他未知路径完全一样，不泄露端点是否存在。
+  // 落回靜態資源 —— 與任何其他未知路徑完全一樣，不洩露端點是否存在。
   assert.equal(await probe.text(), 'asset')
 })
 

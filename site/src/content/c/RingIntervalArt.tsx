@@ -1,24 +1,24 @@
-// 环形区间 DP（断环为链）讲解用插图（on-brand SVG，随部分强调色变色）。
+// 環形區間 DP（斷環為鏈）講解用插圖（on-brand SVG，隨部分強調色變色）。
 
-// 环形石子：n 堆首尾相接，第 n-1 堆与第 0 堆也相邻——断点不定。
+// 環形石子：n 堆首尾相接，第 n-1 堆與第 0 堆也相鄰——斷點不定。
 export function RingSetupFigure() {
   const piles = [3, 9, 3, 4]
   const n = piles.length
   const cx = 155
   const cy = 118
   const R = 78
-  // 从正上方开始顺时针摆放
+  // 從正上方開始順時針擺放
   const pos = (i: number) => {
     const ang = -Math.PI / 2 + (i * 2 * Math.PI) / n
     return { x: cx + R * Math.cos(ang), y: cy + R * Math.sin(ang) }
   }
   return (
     <svg viewBox="0 0 520 236" role="img" aria-label="n 堆石子摆成一个环，首尾相邻">
-      {/* 环形连线 */}
+      {/* 環形連線 */}
       <circle cx={cx} cy={cy} r={R} fill="none" stroke="var(--border-strong)" strokeWidth="1.5" strokeDasharray="4 5" />
       {piles.map((p, i) => {
         const { x, y } = pos(i)
-        // 第 n-1 堆与第 0 堆用强调色，凸显“环上首尾也相邻”
+        // 第 n-1 堆與第 0 堆用強調色，凸顯“環上首尾也相鄰”
         const wrap = i === 0 || i === n - 1
         return (
           <g key={i}>
@@ -39,7 +39,7 @@ export function RingSetupFigure() {
           </g>
         )
       })}
-      {/* 标注：首尾相邻这条边 */}
+      {/* 標註：首尾相鄰這條邊 */}
       <text x={cx} y={cy + 4} textAnchor="middle" fontSize="12" fill="var(--text-2)">
         环
       </text>
@@ -55,7 +55,7 @@ export function RingSetupFigure() {
   )
 }
 
-// 断环为链：把环从某处剪开、复制一倍接成长度 2n 的链，环上任一段连续区间都在链里出现。
+// 斷環為鏈：把環從某處剪開、複製一倍接成長度 2n 的鏈，環上任一段連續區間都在鏈裡出現。
 export function BreakRingFigure() {
   const a = [3, 9, 3, 4]
   const n = a.length
@@ -77,7 +77,7 @@ export function BreakRingFigure() {
           <path d="M0,0 L6,3 L0,6 Z" fill="var(--accent-2)" />
         </marker>
       </defs>
-      {/* 左：环 + 剪开处 */}
+      {/* 左：環 + 剪開處 */}
       <circle cx={cx} cy={cy} r={R} fill="none" stroke="var(--border-strong)" strokeWidth="1.5" strokeDasharray="4 5" />
       {a.map((p, i) => {
         const { x, y } = pos(i)
@@ -90,19 +90,19 @@ export function BreakRingFigure() {
           </g>
         )
       })}
-      {/* 剪刀记号：在第 n-1 堆与第 0 堆之间（顶部略偏右） */}
+      {/* 剪刀記號：在第 n-1 堆與第 0 堆之間（頂部略偏右） */}
       <text x={cx + 2} y={cy - R - 10} textAnchor="middle" fontSize="15" fill="var(--accent-2)">
         ✂
       </text>
       <text x={cx} y={cy + R + 26} textAnchor="middle" fontSize="11.5" fill="var(--text-2)">
         任选一处剪开
       </text>
-      {/* 展开箭头 */}
+      {/* 展開箭頭 */}
       <path d={`M 168 96 H 236`} stroke="var(--accent-2)" strokeWidth="2" markerEnd="url(#br-ar)" fill="none" />
       <text x="202" y="86" textAnchor="middle" fontSize="11.5" fill="var(--accent-1)">
         复制一倍
       </text>
-      {/* 右：长度 2n 的链 */}
+      {/* 右：長度 2n 的鏈 */}
       {a2.map((p, i) => {
         const x = bx0 + i * (bw + gap)
         const isCopy = i >= n
@@ -132,7 +132,7 @@ export function BreakRingFigure() {
       <text x={bx0 + (bw + gap) * (n + n / 2) - gap / 2} y="140" textAnchor="middle" fontSize="10.5" fill="var(--accent-1)">
         复制的 n 堆
       </text>
-      {/* 底：任一长度 n 的窗口都在链里 */}
+      {/* 底：任一長度 n 的視窗都在鏈裡 */}
       <path
         d={`M ${bx0 + (bw + gap) * 1 - 2} 160 H ${bx0 + (bw + gap) * 5 - gap - 2}`}
         stroke="var(--viz-chosen)"
@@ -148,7 +148,7 @@ export function BreakRingFigure() {
   )
 }
 
-// 窗口枚举：2n 链上，每个长度为 n 的区间 [i, i+n-1] 对应“从第 i 堆开始的一种断法”，取其中最优。
+// 視窗枚舉：2n 鏈上，每個長度為 n 的區間 [i, i+n-1] 對應“從第 i 堆開始的一種斷法”，取其中最優。
 export function WindowScanFigure() {
   const n = 4
   const total = 2 * n
@@ -156,10 +156,10 @@ export function WindowScanFigure() {
   const gap = 6
   const x0 = 40
   const rowY = (r: number) => 62 + r * 40
-  // 四个窗口起点 i = 0..n-1
+  // 四個視窗起點 i = 0..n-1
   return (
     <svg viewBox="0 0 480 254" role="img" aria-label="在 2n 链上枚举所有长度为 n 的窗口">
-      {/* 链的下标刻度 */}
+      {/* 鏈的下標刻度 */}
       {Array.from({ length: total }, (_, i) => (
         <g key={i} transform={`translate(${x0 + i * (bw + gap)},28)`}>
           <rect width={bw} height="26" rx="7" fill="var(--surface-3)" stroke="var(--border-strong)" strokeWidth="1.2" />
@@ -168,7 +168,7 @@ export function WindowScanFigure() {
           </text>
         </g>
       ))}
-      {/* 每个窗口一行高亮 */}
+      {/* 每個視窗一行高亮 */}
       {Array.from({ length: n }, (_, i) => {
         const x = x0 + i * (bw + gap)
         const w = n * (bw + gap) - gap

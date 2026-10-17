@@ -3,8 +3,8 @@ import { key } from '../../dp-engine/types.ts'
 import { recordLis } from '../../../algorithms/lis/internal.ts'
 
 /**
- * O(n²) LIS 的教学 Adapter。算法 Module 产生长度、前驱与领域事件；
- * 本函数只把事件投影为逐格表格、箭头、公式和讲解文案。
+ * O(n²) LIS 的教學 Adapter。演算法 Module 產生長度、前驅與領域事件；
+ * 本函式只把事件投影為逐格表格、箭頭、公式和講解文案。
  */
 export function lisNaive(a: number[]): VizModel {
   const n = a.length

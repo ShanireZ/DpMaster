@@ -10,14 +10,14 @@ import './bitmask-demo.css'
 
 const N = 4 // 全集：元素 0..3
 
-// 初始选择：三个选择恰好能拼出全集，也有更省的组合。
+// 初始選擇：三個選擇恰好能拼出全集，也有更省的組合。
 const INIT: Choice[] = [
-  { cover: 0b0011, cost: 2 }, // 覆盖 0,1
-  { cover: 0b1100, cost: 2 }, // 覆盖 2,3
-  { cover: 0b1111, cost: 5 }, // 一口气覆盖全部（更贵）
+  { cover: 0b0011, cost: 2 }, // 覆蓋 0,1
+  { cover: 0b1100, cost: 2 }, // 覆蓋 2,3
+  { cover: 0b1111, cost: 5 }, // 一口氣覆蓋全部（更貴）
 ]
 
-// 把 mask 画成一小排点阵（元素 0..n-1 从左到右）
+// 把 mask 畫成一小排點陣（元素 0..n-1 從左到右）
 function MiniBits({ mask, n, tone }: { mask: number; n: number; tone: 'on' | 'off' | 'full' }) {
   const bits = toBits(mask, n)
   const cell = 18
@@ -70,7 +70,7 @@ export default function CoverDemo() {
   }
 
   const full = res.full
-  // 当前帧的 dp 快照；无帧（如全集已被单个选择覆盖）时退化为初始态 dp[0]=0
+  // 當前影格的 dp 快照；無影格（如全集已被單個選擇覆蓋）時退化為初始態 dp[0]=0
   const dpNow = step ? step.dp : Array.from({ length: full + 1 }, (_, i) => (i === 0 ? 0 : -1))
 
   return (
@@ -117,7 +117,7 @@ export default function CoverDemo() {
         </button>
       </div>
 
-      {/* dp 数组：dp[S] 覆盖集合 S 的最小代价 */}
+      {/* dp 陣列：dp[S] 覆蓋集合 S 的最小代價 */}
       <div className="bm__dp-strip">
         {Array.from({ length: full + 1 }, (_, S) => {
           const v = dpNow[S]

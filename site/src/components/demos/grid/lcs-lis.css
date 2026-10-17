@@ -1,6 +1,6 @@
-/* 排列 LCS → LIS 转化的自建轻量可视化样式。
-   工具条沿用 lp__ 视觉基调，独立前缀 ll__，配色只用设计令牌。
-   ★不做 opacity:0 起步动画——内容默认可见。 */
+/* 排列 LCS → LIS 轉化的自建輕量視覺化樣式。
+   工具條沿用 lp__ 視覺基調，獨立前綴 ll__，配色只用設計權杖。
+   ★不做 opacity:0 起步動畫——內容預設可見。 */
 
 .ll__toolbar {
   display: flex;
@@ -94,12 +94,12 @@
   border: 1.5px solid var(--border-strong);
   transition: background var(--t-fast, 0.18s), border-color var(--t-fast, 0.18s);
 }
-/* 正在被映射 / 高亮的当前列 */
+/* 正在被映射 / 高亮的當前列 */
 .ll__cell.cur .ll__box {
   border-color: var(--viz-current);
   background: color-mix(in srgb, var(--viz-current) 22%, var(--surface-1));
 }
-/* 属于选中 LIS 的格——绿色 */
+/* 屬於選中 LIS 的格——綠色 */
 .ll__cell.pick .ll__box {
   border-color: var(--viz-chosen);
   background: color-mix(in srgb, var(--viz-chosen) 24%, var(--surface-1));
@@ -147,7 +147,7 @@
   margin-top: 8px;
 }
 
-/* ---------- 读数条 ---------- */
+/* ---------- 讀數條 ---------- */
 .ll__readout {
   font-size: 14.5px;
   line-height: 1.6;
@@ -169,7 +169,7 @@
   color: var(--accent-1);
 }
 
-/* ---------- 步进控制（仿 lp__ctl） ---------- */
+/* ---------- 步進控制（仿 lp__ctl） ---------- */
 .ll__ctl {
   display: flex;
   align-items: center;
@@ -211,7 +211,7 @@
   color: var(--text-3);
 }
 
-/* 链接到 LIS 页的提示 */
+/* 連結到 LIS 頁的提示 */
 .ll__link {
   color: var(--accent-2);
   font-weight: 600;

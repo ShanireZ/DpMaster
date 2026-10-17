@@ -38,7 +38,7 @@ function Stepper({
   )
 }
 
-// 四舍五入到最多 2 位小数、去掉多余的 0（10.75 / 9 / 7.5）。
+// 四捨五入到最多 2 位小數、去掉多餘的 0（10.75 / 9 / 7.5）。
 const fmt = (x: number) => {
   const r = Math.round(x * 100) / 100
   return Number.isInteger(r) ? String(r) : String(r)
@@ -46,11 +46,11 @@ const fmt = (x: number) => {
 
 interface Seg {
   kind: 'full' | 'cut' | 'empty'
-  span: number // 占容量的格数（可为小数）
+  span: number // 佔容量的格數（可為小數）
   text: string
 }
 
-// 贪心（可分割）：按 v/w 降序装，最后一件按剩余容量比例切开。
+// 貪心（可分割）：按 v/w 降序裝，最後一件按剩餘容量比例切開。
 function greedyFractional(items: Item[], cap: number): { value: number; segs: Seg[] } {
   const order = [...items].sort((a, b) => b.v / b.w - a.v / a.w)
   let rest = cap
@@ -59,12 +59,12 @@ function greedyFractional(items: Item[], cap: number): { value: number; segs: Se
   for (const it of order) {
     if (rest <= 0) break
     if (rest >= it.w) {
-      // 整件装入
+      // 整件裝入
       value += it.v
       rest -= it.w
       segs.push({ kind: 'full', span: it.w, text: `w=${it.w} v=${it.v}` })
     } else {
-      // 只装得下一部分 → 切开
+      // 只裝得下一部分 → 切開
       const frac = rest / it.w
       value += it.v * frac
       segs.push({
@@ -79,7 +79,7 @@ function greedyFractional(items: Item[], cap: number): { value: number; segs: Se
   return { value, segs }
 }
 
-// 整取 01 背包（不可分割）最优价值，自写小背包作对照。
+// 整取 01 揹包（不可分割）最優價值，自寫小揹包作對照。
 function best01(items: Item[], cap: number): number {
   const f = new Array(cap + 1).fill(0)
   for (const it of items) {
@@ -91,9 +91,9 @@ function best01(items: Item[], cap: number): number {
 }
 
 /**
- * 分数背包（辨析课）自建轻量可视化：
- * 贪心按 v/w 降序把整段填进容量条、最后一件切开（斜纹）；
- * 旁边并列只读的「整取 01-DP 最优」，凸显可分割时贪心 ≥ 整取且 O(n log n) 更简单。
+ * 分數揹包（辨析課）自建輕量視覺化：
+ * 貪心按 v/w 降序把整段填進容量條、最後一件切開（斜紋）；
+ * 旁邊並列唯讀的「整取 01-DP 最優」，凸顯可分割時貪心 ≥ 整取且 O(n log n) 更簡單。
  */
 export default function KnapsackFractionalDemo() {
   const [items, setItems] = useState<Item[]>([

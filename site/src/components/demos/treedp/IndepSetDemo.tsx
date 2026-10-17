@@ -8,8 +8,8 @@ import { TreeCanvas, StepBar, Legend, Panel, type NodePaint } from './TreeCanvas
 import '../shared/demo-workbench.css'
 import './treedp-demo.css'
 
-// 固定一棵 6 点公司树，用户只改点权（欢乐值）。父亲数组（根 = 0，-1 表示根）。
-//        1(董事长)
+// 固定一棵 6 點公司樹，使用者只改點權（歡樂值）。父親陣列（根 = 0，-1 表示根）。
+//        1(董事長)
 //       / |        \
 //     2   3         4
 //    / \
@@ -49,7 +49,7 @@ export default function IndepSetDemo() {
   const step = res.steps[Math.min(p.index, res.steps.length - 1)]
   const isLastFrame = p.index >= res.steps.length - 1
 
-  // 已确定 dp 的节点（截至当前帧）
+  // 已確定 dp 的節點（截至當前影格）
   const settledSet = useMemo(() => new Set(step.settled), [step])
   const justDone = step.u
 
