@@ -36,7 +36,7 @@ status: stable
 | 量的东西 | 结果 |
 |---|---|
 | 18 个可达仓里这四个标签的数量 | **0**（`gh label list` 逐仓扫） |
-| 各仓实际标签 | 9 个 GitHub 默认；`Plumbline` / `PubEnvCtl` / `RootPage` 另有 `accessibility` |
+| 各仓实际标签 | 9 个 GitHub 默认；`Plumbline` / `RootPage` 另有 `accessibility` |
 | 本文件的副本份数 | **19**（每个项目 `docs/agents/` 各一份） |
 | 其中仍是模板原样的 | **18 份逐字节相同** |
 | 唯一改过的那份 | `Plumbline`，**只改了末句**、映射一个字没动 |
