@@ -6,7 +6,7 @@
 	//   https://developers.cloudflare.com/workers/static-assets/binding/
 	"$schema": "node_modules/wrangler/config-schema.json",
 	"name": "dpmaster",
-	// 只走自定義網域，不暴露 *.workers.dev 入口。
+	// 只走自訂網域，不暴露 *.workers.dev 入口。
 	"workers_dev": false,
 	// 不為部署版本生成 Cloudflare Preview URLs。
 	"preview_urls": false,

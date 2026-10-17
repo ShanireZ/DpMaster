@@ -34,7 +34,7 @@ Some concepts have thin native problem pools:
 
 * LCIS has no official P/B template currently used by the site; it is treated as a concept note in the LCS lesson rather than forced into the exercise list.
 * 打家劫舍 and common stock-buying names do not have exact Luogu-native counterparts; DP大師 teaches the same state-machine idea through native constrained-selection problems and P2569.
-* 分組 / 混合 / 依賴揹包 and some interval/bitmask variants have narrower pools; reuse and explicit caveats are preferred over invented coverage.
+* 分組 / 混合 / 相依揹包 and some interval/bitmask variants have narrower pools; reuse and explicit caveats are preferred over invented coverage.
 
 # Rejected Or Cautious Items
 

@@ -1,5 +1,5 @@
 // 回饋處理核心 —— Cloudflare Worker 與（可選的）外部 relay 主機共用。
-// 僅依賴 Fetch API 與 Web Crypto；執行環境 Adapter 不得複製檢核、限流或回執語義。
+// 僅相依 Fetch API 與 Web Crypto；執行環境 Adapter 不得複製檢核、限流或回執語義。
 import {
   applyCors,
   clip,

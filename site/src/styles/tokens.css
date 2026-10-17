@@ -48,7 +48,7 @@
 
   /* ---------- 語義視覺化色（DP 演示專用，剋制、可辨、跨部分一致） ---------- */
   --viz-current: #ef9f5e;   /* 當前計算 · 暖珊瑚 */
-  --viz-source: #6fb6c6;    /* 依賴來源 · 青 */
+  --viz-source: #6fb6c6;    /* 相依來源 · 青 */
   --viz-chosen: #93c06b;    /* 被選/最優 · 綠 */
   --viz-settled: #57524b;   /* 已確定 */
   --viz-invalid: #e07e7e;   /* 非法/越界 · 陶紅 */
@@ -85,7 +85,7 @@
   --measure: 46rem;
   --content-max: 1240px;
 
-  /* ---------- 過渡（自定義緩動，無 linear/ease-in-out） ---------- */
+  /* ---------- 過渡（自訂緩動，無 linear/ease-in-out） ---------- */
   --ease: cubic-bezier(0.22, 0.61, 0.36, 1);
   --ease-spring: cubic-bezier(0.34, 1.4, 0.5, 1);
   --ease-out: cubic-bezier(0.16, 1, 0.3, 1);

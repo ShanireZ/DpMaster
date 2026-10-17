@@ -16,7 +16,7 @@ function xml(value: string): string {
 
 /**
  * 已批准公開內容允許檢索、引用、模型輸入與訓練。這裡列出已知的檢索類、使用者觸發類
- * 與訓練類抓取器，讓原始碼立場保持單向明確。這份 robots.txt 是唯一權威：round1.cc
+ * 與訓練類抓取器，讓原始碼立場保持單嚮明確。這份 robots.txt 是唯一權威：round1.cc
  * 的 Cloudflare 託管 robots.txt 必須保持關閉，否則它會在前面合併一段對訓練類抓取器
  * `Disallow: /` 的託管塊，同一個 UA 落進兩個組時各家抓取器的合併實作並不一致。
  */

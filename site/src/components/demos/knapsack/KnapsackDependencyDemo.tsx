@@ -37,7 +37,7 @@ function Stepper({
 }
 
 /**
- * 有依賴的揹包演示：1 個主件 + 2 個附件，可改 w / v。
+ * 有相依的揹包演示：1 個主件 + 2 個附件，可改 w / v。
  * 先把「主 + 附件子集」枚舉成 4 個組合，再把這 4 個組合當作同一組做分組揹包。
  */
 export default function KnapsackDependencyDemo() {

@@ -1,7 +1,7 @@
 import type { ReactNode } from 'react'
 import type { TreeNodeLayout } from './rerootSolver'
 
-// 自定義 SVG 畫樹的共享外殼：節點=圓（可點）、邊=線，佈局用 layoutTree 的 x/y。
+// 自訂 SVG 畫樹的共享外殼：節點=圓（可點）、邊=線，佈局用 layoutTree 的 x/y。
 // 各演示傳入「每個節點/每條邊如何著色」的回呼，以及節點上要顯示的副標籤。
 
 export interface NodeStyle {

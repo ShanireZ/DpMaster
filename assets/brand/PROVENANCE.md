@@ -1,7 +1,7 @@
 # DpMaster 品牌資產
 
 本目錄是當前採用版本的完整自包含副本；與 `BetaPass/std/brand/dpmaster/` 逐位元組鏡像。
-生成、合成與檢核指令碼只保存在 `BetaPass/std/candidates/_build/`，不復制進專案。
+生成、合成與檢核指令碼只保存在 `BetaPass/std/candidates/_build/`，不複製進專案。
 
 ## 當前檔案
 
