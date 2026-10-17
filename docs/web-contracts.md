@@ -13,10 +13,8 @@ status: stable
 > ★★★ **本檔案是唯一權威**，與 `web-baseline.md` 同一套 hash 門：
 > 啟用這三塊的專案在自己的 `docs/` 下持完整副本並釘住本檔案的 sha256，不一致即紅。
 >
-> 來源：原 `NxtAgents/modern-web-guidance-sitemap-markdown-negotiation-plan.md` 的 §3.3 / §3.4 / §6.1–6.3。
-> 該倉已移除，**這三塊因為 `dp.round1.cc` 線上正按它們執行而必須留下**。
-> 原計畫 §4 的八波實施包與 §5 的 PubEnv 搜索閉環**已作廢**（N10）；§5.3 的上線預檢 10 步
-> 因為是 DpMaster 退出門的驗收依據，已內聯進 [`ShanireZ/DpMaster#6`](https://github.com/ShanireZ/DpMaster/issues/6)。
+> `dp.round1.cc` 線上按本檔案的三項契約執行。
+> DpMaster 退出門的上線預檢驗收依據已內聯進 [`ShanireZ/DpMaster#6`](https://github.com/ShanireZ/DpMaster/issues/6)。
 
 ## 1. Sitemap 契約
 
