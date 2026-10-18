@@ -15,8 +15,8 @@
   },
   "requiredBrowsers": ["chrome", "edge", "firefox", "safari", "ios_saf"],
   "approvedMinimums": {
-    "chrome": 123,
-    "edge": 123,
+    "chrome": 124,
+    "edge": 124,
     "firefox": 125,
     "safari": 17.4,
     "ios_saf": 17.4,
@@ -106,7 +106,7 @@
     ]
   },
   "snapshot": {
-    "approvedAt": "2026-10-17",
+    "approvedAt": "2026-10-18",
     "browserslist": "4.28.8",
     "vite": "8.2.2",
     "baselineBrowserMapping": "2.11.17",
