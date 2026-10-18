@@ -72,13 +72,17 @@ pnpm add -g wrangler @cnbcool/cnb-cli  # gh 用 winget upgrade --id GitHub.cli
 
 ## Baseline 設定複核
 
+2026-10-18，owner 2026-10-18 選擇「核准五個專案最低 124（建議）」；同一鎖定資料的日期查詢於 10-17 為 Chrome／Edge 123、10-18 為 124，其他批准值不變。本次只更新這兩個批准值與真實複核日期；應用相依、查詢、工具快照、既有 Firefox 反證及未批准前移拒絕保持。尚未取得 RUM，不宣稱已複核使用者流量或完成真實 Edge／Safari 驗收。Vite 仍只消費 `baseline-targets.ts` 的顯式目標；能力審查快照不控制輸出語法。原守衛在隔離副本分別把 Chrome／Edge 改回 123 時仍拒絕。恢復本次三個欄位後門應重新報紅；未部署。
+
+同批工具鏈維護在 Node 26.12.0／pnpm 12.14.0 下執行完整 `pnpm verify` exit 0，含 59 個瀏覽器案例與資產預算；應用相依與鎖定解析保持。
+
 2026-10-17，owner 核准：「核准最低 125；RUM 未取得如實記錄，不宣稱已複核流量」。`site/baseline.config.json` 僅將 Firefox 的批准最低版本由 124 更新為 125，並記錄本次設定複核日期；既有能力審查查詢、Vite 顯式語法目標、其他瀏覽器批准值與工具鏈快照保持。**尚未取得 RUM，不宣稱已複核流量或完成實機驗收。** `site/scripts/baseline-browser-review.test.mjs` 執行原守衛正向檢查，並以舊批准值 124 的隔離副本證明前移仍會被拒絕。需要撤回時只還原這兩個設定值和本次測試／複核登記，原守衛應重新報紅。
 
 ## 部署前準備
 
 需要準備：
 
-- Node.js 26.10.0 與 pnpm 12.6.0，均為**全域安裝**（見 [`../Init_essential.md`](../Init_essential.md)）。儲存庫使用 `pnpm-lock.yaml` 鎖版，版本權威是 `site/.node-version`、`site/package.json` 和 `site/pnpm-workspace.yaml`。
+- Node.js 26.12.0 與 pnpm 12.14.0，均為**全域安裝**（見 [`../Init_essential.md`](../Init_essential.md)）。儲存庫使用 `pnpm-lock.yaml` 鎖版，版本權威是 `site/.node-version`、`site/package.json` 和 `site/pnpm-workspace.yaml`。
 - 已完成“全域 CLI 準備”：`wrangler`、`gh`、`cnb` 全域安裝並登入。
 - Cloudflare 帳號，已允許 Wrangler 發佈 Workers，且 `round1.cc` zone 在該帳號下。
 - 如果需要站內回饋，先讀完“回饋與告警送達”一節——當前這條連線路徑是斷的。

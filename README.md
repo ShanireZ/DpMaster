@@ -23,7 +23,7 @@ DP大師是面向 C++ 演算法學習者的動態規劃交互式學習網站，�
 
 ## 本機執行
 
-需要 Node.js 26.10.0 與 pnpm 12.6.0，版本權威分別是 `site/.node-version` 和 `site/package.json`。
+需要 Node.js 26.12.0 與 pnpm 12.14.0，版本權威分別是 `site/.node-version` 和 `site/package.json`。
 
 ```bash
 cd site
