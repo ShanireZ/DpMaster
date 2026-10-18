@@ -53,7 +53,7 @@ status: stable
 
 1. `gh label create` 真的建出來，**建完當場 `gh label list` 複核**；
 2. 改**那個專案自己的** `docs/agents/triage-labels.md` 右列；
-3. 在那份副本里寫下**為什麼它與本預設不同** —— 下一個接手的人只看得到副本。
+3. 在那份副本裡寫下**為什麼它與本預設不同** —— 下一個接手的人只看得到副本。
 
 ★ 本檔案**有意不在副本一致性門裡**（判據與理由見工作區根的
 `Docs/baseline-copies.manifest.mjs`「共享的 agent 約定」段 —— ⛔ 這裡**有意不寫成相對連結**：

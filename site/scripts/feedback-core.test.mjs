@@ -258,7 +258,7 @@ test('a submission without opt-in diagnostics carries no empty label rows', asyn
     },
   })
 
-  // 診斷資訊（瀏覽器 / 設備 / 視口 / 區域 / UA）預設不勾選，請求里根本沒有這些欄位。
+  // 診斷資訊（瀏覽器 / 設備 / 視口 / 區域 / UA）預設不勾選，請求裡根本沒有這些欄位。
   const minimal = {
     kind: '其他建议',
     page: '首页',
