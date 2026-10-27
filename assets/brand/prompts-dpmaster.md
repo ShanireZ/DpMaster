@@ -24,7 +24,7 @@
 | code / 顯示名 | `dpmaster` / DP大師 |
 | 定位 | 面向 C++ 演算法學習者的動態規劃交互式學習網站：講解 + 可編輯演示 + 小遊戲 + 題目索引 |
 | 最終文字 | 主標「DP大師」· 副標 `DpMaster` |
-| 字體 | 中文 **Noto Sans SC Bold**（站台 `--font-body`）· 拉丁 **Space Grotesk**（站台 `--font-display`，`DpMaster/site/node_modules/@fontsource/space-grotesk/`） |
+| 字體 | 中文 **Noto Sans SC Bold**（站台 `--font-body`）· 拉丁 **Space Grotesk**（站台 `--font-display`；品牌重建讀取固定副本 `BetaPass/std/brand/dpmaster/fonts/space-grotesk-latin-700-normal.woff2`，授權文字隨副本保存） |
 | 色板 | 暖墨 `#0b0a09` · 表面 `#1a1614` · 蜜金 `#f0cd83` → `#e0a24c` · 正文暖白 `#ece7de` · 七族低飽和寶石色 |
 | 背景方向 | ★ **「教學器物」**（owner 2026-08-19 拍板）：DP 表格實體化成暖墨石磚/煙燻玻璃狀態格陣，蜜金光沿最優子結構逐格爬行 |
 
@@ -38,7 +38,7 @@
 方形狀態磚、倒角、髮絲金線、邊緣刻度，**光是被點亮的格子自己發出來的**，不是外面打了一盞燈。
 這樣一眼說得清「這是講動態規劃的」，而不只是好看。
 
-Logo 是**狀態旋印**：七枚狀態片旋轉匯聚到中心一枚最優狀態。它與站台 `site/public/favicon.svg`
+Logo 是**狀態旋印**：七枚狀態片旋轉匯聚到中心一枚最優狀態。它與站台 `DpMaster/site/public/favicon.svg`
 是同一個概念的高精插畫版——**必須認得出是同一族**（七片、旋轉、中心一枚），但這次是重新生成，
 不從那個 SVG 派生。
 
