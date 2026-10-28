@@ -2,47 +2,35 @@
 okf_version: "0.2"
 ---
 
-# DP大師 Documentation Bundle
+# DpMaster documentation
 
-This directory is the canonical, current-truth OKF bundle for DP大師. It contains durable product, design, engineering, and operations knowledge only. Git history carries change history; active task plans and review checklists live separately in `handoff/`.
+Reusable product, design, engineering, and release contracts live here. Source and configuration remain authoritative. Historical operations, local machine setup, task handoffs, and workspace-wide procedures are kept outside the public repository.
 
-# Project
+## Product
 
-* [Project Overview](/project/overview.md) - identity, audience, current status, source-of-truth rules.
+- [Scope](product/scope.md) — learning surface, routes, games, and exclusions.
+- [Taxonomy](product/content-taxonomy.md) — family identities and catalog ownership.
+- [Problem policy](product/problem-policy.md) — Luogu P/B-only corpus and caveats.
 
-# Product
+## Design
 
-* [Product Scope](/product/scope.md) - user-facing routes, non-goals, current completion surface.
-* [Content Taxonomy](/product/content-taxonomy.md) - current A-G family map, type counts, games, and route semantics.
-* [Luogu Problem Policy](/product/problem-policy.md) - P/B-only rule, exclusions, current problem index counts, known caveats.
+- [Visual system](design/visual-system.md) — Warm Ink tokens, readability, motion, and accessibility.
+- [Family visual standard](concepts/family-visual-standard.md) — art slots, responsive layout, and lesson instruments.
+- Family specifications: [A Backpack](concepts/a-backpack/README.md), [B Linear](concepts/b-linear/README.md), [C Interval](concepts/c-interval/README.md), [D Matrix](concepts/d-matrix/README.md), [E Reroot](concepts/e-reroot/README.md), [F Tree](concepts/f-tree/README.md), [G Bitmask](concepts/g-bitmask/README.md).
 
-# Design
+## Engineering
 
-* [Visual System](/design/visual-system.md) - Warm Ink tokens, accessibility, motion rules, superseded palette notes.
-* [Family Visual Standard](/concepts/family-visual-standard.md) - A-G family hero, journey, and lesson-plate contract.
-* [Body Visualization Audit](/concepts/body-demo-audit.md) - current A-G figure and Demo inventory feeding the lesson-body standardization task.
-* [A Backpack](/concepts/a-backpack/README.md), [B Linear](/concepts/b-linear/README.md), [C Interval](/concepts/c-interval/README.md), [D Matrix](/concepts/d-matrix/README.md), [E Reroot](/concepts/e-reroot/README.md), [F Tree](/concepts/f-tree/README.md), and [G Bitmask](/concepts/g-bitmask/README.md) - family-specific visual grammars.
+- [Architecture](engineering/architecture.md) — rendering, routing, algorithm boundaries, and splitting.
+- [Toolchain](engineering/toolchain.md) — runtime, supply chain, lint, CI, and release rules.
+- [Browser compatibility](engineering/browser-compatibility.md) — project browser/Baseline contract.
+- [Public HTTP](engineering/public-http.md) — sitemap, Markdown negotiation, caching, and discovery.
+- [Content authoring](engineering/content-authoring.md) — lesson structure, code style, and registration.
+- [Visualization engine](engineering/visualization-engine.md) — models, playback, inputs, and shared primitives.
 
-# Engineering
+## Operations and contribution
 
-* [Site Architecture](/engineering/architecture.md) - stack, directory roles, routing, rendering, code-splitting.
-* [Toolchain and Modernity Contract](/engineering/toolchain.md) - Node, pnpm, TypeScript, dependency, compatibility, CI, and release rules.
-* [Content Authoring Contract](/engineering/content-authoring.md) - type-page structure, C++ style, formulas, registration checklist.
-* [Visualization Engine Contract](/engineering/visualization-engine.md) - `VizModel`, demos, playback, editable inputs.
-
-# Operations
-
-* [Verification](/operations/verification.md) - build/lint/doc checks and review gates.
-* [Analytics and Alerting](/operations/analytics.md) - RUM events, regional dashboards, feedback delivery, privacy, and alerts.
-* Deployment and feedback are maintained in the root [deploy.md](../deploy.md); this bundle records the durable contracts that runbook implements.
-
-# Agent Conventions
-
-`agents/` records **how tooling uses this repository** (where issues live, how triage labels map, where to find domain docs) rather than product knowledge; the workspace rules and the OKF maintenance contract are kept once at the workspace root and only pointed to from the index. The authority on project-level agent constraints is always [`AGENTS.md`](../AGENTS.md); this directory only carries the details it references.
-
-* [Agent Configuration](/agents/index.md) - entry point for three conventions: issue tracker and Wayfinder rules, triage-label mapping, domain-doc layout (`GLOSSARY.md` / ADRs, silently skipped when absent), plus pointers to the workspace rules and the OKF v0.2 maintenance contract this bundle follows.
-
-# Web 治理
-
-* [Web Platform Baseline 治理（工作區唯一權威）](./web-baseline.md) - 工作區權威的逐位元組副本，由 `node Docs/check-baseline-copies.mjs` 守著。**不要就地改**：改工作區權威再同步全部副本。
-* [sitemap / Markdown 內容協商 / Accept 判據（工作區唯一權威）](./web-contracts.md) - 同上，同一道門。
+- [Verification](operations/verification.md) — local, documentation, browser, and release evidence.
+- [Analytics](operations/analytics.md) — event privacy, delivery, dataset layout, and alerts.
+- [Deployment](../deploy.md) — release target, variables, feedback API, and troubleshooting.
+- [Project guide](../AGENTS.md) — contributor commands and change boundaries.
+- [GitHub Issues](https://github.com/ShanireZ/DpMaster/issues) — bugs and work tracking.

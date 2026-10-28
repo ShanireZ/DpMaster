@@ -1,28 +1,16 @@
-# DpMaster 品牌資產
+# DpMaster brand assets
 
-本目錄是當前採用版本的完整自包含副本；與 `BetaPass/std/brand/dpmaster/` 逐位元組鏡像。
-生成、合成與檢核指令碼只保存在 `BetaPass/std/candidates/_build/`，不複製進專案。
+This directory contains the adopted brand artwork, native source images, composition fonts, and their license texts. Generation-session logs and workspace build procedures are maintained outside this repository.
 
-## 當前檔案
-
-| 檔案 | 用途 |
+| Files | Role |
 |---|---|
-| `dpmaster-logo-source.png` | 採用的 Logo 原生源或品牌定稿源 |
-| `dpmaster-logo.png` | 1024×1024 透明 Logo 定稿 |
-| `dpmaster-badge-bg-source.png` | 橫版原生無字源圖 |
-| `dpmaster-badge-bg.webp` | 1248×416 無字橫版背景 |
-| `dpmaster-badge.webp` | 1248×416 帶字橫版定稿 |
-| `dpmaster-stage-bg-source.png` | 豎版原生無字源圖 |
-| `dpmaster-stage-bg.webp` | 1280×1600 無字豎版背景 |
-| `dpmaster.webp` | 1280×1600 帶字豎版定稿 |
-| `prompts-dpmaster.md` | Logo、橫版、豎版提示詞與合成規範 |
-| `fonts/` | 實際合成使用的字體與現有授權文字 |
-| `generation-notes.md` | 原生生成、篩選與修正記錄 |
+| `dpmaster-logo-source.png`, `dpmaster-logo.png` | Adopted source and 1024×1024 transparent logo. |
+| `dpmaster-badge-bg-source.png`, `dpmaster-badge-bg.webp` | Native source and 1248×416 text-free landscape background. |
+| `dpmaster-badge.webp` | 1248×416 composed landscape artwork. |
+| `dpmaster-stage-bg-source.png`, `dpmaster-stage-bg.webp` | Native source and 1280×1600 text-free portrait background. |
+| `dpmaster.webp` | 1280×1600 composed portrait artwork. |
+| `fonts/` | Exact composition fonts and their accompanying license texts. |
 
-## 字體
+Noto Sans SC Bold renders the Chinese brand title `DP大師`; Space Grotesk 700 renders `DpMaster`. See [Noto license](fonts/OFL-NotoCJK.txt) and [Space Grotesk license](fonts/OFL-SpaceGrotesk.txt).
 
-Noto Sans SC Bold 用於中文主標，Space Grotesk 700 用於 DpMaster；授權文字隨字體保存。
-
-## 版本紀律
-
-這裡只保留當前採用版本。被否決的生成結果、帶 `v1` / `v2` 的過渡命名和舊建置中間圖不保留；需要重現時以本目錄源圖、提示詞和 BetaPass 內的指令碼為準。
+The Warm Ink direction uses warm near-black materials, honey-gold transitions, and restrained mineral accents. The logo has seven state pieces converging on one central optimum; it shares that concept with [favicon.svg](../../site/public/favicon.svg). Preserve artwork bytes and exact brand capitalization when redistributing the adopted set.

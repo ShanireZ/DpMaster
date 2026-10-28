@@ -1,10 +1,10 @@
 ---
 type: Engineering Contract
 title: Content Authoring Contract
-description: How to maintain DP大師 type pages, examples, formulas, code, and registration.
+description: How to maintain DpMaster type pages, examples, formulas, code, and registration.
 tags: [content, authoring, lessons]
 status: stable
-generated: { by: openai/codex, at: 2026-07-31T15:32:38+08:00 }
+generated: { by: openai/codex, at: 2026-10-28T05:02:08.368Z }
 sources:
   - resource: ../../site/src/content/a/Knapsack01.tsx
   - resource: ../../site/src/content/a/KnapsackComplete.tsx
@@ -25,7 +25,7 @@ Each DP type page should follow this teaching sequence:
 7. 3 exercises where the native problem pool supports it.
 8. Previous/next navigation.
 
-The A/01 揹包 and A/完全揹包 pages are the strongest current templates.
+The A/01 and A/complete knapsack pages are the strongest current templates.
 
 # Minimum Page Shape
 
@@ -34,7 +34,7 @@ A mature type page should usually have:
 * 6-8 `section.lesson` blocks.
 * At least 3 on-brand figures when the topic allows it.
 * At least 1 editable demo.
-* At least 1 "本質" info box and a "常見陷阱" box where applicable.
+* At least one key-idea info box and a common-traps box where applicable; their product headings remain Chinese.
 * 2-3 example cards and practice entries.
 * Cross-links to nearby families/types when a concept is reused.
 
@@ -75,4 +75,4 @@ When adding or changing a type:
 
 # Lesson Hero Art
 
-Upgraded families register one lazy art module in `site/src/components/art/familyArtRegistry.ts`. The catalog remains the sole source for family and lesson identity; the art registry must not copy titles, slugs, descriptions, or ordering. Each module supplies a category hero, a same-motif journey wireframe, and a `640 × 390` semantic lesson plate selected by the catalog slug. Families not yet upgraded continue to use the shared `PartGlyph` fallback.
+Upgraded families register one lazy art module in `site/src/components/art/familyArtRegistry.ts`. The catalog remains the sole source for family and lesson identity; the art registry must not copy titles, slugs, descriptions, or ordering. Each module supplies a category hero, a same-motif journey wireframe, and a `640 × 390` semantic lesson plate selected by the catalog slug. All ready families have their own module; `PartGlyph` is a defensive unknown-family fallback.

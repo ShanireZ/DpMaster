@@ -1,9 +1,7 @@
 import assert from 'node:assert/strict'
-import {
-  existsSync,
-  readFileSync,
-  readdirSync,
-} from 'node:fs'
+import { execFileSync } from 'node:child_process'
+import { existsSync, mkdtempSync, mkdirSync, readFileSync, readdirSync, rmSync, writeFileSync } from 'node:fs'
+import { tmpdir } from 'node:os'
 import { dirname, extname, join, relative, resolve } from 'node:path'
 import test from 'node:test'
 import { fileURLToPath } from 'node:url'
@@ -12,46 +10,20 @@ const siteDir = join(dirname(fileURLToPath(import.meta.url)), '..')
 const projectDir = join(siteDir, '..')
 const docsDir = join(projectDir, 'docs')
 
-/**
- * ★★★ 2026-08-21：這道門補上了它一直缺的那條判據 —— **可達性**。
- *
- * 它此前的作用域是全的（`markdownFiles` 遞歸），frontmatter 與斷鏈也都在查，
- * 但它**從來沒問過「這份文件從 index.md 走得到嗎」**。於是 owner 08-21 推的
- * `docs/agents/` 六份進了 bundle、通過了 frontmatter 檢查，卻從入口一份都到不了。
- *
- * ★ 對照：betai 與貝塔通那道同族的門是反過來壞的 —— 判據在，作用域漏了子目錄。
- * 一個作用域全判據缺，一個判據在作用域缺，**同一個漂移有兩種漏法**。
- */
-
-/**
- * ★★ 只要求通用 OKF 欄位、不要求本儲存庫 `generated` 溯源的目錄。
- *
- * `agents/` 與兩份頂層 Web 契約是 workspace 級共享文件，同一批檔案**逐位元組**鋪在
- * 多個專案。給它們補本儲存庫特有的 `generated:` 與 `sources: - resource:` 寫法，等於讓
- * 本儲存庫的副本從此和上游分叉，下次同步必衝突。
- * ⇒ 它們仍須有 `type` 與 `status`，也仍須**可達**，只是不受本儲存庫溯源格式約束。
- *
- * ★★★ 豁免名單底下有斷言守著（目錄真的在、且 index 真的宣告了它的定位）——
- * **把「跳過」寫成「斷言它缺席」**，否則名單腐爛了沒有任何聲音。
- */
-const SHARED_UPSTREAM_DIRS = ['agents']
-const SHARED_UPSTREAM_FILES = ['web-baseline.md', 'web-contracts.md']
-
-/**
- * ★★ 有意不進導覽的檔案：範本不是知識，列進 index 只會讓目錄多一條沒人讀的項。
- * 同樣配一條斷言守著 —— 檔案哪天沒了，這條豁免必須跟著響。
- */
+// These exact ignored files are local workspace-copy inputs, checked by the
+// unchanged baseline-copy gate. They are not part of the published OKF bundle.
+const LOCAL_WORKSPACE_INPUTS = ['web-baseline.md', 'web-contracts.md']
 const NOT_IN_NAVIGATION = ['concepts/README.template.md']
 
-function markdownFiles(directory) {
+function markdownFiles(directory, bundleRoot = directory) {
   return readdirSync(directory, { withFileTypes: true }).flatMap((entry) => {
     const path = join(directory, entry.name)
-    if (entry.isDirectory()) return markdownFiles(path)
-    return extname(entry.name) === '.md' ? [path] : []
+    if (entry.isDirectory()) return markdownFiles(path, bundleRoot)
+    const rel = relative(bundleRoot, path).split('\\').join('/')
+    return extname(entry.name) === '.md' && !LOCAL_WORKSPACE_INPUTS.includes(rel) ? [path] : []
   })
 }
 
-/** 一份文件裡指向本機 Markdown 的連結，按它自己所在目錄解析，回傳絕對路徑。 */
 function localMarkdownLinks(path, source) {
   const targets = []
   for (const match of source.matchAll(/\[[^\]]*]\(([^)]+)\)/g)) {
@@ -78,10 +50,13 @@ function assertLocalLinks(path, source) {
       existsSync(link.resolved),
       `${relative(projectDir, path)} links to missing ${link.raw}`,
     )
+    assert.ok(
+      !LOCAL_WORKSPACE_INPUTS.some((rel) => link.resolved === join(docsDir, rel)),
+      `${relative(projectDir, path)} links to unpublished workspace input ${link.raw}`,
+    )
   }
 }
 
-/** 從 index.md 出發的傳遞閉包 —— 「在 bundle 裡」不夠，要**走得到**。 */
 function reachableFromIndex(files) {
   const known = new Set(files)
   const entry = join(docsDir, 'index.md')
@@ -98,10 +73,6 @@ function reachableFromIndex(files) {
   return seen
 }
 
-function inDir(rel, dir) {
-  return rel.startsWith(`${dir}/`)
-}
-
 test('the documentation bundle follows the current OKF v0.2 contract', () => {
   const index = readFileSync(join(docsDir, 'index.md'), 'utf8')
   assert.match(index, /^---\r?\nokf_version: "0\.2"\r?\n---/)
@@ -111,12 +82,7 @@ test('the documentation bundle follows the current OKF v0.2 contract', () => {
 
   const files = markdownFiles(docsDir)
   const relative_ = (path) => relative(docsDir, path).split('\\').join('/')
-
-  // ★ 掃描沒瞎：遞歸確實進了子目錄。退化回「只有頂層」時，下面的可達性會變成空斷言。
-  assert.ok(
-    files.some((path) => relative_(path).includes('/')),
-    'recursive scan reached no subdirectory',
-  )
+  assert.ok(files.some((path) => relative_(path).includes('/')), 'recursive scan reached no subdirectory')
 
   const reachable = reachableFromIndex(files)
   const orphans = files
@@ -124,70 +90,64 @@ test('the documentation bundle follows the current OKF v0.2 contract', () => {
     .filter((rel) => rel !== 'index.md')
     .filter((rel) => !NOT_IN_NAVIGATION.includes(rel))
     .filter((rel) => !reachable.has(join(docsDir, ...rel.split('/'))))
-  assert.deepEqual(
-    orphans,
-    [],
-    `unreachable from index.md (an agent reading the entry point never sees these): ${orphans.join(', ')}`,
-  )
+  assert.deepEqual(orphans, [], `unreachable from index.md: ${orphans.join(', ')}`)
 
   for (const path of files) {
     const rel = relative_(path)
     const source = readFileSync(path, 'utf8')
     assertLocalLinks(path, source)
-    // OKF 保留檔案名按 **basename** 判定：子目錄的 index.md 也是目錄入口，同樣不是概念文件。
-    // ★ 原來這裡只跳過根 index.md，於是 agents/index.md 被當成概念文件要求 frontmatter。
     if (rel === 'index.md' || rel.endsWith('/index.md')) continue
     const frontmatter = source.match(/^---\r?\n([\s\S]*?)\r?\n---/)
     assert.ok(frontmatter, `${relative(projectDir, path)} has OKF frontmatter`)
     assert.match(frontmatter[1], /^type:\s*\S.+$/m)
     assert.match(frontmatter[1], /^status: (draft|stable|deprecated)$/m)
-    if (
-      SHARED_UPSTREAM_FILES.includes(rel) ||
-      SHARED_UPSTREAM_DIRS.some((dir) => inDir(rel, dir))
-    ) continue
-    assert.match(
-      frontmatter[1],
-      /^generated: \{ by: [^,]+, at: \d{4}-\d{2}-\d{2}T[^}]+ \}$/m,
-    )
+    assert.match(frontmatter[1], /^generated: \{ by: [^,]+, at: \d{4}-\d{2}-\d{2}T[^}]+ \}$/m)
     assert.doesNotMatch(frontmatter[1], /^(timestamp|source_paths):/m)
-    if (/^sources:/m.test(frontmatter[1])) {
-      assert.match(frontmatter[1], /^  - resource: \S+/m)
-    }
+    if (/^sources:/m.test(frontmatter[1])) assert.match(frontmatter[1], /^  - resource: \S+/m)
   }
 })
 
-test('the exemptions above still describe something that exists', () => {
-  const files = markdownFiles(docsDir).map((path) =>
-    relative(docsDir, path).split('\\').join('/'),
-  )
-  const index = readFileSync(join(docsDir, 'index.md'), 'utf8')
-
-  for (const dir of SHARED_UPSTREAM_DIRS) {
-    assert.ok(
-      files.some((rel) => inDir(rel, dir)),
-      `exempt directory ${dir}/ is empty or gone — drop the exemption`,
-    )
-    assert.ok(
-      index.includes(`\`${dir}/\``),
-      `index.md no longer explains what ${dir}/ is`,
-    )
+test('local inputs are explicitly ignored and navigation exemptions exist', () => {
+  const trackedInputs = execFileSync('git', ['ls-files', '--', ...LOCAL_WORKSPACE_INPUTS.map((rel) => 'docs/' + rel)], { cwd: projectDir, encoding: 'utf8' })
+  assert.equal(trackedInputs.trim(), '', 'workspace inputs must stay outside the published index')
+  const ignore = readFileSync(join(projectDir, '.gitignore'), 'utf8').split(/\r?\n/)
+  for (const rel of LOCAL_WORKSPACE_INPUTS) {
+    assert.ok(ignore.includes(`/docs/${rel}`), `${rel} must remain unpublished`)
   }
+  const files = markdownFiles(docsDir).map((path) => relative(docsDir, path).split('\\').join('/'))
+  for (const rel of NOT_IN_NAVIGATION) assert.ok(files.includes(rel), `${rel} is gone — remove its exemption`)
+})
 
-  for (const rel of SHARED_UPSTREAM_FILES) {
-    assert.ok(
-      files.includes(rel),
-      `exempt shared file ${rel} is gone — drop the exemption`,
+test('workspace exclusions apply only to the two exact root paths', () => {
+  const fixture = mkdtempSync(join(tmpdir(), 'dpmaster-docs-scope-'))
+  try {
+    mkdirSync(join(fixture, 'nested'))
+    for (const rel of ['index.md', ...LOCAL_WORKSPACE_INPUTS, 'nested/web-baseline.md', 'nested/orphan.md']) {
+      writeFileSync(join(fixture, rel), '# Fixture\n')
+    }
+    assert.deepEqual(
+      markdownFiles(fixture).map((path) => relative(fixture, path).split('\\').join('/')).sort(),
+      ['index.md', 'nested/orphan.md', 'nested/web-baseline.md'],
     )
-    assert.ok(
-      index.includes(`](./${rel})`),
-      `index.md no longer links to exempt shared file ${rel}`,
+    for (const rel of LOCAL_WORKSPACE_INPUTS) rmSync(join(fixture, rel))
+    assert.deepEqual(
+      markdownFiles(fixture).map((path) => relative(fixture, path).split('\\').join('/')).sort(),
+      ['index.md', 'nested/orphan.md', 'nested/web-baseline.md'],
+      'a standalone checkout must not require local workspace copies',
     )
-  }
-
-  for (const rel of NOT_IN_NAVIGATION) {
-    assert.ok(
-      files.includes(rel),
-      `${rel} is gone — drop it from NOT_IN_NAVIGATION`,
+    assert.throws(
+      () => assertLocalLinks(join(docsDir, 'index.md'), '[Hidden input](web-baseline.md)'),
+      /unpublished workspace input|missing/,
     )
+    assert.throws(
+      () => assertLocalLinks(join(docsDir, 'index.md'), '[Outside](../../AGENTS.md)'),
+      /outside the repository/,
+    )
+    assert.throws(
+      () => assertLocalLinks(join(docsDir, 'index.md'), '[Missing](missing-public-document.md)'),
+      /missing/,
+    )
+  } finally {
+    rmSync(fixture, { recursive: true, force: true })
   }
 })

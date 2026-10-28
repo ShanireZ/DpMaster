@@ -1,10 +1,10 @@
 ---
 type: Runbook
 title: Analytics and Alerting Runbook
-description: Privacy-bounded RUM, event dashboards, feedback delivery, and error-alert operations for the DP大師 Cloudflare Worker.
+description: Privacy-bounded RUM, event dashboards, feedback delivery, and error-alert operations for the DpMaster Cloudflare Worker.
 tags: [operations, analytics, rum, alerting]
 status: stable
-generated: { by: openai/codex, at: 2026-07-31T15:32:38+08:00 }
+generated: { by: openai/codex, at: 2026-10-28T05:02:45.233Z }
 sources:
   - resource: ../../site/src/analytics/
   - resource: ../../site/scripts/prerender.mjs
@@ -32,33 +32,11 @@ The UI collects feedback separately. Page name/path and feedback copy are sent o
 
 The receiver never trusts a client-supplied IP. On Cloudflare it uses the platform-injected `cf-connecting-ip` header, which the platform guarantees and overwrites. The delivered message annotates that IP with a coarse region (country name plus first-level region and city) taken from `request.cf`, for the same reason: it is edge-supplied and cannot be forged. ★ A relayed submission drops the annotation — `request.cf` would then describe the relay host, not the visitor. `x-real-ip` / `x-forwarded-for` are fallbacks only for a non-Cloudflare relay host, and the rate limiter keys on the same derived IP. A relay may override the IP with `x-dp-client-ip`, but only when `x-dp-relay-secret` matches in constant time and the value is a bare IPv4/IPv6 literal.
 
-# Outbound Delivery Is An Open Problem
+# Delivery
 
-Cloudflare datacenter egress to DingTalk (`oapi.dingtalk.com`) fails the TLS handshake — reproduced repeatedly through 2026-08, stable 525, while ordinary overseas hosts reach it fine. Until 2026-08 the site worked around this by having the browser post feedback and analytics cross-origin to the now-retired China site, which forwarded into DingTalk. Retiring that site removed the workaround, and **there is currently no verified path from this Worker into DingTalk.**
+Webhook delivery tries fetch first, with socket fallback only for 52x responses or thrown transport errors. Other application errors are not retried. The relay protocol remains implemented and tested; `worker/feedback-core.js` also serves as its reference implementation. Configuration and API response contracts are in [deploy.md](../../deploy.md#worker-configuration).
 
-The relay protocol is still implemented and tested (`FEEDBACK_RELAY_URL` plus `x-dp-relay-secret` / `x-dp-client-ip` / `x-dp-relay-kind: alert`); it just has no host pointed at it. `worker/feedback-core.js` is both the Worker handler and the reference implementation for whatever host takes that role.
-
-Before choosing a transport, run the egress probe below and read the real errors. The candidate answers, roughly in order of how little they cost:
-
-1. **Raw sockets may already work.** Cloudflare documents that `connect()` from `cloudflare:sockets` egresses from a prefix that is *not* in Cloudflare's published IP ranges, unlike `fetch()`. If DingTalk blocks by published Cloudflare range, hand-rolling the HTTPS request over `connect()` reaches it. The probe tests exactly this.
-2. **A different DingTalk entry point.** `api.dingtalk.com` is a separate ingress from `oapi.dingtalk.com`; the probe covers both.
-3. **A different destination the Worker can reach.** `webhookBody()` already emits DingTalk, WeCom, Feishu, Slack, and Discord shapes. Lark international, Slack, and Discord are all plain overseas HTTPS.
-4. **Cloudflare Tunnel plus Workers VPC.** Bind a `cloudflared` tunnel as a VPC Network and `fetch()` the relay through it. No public IP, no inbound port, no filing; Workers VPC is in beta and free on all Workers plans.
-5. **An external relay host.** Any always-on machine or serverless platform that can reach DingTalk, running the relay protocol above. Worker-side cost is two environment variables.
-
-Whichever path wins, record the decision here and in `deploy.md`, and delete the alternatives that no longer apply.
-
-## Egress Probe
-
-`POST /api/_diag/egress` measures both egress paths (`fetch()` and `connect()`) against DingTalk's two ingresses, WeCom, Feishu, Lark international, Telegram, and a Cloudflare control host. Every target is probed with a side-effect-free `GET /` or `HEAD /`; no message is ever sent.
-
-The endpoint does not exist until `EGRESS_DIAG_SECRET` is set on the Worker. An unauthenticated or mis-keyed request falls through to static assets and answers exactly like any unknown path — POST gets 405 (Workers Static Assets rejects non-GET/HEAD), GET gets 404, both with an empty body — so the endpoint's existence is not observable. Verified against production 2026-08-22. Unset the variable once the transport decision is made.
-
-```bash
-curl.exe -s -X POST https://dp.round1.cc/api/_diag/egress -H "x-dp-diag-secret: THE_SECRET"
-```
-
-Read the per-target `fetch.error` and `socket.error` strings verbatim; the control host distinguishes "DingTalk is blocked" from "the probe itself is broken".
+The temporary egress probe compares both transports without sending messages. It requires `EGRESS_DIAG_SECRET`; after investigation, remove the secret and redeploy because secrets are version-bound. Historical probe results do not prove current production reachability.
 
 # Cloudflare Dashboard
 
@@ -100,7 +78,7 @@ GROUP BY path, metric
 ORDER BY metric, p75 DESC
 ```
 
-★ Automatic injection only fires for requests that look like a real browser navigation. A bare `curl` receives HTML with no beacon in it, which is **not** evidence that injection is off — that mistake was made on 2026-08-22 and corrected the same day. Verify with browser-like headers (`User-Agent`, `Accept: text/html`, `Sec-Fetch-Mode: navigate`), or simply check whether the dashboard shows Core Web Vitals. Keep Cloudflare Web Analytics enabled for independent request/page-view trends; use the first-party dataset for route, feedback, search, outbound-problem, and RUM funnels. The deployment relies exclusively on Cloudflare automatic injection (Rocket Loader stays off); neither the source nor the prerender output may add a second beacon, and `pnpm check:html` fails the build if one appears in any HTML document. Course visits are represented only by ordinary route page views; the site does not record lesson-start, lesson-completion, or local learning-progress state.
+Automatic injection requires browser-like navigation; a bare HTTP client without a beacon does not prove injection is disabled. Inspect real navigation and the provider dashboard. Keep Web Analytics/RUM enabled and Rocket Loader off, with no manual source/build beacon; `pnpm check:html` enforces that build boundary. Course visits are represented only by ordinary route page views; the site does not record lesson-start, lesson-completion, or local learning-progress state.
 
 # Alerts And Secrets
 
@@ -114,7 +92,7 @@ Configure feedback and alert destinations on the production Worker:
 | `ALERT_WEBHOOK_URL` | Error-alert destination for `client_error`, `feedback_failed`, and failed feedback delivery. Prefer a different bot/channel from feedback. |
 | `ALERT_WEBHOOK_KIND` | Alert webhook format; defaults to the feedback kind. |
 | `ALERT_WEBHOOK_SECRET` | Optional alert signature secret. |
-| `FEEDBACK_RELAY_URL` | Relay host endpoint, once a transport is chosen. Feedback and alerts both ride it. |
+| `FEEDBACK_RELAY_URL` | Optional relay host endpoint. Feedback and alerts both ride it. |
 | `FEEDBACK_RELAY_SECRET` | Shared relay secret; must match the relay host. |
 | `EGRESS_DIAG_SECRET` | Enables `POST /api/_diag/egress`. Leave unset outside an active investigation. |
 
@@ -131,4 +109,4 @@ After each deployment:
 5. Exercise a controlled client error in staging and confirm the alert channel.
 6. Verify the Cloudflare Web Analytics dashboard receives `dp.round1.cc` page views.
 
-Steps 1 and 5 cannot pass until the outbound-delivery question above is settled.
+Delivery and alert checks require configured destinations and explicit authorization to send test messages. Record actual results outside the repository.

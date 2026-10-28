@@ -4,42 +4,27 @@ title: F Tree DP Visual Specification
 description: Current visual grammar and semantic plate contract for the F family.
 tags: [design, family-art, tree-dp]
 status: stable
-generated: { by: openai/codex, at: 2026-07-31T15:32:38+08:00 }
+generated: { by: openai/codex, at: 2026-10-28T05:02:08.368Z }
 ---
 
-# F 樹形 DP 視覺概念板
+# F Tree DP
 
-> 狀態：`已实现基线`
-> 代表課程：`knapsack`、`cover`
+An ochre mineral canopy contains fixed-root subtree states. Leaf results flow upward through brass branches into parent containers. Five real links occupy three canopy layers. This family emphasizes a fixed root and merging.
 
-## 家族視覺語法
+References: [dark desktop](family-concept-dark.svg), [light desktop](family-concept-light.svg), [mobile](family-concept-mobile.svg). These concept assets retain the course's Chinese labels.
 
-- 主母題：固定根、子樹容器與自底向上的狀態匯聚。
-- 主雕塑：赭金樹冠由多層狀態容器組成，葉層結果沿枝幹匯入父層和根。
-- 課程路徑：五個真實課程連結沿固定根的三層樹冠分佈。
-- 家族礦材：赭金礦與舊黃銅，使用 `--grad-f`。
-- 邊界：F 強調固定根和合並；不出現 E 的巡遊軌道或換根前後態。
+## Lesson semantics
 
-## 逐課語義
-
-| slug | 圖例必須說明的一句話 |
+| Slug | Required meaning |
 |---|---|
-| `select` | 父節點與子節點的選/不選狀態存在明確衝突。 |
-| `knapsack` | 子樹揹包逐個與父節點容量狀態卷積合併。 |
-| `diameter` | 最長與次長向下鏈在當前節點合成經過該點的直徑。 |
-| `cover` | 三類覆蓋狀態沿父子邊組成合法組合。 |
-| `count` | 子樹計數按距離殼層或組合規模逐層匯入父節點。 |
+| `select` | Parent/child selected and unselected states expose their conflict. |
+| `knapsack` | Convolve subtree capacities into the parent one child at a time. |
+| `diameter` | The two longest downward chains combine into a path through this node. |
+| `cover` | Three coverage states form legal parent/child combinations. |
+| `count` | Distance shells or combination sizes aggregate into the parent. |
 
-## 必須、允許與禁止
+## Composition and mobile fidelity
 
-必須：固定根明確；所有主流向自底向上；課程圖例擁有不同的狀態容器。
+Keep the fixed root explicit, main flow upward, and lesson state containers distinct. Avoid root-tour orbits, five identical generic trees, or a backpack silhouette for tree knapsack.
 
-允許：行動裝置端降低分枝數量，但必須保留至少兩層合併。
-
-禁止：增加根移動軌道；把五課都畫成相同普通樹；重複使用 A 的揹包外形表示樹上揹包。
-
-## 行動裝置端與保真
-
-- 主雕塑保留根、兩層子樹和向上聚合箭頭。
-- 課程路徑在 900px 以下進入兩列，700px 以下單列。
-- 圖集為 3×2，右下格為空。
+Keep the root, two subtree levels, and upward arrows while reducing branch density. The journey becomes two columns below 900px and one below 700px. Use a 3×2 atlas with the lower-right cell empty.

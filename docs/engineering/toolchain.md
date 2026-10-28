@@ -1,10 +1,10 @@
 ---
 type: Engineering Contract
 title: Toolchain and Modernity Contract
-description: Current Node, pnpm, TypeScript, dependency, compatibility, CI, and local release rules for DP大師.
+description: Current Node, pnpm, TypeScript, dependency, compatibility, CI, and local release rules for DpMaster.
 tags: [engineering, node, pnpm, typescript, ci]
 status: stable
-generated: { by: openai/codex, at: 2026-07-31T15:32:38+08:00 }
+generated: { by: openai/codex, at: 2026-10-28T05:07:52.883Z }
 sources:
   - resource: ../../site/package.json
   - resource: ../../site/baseline.config.json
@@ -18,7 +18,7 @@ sources:
 
 `site/` is the only package root. `.node-version` fixes the current Node 26 patch, `package.json` fixes pnpm 12 through `packageManager` and `devEngines`, and `pnpm-lock.yaml` is the reproducible dependency graph used by CI.
 
-Node and pnpm are installed globally through pnpm's standalone runtime flow; this workspace does not use Corepack. npm, yarn, and bun are not alternative project workflows. Direct dependencies use a caret range whose lower bound is the current stable mainline version eligible under the release-age policy.
+Node and pnpm are installed globally through pnpm's standalone runtime flow; the project does not use Corepack. npm, yarn, and bun are not alternative project workflows. Direct dependencies use a caret range whose lower bound is the current stable mainline version eligible under the release-age policy.
 
 # Supply-chain policy
 
@@ -53,8 +53,6 @@ The scheduled GitHub workflow maintains one rolling issue for drift. It does not
 
 `pnpm release` is the sole complete production-release entry point. It runs the full verification gate once, reuses the resulting `dist/` artifact, and deploys the Cloudflare Worker. Production credentials stay local to the Wrangler CLI; GitHub Actions never receives them.
 
-# Task and documentation lifecycle
+# Documentation
 
-A user-approved task produces one focused local commit after all checks pass. The assistant summarizes the completed work and stops before push or deployment.
-
-`docs/` contains current durable truth in OKF v0.2. It does not store task status, chronological logs, resolved drift, or completed implementation plans. Active plans and review gates live in `handoff/`; checklist entries become complete only after their behavior is verified.
+Keep reusable current contracts in `docs/` and release instructions in `deploy.md`. Task handoffs, machine setup, deployment receipts, historical investigations, and workspace policy belong outside this repository. Root `AGENTS.md` defines repository contribution boundaries.

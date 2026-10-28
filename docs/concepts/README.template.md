@@ -4,50 +4,26 @@ title: DP Family Visual Concept Template
 description: Required structure for durable A–G family visual concept documents.
 tags: [documentation, design, template]
 status: stable
-generated: { by: openai/codex, at: 2026-07-31T15:32:38+08:00 }
+generated: { by: openai/codex, at: 2026-10-28T05:02:08.368Z }
 ---
 
-# {程式碼} {家族名} 視覺概念板
+# {Code} {Family} visual specification
 
-> 狀態：`概念板待评审`
-> 代表課程：`{slug-1}`、`{slug-2}`
+State the current design status and representative lesson slugs.
 
-## 家族視覺語法
+## Family grammar
 
-- 主母題：
-- 主雕塑：
-- 課程路徑：
-- 家族礦材：
-- 與相鄰家族的邊界：
+Describe the main motif, hero, journey, material/token, and boundary with adjacent families. All slots share spatial grammar; identity colors remain separate from DP state roles.
 
-## 逐課語義
+## Lesson semantics
 
-| slug | 圖例必須說明的一句話 |
+| Slug | State, transition, or constraint the plate must explain |
 |---|---|
 
-## 必須、允許與禁止
+## Fidelity
 
-必須：
-
-- 主雕塑、路徑與課程圖例使用同一空間語法。
-- 深淺主題保持同一幾何。
-- 行動裝置端保留核心狀態與轉移。
-
-允許：
-
-- 降低輔助工程線密度。
-- 根據課程語義改變局部排布。
-
-禁止：
-
-- 複製其他家族的主幾何。
-- 使用身分色冒充 DP 狀態色。
-- 把課程列表和路徑藝術拆成兩個無關區域。
-
-## 保真清單
-
-- [ ] 主雕塑實際輪廓光學居中。
-- [ ] 圖集每個 slug 唯一。
-- [ ] 3:2 安全區成立。
-- [ ] 390px 無裁切和橫向捲動。
-- [ ] 可訪問名稱完整。
+- Center the visible silhouette optically.
+- Give every ready slug a unique composition and accessible name.
+- Preserve 3:2 safe areas and identical light/dark geometry.
+- Keep core state/transition information at 390px without cropping or page overflow.
+- Reduce secondary construction lines and rearrange meaningful elements for narrow layouts.

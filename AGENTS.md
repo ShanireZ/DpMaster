@@ -1,61 +1,47 @@
-# AGENTS.md — DP大師
+# AGENTS.md — DpMaster
 
-> 繼承 [`../AGENTS.md`](../AGENTS.md)；勿假定自動載入。
+When the shared workspace parent `../AGENTS.md` exists, read and inherit it explicitly. This guide records repository-specific contracts and also works in a standalone checkout.
 
-<a id="项目与权威"></a>
+## Authorities and boundaries
 
-## 專案與權威
+- Display name: **DP大師**. Directory `DpMaster`, repository `ShanireZ/DpMaster`, and Worker `dpmaster` are stable publication identifiers.
+- Deploy only `site/dist/` to Cloudflare Workers Static Assets at `https://dp.round1.cc`. The app is static React/Vite: accounts, databases, and an online judging backend are outside its scope.
+- Read [docs/index.md](docs/index.md) for reusable product/design/engineering contracts; [deploy.md](deploy.md) for release, feedback, and edge configuration. The Web-governance exit gate is [issue #6](https://github.com/ShanireZ/DpMaster/issues/6).
+- `site/src/data/catalog.ts` alone owns lesson identity, order, content, and lazy lesson/game imports. Keep lessons and games split by route. `PUBLIC_PATHS` in `site/src/lib/publicRoutes.ts` alone owns public URLs, sitemap, prerendering, and Markdown negotiation.
+- Lesson `ExampleCard` / `Exercise` entries own problems. Run `pnpm content:generate` after changing them; commit the generated projection and update documented counts.
+- Preserve Chinese teaching content and UI labels. Maintain contributor documentation in English. Keep reusable current contracts in Git; workspace procedures, machine facts, historical receipts, and task handoffs belong outside this repository.
 
-- 顯示名 **DP大師**；目錄 `DpMaster`、儲存庫 `ShanireZ/DpMaster`、Worker `dpmaster` 是發佈標識，勿隨顯示名/網域改名。
-- 唯一發布目標：`site/dist/` → Cloudflare Workers Static Assets → `https://dp.round1.cc`。不得恢復區域站、雙域、EdgeOne 或第二發佈平台。
-- `site/` 是靜態 React/Vite 應用，不引入帳號、資料庫、線上評測後端；建置只產出 `site/dist/`，canonical 自指，無 hreflang。
-- `site/src/data/catalog.ts` 統一課程身分、順序、正文與家族遊戲 lazy import，勿另建 registry；正文按課獨立分包，遊戲也須 lazy-load。
-- 題目以 `ExampleCard` / `Exercise` 為準；`site/src/data/problems.ts` 是生成檔案，不手改。題目變化跑 `pnpm content:generate`，提交生成物並同步 README/OKF 數量。
-- `site/src/lib/publicRoutes.ts` 的 `PUBLIC_PATHS` 是公開 URL、sitemap、預繪製、同 URL Markdown 協商的唯一集合；內部標本、未知路由不得公開。
-- Web 治理的退出門是 [`ShanireZ/DpMaster#6`](https://github.com/ShanireZ/DpMaster/issues/6)。
-- 部署與回饋操作讀 [`deploy.md`](deploy.md)；Web 合同讀 [`docs/web-contracts.md`](docs/web-contracts.md)，Baseline 讀 [`docs/web-baseline.md`](docs/web-baseline.md)。核心路由、語料、部署標識變化同步對應文件與測試。
+## Commands and evidence
 
-## 命令與驗收
+Run from `site/`. Runtime and package-manager authorities are `.node-version` and `package.json`; use globally installed Node and pnpm without Corepack.
 
-從 `site/` 執行；Node 權威 `.node-version`，Node/pnpm 要求及指令碼權威 `package.json`。二者全域安裝、不經 Corepack，準備見 [`../Init_essential.md`](../Init_essential.md)；不混用 npm/yarn/bun。
-
-| 何時 | 命令與前置 | 能證明什麼 / 邊界 |
+| Scope | Command | Evidence and prerequisites |
 |---|---|---|
-| 首次準備或鎖定檔變化 | `pnpm install --frozen-lockfile`；執行環境匹配 | 鎖定檔可安裝；不是品質驗收 |
-| 頁面開發 | `pnpm dev`；相依已裝 | 本機開發服務；不是驗收 |
-| 指令碼、Worker、內容合同變化 | `pnpm test` | Node 指令碼測試；不含元件/瀏覽器 |
-| React 元件變化 | `pnpm test:unit` | Vitest 元件/單元測試；不代替實機 |
-| 程式碼診斷 | `pnpm lint` | 零 warning lint；不證明執行行為 |
-| 需要產物 | `pnpm build` | 先生成內容/SEO，再型別檢查與建置；會寫生成物，不是完整 gate |
-| 完整本機交付 | `pnpm verify`；相依和 Playwright 瀏覽器已準備 | Baseline、內容/SEO、兩類單測、lint、建置、HTML、瀏覽器路由、資產預算；不能證明生產設定或真實 Edge/Safari |
+| Install or lockfile change | `pnpm install --frozen-lockfile` | Matching runtime; proves installability only. |
+| Development | `pnpm dev` | Dependencies installed; local server only. |
+| Scripts, Worker, content contracts | `pnpm test` | Node contract tests; no component/browser evidence. |
+| React components | `pnpm test:unit` | Vitest checks; no device evidence. |
+| Static diagnostics | `pnpm lint` | Type-aware lint with zero warnings. |
+| Build artifact | `pnpm build` | Generates content/SEO, type-checks, and builds; writes generated files. |
+| Complete local delivery | `pnpm verify` | Dependencies and Playwright Chromium/Firefox/WebKit prepared; full order is in `package.json`. |
 
-`verify` 的順序以 `package.json` 為準，CI 在 `site/` 調同一入口。Chromium 跑全量、Firefox/WebKit 跑關鍵冒煙；瀏覽器合同為四大引擎當前穩定版及上一主版本，真實 Edge/Safari 發佈前人工抽檢。報告實際結果、skip、未覆蓋項。
+For documentation changes, run the [documentation checks](docs/operations/verification.md#documentation-checks). In the shared workspace, also run `node Docs/check-context-budget.mjs` after guide changes and `node Docs/check-docs-graph.mjs` after navigation changes. Report actual failures, skips, and uncovered surfaces.
 
-`pnpm release` 是唯一完整生產發佈入口：verify 後重複使用產物發佈 Worker；會外部寫入。GitHub Actions 只做 CI，不保存生產金鑰、不部署。全域 `wrangler` 須提前安裝登入，版本基線由 `deploy.md` 管理，`pnpm maintenance:check` 讀取；升級後同步基線並重跑 verify。
+`pnpm release` is the complete production-release entry: verify once, reuse its artifact, then deploy. It writes externally and needs explicit authorization. GitHub Actions runs CI without production credentials. Wrangler is global; its machine-readable baseline is in `deploy.md`.
 
-## 資料與邊緣合同
+## Contracts that changes must preserve
 
-- Rocket Loader 關閉，Cloudflare Web Analytics/RUM 開啟且只由代理注入；原始碼、預繪製及 HTML 零手動 beacon。建置/預繪製/CSP/部署合同變化須測試 HTML 數量與零 beacon（`pnpm check:html`）。
-- 覆蓋 Analytics 回應的 CSP：`script-src` 放行 `https://static.cloudflareinsights.com`，`connect-src` 放行 `'self' https://cloudflareinsights.com`，保留本站所需來源。
-- 投遞經 `site/worker/socket-fetch.js`：**fetch 優先，僅 52x 或拋錯才 socket 降級**；其他 4xx/5xx 不重試。socket 不能直連 Cloudflare IP，不得反轉順序。
-- relay 協定及測試保留；`site/worker/feedback-core.js` 也是 relay 主機參考實作，勿因未使用刪除。
-- `POST /api/_diag/egress` 僅設定 `EGRESS_DIAG_SECRET` 時存在；刪除 secret 後仍須重新部署才關閉，secret 按版本綁定。
-- 公開頁提供 HTML/`text/markdown`，策略見 `site/baseline.config.json`。AI 抓取以倉內 `robots.txt` 與 `Content-Signal` 為權威（允許訓練）；round1.cc 的 Cloudflare 託管 robots 是 zone 級（含 luogusp.round1.cc），須保持關閉。HTML 邊緣注入移除 ETag，不得為消紅關閉注入。
+- Read [browser compatibility](docs/engineering/browser-compatibility.md) before changing Baseline/toolchain policy and [public HTTP](docs/engineering/public-http.md) before changing routes, discovery, negotiation, caching, or edge behavior. `site/baseline.config.json` owns the six governance fields; Vite consumes the explicit frozen target in `baseline-targets.ts`, while the moving Widely query is audit-only.
+- Keep proxy-injected Cloudflare Web Analytics/RUM enabled and Rocket Loader off. Source and generated HTML contain zero manual beacons. CSP permits `static.cloudflareinsights.com` scripts and `'self' https://cloudflareinsights.com` connections. Run `pnpm check:html` for build/prerender/CSP changes.
+- Webhooks use fetch first, with socket fallback only for 52x or thrown transport errors. Retain the relay protocol/tests and `worker/feedback-core.js` as the relay reference. Removing `EGRESS_DIAG_SECRET` requires redeployment to disable the version-bound diagnostic endpoint.
+- Repository robots and Content-Signal allow public-content training. The zone-wide managed robots setting must stay off; changes affect other hosts and need their owners' approval. HTML edge injection may remove ETag; keep established injection enabled.
+- `site/src/styles/tokens.css` is the visual-token authority; [visual-system.md](docs/design/visual-system.md) is its navigation layer. Keep semantic state colors separate from family branding and meet AA 4.5:1 text contrast in both themes. Token exceptions need an identified external setter and a reason for reusing dark values; do not increase locked debt to pass.
+- Keep every linted file in its TS Program: Node scripts in `tsconfig.scripts.json`, Playwright in `tsconfig.browser-tests.json`. When lint/tsconfig changes, prove `typescript/no-deprecated` with temporary probes rather than changing ignores.
+- Direct dependencies use approved stable caret ranges; the lockfile fixes CI resolution. Preserve the 24-hour quarantine, strict engines, build-script allowlist, and dependency-status checks. Handle upgrades as separate verified changes.
+- Use ESM and modern APIs. Deprecated APIs, compatibility shims, obsolete CLI paths, and lint exemptions require an explicit product decision before implementation.
 
-## 視覺與工具鏈
+## Delivery
 
-- Token 唯一權威 [`site/src/styles/tokens.css`](site/src/styles/tokens.css)，改動前讀頭部 Warm Ink/主題說明；[`docs/design/visual-system.md`](docs/design/visual-system.md) 是導覽，衝突服從 CSS 並同步 docs。
-- `site/scripts/design-token-contract.test.mjs` 隨 `pnpm test` 檢查 var 定義、深淺主題顏色覆蓋。白名單須說明 CSS 外設定者及重複使用深色值理由；無來源不豁免。
-- 字色 token 須登記並在兩個主題實際表面滿足 AA 4.5:1。債務數量鎖定，不得加債務消紅；細節看測試。門不覆蓋非 token 的硬編碼色。
-- `site/scripts/lint-type-aware-coverage.test.mjs` 鎖 oxlint 檔案集屬於各 TS Program；Node 指令碼進 `tsconfig.scripts.json`，Playwright 進 `tsconfig.browser-tests.json`。紅時補 project，不改 ignorePatterns；lint/tsconfig 改動須用 `typescript/no-deprecated` 臨時探針驗活。
-- Baseline：`runtime: public-web`、`featureTarget: newly`；`site/baseline-targets.ts` 顯式凍結 Vite 8 Widely 目標，`widely available with downstream` 僅能力審查，不得讓 Vite 自動消費。六欄位及 Web 宣告只維護在 `site/baseline.config.json`；`pnpm baseline:check` 是 verify 首門。
-- 直接相依用獲準穩定主線的 `^`，lockfile 是 CI 精確解析合同。`site/pnpm-workspace.yaml` 強制 24 小時隔離、Node 引擎、建置指令碼白名單、相依狀態檢查，禁止排除/寬鬆模式/換包管理器繞過；版本升級獨立 task、完整驗證、一個 commit。
-- 禁廢棄 API、CommonJS 相容層、舊瀏覽器 polyfill、棄用 CLI、過渡選擇器、lint 豁免；無現代替代時停手彈出視窗。
+Use this repository's GitHub Issues as the tracker. Produce one focused commit on local `main`; the owner aggregates pushes unless the current user explicitly authorizes otherwise. Visual direction, product rules, compatibility policy, and release-contract changes need evidence and owner approval.
 
-## 交付與授權
-
-- 一個 task 一個聚焦 commit，提交本機 `main`；agent 不得 push，由 owner 彙總推送。延後 push 不弱化本機 gate。
-- 視覺方向、產品規則、相容策略、發佈合同變化須帶對比證據彈出視窗拍板。
-- `docs/` 只放長期當前事實（OKF v0.2）；`handoff/` 放任務計畫/清單，驗證後勾選，完成計畫不留 docs。
-- README 是公開入口，badge 遵循 [`../badgestd.md`](../badgestd.md)，事實來自 package/catalog/deploy；LICENSE 未宣告 only/or-later，文件統一通用 `GPL-3.0`，不得猜 SPDX variant。
-- Issue tracker：本儲存庫 GitHub Issues；triage、domain、OKF 沿用 [`docs/agents/index.md`](docs/agents/index.md)。
+README is the public entry point; facts come from source/configuration. Preserve the license wording: `LICENSE` does not declare only/or-later, so documentation uses generic `GPL-3.0`.

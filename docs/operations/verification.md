@@ -1,111 +1,73 @@
 ---
 type: Runbook
 title: Verification Runbook
-description: Build, lint, route, documentation, and deployment verification gates for DP大師.
+description: Build, lint, route, documentation, and deployment verification gates for DpMaster.
 tags: [operations, verification, build]
 status: stable
-generated: { by: openai/codex, at: 2026-07-31T15:32:38+08:00 }
+generated: { by: openai/codex, at: 2026-10-28T05:02:45.233Z }
 sources:
   - resource: ../../site/package.json
   - resource: ../
   - resource: ../../deploy.md
 ---
 
-# Local Checks
+# Verification
 
-Run from `site/`:
+Run project commands from `site/` using the runtime and pnpm declarations in `.node-version` and `package.json`. Install dependencies with `pnpm install --frozen-lockfile`. Browser verification also needs `pnpm exec playwright install chromium firefox webkit`; CI prepares those engines and their system dependencies.
+
+## Local gate
 
 ```bash
 pnpm verify
 ```
 
-`pnpm verify` first runs `pnpm baseline:check`, then checks generated content and discovery artifacts, runs Node and React tests, runs TypeScript-aware zero-warning lint with deprecated API rejection, builds and prerenders `dist/` with TypeScript 7, verifies the HTML/Markdown representation contract, runs the browser matrix, and enforces the asset budget on `dist/assets`.
+The script order in [package.json](../../site/package.json) is authoritative: Baseline, generated content/SEO, Node contracts, React unit tests, zero-warning type-aware lint, type-check/build, HTML/Markdown checks, browser matrix, and asset budget. Build steps write generated files; inspect their diff before committing.
 
-To rerun only the browser smoke suite after a production build:
+| Change | Relevant evidence |
+|---|---|
+| Scripts, Worker, content/protocol contracts | `pnpm test`; affected negative cases must exercise the real path. |
+| React components | `pnpm test:unit` and affected real-browser flows. |
+| Code diagnostics | `pnpm lint`; `tsc -b` also runs in build. |
+| Lesson examples/exercises | `pnpm content:generate`, then `pnpm check:content`; include generated data. |
+| Public rendering or semantic source | `pnpm seo:generate`, `pnpm check:seo`, build, and HTML checks. |
+| Complete local delivery | `pnpm verify`. |
+
+Algorithm contracts cover independent small-case oracles/properties, legality of key witnesses, malformed inputs, deterministic events, public-result/teaching-projection equality, and the enumerated teaching adapters. These checks do not imply every incidental result field has its own oracle. Node-imported TypeScript modules use explicit runtime `.ts` extensions.
+
+## Browser and rendering checks
+
+Chromium runs all browser specifications. Firefox and WebKit run `@cross-browser` smoke cases against the production build via the strict preview server. Automated coverage includes direct deep links, hydration, metadata, focus and route announcements, fragment offsets, immediate scroll reset, reduced motion, real 404s, lazy game loading, deterministic displayed-seed replay, and duplicate-safe round statistics.
+
+For affected routes, inspect actual interaction, light/dark themes, desktop/mobile layout, keyboard use, no page overflow, browser console errors, and input-driven state changes. A decorative demo hero stays unchanged while solver/playback state changes. Sampled automation is not pixel approval or real Edge/Safari evidence; release acceptance also checks the current and previous supported majors.
+
+Discovery checks require agreement among catalog routes, sitemap, prerendered HTML, and Markdown. Semantic source digests preserve unchanged content times and advance only from real source evidence. HTML checks reject manual beacons, unresolved streaming placeholders, missing/extra representations, illegal outlines, browser controls/internal paths in Markdown, broken public links, and divergence from the same semantic HTML. Repeat projection checks establish deterministic output.
+
+## Documentation checks
+
+Run the documentation contract directly from the repository root:
 
 ```bash
-pnpm build
-pnpm test:browser
+node --test site/scripts/okf-contract.test.mjs
 ```
 
-Install the local browser runtimes once with `pnpm exec playwright install chromium firefox webkit`. CI installs all three engines and their system dependencies before invoking the complete verification gate. Chromium runs all browser specifications; Firefox and WebKit run tests tagged `@cross-browser`.
+The public bundle starts at `docs/index.md` with `okf_version: "0.2"`. Every published concept has YAML frontmatter with `type`, `status`, and real producer metadata. Use `sources[].resource` for provenance, and keep every concept reachable from the index with valid repository-local links. The family specification template is the sole intentional non-navigation document.
 
-Algorithm verification runs directly on the repository-pinned Node runtime's TypeScript stripping support and includes:
+The two exact ignored `docs/web-baseline.md` and `docs/web-contracts.md` paths are local shared-workspace verification inputs, not published concepts. The existing copy gate checks their bytes against workspace authorities; standalone clones report that cross-workspace comparison as SKIP. No other Markdown document inherits that exclusion.
 
-* independent small-case oracles or property checks for the primary outcome of all 39 public solver entry points that return the 38 named `*Result` Interfaces;
-* weighted and node-weighted reroot distance oracles, weighted in/out and eccentricity checks, exhaustive exact-`Q` root-connected tree-knapsack subsets, and exhaustive tree path, distance-two, independent-set, and dominating-set checks;
-* legality or consistency invariants for key witness and auxiliary fields, including `chosen`, `guards`, `layout`, representative path/index/argument fields, and child-before-parent orders;
-* input-domain regressions for malformed reroot trees and invalid tree-DP weights or limits, plus large-value sentinel regressions for dominating set and bitmask cover;
-* equality between public `solve` results and recorded teaching runs, immutable domain-event snapshots, and final teaching-Adapter projections;
-* exact enumeration of all 29 teaching Adapters plus architecture guards that prevent games/readouts from importing internal Modules, deriving answers from teaching frames, or restoring private duplicate solvers;
-* a brand contract that rejects legacy product-facing names.
+For changes to Markdown navigation or guides, also check local files/fragments, YAML syntax, English prose, and preserved product/generated bytes. In the shared workspace, run the workspace context-budget and documentation-graph gates. Keep their failure/skip boundaries separate from repository results. Run the full local gate when code/build contracts change; documentation checks alone do not establish runtime behavior.
 
-Pure TypeScript Modules imported by Node tests must use explicit `.ts` extensions for their runtime relative imports.
+## Authorized release checks
 
-# SEO And Accessibility Checks
+The release process is in [deploy.md](../../deploy.md). These checks require the corresponding release and message-send authorization:
 
-`pnpm check:seo` verifies the 47-path catalog, route metadata, checked-in single-origin sitemap/robots baseline, `llms.txt`, 47-entry route summaries, and source-backed `lastmod` data. Version 18 follows each route's real SSR injection chain with a line-ending-neutral runtime-AST digest: type-only syntax is erased without dropping runtime-bearing TypeScript parameter properties or optional-chain behavior; intrinsic event/ref/key props and statically proven spreads erase only deferred callback values while retaining synchronous factories; public `config/site.ts` evidence follows immutable field dependencies and validates global provenance; and mixed shell modules contribute route-rendering JSX plus the lexical closure of all runtime module-evaluation edges, root/program synchronous calls, proven synchronous callbacks and selected React `lazy` loaders, constructors, tagged templates, aliases, and render-phase mutations. Known asynchronous callbacks, including stable aliases and locally private callback-factory results, are erased even when nested inside an otherwise selected synchronous slice, while callback acquisition remains synchronous evidence and exported callbacks remain conservative. Regression probes additionally cover all-candidate mixed call targets, object and class getter-derived targets, conditional/nested/factory/getter and built-in-mutator global containers, nested/shadowed/reassigned/member-held literal dynamic-import callbacks reached through module evaluation, awaited continuation callbacks without treating callback acquisition as execution, statically false literal branches and loops, unmatched literal `switch` cases, selected relative `lazy` children, semantic CSS query imports, and byte-distinct binary assets. Runtime packages are trusted only through the audited dependency set used by this product; each route projects only its semantically reachable trusted roots from `package.json`, rejects reachable packages outside that allowlist, and requires every selected root and transitive registry node to have its exact importer, snapshot, package record, and canonical SHA-256/384/512 `resolution.integrity` value with a 32/48/64-byte digest in `pnpm-lock.yaml`. Unsupported mutable, escaped, aliased, globally patched, unresolved, or dynamic config, unproved callback timing, dynamic targets or intrinsic spreads, imported member receivers, arbitrary external mutations, ambiguous nested writes, and incomplete lock evidence outside proven client callbacks fail closed.
+- Open the home page and a deep link on `https://dp.round1.cc`; confirm self-canonical metadata, no hreflang, valid structured data, and one visible heading. Lesson titles retain the Chinese `课程名 · 家族名 · DP大师` product format.
+- Send HTML and `text/markdown` GET and HEAD requests, plus an unacceptable media type; confirm 200 selections and 406, `Vary: Accept`, alternate/canonical links, and `Content-Signal: search=yes, ai-train=yes, ai-input=yes`.
+- Confirm representation-specific ETag/cache isolation. The Worker preserves asset validators; final HTML injection can remove its ETag, while Markdown retains its own validator. Keep established edge injection enabled.
+- Alternate representations through the final edge to detect cache crossover. Direct `/_representations/` requests return 404.
+- Check final robots for no managed block or `Disallow`, and check sitemap, llms, and route summaries. Repository policy and final edge policy must agree.
+- A made-up path returns 404 with `noindex,nofollow` and no canonical.
+- Match a synthetic feedback receipt to `feedback_received`, the delivery log, and the destination message. Only confirmed delivery returns `status: delivered`; missing/failed forwarding returns 503/502.
+- Confirm a valid same-origin analytics event returns 204 and is logged. Confirm RUM from real navigation; exercise controlled alerts in staging.
+- If rate limiting changed, use a disposable source to verify request eleven within 30 minutes returns 429 and `Retry-After`. The built-in limiter is per edge instance.
 
-Client endpoints and sidebar-only copy are structurally isolated from the public representation configuration and are unreachable from all 47 semantic graphs. An unchanged digest preserves its prior time; changed content uses the exact Git commit or working-tree timestamp of a semantically changed projection and must advance. A schema migration reapplies the current projector to source history at the previous `lastmod`, so clean committed semantic edits advance while dirty changes confined to pruned client branches do not. Version 15 made the runtime dependency graph visible and advanced all 47 routes to the dependency-maintenance commit at `2026-08-23T21:18:04+08:00`; Version 16 made that evidence route-specific and fail-closed; Version 17 closes the initial callback, package-root, integrity, global-container, and getter provenance gaps; Version 18 closes the exact-SHA review gaps in lexical module evaluation, selected relative lazy children, built-in mutators, literal switches, and SRI byte lengths without inventing a later content time, so the 47 timestamps remain there. This keeps same-day edits precise while unchanged or cross-platform regeneration remains deterministic. The gate also checks the source contracts for the one Cloudflare output, Worker-first static-asset routing, React prerender/hydration, route CSS injection, canonical metadata, and real 404 behavior. `pnpm check:html` then requires the sitemap/public-route/Markdown sets to agree; rejects missing or extra Markdown assets, browser-only markup, internal-path leakage, illegal heading hierarchies, and unresolved same-origin links; regenerates every Markdown document twice from its matching semantic HTML to prove exact same-source parity and determinism; and requires each representation to remain less than half the size of its HTML. When routes, lesson readiness, or route-owned source files change, run `pnpm seo:generate` and review the generated files before committing them.
-
-The browser gate runs Chromium against built `dist/` through a strict, non-reused custom preview server. Route tests directly open `/`, `/part/a`, `/part/a/01`, `/method`, and `/part/g/plug`, then exercise live client navigation and keyboard focus. They check HTTP status, prerendered HTML, absence of pending streamed-Suspense placeholders, route CSS at first paint, hydration without errors, CLS below `0.05`, title/description/abstract/canonical/zero-hreflang/Open Graph/JSON-LD metadata, one visible `h1`, route announcements, current-page semantics, initial-load focus, changed-route focus, and skip-link focus. Navigation-positioning tests click a representative lesson outline in each of the seven families, restore a direct lesson fragment, verify the mobile outline and an ordinary family-page fragment, and require a changed route to reset old-page scroll immediately. An unknown path must return 404 with `noindex,nofollow`, no canonical, and the themed not-found heading. Worker-level Node tests separately cover the RFC 9110 Accept matrix, UTF-8 media-parameter matching on either side of `q`, empty parameter slots, invalid whitespace and bare parameters, recovery after a broken quoted member, 406 behavior, GET/HEAD/conditional parity, representation-specific ETags, hidden internal assets, and unaffected API/static/unknown paths.
-
-Two game tests cover the catalog-owned lazy boundary and shared runtime contracts. Pack must keep its chunk absent before the near-viewport gate, auto-load without a manual control, replay the currently displayed seed into the identical round with cleared interaction state, and preserve exact played/matched totals across replay, shuffle, difficulty, and reveal. BitBoard must suppress duplicate completion counts and rearm after clear. These tests do not provide arbitrary-seed entry or pixel-regression coverage.
-
-For browser-facing changes, keep those automated samples representative and manually inspect additional affected routes when needed. Confirm:
-
-* Each route has the expected title, description, abstract, self-referencing canonical, zero hreflang links, Open Graph URL/type, structured-data graph, and exactly one `h1`.
-* Completed lesson titles follow `课程名 · 家族名 · DP大师` and use Open Graph type `article`.
-* Every HTML/sitemap/robots/llms artifact uses `https://dp.round1.cc` and no retired domain survives anywhere in the build.
-* Every public path has one compact Markdown representation with headings, prose and canonical interactive-page link; no internal specimen, script, form control or internal asset path appears.
-* An unknown URL returns HTTP 404, has `noindex,nofollow`, and has no canonical.
-* Sidebar and breadcrumb current-page semantics follow navigation.
-* Initial page load does not steal focus; later keyboard route navigation focuses `#main-content` without scrolling, and activating the first-target skip link focuses the same element.
-* Lesson outline clicks, direct fragment URLs, and history navigation place the target below the sticky top bar on desktop and mobile; ordinary route changes start at the top instead of inheriting a smooth scroll from the prior page.
-* The mobile navigation exposes `aria-expanded`, references `#site-sidebar`, and has a keyboard-operable close scrim.
-* With `prefers-reduced-motion: reduce`, smooth scrolling is disabled and transitions/animations are reduced without hiding content.
-* The browser console reports no errors; no uncaught page error occurs.
-
-# Playback And Caption Checks
-
-Playback architecture/state tests require every transport to import the deep shared player, use full or compact `PlaybackControls`, and avoid local transport/timer state. Safe-caption tests cover the approved teaching vocabulary plus scripted, attributed, unsupported, and malformed inputs. A recursive `site/src` guard permits raw HTML sinks only at the exact existing Shiki and KaTeX Adapter counts; all playback captions must pass through `SafeCaption`.
-
-Game runtime tests prove equal displayed seeds produce equal rounds for all six random games and require every round builder to accept an injected `RandomSource`. Architecture tests require all seven games that display totals to use `useRoundStats` and its duplicate-safe record/rearm lifecycle.
-
-# Documentation Checks
-
-For OKF bundle changes:
-
-* `docs/index.md` is the bundle index and declares `okf_version: "0.2"`; no chronological `log.md` is maintained.
-* Every other `docs/**/*.md` file must start with YAML frontmatter.
-* Every concept frontmatter must include non-empty `type`, current lifecycle `status`, and `generated.by` / `generated.at`.
-* Use `sources[].resource` for provenance; do not restore v0.1 `timestamp` or custom `source_paths`.
-* Use bundle-root links such as `/product/scope.md` for concept links where possible.
-* Keep only durable current truth. Task progress, completed plans, resolved drift, and review history belong in `handoff/` or Git history.
-
-# Content Consistency Checks
-
-When changing lesson content:
-
-* Treat `site/src/data/catalog.ts` as the family/type/route authority.
-* Run `pnpm check:content` to compare generated `site/src/data/problems.ts` against lesson cards.
-* Check that all official problem IDs still use P/B prefixes.
-* Verify formula strings contain no Chinese inside TeX.
-* Do not reintroduce `opacity: 0` entrance animations.
-
-# Deployment Checks
-
-Deployment checks live in root [deploy.md](../../deploy.md). At minimum after deployment:
-
-* Open a normal route and a direct deep link on `https://dp.round1.cc`; confirm both self-canonicalize and emit zero hreflang links.
-* Run GET and HEAD against a public route with `Accept: text/html` and `Accept: text/markdown`, then request an unacceptable media type and confirm 406.
-* Confirm both successful representations carry distinct ETag values, `Vary: Accept`, the appropriate alternate/canonical `Link`, and `Content-Signal: search=yes, ai-train=yes, ai-input=yes`.
-* Alternate HTML, Markdown, and HTML requests through the final edge to prove the cache never crosses representations; direct requests under `/_representations/` must return 404.
-* Inspect the final `robots.txt` and confirm it contains no Cloudflare managed block (`# BEGIN Cloudflare Managed content`) and no `Disallow` line. The repository `robots.txt` is authoritative for AI crawling; the managed robots.txt setting is zone-wide across `round1.cc` and must stay off.
-* Request a made-up path and confirm HTTP 404 plus `noindex,nofollow`.
-* Submit a feedback test.
-* Confirm `POST /api/analytics` returns 204 for a valid same-origin event and inspect the platform log.
-* Confirm the receipt is `ok: true`, `status: delivered`, and includes a `requestId`.
-* Check the Cloudflare Worker logs for the matching `feedback_received` event.
-* Check the matching `feedback_webhook` status and destination message. Missing configuration or forwarding failure must return 503/502 and must not show a successful browser receipt.
-* For a rate-limit smoke test, use a disposable source and confirm request 11 inside 30 minutes returns 429 with `Retry-After`. The built-in limiter is per edge instance; configure the same policy at platform level when global enforcement is required.
+Record deployment versions, dashboards, account facts, and observation receipts in the operator workspace. Report exactly what was executed, failed, skipped, or left unverified.

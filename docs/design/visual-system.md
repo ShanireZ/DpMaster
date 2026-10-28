@@ -1,7 +1,7 @@
 ---
 type: Design System
 title: Warm Ink Visual System
-description: Current DP大師 visual system, including tokens, motion constraints, and superseded palette guidance.
+description: Current DpMaster visual system, including tokens, motion constraints, and superseded palette guidance.
 tags: [design, css, accessibility]
 status: stable
 generated: { by: openai/codex, at: 2026-07-31T15:32:38+08:00 }

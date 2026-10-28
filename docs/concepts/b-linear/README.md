@@ -4,77 +4,25 @@ title: B Linear DP Visual Specification
 description: Current visual grammar and semantic plate contract for the B family.
 tags: [design, family-art, linear-dp]
 status: stable
-generated: { by: openai/codex, at: 2026-07-31T15:32:38+08:00 }
+generated: { by: openai/codex, at: 2026-10-28T05:02:08.368Z }
 ---
 
-# B 線性 DP 視覺概念板
+# B Linear DP
 
-> 狀態：`已实现基线`
-> 用途：實作與迴歸對照
-> 代表性試點：`LIS` 與 `编辑距离`
+Use an indexed track with predecessor relations. The hero folds, rises, falls, and branches; height expresses sequence values and forward edges express state sources. Its vertical wireframe forms the journey. Lesson plates use a 640×390 logical canvas and vary by the actual state structure.
 
-本目錄定義 B「線性 DP」的家族視覺語法。概念板只作設計與實作對照，最終頁面仍使用 React、SVG、CSS 與真實 DOM，不把概念圖作為頁面背景圖片。
+References: [dark desktop](family-concept-dark.svg), [light desktop](family-concept-light.svg), [390×844 mobile](family-concept-mobile.svg). Light/dark preserve geometry; mobile keeps the main sequence and key predecessors while reducing secondary construction lines.
 
-## 概念板分工
+The family identity uses `--grad-b` (muted teal); DP states continue to use shared semantic tokens. Keep SVG definition IDs unique per instance and give lesson plates accessible names.
 
-| 檔案 | 評審重點 |
+| Slug | Required meaning |
 |---|---|
-| `family-concept-dark.svg` | 深色桌面：分類主雕塑、路徑結構稿、LIS / 編輯距離圖版原子 |
-| `family-concept-light.svg` | 淺色桌面：與深色保持完全相同的幾何和資訊，只切換 Warm Ink token 與材質 |
-| `family-concept-mobile.svg` | 390 × 844：保留序列主軸與關鍵前驅，減少建構線和次要標註 |
+| `path` | Legal sources from the preceding layer; optimum and count share structure but aggregate differently. |
+| `maxseg` | A state ending at i either extends the prior segment or restarts here. |
+| `lis` | Earlier smaller predecessors extend f[i]; tails stores the smallest end for each length. |
+| `lcs` | Equal suffix characters use the diagonal; otherwise choose the upper/left prefix state. |
+| `edit` | Minimize priced insertion, deletion, and replacement edges. |
+| `fsm` | Parallel state tracks preserve decision memory that controls future choices. |
+| `count` | Sum sources rather than choosing an optimum; the empty prefix contributes one base case. |
 
-## 家族視覺語法
-
-- 主母題：沿索引前進的軌道、序列脊線和前驅關係。
-- 主雕塑：一條帶回落、抬升與分叉的摺疊索引軌道；節點高度表達序列值，向前的連線表達狀態來源。
-- 路徑結構稿：主雕塑的縱向線框版本，課程節點沿同一索引軸展開。
-- 課程圖版：統一使用 `640 × 390` 邏輯畫布；具體課程決定是一維軌道、雙序列還是二維矩陣，不能都退化成普通折線圖。
-- 家族身分色：深色 `#82ab9f → #5f8b7e`，淺色 `#37796a → #2b6153`，對應現有 `--grad-b`。
-- DP 狀態色：繼續使用全站 `--viz-current`、`--viz-source`、`--viz-chosen`、`--viz-settled`、`--viz-invalid`，不得新建 B 類狀態色。
-
-## 七課一句話語義稽核
-
-| slug | 圖版必須說明的一句話 |
-|---|---|
-| `path` | 當前格只從上一層的合法來源轉移，最優值與方案數共享狀態骨架但聚合方式不同。 |
-| `maxseg` | 固定“以 `i` 結尾”，每步只在延續前段與從當前重新啟動之間選擇。 |
-| `lis` | `f[i]` 從更早且更小的元素延伸；優化版用 `tails` 記錄各長度的最小結尾。 |
-| `lcs` | 兩個前綴的末字元相等時走對角線，否則從刪去一側後的上方或左方取優。 |
-| `edit` | 前綴對狀態由刪除、插入、替換三條有代價的來源邊取最小值。 |
-| `fsm` | 索引軸上存在多條狀態軌道，狀態保存會影響下一步合法選擇的決策記憶。 |
-| `count` | 狀態與最值 DP 相同，但來源由取優改為求和，並以空前綴的一種方案為基底。 |
-
-## 代表性試點
-
-- `LIS`：驗證一維序列、上升前驅鏈和 `tails` 層疊能否在同一圖版內建立主次。
-- `编辑距离`：驗證 B 家族面對二維前綴狀態時，仍能保留“雙序列 + 索引推進”的身分，而不是被誤認為 D 矩陣 DP。
-
-## 必須、允許與禁止
-
-必須：
-
-- 分類主雕塑、路徑結構稿和課程圖版共享索引刻度、折線線型與節點語言。
-- 深淺主題幾何完全一致。
-- 行動裝置端保留關鍵索引、當前狀態和來源關係。
-- 課程圖版提供可訪問名稱，SVG defs 使用執行個體唯一 ID。
-
-允許：
-
-- 主雕塑使用摺疊金屬、半透明紙層或線框材質。
-- LCS、編輯距離採用二維矩陣，但兩條輸入序列必須清楚可見。
-- 為複雜課程減少裝飾性建構線。
-
-禁止：
-
-- 把七課都畫成資料折線圖。
-- 使用 A 類揹包輪廓、金色材質或容量刻度。
-- 用家族灰青替代當前、來源、最優、非法等 DP 狀態色。
-- 在行動裝置端直接裁掉右半圖形或相依橫向頁面捲動。
-
-## 第一次評審清單
-
-1. 主雕塑是否能在沒有標題時仍讓人聯想到“沿索引遞推”？
-2. 灰青是否與 Warm Ink 協調，同時和 A 類明顯區分？
-3. 路徑結構稿是否與主雕塑同源，但不會搶課程列表？
-4. LIS 與編輯距離是否一眼能讀出不同的狀態結構？
-5. 390px 方案是否保留了主語義，而不是桌面圖的縮小裁切？
+LIS and edit distance are representative comparisons: the latter must retain two visible sequences even with a 2D table. Keep index ticks, line styles, and nodes consistent across slots. Avoid generic line charts, backpack/capacity geometry, replacing state colors with teal, or cropping the mobile diagram. A narrow layout must explain the same dependency rather than shrink a desktop screenshot.
