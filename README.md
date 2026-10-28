@@ -1,4 +1,4 @@
-# DpMaster (DpMaster)
+# DpMaster
 
 [![License: GPL-3.0](https://img.shields.io/badge/license-GPL--3.0-blue.svg?style=flat-square)](LICENSE)
 ![React 19](https://img.shields.io/badge/React-19-61DAFB.svg?style=flat-square&logo=react&logoColor=black)
@@ -27,7 +27,7 @@ Open the local URL printed by Vite. Run `pnpm verify` from `site/` for the compl
 
 The static React/Vite build serves prerendered HTML and an equivalent `text/markdown` representation at each public URL. Interactive demos and games hydrate in the browser. The deployment has one canonical origin, [dp.round1.cc](https://dp.round1.cc), and one Cloudflare Worker.
 
-The [catalog](site/src/data/catalog.ts) owns lesson identity and order. Lesson `ExampleCard` / `Exercise` entries own the problem corpus; [problems.ts](site/src/data/problems.ts) is generated. Teaching content, UI labels, and quoted product titles remain Chinese; contributor documentation is English.
+The [catalog](site/src/data/catalog.ts) owns lesson identity and order. Lesson `ExampleCard` / `Exercise` entries own the problem corpus; [problems.ts](site/src/data/problems.ts) is generated. Teaching content, UI labels, and quoted product titles remain Chinese. Each document uses its intended language consistently; translated editions retain their own languages and navigation.
 
 ## License
 

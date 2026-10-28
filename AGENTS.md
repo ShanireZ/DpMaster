@@ -9,7 +9,7 @@ When the shared workspace parent `../AGENTS.md` exists, read and inherit it expl
 - Read [docs/index.md](docs/index.md) for reusable product/design/engineering contracts; [deploy.md](deploy.md) for release, feedback, and edge configuration. The Web-governance exit gate is [issue #6](https://github.com/ShanireZ/DpMaster/issues/6).
 - `site/src/data/catalog.ts` alone owns lesson identity, order, content, and lazy lesson/game imports. Keep lessons and games split by route. `PUBLIC_PATHS` in `site/src/lib/publicRoutes.ts` alone owns public URLs, sitemap, prerendering, and Markdown negotiation.
 - Lesson `ExampleCard` / `Exercise` entries own problems. Run `pnpm content:generate` after changing them; commit the generated projection and update documented counts.
-- Preserve Chinese teaching content and UI labels. Maintain contributor documentation in English. Keep reusable current contracts in Git; workspace procedures, machine facts, historical receipts, and task handoffs belong outside this repository.
+- Preserve Chinese teaching content and UI labels. Keep each document's prose consistent with its intended language: English editions use English, and localized editions use their respective languages. Preserve translated editions and their navigation. Keep reusable current contracts in Git; workspace procedures, machine facts, historical receipts, and task handoffs belong outside this repository.
 
 ## Commands and evidence
 
