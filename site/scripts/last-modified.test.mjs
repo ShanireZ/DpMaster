@@ -142,7 +142,8 @@ test('schema migrations distinguish pruned client edits from semantic edits', ()
   )
   const historicalSiteConfig = execFileSync(
     'git',
-    ['show', '359245c:site/src/config/site.ts'],
+    // Pin fixture bytes, which remain stable when commit history is rewritten.
+    ['cat-file', 'blob', '7f55f11f8edf829a4f454e43ab2dff4fd31a43fa'],
     { encoding: 'utf8', cwd: new URL('../../', import.meta.url) },
   )
   assert.equal(
@@ -156,18 +157,26 @@ test('schema migrations distinguish pruned client edits from semantic edits', ()
 })
 
 test('historical client-effect maintenance stays outside public lastmod evidence', () => {
-  for (const file of [
-    'site/src/components/demos/knapsack/KnapsackDemo.tsx',
-    'site/src/components/dp-engine/playback/useStepPlayer.ts',
+  for (const { file, beforeBlob, afterBlob } of [
+    {
+      file: 'site/src/components/demos/knapsack/KnapsackDemo.tsx',
+      beforeBlob: '4dd89304925cace8f53adc462f09777090309b27',
+      afterBlob: 'acb0568b66e7f67dbdc1be880639e01e9207c033',
+    },
+    {
+      file: 'site/src/components/dp-engine/playback/useStepPlayer.ts',
+      beforeBlob: '155755143a0c92ac364142938a370f3b7a25b615',
+      afterBlob: '8a84a3cae674cb95a208ec56ae991e7432b2a068',
+    },
   ]) {
     const before = execFileSync(
       'git',
-      ['show', `6cc3a36^:${file}`],
+      ['cat-file', 'blob', beforeBlob],
       { cwd: new URL('../../', import.meta.url), encoding: 'utf8' },
     )
     const after = execFileSync(
       'git',
-      ['show', `6cc3a36:${file}`],
+      ['cat-file', 'blob', afterBlob],
       { cwd: new URL('../../', import.meta.url), encoding: 'utf8' },
     )
     assert.equal(semanticProjectionChanged(file, after, before), false, file)
