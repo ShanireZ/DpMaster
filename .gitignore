@@ -45,3 +45,11 @@ Thumbs.db
 # Local workspace policy inputs; checked locally, excluded from publication
 /docs/web-baseline.md
 /docs/web-contracts.md
+
+# Maintainer-local state, independent of public contributor documentation.
+/.local/
+/.scratch/
+/handoff/
+/vardata/
+/credentials/
+/*.bundle

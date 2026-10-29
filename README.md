@@ -7,6 +7,8 @@
 [![Deploy: Cloudflare Workers](https://img.shields.io/badge/deploy-Cloudflare%20Workers-success.svg?style=flat-square)](https://dp.round1.cc)
 ![Lessons: 37/37 ready](https://img.shields.io/badge/lessons-37%2F37%20ready-success.svg?style=flat-square)
 
+[English](README.md) | [简体中文](README.zh-CN.md) | [繁體中文(TW)](README.zh-TW.md) | [日本語](README.ja.md)
+
 DpMaster is a Chinese interactive dynamic-programming course for C++ algorithm learners. Its 37 lessons across seven DP families combine explanations, editable demos, family games, code examples, and a searchable Luogu problem index. Learning requires no account.
 
 [Open the course](https://dp.round1.cc) · [Contributor documentation](docs/index.md) · [Deployment](deploy.md)
