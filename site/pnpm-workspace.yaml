@@ -3,8 +3,8 @@ minimumReleaseAgeIgnoreMissingTime: false
 minimumReleaseAgeStrict: true
 # 執行基線。`site/.node-version` 必須同值 —— CI 的兩個 workflow 都用
 # `node-version-file: site/.node-version` 取它，本機則由這裡強制相等。
-# 2026-08-15 全工作區從 Node 24 抬到 26；2026-09-04 跟進 26.8.1 補丁線；2026-09-24 跟進 26.10.0。
-nodeVersion: 26.12.0
+# 2026-08-15 全工作區從 Node 24 抬到 26；2026-09-04 跟進 26.8.1 補丁線；2026-09-24 跟進 26.10.0；2026-10-29 跟進 26.13.0。
+nodeVersion: 26.13.0
 engineStrict: true
 verifyDepsBeforeRun: error
 allowBuilds:
