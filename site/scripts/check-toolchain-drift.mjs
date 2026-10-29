@@ -21,8 +21,17 @@ const actions = [
 
 // Shiki 4.4.3 把按需 C++ grammar chunk 從約 733 KB 推到 869 KB，突破已驗證的
 // 單檔案與總資源預算。保留這個可見、可巡檢的固定點，直到上游體積回落或拆包方案通過門禁。
+//
+// TypeScript 7.1.0-beta 是 owner 於 2026-10-29 批准的**精確預發佈固定**，隨工作區整體升到
+// TypeScript 7.1 beta；預發佈的 caret 範圍會解析到 nightly dev 版本，所以必須寫精確版本。
+// 7.1.0 穩定版發佈後複核並回到穩定 caret 範圍。固定點按 package.json 的**原始範圍字串**比對，
+// 改成 `^7.1.0-beta` 或別的版本都會被判為待升級。
 const approvedPackagePins = {
-  shiki: '4.3.1',
+  shiki: { version: '4.3.1', reason: '资源预算批准固定 4.3.1' },
+  typescript: {
+    version: '7.1.0-beta',
+    reason: 'owner 2026-10-29 批准固定预发布 7.1.0-beta；7.1.0 稳定版发布后复核',
+  },
 }
 
 const packageEntries = [
@@ -156,9 +165,9 @@ await Promise.all([
       numericVersion(range),
       () => latestPackageVersion(name),
       approvedPin
-        ? (current) => current !== approvedPin
+        ? () => range !== approvedPin.version
         : (current, latest) => current !== latest,
-      approvedPin ? `资源预算批准固定 ${approvedPin}` : undefined,
+      approvedPin?.reason,
     )
   }),
   ...actions.map(([repository, current]) =>

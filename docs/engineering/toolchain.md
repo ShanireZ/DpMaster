@@ -18,7 +18,7 @@ sources:
 
 `site/` is the only package root. `.node-version` fixes the current Node 26 patch, `package.json` fixes pnpm 12 through `packageManager` and `devEngines`, and `pnpm-lock.yaml` is the reproducible dependency graph used by CI.
 
-Node and pnpm are installed globally through pnpm's standalone runtime flow; the project does not use Corepack. npm, yarn, and bun are not alternative project workflows. Direct dependencies use a caret range whose lower bound is the current stable mainline version eligible under the release-age policy.
+Node and pnpm are installed globally through pnpm's standalone runtime flow; the project does not use Corepack. npm, yarn, and bun are not alternative project workflows. Direct dependencies use a caret range whose lower bound is the current stable mainline version eligible under the release-age policy. The only exception is an exact pin that the owner approves and `scripts/check-toolchain-drift.mjs` registers in `approvedPackagePins`: Shiki (below) and `typescript` 7.1.0-beta, the workspace-wide upgrade target. A pre-release caret range resolves to nightly dev builds, so the pre-release stays exact; revisit it when TypeScript 7.1.0 ships.
 
 # Supply-chain policy
 
