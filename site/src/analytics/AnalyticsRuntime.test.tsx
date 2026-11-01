@@ -68,4 +68,37 @@ describe('AnalyticsRuntime', () => {
       },
     })
   })
+
+  it('keeps the browser message when error is an opaque non-Error value', () => {
+    render(<AnalyticsRuntime />)
+    window.dispatchEvent(new ErrorEvent('error', {
+      error: {},
+      message: 'browser supplied failure',
+      lineno: 675,
+      colno: 29,
+    }))
+
+    expect(analytics.trackAnalyticsEvent).toHaveBeenCalledWith(expect.objectContaining({
+      metadata: expect.objectContaining({ message: 'browser supplied failure' }),
+    }))
+  })
+
+  it('keeps a cross-realm error message and only the same-origin script location', () => {
+    render(<AnalyticsRuntime />)
+    window.dispatchEvent(new ErrorEvent('error', {
+      error: { message: 'cross-realm failure' },
+      filename: `${window.location.origin}/assets/catalog-hash.js?private=value#fragment`,
+      lineno: 2,
+      colno: 100072,
+    }))
+
+    expect(analytics.trackAnalyticsEvent).toHaveBeenCalledWith(expect.objectContaining({
+      metadata: expect.objectContaining({
+        message: 'cross-realm failure',
+        file: '/assets/catalog-hash.js',
+        line: 2,
+        column: 100072,
+      }),
+    }))
+  })
 })

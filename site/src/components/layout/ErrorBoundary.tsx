@@ -1,5 +1,6 @@
 import { Component, type ErrorInfo, type ReactNode } from 'react'
 import { trackAnalyticsEvent } from '../../analytics/index.ts'
+import { clientErrorFrame } from '../../analytics/clientError.ts'
 import {
   isModuleLoadError,
   reserveModuleLoadRecovery,
@@ -31,6 +32,7 @@ export default class ErrorBoundary extends Component<ErrorBoundaryProps, ErrorBo
     const moduleLoadFailure = isModuleLoadError(error)
     // 額度與 preload 那條路徑共用，用盡即退回人工路徑 —— 見 preloadRecovery.ts。
     const willReload = moduleLoadFailure && reserveModuleLoadRecovery()
+    const frame = clientErrorFrame(error)
 
     console.error('[DP大师] 路由渲染出错：', error, info.componentStack)
     trackAnalyticsEvent({
@@ -40,6 +42,7 @@ export default class ErrorBoundary extends Component<ErrorBoundaryProps, ErrorBo
         source: 'react_boundary',
         message: error.message.slice(0, 160),
         component: (info.componentStack || '').trim().slice(0, 160),
+        ...(frame ? { frame } : {}),
         // ★ 自動刷新必須留痕。靜默恢復會讓這類告警整體消失，而「告警不再出現」
         //   與「問題不再發生」是兩回事 —— recovery=auto_reload 的持續增長正是
         //   「資源在反覆取不到」的信號，別把它優化掉。

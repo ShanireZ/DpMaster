@@ -5,7 +5,7 @@ interface PreloadRecoveryStorage {
 
 interface PreloadRecoveryOptions {
   buildId: string
-  pathname: string
+  pathname: string | (() => string)
   reload: () => void
   storage: PreloadRecoveryStorage | null
 }
@@ -51,9 +51,11 @@ function reserveRecoveryAttempt(
  *   「刷新 → 還是取不到 → 再刷新」就是一個無限循環，而它在生產上表現為整站打不開。
  */
 export function createModuleLoadRecovery(options: PreloadRecoveryOptions) {
-  const recoveryKey = `dp:preload-recovery:${options.buildId}:${options.pathname}`
   return {
-    reserve: (): boolean => reserveRecoveryAttempt(options.storage, recoveryKey),
+    reserve: (): boolean => {
+      const pathname = typeof options.pathname === 'function' ? options.pathname() : options.pathname
+      return reserveRecoveryAttempt(options.storage, `dp:preload-recovery:${options.buildId}:${pathname}`)
+    },
     reload: options.reload,
   }
 }
@@ -63,11 +65,10 @@ export function createVitePreloadRecoveryHandler(
 ) {
   const recovery = createModuleLoadRecovery(options)
 
-  return (event: Event) => {
+  return (_event: Event) => {
     if (!recovery.reserve()) return
-    // preventDefault 必須在 reload 之前：它阻止 Vite 把這個錯誤重新拋出去，
-    // 否則錯誤邊界會在刷新真正發生之前先把失敗卡片畫出來。
-    event.preventDefault()
+    // 不取消事件：Vite 會把被取消的 import 拒絕轉成 undefined，導致 React.lazy
+    // 在導覽完成前另拋 reading 'default'，掩蓋原始的模組載入錯誤。
     recovery.reload()
   }
 }
@@ -106,7 +107,7 @@ export function installVitePreloadRecovery(): void {
   if (typeof window === 'undefined') return
   const handler = createVitePreloadRecoveryHandler({
     buildId: import.meta.env.VITE_BUILD_ID || 'local',
-    pathname: window.location.pathname,
+    pathname: () => window.location.pathname,
     reload: () => {
       window.location.reload()
     },

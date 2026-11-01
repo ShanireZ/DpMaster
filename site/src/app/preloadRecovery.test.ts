@@ -14,7 +14,7 @@ function memoryStorage() {
 }
 
 describe('createVitePreloadRecoveryHandler', () => {
-  it('prevents the first stale preload error and reloads once per build and path', () => {
+  it('preserves the import rejection while reloading once per build and path', () => {
     const reload = vi.fn()
     const handler = createVitePreloadRecoveryHandler({
       buildId: 'build-a',
@@ -25,13 +25,31 @@ describe('createVitePreloadRecoveryHandler', () => {
 
     const first = new Event('vite:preloadError', { cancelable: true })
     handler(first)
-    expect(first.defaultPrevented).toBe(true)
+    expect(first.defaultPrevented).toBe(false)
     expect(reload).toHaveBeenCalledTimes(1)
 
     const repeated = new Event('vite:preloadError', { cancelable: true })
     handler(repeated)
     expect(repeated.defaultPrevented).toBe(false)
     expect(reload).toHaveBeenCalledTimes(1)
+  })
+
+  it('uses the current SPA route and shares its budget with the boundary', () => {
+    let pathname = '/'
+    const storage = memoryStorage()
+    const reload = vi.fn()
+    const options = { buildId: 'build-a', pathname: () => pathname, storage, reload }
+    const handler = createVitePreloadRecoveryHandler(options)
+    pathname = '/part/c'
+    handler(new Event('vite:preloadError', { cancelable: true }))
+    expect(storage.getItem('dp:preload-recovery:build-a:/part/c')).toBe('1')
+    expect(storage.getItem('dp:preload-recovery:build-a:/')).toBeNull()
+    expect(createModuleLoadRecovery({ ...options, pathname }).reserve()).toBe(false)
+
+    pathname = '/part/d'
+    handler(new Event('vite:preloadError', { cancelable: true }))
+    expect(storage.getItem('dp:preload-recovery:build-a:/part/d')).toBe('1')
+    expect(reload).toHaveBeenCalledTimes(2)
   })
 
   it('does not risk a reload loop when session storage is unavailable', () => {

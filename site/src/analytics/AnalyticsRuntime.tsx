@@ -1,11 +1,15 @@
 import { useEffect } from 'react'
 import { trackAnalyticsEvent } from './index.ts'
+import { clientErrorFile } from './clientError.ts'
 
 let initialized = false
 
-function safeMessage(value: unknown): string {
-  if (value instanceof Error) return value.message.slice(0, 160)
-  if (typeof value === 'string') return value.slice(0, 160)
+function safeMessage(value: unknown, fallback?: string): string {
+  if (value && typeof value === 'object' && 'message' in value && typeof value.message === 'string' && value.message) {
+    return value.message.slice(0, 160)
+  }
+  if (typeof value === 'string' && value) return value.slice(0, 160)
+  if (fallback) return fallback.slice(0, 160)
   return 'unknown client error'
 }
 
@@ -19,8 +23,9 @@ function startRuntime(): void {
   initialized = true
 
   window.addEventListener('error', (event) => {
-    const message = safeMessage(event.error ?? event.message)
+    const message = safeMessage(event.error, event.message)
     if (resizeObserverDiagnostics.has(message)) return
+    const file = clientErrorFile(event.filename)
 
     trackAnalyticsEvent({
       event: 'client_error',
@@ -30,6 +35,7 @@ function startRuntime(): void {
         message,
         line: event.lineno,
         column: event.colno,
+        ...(file ? { file } : {}),
       },
     })
   })

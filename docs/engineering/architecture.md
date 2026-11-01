@@ -86,6 +86,8 @@ The manifest intentionally keeps only dependencies imported by current source. D
 
 # Routing And Splitting
 
+Preload recovery reads the current pathname when a failure occurs, including after client navigation, and shares its one-reload budget with the error boundary. It leaves `vite:preloadError` uncancelled so the original import rejection reaches callers; cancelling it would resolve the failed import as `undefined` before navigation completes and cause a secondary React lazy-module error.
+
 `App.tsx` uses `BrowserRouter` in the browser and `MemoryRouter` through `StaticApp` at build time. `site/src/data/catalog.ts` owns literal lazy imports for every lesson and family game, so opening one lesson or family should not eagerly load unrelated lessons or games.
 
 Family art is a second, deliberately smaller registry: `familyArtRegistry.ts` maps each A–G `partId` to a lazy module implementing `HeroArt`, `JourneyArt`, and `LessonPlate`. It never owns course titles, slugs, order, or copy. Every ready lesson has a unique semantic plate; `PartGlyph` remains a defensive unknown-family fallback rather than a production course path.
