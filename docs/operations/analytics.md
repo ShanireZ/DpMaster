@@ -100,6 +100,10 @@ Configure feedback and alert destinations on the production Worker:
 
 Never commit webhook URLs or secrets. Configure provider-side retention to no more than 30 days unless a documented incident or legal requirement needs longer. Alert payloads contain a bounded error message, route, and event metadata; they must not contain feedback text, contact details, stack traces with user data, secrets, or request headers.
 
+# Client Error Triage
+
+The root cause of the historical `tagName` alerts and the anonymous home-page `client_error` events is still unconfirmed. Motion and GSAP were ruled out, but no reproducible failure path was found. When a new alert arrives, locate it with the `file` and `frame` fields first (added in `e88a5b1`); do not add guards or swallow errors on speculation. Querying past events through Workers Observability returned 403 with the existing credentials, so that query needs separate authorization.
+
 # Release Checks
 
 After each deployment:
