@@ -102,7 +102,11 @@ Never commit webhook URLs or secrets. Configure provider-side retention to no mo
 
 # Client Error Triage
 
-The root cause of the historical `tagName` alerts and the anonymous home-page `client_error` events is still unconfirmed. Motion and GSAP were ruled out, but no reproducible failure path was found. When a new alert arrives, locate it with the `file` and `frame` fields first (added in `e88a5b1`); do not add guards or swallow errors on speculation. Querying past events through Workers Observability returned 403 with the existing credentials, so that query needs separate authorization.
+The root cause of the historical `tagName` alerts and the anonymous home-page `client_error` events remains open. Rebuilding `d862f0d7b5d9` reproduced the `catalog-CTZNkHHD.js` chunk. Its source map places the reported component frame at `2:100072` in the Motion component wrapper. The alert carried React’s component stack, so the location identifies the wrapper and leaves the actual `tagName` read unknown.
+
+For new alerts, use the `frame` field to locate the exception and the `file` field to locate window errors. Both fields were added in `e88a5b1`. Match the build and chunk before mapping the position. Querying past events through Workers Observability returned HTTP 403 with the existing credentials.
+
+A sustained chunk failure can also stop startup before React mounts. In Chromium, blocking the C or D family-art module through an SPA navigation and reload left the prerendered content visible and raised a module error before hydration. The React error boundary and the analytics listener had yet to mount. The one-reload limit still applied.
 
 # Release Checks
 
