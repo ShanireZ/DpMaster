@@ -75,6 +75,7 @@ for (const [family, heading, homeChunk] of [
 
 for (const [family, chunk] of [['c', 'interval'], ['d', 'matrix']] as const) {
   test(`@cross-browser ${family} art failure preserves the import error and reloads the current SPA route once`, async ({ page, browserName }) => {
+    const startupTimeout = browserName === 'webkit' ? 15_000 : 5_000
     let reloads = 0
     let failures = 0
     const errors: string[] = []
@@ -103,15 +104,20 @@ for (const [family, chunk] of [['c', 'interval'], ['d', 'matrix']] as const) {
       }
     })
 
-    await page.emulateMedia({ reducedMotion: 'no-preference' })
+    await page.emulateMedia({ reducedMotion: 'reduce' })
     await page.goto('/')
-    // The announcer is already prerendered; client effects prove hydration has run.
-    await expect(page.locator('.home')).toHaveClass(/home--gsap/u)
+    // The prerendered controls become interactive after hydration, independently of home motion.
+    const themeToggle = page.getByRole('button', { name: '切换深浅色' })
+    await expect.poll(() => themeToggle.evaluate((button: HTMLButtonElement) => {
+      if (document.documentElement.dataset.theme === 'light') return true
+      button.click()
+      return false
+    }), { timeout: startupTimeout }).toBe(true)
     const link = page.locator(`nav[aria-label="主导航"] a[href="/part/${family}"]`)
     await link.focus()
     await link.press('Enter')
     await expect(page).toHaveURL(`/part/${family}`)
-    await expect.poll(() => failures, { timeout: browserName === 'webkit' ? 15_000 : 5_000 }).toBeGreaterThan(0)
+    await expect.poll(() => failures, { timeout: startupTimeout }).toBeGreaterThan(0)
     await expect.poll(() => reloads).toBe(1)
     await expect(page.locator(`img[data-family-art="${family}"][data-family-mode="hero"]`)).toBeVisible()
     await expect(page.locator('.route-announcer')).toContainText(family === 'c' ? '区间 DP' : '矩阵 DP')
