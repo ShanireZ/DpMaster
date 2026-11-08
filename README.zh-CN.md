@@ -2,10 +2,10 @@
 
 [![License: GPL-3.0](https://img.shields.io/badge/license-GPL--3.0-blue.svg?style=flat-square)](LICENSE)
 ![React 19](https://img.shields.io/badge/React-19-61DAFB.svg?style=flat-square&logo=react&logoColor=black)
-![Vite 8](https://img.shields.io/badge/Vite-8-646CFF.svg?style=flat-square&logo=vite&logoColor=white)
+![Vite 8](https://img.shields.io/badge/Vite-8-9135FF.svg?style=flat-square&logo=vite&logoColor=white)
 ![TypeScript 7](https://img.shields.io/badge/TypeScript-7-3178C6.svg?style=flat-square&logo=typescript&logoColor=white)
-[![Deploy: Cloudflare Workers](https://img.shields.io/badge/deploy-Cloudflare%20Workers-success.svg?style=flat-square)](https://dp.round1.cc)
-![Lessons: 37/37 ready](https://img.shields.io/badge/lessons-37%2F37%20ready-success.svg?style=flat-square)
+[![CI](https://img.shields.io/github/actions/workflow/status/ShanireZ/DpMaster/ci.yml?branch=main&style=flat-square&label=ci)](https://github.com/ShanireZ/DpMaster/actions/workflows/ci.yml)
+[![Site: dp.round1.cc](https://img.shields.io/badge/site-dp.round1.cc-blue.svg?style=flat-square)](https://dp.round1.cc)
 
 [English](README.md) | [简体中文](README.zh-CN.md) | [繁體中文(TW)](README.zh-TW.md) | [日本語](README.ja.md)
 
