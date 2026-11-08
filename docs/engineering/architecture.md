@@ -88,6 +88,8 @@ The manifest intentionally keeps only dependencies imported by current source. D
 
 Preload recovery reads the current pathname when a failure occurs, including after client navigation, and shares its one-reload budget with the error boundary. It leaves `vite:preloadError` uncancelled so the original import rejection reaches callers; cancelling it would resolve the failed import as `undefined` before navigation completes and cause a secondary React lazy-module error.
 
+WebKit can reject an in-flight import from the departing document after `beforeunload`. Recovery leaves the destination navigation in control and keeps the old route’s reload allowance available. A restored page or renewed interaction can recover from later failures as usual.
+
 If an initial module still fails after automatic recovery, startup preserves the prerendered page and mounts a separate retry panel. Manual retry fetches the current route’s module preloads with cache bypass for up to three seconds before reloading the same URL. Successful fetches replace failed preload entries that affected WebKit versions retain across reloads. The automatic reload limit for that build and path still applies. [WebKit issue 270357](https://bugs.webkit.org/show_bug.cgi?id=270357)
 
 `App.tsx` uses `BrowserRouter` in the browser and `MemoryRouter` through `StaticApp` at build time. `site/src/data/catalog.ts` owns literal lazy imports for every lesson and family game, so opening one lesson or family should not eagerly load unrelated lessons or games.

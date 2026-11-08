@@ -25,6 +25,12 @@ interface PreloadRecoveryOptions {
 const MODULE_LOAD_FAILURE =
   /failed to fetch dynamically imported module|error loading dynamically imported module|importing a module script failed|failed to load module script|Cannot read properties of undefined \(reading ['"]default['"]\)|Cannot read property ['"]default['"] of undefined|undefined is not an object \(evaluating ['"].*default['"]\)/iu
 
+let departure: BeforeUnloadEvent | undefined
+
+export function isDocumentDeparting(): boolean {
+  return departure !== undefined && !departure.defaultPrevented
+}
+
 export function isModuleLoadError(error: unknown): boolean {
   return error instanceof Error && MODULE_LOAD_FAILURE.test(error.message)
 }
@@ -116,6 +122,19 @@ export async function refreshRouteModulePreloads(): Promise<void> {
 export function installVitePreloadRecovery(): () => boolean {
   let reloadPending = false
   if (typeof window === 'undefined') return () => reloadPending
+
+  const resume = () => { departure = undefined }
+  // WebKit rejects abandoned imports after beforeunload and before pagehide.
+  window.addEventListener('beforeunload', (event) => {
+    if (!reloadPending) departure = event
+  }, { passive: true })
+  window.addEventListener('pageshow', resume)
+  window.navigation?.addEventListener('navigateerror', resume)
+  // A subsequent interaction can also resume a document whose navigation was abandoned.
+  window.addEventListener('click', (event) => {
+    if (event.isTrusted) resume()
+  }, { capture: true, passive: true })
+
   const handler = createVitePreloadRecoveryHandler({
     buildId: import.meta.env.VITE_BUILD_ID || 'local',
     pathname: () => window.location.pathname,
@@ -125,6 +144,8 @@ export function installVitePreloadRecovery(): () => boolean {
     },
     storage: readSessionStorage(),
   })
-  window.addEventListener('vite:preloadError', handler)
+  window.addEventListener('vite:preloadError', (event) => {
+    if (!isDocumentDeparting()) handler(event)
+  })
   return () => reloadPending
 }

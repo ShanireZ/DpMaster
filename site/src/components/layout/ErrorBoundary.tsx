@@ -2,6 +2,7 @@ import { Component, useState, type ErrorInfo, type ReactNode } from 'react'
 import { trackAnalyticsEvent } from '../../analytics/index.ts'
 import { clientErrorFrame } from '../../analytics/clientError.ts'
 import {
+  isDocumentDeparting,
   isModuleLoadError,
   reserveModuleLoadRecovery,
 } from '../../app/preloadRecovery.ts'
@@ -73,6 +74,7 @@ export default class ErrorBoundary extends Component<ErrorBoundaryProps, ErrorBo
     // 手點的卡片。2026-08-13 那版線上告警就是這麼來的：chunk 當時取不到，
     // 事後複查它在兩個 region 都健在，使用者卻已經看到失敗頁了。
     const moduleLoadFailure = isModuleLoadError(error)
+    if (moduleLoadFailure && isDocumentDeparting()) return
     // 額度與 preload 那條路徑共用，用盡即退回人工路徑 —— 見 preloadRecovery.ts。
     const willReload = moduleLoadFailure && reserveModuleLoadRecovery()
     const frame = clientErrorFrame(error)

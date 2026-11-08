@@ -17,7 +17,12 @@ import App from './app/App'
 import { clientErrorFrame, clientErrorMessage } from './analytics/clientError.ts'
 import { trackAnalyticsEvent } from './analytics/index.ts'
 import { loadInitialRouteViews } from './app/routeViews.ts'
-import { installVitePreloadRecovery, isModuleLoadError, refreshRouteModulePreloads } from './app/preloadRecovery.ts'
+import {
+  installVitePreloadRecovery,
+  isDocumentDeparting,
+  isModuleLoadError,
+  refreshRouteModulePreloads,
+} from './app/preloadRecovery.ts'
 import { getLesson } from './data/catalog.ts'
 import type { StaticLessonContents } from './app/StaticLessonContent.ts'
 import { loadFamilyArtForPath } from './components/art/familyArtRegistry.ts'
@@ -47,19 +52,21 @@ if (container.hasChildNodes()) {
     if (isPreloadReloadPending()) return
 
     const message = clientErrorMessage(error)
-    const frame = clientErrorFrame(error)
     const moduleLoadFailure = isModuleLoadError(error)
-    console.error('[DP大师] 页面初始化出错：', error)
-    trackAnalyticsEvent({
-      event: 'client_error',
-      path,
-      metadata: {
-        source: 'startup',
-        message,
-        ...(frame ? { frame } : {}),
-        recovery: moduleLoadFailure ? 'exhausted' : 'none',
-      },
-    })
+    if (!isDocumentDeparting()) {
+      const frame = clientErrorFrame(error)
+      console.error('[DP大师] 页面初始化出错：', error)
+      trackAnalyticsEvent({
+        event: 'client_error',
+        path,
+        metadata: {
+          source: 'startup',
+          message,
+          ...(frame ? { frame } : {}),
+          recovery: moduleLoadFailure ? 'exhausted' : 'none',
+        },
+      })
+    }
 
     // 獨立掛載重試面板，保留未能水合的預繪製正文。
     const notice = document.createElement('div')
