@@ -28,7 +28,7 @@ The browser sends a bounded first-party event schema to the same-origin `POST /a
 
 Metadata is capped at eight scalar fields. The browser automatically adds `build`; Web Vitals add only metric name, numeric value/delta, rating, and navigation type. Search events record query length and result count, never the query text. Analytics must not receive feedback copy, contact details, full URLs, user-agent strings, cookies, account IDs, or IP-derived identifiers.
 
-Client errors preserve a message from cross-realm error objects or the browser's fallback message. Window errors may add a same-origin `/assets/*.js` pathname as `file`; React boundary errors may add the first matching throw location as `frame`, including line and column. Both exclude query strings, fragments, external URLs, and non-asset paths; full error stacks are never sent.
+Client errors preserve a message from cross-realm error objects or the browser's fallback message. Window errors may add a same-origin `/assets/*.js` pathname as `file`. React boundary and startup errors may add the first matching throw location as `frame`, including line and column. Both location fields exclude query strings, fragments, external URLs, and non-asset paths. Full error stacks are never sent.
 
 The UI collects feedback separately. Page name/path and feedback copy are sent only after explicit submission. Contact is optional. Full URL, user agent, and viewport are opt-in diagnostics. A successful receipt means the configured webhook confirmed delivery; a missing or failed webhook returns 503/502 and the UI offers a copy fallback.
 
@@ -106,7 +106,7 @@ The root cause of the historical `tagName` alerts and the anonymous home-page `c
 
 For new alerts, use the `frame` field to locate the exception and the `file` field to locate window errors. Both fields were added in `e88a5b1`. Match the build and chunk before mapping the position. Querying past events through Workers Observability returned HTTP 403 with the existing credentials.
 
-A sustained chunk failure can also stop startup before React mounts. In Chromium, blocking the C or D family-art module through an SPA navigation and reload left the prerendered content visible and raised a module error before hydration. The React error boundary and the analytics listener had yet to mount. The one-reload limit still applied.
+A sustained chunk failure can interrupt startup before React mounts. The retry panel appears alongside the prerendered content, and startup reports the original rejection directly as `source=startup`. For module-load failures, `recovery=exhausted` means the page has reached the manual retry path. A subsequent manual retry that fails reports the new rejection and keeps the same automatic reload limit.
 
 # Release Checks
 

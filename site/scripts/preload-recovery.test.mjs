@@ -12,7 +12,7 @@ test('the client entry does not eagerly import every route after hydration', () 
 
 test('the client entry installs stale-preload recovery before route imports run', () => {
   const installIndex = mainSource.indexOf('installVitePreloadRecovery()')
-  const initialViewIndex = mainSource.indexOf('loadInitialRouteViews(window.location.pathname)')
+  const initialViewIndex = mainSource.indexOf('loadInitialRouteViews(')
 
   assert.notEqual(installIndex, -1)
   assert.notEqual(initialViewIndex, -1)

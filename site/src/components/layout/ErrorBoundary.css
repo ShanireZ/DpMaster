@@ -7,6 +7,10 @@
   outline: none;
 }
 
+.error-boundary--prerendered {
+  min-height: auto;
+}
+
 .error-boundary__card {
   max-width: 32rem;
   width: 100%;
@@ -18,7 +22,7 @@
   text-align: center;
 }
 
-.error-boundary__card h1 {
+.error-boundary__card :is(h1, h2) {
   margin: 0 0 0.5rem;
   font-size: 1.25rem;
   color: var(--text-1);

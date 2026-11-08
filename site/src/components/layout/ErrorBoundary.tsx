@@ -1,4 +1,4 @@
-import { Component, type ErrorInfo, type ReactNode } from 'react'
+import { Component, useState, type ErrorInfo, type ReactNode } from 'react'
 import { trackAnalyticsEvent } from '../../analytics/index.ts'
 import { clientErrorFrame } from '../../analytics/clientError.ts'
 import {
@@ -13,6 +13,49 @@ interface ErrorBoundaryProps {
 
 interface ErrorBoundaryState {
   error: Error | null
+}
+
+export function PageLoadError({ message, hasPrerenderedContent = false, prepareRetry }: {
+  message: string
+  hasPrerenderedContent?: boolean
+  prepareRetry?: () => Promise<void>
+}) {
+  const [retrying, setRetrying] = useState(false)
+  const Heading = hasPrerenderedContent ? 'h2' : 'h1'
+
+  function retry() {
+    const reload = () => window.location.reload()
+    if (prepareRetry) {
+      setRetrying(true)
+      void prepareRetry().then(reload, reload)
+    } else {
+      reload()
+    }
+  }
+
+  return (
+    <div
+      ref={(node) => node?.focus()}
+      tabIndex={-1}
+      className={hasPrerenderedContent ? 'error-boundary error-boundary--prerendered' : 'error-boundary'}
+      role="alert"
+      aria-live="assertive"
+    >
+      <div className="error-boundary__card">
+        <Heading>这一页加载出了问题</Heading>
+        <p>{hasPrerenderedContent
+          ? '你仍可阅读本页内容，或重新加载以恢复互动功能。'
+          : '页面在渲染时出错。你可以重试，或返回首页继续学习。'}</p>
+        <p className="error-boundary__detail">{message}</p>
+        <div className="error-boundary__actions">
+          <button type="button" disabled={retrying} onClick={retry}>
+            重新加载
+          </button>
+          <a href="/">返回首页</a>
+        </div>
+      </div>
+    </div>
+  )
 }
 
 // 類元件錯誤邊界：兜住任一懶載入課節（含 import() 失敗）的繪製異常，
@@ -58,37 +101,8 @@ export default class ErrorBoundary extends Component<ErrorBoundaryProps, ErrorBo
     if (willReload) window.location.reload()
   }
 
-  private readonly mainRef = (node: HTMLElement | null): void => {
-    node?.focus()
-  }
-
-  private readonly handleReload = (): void => {
-    window.location.reload()
-  }
-
   render(): ReactNode {
     const { error } = this.state
-    if (!error) return this.props.children
-    return (
-      <div
-        ref={this.mainRef}
-        tabIndex={-1}
-        className="error-boundary"
-        role="alert"
-        aria-live="assertive"
-      >
-        <div className="error-boundary__card">
-          <h1>这一页加载出了问题</h1>
-          <p>页面在渲染时出错。你可以重试，或返回首页继续学习。</p>
-          <p className="error-boundary__detail">{error.message}</p>
-          <div className="error-boundary__actions">
-            <button type="button" onClick={this.handleReload}>
-              重新加载
-            </button>
-            <a href="/">返回首页</a>
-          </div>
-        </div>
-      </div>
-    )
+    return error ? <PageLoadError message={error.message} /> : this.props.children
   }
 }

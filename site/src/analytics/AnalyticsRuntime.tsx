@@ -1,17 +1,8 @@
 import { useEffect } from 'react'
 import { trackAnalyticsEvent } from './index.ts'
-import { clientErrorFile } from './clientError.ts'
+import { clientErrorFile, clientErrorMessage } from './clientError.ts'
 
 let initialized = false
-
-function safeMessage(value: unknown, fallback?: string): string {
-  if (value && typeof value === 'object' && 'message' in value && typeof value.message === 'string' && value.message) {
-    return value.message.slice(0, 160)
-  }
-  if (typeof value === 'string' && value) return value.slice(0, 160)
-  if (fallback) return fallback.slice(0, 160)
-  return 'unknown client error'
-}
 
 const resizeObserverDiagnostics = new Set([
   'ResizeObserver loop limit exceeded',
@@ -23,7 +14,7 @@ function startRuntime(): void {
   initialized = true
 
   window.addEventListener('error', (event) => {
-    const message = safeMessage(event.error, event.message)
+    const message = clientErrorMessage(event.error, event.message)
     if (resizeObserverDiagnostics.has(message)) return
     const file = clientErrorFile(event.filename)
 
@@ -46,7 +37,7 @@ function startRuntime(): void {
       path: window.location.pathname,
       metadata: {
         source: 'promise',
-        message: safeMessage(event.reason),
+        message: clientErrorMessage(event.reason),
       },
     })
   })

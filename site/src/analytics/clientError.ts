@@ -1,3 +1,12 @@
+export function clientErrorMessage(value: unknown, fallback?: string): string {
+  if (value && typeof value === 'object' && 'message' in value && typeof value.message === 'string' && value.message) {
+    return value.message.slice(0, 160)
+  }
+  if (typeof value === 'string' && value) return value.slice(0, 160)
+  if (fallback) return fallback.slice(0, 160)
+  return 'unknown client error'
+}
+
 export function clientErrorFile(value: string): string {
   if (typeof window === 'undefined') return ''
   try {

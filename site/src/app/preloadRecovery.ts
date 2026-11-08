@@ -103,15 +103,28 @@ export function reserveModuleLoadRecovery(): boolean {
   return browserRecovery().reserve()
 }
 
-export function installVitePreloadRecovery(): void {
-  if (typeof window === 'undefined') return
+export async function refreshRouteModulePreloads(): Promise<void> {
+  // WebKit can retain a failed module preload across document reloads (bug 270357).
+  const modules = document.querySelectorAll<HTMLLinkElement>('link[rel="modulepreload"][data-dp-route-module]')
+  const signal = AbortSignal.timeout(3000)
+  await Promise.allSettled(Array.from(modules, async ({ href }) => {
+    const response = await fetch(href, { cache: 'reload', signal })
+    await response.arrayBuffer()
+  }))
+}
+
+export function installVitePreloadRecovery(): () => boolean {
+  let reloadPending = false
+  if (typeof window === 'undefined') return () => reloadPending
   const handler = createVitePreloadRecoveryHandler({
     buildId: import.meta.env.VITE_BUILD_ID || 'local',
     pathname: () => window.location.pathname,
     reload: () => {
+      reloadPending = true
       window.location.reload()
     },
     storage: readSessionStorage(),
   })
   window.addEventListener('vite:preloadError', handler)
+  return () => reloadPending
 }
