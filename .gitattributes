@@ -27,4 +27,4 @@ site/tests/browser/routes.spec.ts text eol=lf
 # ★ 釘在這裡而不是靠每臺機器自己設 `core.autocrlf`：後者帶不過機器。
 # ⚠ 只點名這一個檔案：`site/scripts/` 下另外 53 個 .mjs 現在工作樹多是 CRLF，
 #   用 glob 會一次改動四十來個檔案 —— 那是另一件事，別順手幹。
-site/scripts/check-baseline-copy.mjs text eol=lf
+site/scripts/check-baseline-copy.mts text eol=lf

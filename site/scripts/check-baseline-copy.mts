@@ -1,10 +1,10 @@
-// baseline-copy: authority=Docs/baseline-copy-check.template.mjs sha256=7e602b41ca5cb9b271e425e3d7a904620c789ec203a18a6a0431634777a17de0
+// baseline-copy: authority=Docs/baseline-copy-check.template.mts sha256=dc4bb7af8925e3721e134cbd89e57b85bb3197dfced79a97cdde0ac457497b86
 
 // （無 shebang：釘子必須是第 1 行，而 shebang 只在第 1 行才有效 —— 兩者不能共存。
-//   本指令碼一律以 `node scripts/check-baseline-copy.mjs` 呼叫。）
+//   本指令碼一律以 `node scripts/check-baseline-copy.mts` 呼叫。）
 // 本儲存庫在工作區副本清單裡的那些檔案，必須與工作區權威逐位元組一致。
 //
-// ★ 本檔案是從 Docs/baseline-copy-check.template.mjs 生成的副本，**不要就地改**——
+// ★ 本檔案是從 Docs/baseline-copy-check.template.mts 生成的副本，**不要就地改**——
 //   工作區的 `node Docs/check-baseline-copies.mjs` 會逐位元組比對它，改了即紅。
 //   要改邏輯就改範本，然後 `node Docs/check-baseline-copies.mjs --write`。
 //
@@ -26,33 +26,33 @@
 //     執法點是工作區級的 node Docs/check-baseline-copies.mjs。
 //   這條取捨是 owner 2026-08-30 拍的：讓「沒判」看得見，比讓它假裝判過要好。
 //
-// ⚠ 本檔案要同時通過 7 個倉各自的 lint。BetAI 那道是 `oxlint --type-aware --deny-warnings`，
-//   所以這裡顯式寫 JSDoc 類型、用 `import.meta.dirname`（Node ≥ 21.2，本工作區各儲存庫
-//   `engines.node` 均 ≥ 26）、用 `replaceAll` 與顯式長度比較。**不要加 lint 豁免註解**。
+// ⚠ 本檔案是 TypeScript，由 Node 直接執行、不經編譯（2026-11-11 owner 決定由 .mjs 改來）：
+//   - 型別語法在執行時被 Node 剝除，所以**只能用可直接刪除的語法**：
+//     不用 enum、namespace、建構子參數屬性，純型別匯入要寫 `import type`。
+//   - 副檔名是 `.mts`：它在每個倉都被當成 ES module，不看該倉 package.json 的 `type`。
+//   - 它要同時通過 7 個倉各自的 lint 與型別檢查。BetAI 那道是
+//     `oxlint --type-aware --deny-warnings`，所以用型別守衛收窄而不用型別斷言、
+//     用 `import.meta.dirname`（本工作區各儲存庫 `engines.node` 均 ≥ 26）、
+//     用 `replaceAll` 與顯式長度比較。**不要加 lint 豁免註解**。
 
 import { existsSync } from 'node:fs';
 import { dirname, join, resolve, relative } from 'node:path';
 import { pathToFileURL } from 'node:url';
 
-/**
- * @typedef {[string, string, string]} CopyEntry  [專案, 副本相對路徑, 權威相對路徑]
- * @typedef {{ ok: string[], fails: string[], total: number }} CheckResult
- * @typedef {{
- *   EXPECTED: CopyEntry[],
- *   runCheck: (o: { root: string, only?: string | null, write?: boolean }) => CheckResult,
- * }} Manifest
- */
+/** [專案, 副本相對路徑, 權威相對路徑] */
+type CopyEntry = [string, string, string];
+type CheckResult = { ok: string[]; fails: string[]; total: number };
+type Manifest = {
+  EXPECTED: CopyEntry[];
+  runCheck: (o: { root: string; only?: string | null; write?: boolean }) => CheckResult;
+};
 
 const SELF = import.meta.filename;
 const HERE = import.meta.dirname;
 const MANIFEST = ['Docs', 'baseline-copies.manifest.mjs'];
 
-/**
- * 從本指令碼往上找工作區根：它同時有 AGENTS.md 與副本清單模組。
- * @param {string} start
- * @returns {string | null}
- */
-function findWorkspace(start) {
+/** 從本指令碼往上找工作區根：它同時有 AGENTS.md 與副本清單模組。 */
+function findWorkspace(start: string): string | null {
   let d = resolve(start);
   for (let i = 0; i < 8; i++) {
     if (existsSync(join(d, 'AGENTS.md')) && existsSync(join(d, ...MANIFEST))) return d;
@@ -63,12 +63,8 @@ function findWorkspace(start) {
   return null;
 }
 
-/**
- * 清單模組的形狀守衛。
- * @param {unknown} m
- * @returns {m is Manifest}
- */
-function isManifest(m) {
+/** 清單模組的形狀守衛。 */
+function isManifest(m: unknown): m is Manifest {
   return (
     typeof m === 'object' &&
     m !== null &&
@@ -94,8 +90,7 @@ if (ws === null) {
 // 不用類型斷言：`typescript(no-unsafe-type-assertion)` 連 `unknown → T` 也判紅。
 // ★ 順帶這是一條真的執行環境檢查：清單模組被改壞或改名時，這裡給一句能讀的紅，
 //   而不是在下一行拋 TypeError。
-/** @type {unknown} */
-const loaded = await import(pathToFileURL(join(ws, ...MANIFEST)).href);
+const loaded: unknown = await import(pathToFileURL(join(ws, ...MANIFEST)).href);
 
 if (!isManifest(loaded)) {
   console.error('baseline-copy-check: 工作区的副本清单模块没有导出 EXPECTED / runCheck。');

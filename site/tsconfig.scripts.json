@@ -26,6 +26,7 @@
   },
   "include": [
     "scripts/**/*.mjs",
+    "scripts/**/*.mts",
     "worker/**/*.js",
     "worker.js",
     "baseline-targets.ts",
