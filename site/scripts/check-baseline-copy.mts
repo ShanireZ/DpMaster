@@ -1,7 +1,7 @@
-// baseline-copy: authority=Docs/baseline-copy-check.template.mts sha256=dc4bb7af8925e3721e134cbd89e57b85bb3197dfced79a97cdde0ac457497b86
+// baseline-copy: authority=Docs/baseline-copy-check.template.mts sha256=5035d28885c4603f03c20891bbe1ca476aaa804944834034d1e27c2e7b853abe
 
 // （無 shebang：釘子必須是第 1 行，而 shebang 只在第 1 行才有效 —— 兩者不能共存。
-//   本指令碼一律以 `node scripts/check-baseline-copy.mts` 呼叫。）
+//   各倉以 `node scripts/check-baseline-copy.mts` 直接執行；WenTian 先編譯，再執行產物。）
 // 本儲存庫在工作區副本清單裡的那些檔案，必須與工作區權威逐位元組一致。
 //
 // ★ 本檔案是從 Docs/baseline-copy-check.template.mts 生成的副本，**不要就地改**——
@@ -26,9 +26,12 @@
 //     執法點是工作區級的 node Docs/check-baseline-copies.mjs。
 //   這條取捨是 owner 2026-08-30 拍的：讓「沒判」看得見，比讓它假裝判過要好。
 //
-// ⚠ 本檔案是 TypeScript，由 Node 直接執行、不經編譯（2026-11-11 owner 決定由 .mjs 改來）：
-//   - 型別語法在執行時被 Node 剝除，所以**只能用可直接刪除的語法**：
+// ⚠ 本檔案是 TypeScript（2026-11-11 owner 決定由 .mjs 改來），有兩種執行方式，兩種都必須成立：
+//   多數倉由 Node 直接執行、不經編譯；WenTian 不留任何直接執行的 TS，先編譯再執行產物。
+//   - 直接執行時型別語法由 Node 剝除，所以**只能用可直接刪除的語法**：
 //     不用 enum、namespace、建構子參數屬性，純型別匯入要寫 `import type`。
+//   - 編譯後執行的是產物目錄裡的檔案，所以**不能拿本檔案自己的路徑去對清單**；
+//     下面是用「執行位置落在哪個專案目錄裡」反查專案，再確認清單登記的那份原始碼副本還在。
 //   - 副檔名是 `.mts`：它在每個倉都被當成 ES module，不看該倉 package.json 的 `type`。
 //   - 它要同時通過 7 個倉各自的 lint 與型別檢查。BetAI 那道是
 //     `oxlint --type-aware --deny-warnings`，所以用型別守衛收窄而不用型別斷言、
@@ -50,6 +53,8 @@ type Manifest = {
 const SELF = import.meta.filename;
 const HERE = import.meta.dirname;
 const MANIFEST = ['Docs', 'baseline-copies.manifest.mjs'];
+/** 本範本在清單「權威」欄裡的寫法；用它在清單裡找出登記了本指令碼的專案。 */
+const TEMPLATE = 'Docs/baseline-copy-check.template.mts';
 
 /** 從本指令碼往上找工作區根：它同時有 AGENTS.md 與副本清單模組。 */
 function findWorkspace(start: string): string | null {
@@ -100,15 +105,20 @@ if (!isManifest(loaded)) {
 
 const { EXPECTED, runCheck } = loaded;
 
-// 本指令碼自己就是清單裡的一項 ⇒ 用它在清單裡的位置反查「我是哪個專案」，
-// 不靠目錄名猜、也不靠 docs/ 是否存在猜（Windows 大小寫不敏感，`Docs/` 會假陽）。
-const selfRel = relative(ws, SELF).replaceAll('\\', '/').toLowerCase();
-const entry = EXPECTED.find(([proj, copyRel]) => `${proj}/${copyRel}`.toLowerCase() === selfRel);
+// 本指令碼是清單裡登記的一項 ⇒ 用清單反查「我是哪個專案」：
+// 執行位置必須落在某個登記了本範本的專案目錄裡，而且登記的那份副本真的存在。
+// 不靠 docs/ 是否存在猜（Windows 大小寫不敏感，`Docs/` 會假陽），也不拿本檔案自己的完整路徑比對
+// （先編譯再執行的專案，執行的是產物目錄裡的檔案）。
+const hereRel = `${relative(ws, HERE).replaceAll('\\', '/').toLowerCase()}/`;
+const entry = EXPECTED.find(
+  ([proj, copyRel, authRel]) =>
+    authRel === TEMPLATE && hereRel.startsWith(`${proj.toLowerCase()}/`) && existsSync(join(ws, proj, copyRel)),
+);
 
 if (entry === undefined) {
   console.error('baseline-copy-check: 本仓装了这道门，但本脚本不在工作区副本清单里。');
   console.error(`  本脚本在工作区中的位置：${relative(ws, SELF).replaceAll('\\', '/')}`);
-  console.error('  ⇒ 要么清单漏登记了本仓，要么本脚本被搬过位置。两种都必须修，不能当作「没什么可判」。');
+  console.error('  ⇒ 要么清单漏登记了本仓，要么登记的那份副本被搬走了。两种都必须修，不能当作「没什么可判」。');
   console.error('  清单：Docs/baseline-copies.manifest.mjs 的 EXPECTED');
   process.exit(1);
 }
